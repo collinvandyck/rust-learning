@@ -4,7 +4,7 @@ use std::{
     time::SystemTime,
 };
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::Duration;
 
 #[derive(Clone)]
 pub struct Server {
@@ -24,14 +24,14 @@ impl Server {
         let listener = TcpListener::bind(addr)?;
         loop {
             let (stream, addr) = listener.accept()?;
-            let now = self.date_time();
+            let now = self.since();
             println!("{}: Connected to {}", now, addr);
             let mut conn = Conn::new(stream);
             conn.run();
         }
     }
 
-    fn date_time(&mut self) -> String {
+    fn since(&mut self) -> String {
         let now = SystemTime::now();
         let since = now.duration_since(self.now).unwrap();
         let chrono_since = Duration::from_std(since).unwrap();
