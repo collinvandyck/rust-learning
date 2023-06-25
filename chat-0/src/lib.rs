@@ -1,28 +1,43 @@
 use std::{
     io::{BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
+    time::SystemTime,
 };
+
+use chrono::{DateTime, Duration, Utc};
 
 #[derive(Clone)]
 pub struct Server {
     port: usize,
+    now: SystemTime,
 }
 
 impl Server {
     pub fn new(port: usize) -> Server {
-        Server { port }
+        let now = SystemTime::now();
+        Server { port, now }
     }
 
     pub fn run(&mut self) -> Result<(), Error> {
         let addr = format!("0.0.0.0:{}", self.port);
-        println!("Listening on {}", addr);
+        println!("{:?}: Listening on {}", self.now, addr);
         let listener = TcpListener::bind(addr)?;
         loop {
             let (stream, addr) = listener.accept()?;
-            println!("Connected to {}", addr);
+            let now = self.date_time();
+            println!("{}: Connected to {}", now, addr);
             let mut conn = Conn::new(stream);
             conn.run();
         }
+    }
+
+    fn date_time(&mut self) -> String {
+        let now = SystemTime::now();
+        let since = now.duration_since(self.now).unwrap();
+        let chrono_since = Duration::from_std(since).unwrap();
+        let res = format!("{}s", chrono_since.num_seconds());
+        self.now = SystemTime::now();
+        res
     }
 }
 
