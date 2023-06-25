@@ -10,7 +10,7 @@ fn main() {
     server.run().expect("Server died");
 }
 
-fn thread_fun() {
+fn channel_fun() {
     let num_threads = 5;
     let (tx, rx): (Sender<i32>, Receiver<i32>) = mpsc::channel();
     let mut children = Vec::new();
