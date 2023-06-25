@@ -1,6 +1,8 @@
 use std::{
+    cell::RefCell,
     io::{BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
+    rc::Rc,
     time::SystemTime,
 };
 
@@ -22,11 +24,13 @@ impl Server {
         let addr = format!("0.0.0.0:{}", self.port);
         println!("{}: Listening on {}", self.since(), addr);
         let listener = TcpListener::bind(addr)?;
+        let mut conns: Vec<Rc<Conn>> = Vec::new();
         loop {
             let (stream, addr) = listener.accept()?;
-            let now = self.since();
-            println!("{}: Connected to {}", now, addr);
-            let mut conn = Conn::new(stream);
+            println!("{}: Connected to {}", self.since(), addr);
+            let conn = Conn::new(stream);
+            let conn = Rc::new(conn);
+            conns.push(Rc::clone(&conn));
             conn.run();
         }
     }
@@ -42,27 +46,28 @@ impl Server {
 }
 
 struct Conn {
-    io: IO,
+    io: RefCell<IO>,
 }
 
 impl Conn {
     fn new(stream: TcpStream) -> Conn {
         let io = IO::from_tcp(stream);
+        let io = RefCell::new(io);
         Conn { io }
     }
 
-    fn run(&mut self) {
+    fn run(&self) {
         match self.run_err() {
             Err(_) => println!("Conn quit."),
             _ => {}
         }
     }
 
-    fn run_err(&mut self) -> Result<(), Error> {
+    fn run_err(&self) -> Result<(), Error> {
         loop {
-            let line = self.io.read_line()?;
+            let line = self.io.borrow_mut().read_line()?;
             println!("Received: {}", line);
-            self.io.write_line(line)?;
+            self.io.borrow_mut().write_line(line)?;
         }
     }
 }
