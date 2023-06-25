@@ -65,9 +65,11 @@ impl Conn {
 
     fn run_err(&self) -> Result<(), Error> {
         loop {
-            let line = self.io.borrow_mut().read_line()?;
+            println!("Loop starting...");
+            let mut io = self.io.borrow_mut();
+            let line = io.read_line()?;
             println!("Received: {}", line);
-            self.io.borrow_mut().write_line(line)?;
+            io.write_line(line)?;
         }
     }
 }
