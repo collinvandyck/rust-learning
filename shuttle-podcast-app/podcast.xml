@@ -1,0 +1,15 @@
+<rss version="2.0">
+  <channel>
+    <title>Podcast name</title>
+    <link>https://podcast.com</link>
+    <item>
+      <title>
+         <![CDATA[Title]]>
+      </title>
+      <description>
+       <![CDATA[Description]]>
+      </description>
+      <enclosure url="podcast.mp3" length="56525065" type="audio/mpeg"/>
+    </item>
+  </channel>
+</rss>

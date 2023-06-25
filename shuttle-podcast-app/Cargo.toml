@@ -1,0 +1,13 @@
+[package]
+name = "collins-podcast-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.6.18"
+shuttle-axum = "0.19.0"
+shuttle-runtime = "0.19.0"
+tokio = "1.28.2"
+reqwest = "0.11.18"
+xml = "0.8.10"
+anyhow = "1.0.71"
