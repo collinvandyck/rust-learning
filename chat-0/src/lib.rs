@@ -21,10 +21,14 @@ impl Server {
 
     pub fn run(&mut self) -> Result<(), Error> {
         let listener = self.listener()?;
-        let (tx, rx): (SyncSender<Message>, Receiver<Message>) = mpsc::sync_channel(1);
+        let (tx, _rx): (SyncSender<Message>, Receiver<Message>) = mpsc::sync_channel(1);
         loop {
             let (stream, addr) = listener.accept()?;
             println!("{}: Connected to {}", self.since(), addr);
+            tx.send(Message {
+                value: format!("{} connected", addr),
+            })
+            .unwrap();
             let tx = tx.clone();
             let mut conn = Conn::new(stream, tx);
             conn.run();
@@ -48,7 +52,6 @@ impl Server {
 }
 
 struct Message {
-    from: String,
     value: String,
 }
 
@@ -57,7 +60,7 @@ struct Conn {
 }
 
 impl Conn {
-    fn new(stream: TcpStream, out: SyncSender<Message>) -> Conn {
+    fn new(stream: TcpStream, _out: SyncSender<Message>) -> Conn {
         let io = IO::from_tcp(stream);
         Conn { io }
     }
