@@ -20,7 +20,7 @@ impl Server {
 
     pub fn run(&mut self) -> Result<(), Error> {
         let addr = format!("0.0.0.0:{}", self.port);
-        println!("{:?}: Listening on {}", self.now, addr);
+        println!("{}: Listening on {}", self.since(), addr);
         let listener = TcpListener::bind(addr)?;
         loop {
             let (stream, addr) = listener.accept()?;
