@@ -24,13 +24,11 @@ impl Server {
         let addr = format!("0.0.0.0:{}", self.port);
         println!("{}: Listening on {}", self.since(), addr);
         let listener = TcpListener::bind(addr)?;
-        let mut conns: Vec<Rc<Conn>> = Vec::new();
         loop {
             let (stream, addr) = listener.accept()?;
             println!("{}: Connected to {}", self.since(), addr);
             let conn = Conn::new(stream);
             let conn = Rc::new(conn);
-            conns.push(Rc::clone(&conn));
             conn.run();
         }
     }
