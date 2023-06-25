@@ -1,41 +1,58 @@
 use std::{
-    io::{BufRead, BufReader, BufWriter, Error, Read, Write},
-    net::{SocketAddr, TcpListener, TcpStream},
-    thread,
+    io::{BufRead, BufReader, BufWriter, Error, Write},
+    net::{TcpListener, TcpStream},
+    sync::Arc,
 };
 
 #[derive(Clone)]
 pub struct Server {
     port: usize,
+    conns: Arc<Vec<Conn>>,
 }
 
 impl Server {
     pub fn new(port: usize) -> Server {
-        Server { port }
+        let conns = vec![];
+        let conns = Arc::from(conns);
+        Server { port, conns }
     }
 
-    pub fn run(&self) -> Result<(), Error> {
+    pub fn run(&mut self) -> Result<(), Error> {
         let addr = format!("0.0.0.0:{}", self.port);
         println!("Listening on {}", addr);
         let listener = TcpListener::bind(addr)?;
         loop {
             let (stream, addr) = listener.accept()?;
-            let server = self.clone();
-            thread::spawn(move || {
-                if let Err(_) = server.handle(stream, addr) {
-                    println!("Client {} closed", addr)
-                }
-            });
+            println!("Connected to {}", addr);
+            let mut conn = Conn::new(stream);
+            let mut conns = Arc::clone(&self.conns);
+            conn.run();
+        }
+    }
+}
+
+struct Conn {
+    io: IO,
+}
+
+impl Conn {
+    fn new(stream: TcpStream) -> Conn {
+        let io = IO::from_tcp(stream);
+        Conn { io }
+    }
+
+    fn run(&mut self) {
+        match self.run_err() {
+            Err(_) => println!("Conn quit."),
+            _ => {}
         }
     }
 
-    fn handle(&self, stream: TcpStream, addr: SocketAddr) -> Result<(), Error> {
-        println!("Connected to {}", addr);
-        let mut io = IO::from_tcp(stream);
+    fn run_err(&mut self) -> Result<(), Error> {
         loop {
-            let line = io.read_line()?;
+            let line = self.io.read_line()?;
             println!("Received: {}", line);
-            io.write_line(line)?;
+            self.io.write_line(line)?;
         }
     }
 }

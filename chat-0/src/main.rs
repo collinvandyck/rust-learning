@@ -6,7 +6,7 @@ use std::{
 use chat_0::Server;
 
 fn main() {
-    let server = Server::new(3000);
+    let mut server = Server::new(3000);
     server.run().expect("Server died");
 }
 
