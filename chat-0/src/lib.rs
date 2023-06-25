@@ -1,20 +1,16 @@
 use std::{
     io::{BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
-    sync::Arc,
 };
 
 #[derive(Clone)]
 pub struct Server {
     port: usize,
-    conns: Arc<Vec<Conn>>,
 }
 
 impl Server {
     pub fn new(port: usize) -> Server {
-        let conns = vec![];
-        let conns = Arc::from(conns);
-        Server { port, conns }
+        Server { port }
     }
 
     pub fn run(&mut self) -> Result<(), Error> {
@@ -25,7 +21,6 @@ impl Server {
             let (stream, addr) = listener.accept()?;
             println!("Connected to {}", addr);
             let mut conn = Conn::new(stream);
-            let mut conns = Arc::clone(&self.conns);
             conn.run();
         }
     }
