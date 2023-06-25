@@ -1,7 +1,7 @@
 use std::{
     io::{BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
-    sync::mpsc::{self, Receiver, Sender},
+    sync::mpsc::{self, Receiver, Sender, SyncSender},
     time::SystemTime,
 };
 
@@ -21,11 +21,12 @@ impl Server {
 
     pub fn run(&mut self) -> Result<(), Error> {
         let listener = self.listener()?;
-        let (_tx, _rx): (Sender<Message>, Receiver<Message>) = mpsc::channel();
+        let (tx, rx): (SyncSender<Message>, Receiver<Message>) = mpsc::sync_channel(1);
         loop {
             let (stream, addr) = listener.accept()?;
             println!("{}: Connected to {}", self.since(), addr);
-            let mut conn = Conn::new(stream);
+            let tx = tx.clone();
+            let mut conn = Conn::new(stream, tx);
             conn.run();
         }
     }
@@ -56,7 +57,7 @@ struct Conn {
 }
 
 impl Conn {
-    fn new(stream: TcpStream) -> Conn {
+    fn new(stream: TcpStream, out: SyncSender<Message>) -> Conn {
         let io = IO::from_tcp(stream);
         Conn { io }
     }
