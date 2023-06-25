@@ -27,8 +27,7 @@ impl Server {
         loop {
             let (stream, addr) = listener.accept()?;
             println!("{}: Connected to {}", self.since(), addr);
-            let conn = Conn::new(stream);
-            let conn = Rc::new(conn);
+            let mut conn = Conn::new(stream);
             conn.run();
         }
     }
@@ -44,30 +43,28 @@ impl Server {
 }
 
 struct Conn {
-    io: RefCell<IO>,
+    io: IO,
 }
 
 impl Conn {
     fn new(stream: TcpStream) -> Conn {
         let io = IO::from_tcp(stream);
-        let io = RefCell::new(io);
         Conn { io }
     }
 
-    fn run(&self) {
+    fn run(&mut self) {
         match self.run_err() {
             Err(_) => println!("Conn quit."),
             _ => {}
         }
     }
 
-    fn run_err(&self) -> Result<(), Error> {
+    fn run_err(&mut self) -> Result<(), Error> {
         loop {
             println!("Loop starting...");
-            let mut io = self.io.borrow_mut();
-            let line = io.read_line()?;
+            let line = self.io.read_line()?;
             println!("Received: {}", line);
-            io.write_line(line)?;
+            self.io.write_line(line)?;
         }
     }
 }
