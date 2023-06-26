@@ -57,7 +57,7 @@ pub enum ServerError {
     #[error("accept failed")]
     Accept(#[from] io::Error),
 
-    #[error("chan send failure")]
+    #[error("rx chan closed")]
     SendFailure(#[from] mpsc::SendError<Event>),
 
     #[error("tx chan closed")]
