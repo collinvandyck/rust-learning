@@ -71,7 +71,6 @@ fn server(rx: Receive) -> Res<()> {
         let m = rx.rx.recv()?;
         dbg!(m);
     }
-    Ok(())
 }
 
 fn client(id: i32, rw: SendReceive) -> Res<()> {
