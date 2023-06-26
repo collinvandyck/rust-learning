@@ -1,6 +1,6 @@
 use core::fmt;
 use std::{
-    io::{self, Error},
+    io,
     net::{TcpListener, TcpStream},
     sync::mpsc,
     thread,
