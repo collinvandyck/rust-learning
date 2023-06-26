@@ -39,6 +39,7 @@ impl Server {
             let res = server.listen();
             let _ = ttx.send(Quit::from("listener", res));
         });
+
         drop(tx);
         let val = rx.recv().unwrap();
         println!("Server quitting: {}", val);
