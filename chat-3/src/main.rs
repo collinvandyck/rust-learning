@@ -2,7 +2,10 @@ use core::fmt;
 use std::{
     io,
     net::{TcpListener, TcpStream},
-    sync::mpsc,
+    sync::{
+        mpsc::{self, Receiver, Sender},
+        Arc, Mutex,
+    },
     thread,
 };
 
@@ -13,14 +16,32 @@ fn main() {
 
 type Result<T> = io::Result<T>;
 
+enum Event {
+    NewClient { client: usize },
+    Message { client: usize, val: String },
+    ClientQuit { client: usize },
+}
+
+type IncomingEvents = Arc<Mutex<Receiver<Event>>>;
+type OutgoingEvents = Arc<Mutex<Sender<Event>>>;
+
 #[derive(Clone)]
 struct Server {
     port: u32,
+    outgoing: OutgoingEvents,
+    incoming: IncomingEvents,
 }
 
 impl Server {
     fn new(port: u32) -> Server {
-        Server { port }
+        let (tx, rx) = mpsc::channel();
+        let outgoing = Arc::new(Mutex::new(tx));
+        let incoming = Arc::new(Mutex::new(rx));
+        Server {
+            port,
+            outgoing,
+            incoming,
+        }
     }
 
     fn start(&self) -> Result<()> {
@@ -76,16 +97,18 @@ impl Server {
 
 #[derive(Debug)]
 struct Client {
-    _id: usize,
-    _stream: TcpStream,
+    id: usize,
 }
 
 impl Client {
     fn new(id: usize, stream: TcpStream) -> Client {
-        Client {
-            _id: id,
-            _stream: stream,
-        }
+        Client { id }
+    }
+}
+
+impl fmt::Display for Client {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "client:{}", self.id)
     }
 }
 
