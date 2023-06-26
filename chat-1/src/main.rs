@@ -2,7 +2,7 @@ use std::{
     io::{BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
     sync::{
-        mpsc::{self, Receiver, SyncSender, TrySendError},
+        mpsc::{self, Receiver, SyncSender},
         Arc, Mutex,
     },
     thread,
