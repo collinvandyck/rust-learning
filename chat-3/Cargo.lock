@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "rust-echo-3"
+name = "chat-3"
 version = "0.1.0"
