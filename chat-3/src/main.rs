@@ -1,5 +1,6 @@
 use core::fmt;
 use std::{
+    collections::HashMap,
     io::{self, BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
     sync::{
@@ -89,7 +90,7 @@ impl Server {
     }
 
     fn controller(&self) -> Result<()> {
-        let mut ougoings = vec![];
+        let mut clients = HashMap::new();
         loop {
             let event = match self.rx.lock().unwrap().recv() {
                 Ok(event) => event,
@@ -98,13 +99,14 @@ impl Server {
             match event {
                 Event::NewClient { client, outgoing } => {
                     println!("Got new client with id: {}", client);
-                    ougoings.push(outgoing);
+                    clients.insert(client, outgoing);
                 }
                 Event::Message { client, val } => {
                     println!("New message from client: {}: {}", client, val)
                 }
                 Event::ClientQuit { client } => {
-                    println!("Client with id: {} quit", client)
+                    println!("Client with id: {} quit", client);
+                    clients.remove(&client);
                 }
             }
         }
