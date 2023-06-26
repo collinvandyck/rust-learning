@@ -1,6 +1,6 @@
 use core::fmt;
 use std::{
-    io::{self, Error},
+    io::{self, BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
     sync::{
         mpsc::{self, Receiver, Sender},
@@ -89,17 +89,16 @@ impl Server {
     }
 
     fn controller(&self) -> Result<()> {
+        let mut ougoings = vec![];
         loop {
             let event = match self.rx.lock().unwrap().recv() {
                 Ok(event) => event,
                 Err(_) => return Result::Err(Error::new(io::ErrorKind::Other, "chan closed")),
             };
             match event {
-                Event::NewClient {
-                    client,
-                    outgoing: _,
-                } => {
-                    println!("Got new client with id: {}", client)
+                Event::NewClient { client, outgoing } => {
+                    println!("Got new client with id: {}", client);
+                    ougoings.push(outgoing);
                 }
                 Event::Message { client, val } => {
                     println!("New message from client: {}: {}", client, val)
@@ -128,19 +127,79 @@ impl Server {
             client: id,
             outgoing: tx,
         })?;
-        dbg!(client);
-        Ok(())
+        let res = client.run();
+        self.send(Event::ClientQuit { client: id })?;
+        res
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Client {
     id: usize,
+    writer: Arc<Mutex<BufWriter<TcpStream>>>,
+    reader: Arc<Mutex<BufReader<TcpStream>>>,
+    tx: OutgoingEvents,
+    rx: IncomingEvents,
 }
 
 impl Client {
     fn new(id: usize, stream: TcpStream, tx: OutgoingEvents, rx: IncomingEvents) -> Client {
-        Client { id }
+        let reader = BufReader::new(stream.try_clone().unwrap());
+        let writer = BufWriter::new(stream);
+        let reader = Arc::new(Mutex::new(reader));
+        let writer = Arc::new(Mutex::new(writer));
+        Client {
+            id,
+            reader,
+            writer,
+            tx,
+            rx,
+        }
+    }
+
+    fn run(&self) -> Result<()> {
+        println!("Client {} running...", self.id);
+        let (tx, rx) = mpsc::channel();
+
+        let client = self.clone();
+        let ttx = tx.clone();
+        thread::spawn(move || {
+            let _ = client.read();
+            ttx.send(true);
+        });
+
+        let client = self.clone();
+        let ttx = tx.clone();
+        thread::spawn(move || {
+            let _ = client.write();
+            ttx.send(true);
+        });
+
+        drop(tx);
+        rx.recv();
+        Ok(())
+    }
+
+    fn read(&self) -> Result<()> {
+        loop {
+            let mut buf = String::new();
+            self.reader.lock().unwrap().read_line(&mut buf)?;
+            buf = buf.trim().to_string();
+            self.tx.lock().unwrap().send(Event::Message {
+                client: self.id,
+                val: buf,
+            });
+        }
+    }
+
+    fn write(&self) -> Result<()> {
+        loop {
+            let event = self.rx.lock().unwrap().recv().unwrap();
+            if let Event::Message { client, val } = event {
+                let msg = format!("{}: {}\n", client, val);
+                self.writer.lock().unwrap().write_all(msg.as_bytes())?;
+            }
+        }
     }
 }
 
