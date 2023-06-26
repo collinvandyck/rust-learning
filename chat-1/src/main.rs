@@ -21,6 +21,8 @@ struct Server {
 }
 
 impl Server {
+    // starts a new server on the specified port. clients can connect
+    // to it over something like telnet or nc.
     fn start(port: u32) -> Result<Server, Error> {
         let addr = format!("0.0.0.0:{}", port);
         let listener = TcpListener::bind(addr)?;
@@ -41,6 +43,7 @@ impl Server {
         Ok(server)
     }
 
+    // loops, accepting incoming tcp conns and creates a thread to handle each one.
     fn run(&self) -> Result<(), Error> {
         let server = self.clone();
         thread::spawn(move || server.listen_rx());
@@ -58,14 +61,23 @@ impl Server {
         loop {
             let val = self.rx.lock().unwrap().recv().unwrap();
             println!("Got val: {}", val);
-            let mut guard = self.clients.lock().unwrap();
-            let clients = &mut *guard;
-            for client in clients {
-                client.send(val.to_string()).unwrap();
+            {
+                let mut guard = self.clients.lock().unwrap();
+                let clients = &mut *guard;
+                for client in clients {
+                    client.send(val.to_string()).unwrap();
+                }
             }
         }
     }
 
+    // handles a new tcp connection. spawns threads to read and write to
+    // the connection. messages received are sent on the Server tx
+    // channel so that the server can broadcast it.
+    //
+    // The tx that sends to the client will be added to the Server's vector
+    // of channels so that received messages can be broadcasted to all
+    // clients.
     fn handle(&self, stream: TcpStream) {
         let reader = BufReader::new(stream.try_clone().unwrap());
         let writer = BufWriter::new(stream);
@@ -82,6 +94,7 @@ impl Server {
         }
     }
 
+    // returns a receiver that will produce messages sent fromt the client.
     fn handle_read(&self, mut reader: BufReader<TcpStream>) -> Receiver<String> {
         let (tx, rx): (SyncSender<String>, Receiver<String>) = mpsc::sync_channel(1);
         thread::spawn(move || loop {
@@ -97,6 +110,7 @@ impl Server {
         rx
     }
 
+    // returns a sender that will send messages to the client.
     fn handle_write(&self, mut writer: BufWriter<TcpStream>) -> SyncSender<String> {
         let (tx, rx): (SyncSender<String>, Receiver<String>) = mpsc::sync_channel(1);
         thread::spawn(move || loop {
