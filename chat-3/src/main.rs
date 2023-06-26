@@ -1,6 +1,6 @@
 use core::fmt;
 use std::{
-    io::{self, Error},
+    io,
     net::{TcpListener, TcpStream},
     sync::mpsc,
     thread,
@@ -43,7 +43,7 @@ impl Server {
         drop(tx);
         let val = rx.recv().unwrap();
         println!("Server quitting: {}", val);
-        val.result()
+        val.into()
     }
 
     fn listen(&self) -> Result<()> {
@@ -90,32 +90,32 @@ impl Client {
 }
 
 #[derive(Debug)]
-enum Quit {
-    Ok(String, Result<()>),
-    Failure(String, Result<()>),
+struct Quit {
+    name: String,
+    res: Result<()>,
+    failure: bool,
 }
 
 impl Quit {
     fn from(name: &str, res: Result<()>) -> Quit {
         let name = name.to_string();
-        match res {
-            Ok(_) => Quit::Ok(name, res),
-            Err(_) => Quit::Failure(name, res),
-        }
+        let failure = res.is_err();
+        Quit { name, failure, res }
     }
-    fn result(self) -> Result<()> {
-        match self {
-            Quit::Ok(_, res) => res,
-            Quit::Failure(_, res) => res,
-        }
+}
+
+impl From<Quit> for Result<()> {
+    fn from(value: Quit) -> Self {
+        value.res
     }
 }
 
 impl fmt::Display for Quit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Quit::Ok(name, _res) => write!(f, "{} quit", name),
-            Quit::Failure(name, res) => write!(f, "{} failed: {:?}", name, res),
+        if self.failure {
+            write!(f, "{} quit unexpectedly: {:?}", self.name, self.res)
+        } else {
+            write!(f, "{} quit", self.name)
         }
     }
 }
