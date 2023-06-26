@@ -42,7 +42,7 @@ impl Server {
             }
             let _ = ttx.send("listener quit");
         });
-
+        drop(tx);
         let val = rx.recv();
         println!("Server quitting: {:?}", val);
         Ok(())
