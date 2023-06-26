@@ -4,6 +4,8 @@ use std::{
     thread, vec,
 };
 
+use rand::{thread_rng, Rng};
+
 fn main() {
     run().unwrap()
 }
@@ -105,28 +107,37 @@ fn server(rw: Channel) -> Res<()> {
                     id,
                     val: val.to_string(),
                 };
+                println!("new: num clients before: {}", clients.len());
                 clients = clients
                     .into_iter()
                     .filter(|(_, c)| c.send(msg.clone()).is_ok())
                     .collect::<HashMap<_, _>>();
+                println!("new: num clients after: {}", clients.len());
             }
             Message::Leave { id } => {
                 println!("{} left.", id);
+                println!("num clients before: {}", clients.len());
+                clients = clients.into_iter().filter(|(i, _)| *i != id).collect();
+                println!("num clients: {}", clients.len());
             }
         }
     }
 }
 
 fn client(id: i32, rw: Channel) -> Res<()> {
-    let msg = Message::New {
-        id,
-        val: String::from("Hello"),
-    };
-    rw.send(msg)?;
     loop {
+        let msg = Message::New {
+            id,
+            val: String::from("Hello"),
+        };
+        rw.send(msg)?;
         let msg = rw.recv()?;
         println!("{} got msg: {:?}", id, msg);
-        break;
+        let mut rng = thread_rng();
+        let f: f64 = rng.gen();
+        if f < 0.01 {
+            break;
+        }
     }
     rw.send(Message::Leave { id })?;
     Ok(())
