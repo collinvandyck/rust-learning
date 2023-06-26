@@ -1,5 +1,5 @@
 use std::{
-    io,
+    io::{self, Error},
     net::{TcpListener, TcpStream},
     sync::mpsc,
     thread,
@@ -43,7 +43,7 @@ impl Server {
             let _ = ttx.send("listener quit");
         });
         drop(tx);
-        let val = rx.recv();
+        let val = rx.recv().unwrap();
         println!("Server quitting: {:?}", val);
         Ok(())
     }
@@ -66,7 +66,7 @@ impl Server {
     }
 
     fn controller(&self) -> Result<()> {
-        Ok(())
+        Err(Error::new(io::ErrorKind::Other, "bloop"))
     }
 
     fn handle_client(&self, id: usize, stream: TcpStream) -> Result<()> {
