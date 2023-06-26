@@ -45,7 +45,7 @@ impl Server {
         Ok(())
     }
 
-    // listens for messages on rx
+    // listens for messages from connected clients
     fn listen_rx(&self) {
         loop {
             let val = self.rx.lock().unwrap().recv().unwrap();
@@ -58,6 +58,7 @@ impl Server {
         let writer = BufWriter::new(stream);
         let rx = self.handle_read(reader);
         let tx = self.handle_write(writer);
+        // loop, reading from the client sending to the server channel
         loop {
             let val = rx.recv().unwrap();
             self.tx.lock().unwrap().send(val).unwrap();
