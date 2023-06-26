@@ -37,12 +37,17 @@ impl Server {
         let listener = TcpListener::bind(addr)?;
         for stream in listener.incoming() {
             let stream = stream?;
-            let (etx, erx) = mpsc::channel();
             let msg = Message::Stream(stream);
-            let event = Event(msg, etx);
-            tx.send(event)?;
-            let _ = erx.recv()?;
+            let _ = self.send(tx.clone(), msg)?;
         }
+        Ok(())
+    }
+
+    fn send(&self, tx: Sender<Event>, msg: Message) -> Result<(), ServerError> {
+        let (etx, erx) = mpsc::channel();
+        let event = Event(msg, etx);
+        tx.send(event)?;
+        let _ = erx.recv()?;
         Ok(())
     }
 }
