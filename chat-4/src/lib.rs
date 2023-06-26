@@ -58,8 +58,8 @@ pub enum ServerError {
     #[error("tx chan closed")]
     TxClosed(#[from] RecvError),
 
-    #[error("rx chan closed")]
-    RxClosed(#[from] SendError<Result<(), RecvError>>),
+    #[error("could not send ack")]
+    AckFailed(#[from] SendError<Result<(), RecvError>>),
 }
 
 pub struct Event(Message, Sender<Result<(), RecvError>>);
