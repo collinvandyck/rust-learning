@@ -74,7 +74,7 @@ impl Server {
     fn listen(&self) -> Result<()> {
         let addr = format!("0.0.0.0:{}", self.port);
         let listener = TcpListener::bind(addr)?;
-        for (id, stream) in listener.incoming().enumerate().take(1) {
+        for (id, stream) in listener.incoming().enumerate() {
             let stream = stream?;
             let server = self.clone();
             thread::spawn(move || {
