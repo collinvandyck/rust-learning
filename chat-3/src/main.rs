@@ -1,6 +1,6 @@
 use core::fmt;
 use std::{
-    io,
+    io::{self, Error},
     net::{TcpListener, TcpStream},
     sync::mpsc,
     thread,
@@ -43,7 +43,7 @@ impl Server {
         drop(tx);
         let val = rx.recv().unwrap();
         println!("Server quitting: {}", val);
-        Ok(())
+        val.result()
     }
 
     fn listen(&self) -> Result<()> {
@@ -91,7 +91,7 @@ impl Client {
 
 #[derive(Debug)]
 enum Quit {
-    Ok(String),
+    Ok(String, Result<()>),
     Failure(String, Result<()>),
 }
 
@@ -99,8 +99,14 @@ impl Quit {
     fn from(name: &str, res: Result<()>) -> Quit {
         let name = name.to_string();
         match res {
-            Ok(_) => Quit::Ok(name),
+            Ok(_) => Quit::Ok(name, res),
             Err(_) => Quit::Failure(name, res),
+        }
+    }
+    fn result(self) -> Result<()> {
+        match self {
+            Quit::Ok(_, res) => res,
+            Quit::Failure(_, res) => res,
         }
     }
 }
@@ -108,7 +114,7 @@ impl Quit {
 impl fmt::Display for Quit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Quit::Ok(name) => write!(f, "{} quit", name),
+            Quit::Ok(name, _res) => write!(f, "{} quit", name),
             Quit::Failure(name, res) => write!(f, "{} failed: {:?}", name, res),
         }
     }
