@@ -1,5 +1,5 @@
 use std::{
-    io::{self},
+    io,
     net::{TcpListener, TcpStream},
     thread,
 };
@@ -33,13 +33,22 @@ impl Server {
     }
 
     fn handle(&self, id: usize, stream: TcpStream) {
-        let client = Client { id, stream };
+        let client = Client::new(id, stream);
         dbg!(client);
     }
 }
 
 #[derive(Debug)]
 struct Client {
-    id: usize,
-    stream: TcpStream,
+    _id: usize,
+    _stream: TcpStream,
+}
+
+impl Client {
+    fn new(id: usize, stream: TcpStream) -> Client {
+        Client {
+            _id: id,
+            _stream: stream,
+        }
+    }
 }
