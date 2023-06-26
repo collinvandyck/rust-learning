@@ -9,18 +9,26 @@ fn main() {
 
 #[derive(Debug)]
 enum Error {
-    SendFailure(String),
+    ChanClosed(String),
 }
 
 impl<T> From<SendError<T>> for Error {
     fn from(value: SendError<T>) -> Self {
         let s = value.to_string();
-        Error::SendFailure(s)
+        Error::ChanClosed(s)
+    }
+}
+
+impl From<RecvError> for Error {
+    fn from(value: RecvError) -> Self {
+        let s = value.to_string();
+        Error::ChanClosed(s)
     }
 }
 
 type Res<T> = Result<T, Error>;
 
+#[derive(Debug)]
 enum Message {
     Client { id: i32, tx: Sender<Message> },
 }
@@ -37,7 +45,7 @@ struct Receive {
 fn run() -> Res<()> {
     let (server_tx, server_rx) = mpsc::channel();
 
-    thread::spawn(move || {
+    let server = thread::spawn(move || {
         let _ = server(Receive { rx: server_rx });
     });
 
@@ -53,10 +61,15 @@ fn run() -> Res<()> {
             let _ = client(i, rw);
         });
     }
+    server.join().unwrap();
     Ok(())
 }
 
 fn server(rx: Receive) -> Res<()> {
+    loop {
+        let m = rx.rx.recv()?;
+        dbg!(m);
+    }
     Ok(())
 }
 
