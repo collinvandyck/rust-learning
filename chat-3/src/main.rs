@@ -107,7 +107,7 @@ impl Quit {
 impl fmt::Display for Quit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Quit::Ok(name) => write!(f, "{} quit unexpectedly", name),
+            Quit::Ok(name) => write!(f, "{} quit", name),
             Quit::Failure(name, res) => write!(f, "{} failed: {:?}", name, res),
         }
     }
