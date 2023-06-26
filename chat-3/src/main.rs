@@ -17,13 +17,15 @@ struct Server {
     port: u32,
 }
 
+#[derive(Debug)]
 enum Quit {
     Ok(String),
     Failure(String, Result<()>),
 }
 
 impl Quit {
-    fn from(name: String, res: Result<()>) -> Quit {
+    fn from(name: &str, res: Result<()>) -> Quit {
+        let name = name.to_string();
         match res {
             Ok(_) => Quit::Ok(name),
             Err(_) => Quit::Failure(name, res),
@@ -42,19 +44,15 @@ impl Server {
         let server = self.clone();
         let ttx = tx.clone();
         thread::spawn(move || {
-            if let Err(err) = server.controller() {
-                println!("controller error: {}", err)
-            }
-            let _ = ttx.send("controller quit");
+            let res = server.controller();
+            let _ = ttx.send(Quit::from("controller", res));
         });
 
         let server = self.clone();
         let ttx = tx.clone();
         thread::spawn(move || {
-            if let Err(err) = server.listen() {
-                println!("listener error: {}", err)
-            }
-            let _ = ttx.send("listener quit");
+            let res = server.listen();
+            let _ = ttx.send(Quit::from("listener", res));
         });
         drop(tx);
         let val = rx.recv().unwrap();
