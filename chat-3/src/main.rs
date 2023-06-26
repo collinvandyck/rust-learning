@@ -1,3 +1,4 @@
+use core::fmt;
 use std::{
     io::{self, Error},
     net::{TcpListener, TcpStream},
@@ -15,22 +16,6 @@ type Result<T> = io::Result<T>;
 #[derive(Clone)]
 struct Server {
     port: u32,
-}
-
-#[derive(Debug)]
-enum Quit {
-    Ok(String),
-    Failure(String, Result<()>),
-}
-
-impl Quit {
-    fn from(name: &str, res: Result<()>) -> Quit {
-        let name = name.to_string();
-        match res {
-            Ok(_) => Quit::Ok(name),
-            Err(_) => Quit::Failure(name, res),
-        }
-    }
 }
 
 impl Server {
@@ -56,7 +41,7 @@ impl Server {
         });
         drop(tx);
         let val = rx.recv().unwrap();
-        println!("Server quitting: {:?}", val);
+        println!("Server quitting: {}", val);
         Ok(())
     }
 
@@ -78,7 +63,7 @@ impl Server {
     }
 
     fn controller(&self) -> Result<()> {
-        Err(Error::new(io::ErrorKind::Other, "bloop"))
+        Ok(())
     }
 
     fn handle_client(&self, id: usize, stream: TcpStream) -> Result<()> {
@@ -99,6 +84,31 @@ impl Client {
         Client {
             _id: id,
             _stream: stream,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum Quit {
+    Ok(String),
+    Failure(String, Result<()>),
+}
+
+impl Quit {
+    fn from(name: &str, res: Result<()>) -> Quit {
+        let name = name.to_string();
+        match res {
+            Ok(_) => Quit::Ok(name),
+            Err(_) => Quit::Failure(name, res),
+        }
+    }
+}
+
+impl fmt::Display for Quit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Quit::Ok(name) => write!(f, "{} quit unexpectedly", name),
+            Quit::Failure(name, res) => write!(f, "{} failed: {:?}", name, res),
         }
     }
 }
