@@ -107,18 +107,34 @@ fn server(rw: Channel) -> Res<()> {
                     id,
                     val: val.to_string(),
                 };
-                println!("new: num clients before: {}", clients.len());
+                let before = clients.len();
                 clients = clients
                     .into_iter()
-                    .filter(|(_, c)| c.send(msg.clone()).is_ok())
+                    .filter(|(i, c)| {
+                        let ok = c.send(msg.clone()).is_ok();
+                        if !ok {
+                            println!("server: client {} send failed.removing.", i);
+                        }
+                        ok
+                    })
                     .collect::<HashMap<_, _>>();
-                println!("new: num clients after: {}", clients.len());
+                let after = clients.len();
+                println!("after new: num clients {} -> {}.", before, after);
             }
             Message::Leave { id } => {
-                println!("{} left.", id);
-                println!("num clients before: {}", clients.len());
-                clients = clients.into_iter().filter(|(i, _)| *i != id).collect();
-                println!("num clients: {}", clients.len());
+                let before = clients.len();
+                clients = clients
+                    .into_iter()
+                    .filter(|(i, _)| {
+                        let matched = *i != id;
+                        if !matched {
+                            println!("server: client {} left.removing.", id);
+                        }
+                        matched
+                    })
+                    .collect();
+                let after = clients.len();
+                println!("after leave: num clients {} -> {}.", before, after);
             }
         }
     }
@@ -135,10 +151,11 @@ fn client(id: i32, rw: Channel) -> Res<()> {
         println!("{} got msg: {:?}", id, msg);
         let mut rng = thread_rng();
         let f: f64 = rng.gen();
-        if f < 0.01 {
+        if f < 0.5 {
             break;
         }
     }
     rw.send(Message::Leave { id })?;
+    println!("client: {} left.", id);
     Ok(())
 }
