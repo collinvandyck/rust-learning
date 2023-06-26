@@ -10,6 +10,7 @@ fn main() {
 #[derive(Debug)]
 enum Error {
     ChanClosed(String),
+    Stopped(),
 }
 
 impl<T> From<SendError<T>> for Error {
@@ -61,8 +62,8 @@ fn run() -> Res<()> {
             let _ = client(i, rw);
         });
     }
-    server.join().unwrap();
-    Ok(())
+    let res = server.join();
+    res.map_err(|_| Error::Stopped())
 }
 
 fn server(rx: Receive) -> Res<()> {
