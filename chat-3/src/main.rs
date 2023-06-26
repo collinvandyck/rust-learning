@@ -4,7 +4,7 @@ use std::{
     io::{self, BufRead, BufReader, BufWriter, Error, Write},
     net::{TcpListener, TcpStream},
     sync::{
-        mpsc::{self, Receiver, Sender},
+        mpsc::{self, Receiver, RecvError, Sender},
         Arc, Mutex,
     },
     thread,
@@ -196,6 +196,7 @@ impl Client {
 
     fn write(&self) -> Result<()> {
         loop {
+            let event = self.rx.lock().unwrap().recv();
             let event = self.rx.lock().unwrap().recv().unwrap();
             if let Event::Message { client, val } = event {
                 let msg = format!("{}: {}\n", client, val);
