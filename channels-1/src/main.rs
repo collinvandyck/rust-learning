@@ -1,6 +1,4 @@
 use std::{
-    collections::HashMap,
-    fmt::format,
     sync::mpsc::{self, Receiver, RecvError, SendError, Sender},
     thread, vec,
 };
