@@ -1,6 +1,7 @@
 use std::{
     io,
     net::{TcpListener, TcpStream},
+    sync::mpsc,
     thread,
 };
 
@@ -22,9 +23,35 @@ impl Server {
     }
 
     fn start(&self) -> Result<()> {
+        let (tx, rx) = mpsc::channel();
+
+        let server = self.clone();
+        let ttx = tx.clone();
+        thread::spawn(move || {
+            if let Err(err) = server.controller() {
+                println!("controller error: {}", err)
+            }
+            let _ = ttx.send("controller quit");
+        });
+
+        let server = self.clone();
+        let ttx = tx.clone();
+        thread::spawn(move || {
+            if let Err(err) = server.listen() {
+                println!("listener error: {}", err)
+            }
+            let _ = ttx.send("listener quit");
+        });
+
+        let val = rx.recv();
+        println!("Server quitting: {:?}", val);
+        Ok(())
+    }
+
+    fn listen(&self) -> Result<()> {
         let addr = format!("0.0.0.0:{}", self.port);
         let listener = TcpListener::bind(addr)?;
-        for (id, stream) in listener.incoming().enumerate() {
+        for (id, stream) in listener.incoming().enumerate().take(1) {
             let stream = stream?;
             let server = self.clone();
             thread::spawn(move || {
