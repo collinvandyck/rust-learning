@@ -17,6 +17,7 @@ struct Server {
     listener: Arc<TcpListener>,
     rx: Arc<Mutex<Receiver<String>>>,
     tx: Arc<Mutex<SyncSender<String>>>,
+    clients: Arc<Mutex<Vec<SyncSender<String>>>>,
 }
 
 impl Server {
@@ -28,8 +29,14 @@ impl Server {
         let (tx, rx) = mpsc::sync_channel(1);
         let tx: Arc<Mutex<SyncSender<String>>> = Arc::new(Mutex::new(tx));
         let rx: Arc<Mutex<Receiver<String>>> = Arc::new(Mutex::new(rx));
+        let clients = Arc::new(Mutex::new(vec![]));
 
-        let server = Server { listener, rx, tx };
+        let server = Server {
+            listener,
+            rx,
+            tx,
+            clients,
+        };
         server.run()?;
         Ok(server)
     }
@@ -45,11 +52,17 @@ impl Server {
         Ok(())
     }
 
-    // listens for messages from connected clients
+    // listens for messages from connected clients and broadcasts
+    // them to the other clients.
     fn listen_rx(&self) {
         loop {
             let val = self.rx.lock().unwrap().recv().unwrap();
             println!("Got val: {}", val);
+            let mut guard = self.clients.lock().unwrap();
+            let clients = &mut *guard;
+            for client in clients {
+                client.send(val.to_string()).unwrap();
+            }
         }
     }
 
@@ -58,6 +71,10 @@ impl Server {
         let writer = BufWriter::new(stream);
         let rx = self.handle_read(reader);
         let tx = self.handle_write(writer);
+
+        // add the tx to the list of clients
+        self.clients.lock().unwrap().push(tx);
+
         // loop, reading from the client sending to the server channel
         loop {
             let val = rx.recv().unwrap();
