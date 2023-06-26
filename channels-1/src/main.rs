@@ -47,10 +47,10 @@ impl Channel {
             rx: Some(rx),
         }
     }
-    fn from_tx(tx: Sender<Message>) -> Self {
+    fn from_rx(rx: Receiver<Message>) -> Self {
         Self {
-            tx: Some(tx),
-            rx: None,
+            tx: None,
+            rx: Some(rx),
         }
     }
     fn send(&self, msg: Message) -> Res<()> {
@@ -67,14 +67,10 @@ impl Channel {
     }
 }
 
-struct Receive {
-    rx: Receiver<Message>,
-}
-
 fn run() -> Res<()> {
     let (server_tx, server_rx) = mpsc::channel();
     let server = thread::spawn(move || {
-        let _ = server(Receive { rx: server_rx });
+        let _ = server(Channel::from_rx(server_rx));
     });
     for i in 1..5 {
         let tx = server_tx.clone();
@@ -92,10 +88,10 @@ fn run() -> Res<()> {
     res.map_err(|_| Error::Stopped())
 }
 
-fn server(rx: Receive) -> Res<()> {
+fn server(rw: Channel) -> Res<()> {
     let mut clients = vec![];
     loop {
-        let msg = rx.rx.recv()?;
+        let msg = rw.recv()?;
         match msg {
             Message::Register { id, tx } => {
                 println!("New client with id: {}", id);
