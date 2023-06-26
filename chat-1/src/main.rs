@@ -100,8 +100,11 @@ impl Server {
     fn handle_write(&self, mut writer: BufWriter<TcpStream>) -> SyncSender<String> {
         let (tx, rx): (SyncSender<String>, Receiver<String>) = mpsc::sync_channel(1);
         thread::spawn(move || loop {
-            let val = match rx.try_recv() {
-                Ok(val) => val,
+            let val = match rx.recv() {
+                Ok(val) => {
+                    println!("Handler got broadcast: {}", val);
+                    val
+                }
                 Err(_) => break,
             };
             if writer.write(val.as_bytes()).is_err() {
