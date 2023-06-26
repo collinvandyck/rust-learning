@@ -27,14 +27,25 @@ impl Server {
         for (id, stream) in listener.incoming().enumerate() {
             let stream = stream?;
             let server = self.clone();
-            thread::spawn(move || server.handle_client(id, stream));
+            thread::spawn(move || {
+                if let Err(err) = server.handle_client(id, stream) {
+                    println!("client {} error: {}", id, err)
+                } else {
+                    println!("client {} disconnected", id)
+                }
+            });
         }
         Ok(())
     }
 
-    fn handle_client(&self, id: usize, stream: TcpStream) {
+    fn controller(&self) -> Result<()> {
+        Ok(())
+    }
+
+    fn handle_client(&self, id: usize, stream: TcpStream) -> Result<()> {
         let client = Client::new(id, stream);
         dbg!(client);
+        Ok(())
     }
 }
 
