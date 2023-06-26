@@ -35,9 +35,36 @@ enum Message {
     New { id: i32, val: String },
 }
 
-struct SendReceive {
-    tx: Sender<Message>,
-    rx: Receiver<Message>,
+struct Channel {
+    tx: Option<Sender<Message>>,
+    rx: Option<Receiver<Message>>,
+}
+
+impl Channel {
+    fn from_tx_rx(tx: Sender<Message>, rx: Receiver<Message>) -> Self {
+        Self {
+            tx: Some(tx),
+            rx: Some(rx),
+        }
+    }
+    fn from_tx(tx: Sender<Message>) -> Self {
+        Self {
+            tx: Some(tx),
+            rx: None,
+        }
+    }
+    fn send(&self, msg: Message) -> Res<()> {
+        match &self.tx {
+            Some(tx) => Ok(tx.send(msg)?),
+            None => Ok(()),
+        }
+    }
+    fn recv(&self) -> Res<Message> {
+        match &self.rx {
+            Some(rx) => Ok(rx.recv()?),
+            None => Err(Error::ChanClosed("Channel closed".to_string())),
+        }
+    }
 }
 
 struct Receive {
@@ -56,7 +83,7 @@ fn run() -> Res<()> {
             id: i,
             tx: client_tx,
         })?;
-        let rw = SendReceive { tx, rx };
+        let rw = Channel::from_tx_rx(tx, rx);
         thread::spawn(move || {
             let _ = client(i, rw);
         });
@@ -89,14 +116,14 @@ fn server(rx: Receive) -> Res<()> {
     }
 }
 
-fn client(id: i32, rw: SendReceive) -> Res<()> {
+fn client(id: i32, rw: Channel) -> Res<()> {
     let msg = Message::New {
         id,
         val: String::from("Hello"),
     };
-    rw.tx.send(msg)?;
+    rw.send(msg)?;
     loop {
-        let msg = rw.rx.recv()?;
+        let msg = rw.recv()?;
         println!("{} got msg: {:?}", id, msg);
     }
 }
