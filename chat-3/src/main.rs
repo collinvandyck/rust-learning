@@ -1,6 +1,6 @@
 use core::fmt;
 use std::{
-    io,
+    io::{self, Error},
     net::{TcpListener, TcpStream},
     sync::{
         mpsc::{self, Receiver, Sender},
@@ -14,12 +14,20 @@ fn main() {
     s.start().expect("failure");
 }
 
-type Result<T> = io::Result<T>;
+type Result<T> = std::result::Result<T, Error>;
 
 enum Event {
-    NewClient { client: usize },
-    Message { client: usize, val: String },
-    ClientQuit { client: usize },
+    NewClient {
+        client: usize,
+        outgoing: OutgoingEvents,
+    },
+    Message {
+        client: usize,
+        val: String,
+    },
+    ClientQuit {
+        client: usize,
+    },
 }
 
 type IncomingEvents = Arc<Mutex<Receiver<Event>>>;
@@ -28,20 +36,16 @@ type OutgoingEvents = Arc<Mutex<Sender<Event>>>;
 #[derive(Clone)]
 struct Server {
     port: u32,
-    outgoing: OutgoingEvents,
-    incoming: IncomingEvents,
+    tx: OutgoingEvents,
+    rx: IncomingEvents,
 }
 
 impl Server {
     fn new(port: u32) -> Server {
         let (tx, rx) = mpsc::channel();
-        let outgoing = Arc::new(Mutex::new(tx));
-        let incoming = Arc::new(Mutex::new(rx));
-        Server {
-            port,
-            outgoing,
-            incoming,
-        }
+        let tx = Arc::new(Mutex::new(tx));
+        let rx = Arc::new(Mutex::new(rx));
+        Server { port, tx, rx }
     }
 
     fn start(&self) -> Result<()> {
@@ -85,11 +89,45 @@ impl Server {
     }
 
     fn controller(&self) -> Result<()> {
-        Ok(())
+        loop {
+            let event = match self.rx.lock().unwrap().recv() {
+                Ok(event) => event,
+                Err(_) => return Result::Err(Error::new(io::ErrorKind::Other, "chan closed")),
+            };
+            match event {
+                Event::NewClient {
+                    client,
+                    outgoing: _,
+                } => {
+                    println!("Got new client with id: {}", client)
+                }
+                Event::Message { client, val } => {
+                    println!("New message from client: {}: {}", client, val)
+                }
+                Event::ClientQuit { client } => {
+                    println!("Client with id: {} quit", client)
+                }
+            }
+        }
+    }
+
+    fn send(&self, event: Event) -> Result<()> {
+        match self.tx.lock().unwrap().send(event) {
+            Ok(()) => Ok(()),
+            Err(_) => Result::Err(Error::new(io::ErrorKind::Other, "send failed")),
+        }
     }
 
     fn handle_client(&self, id: usize, stream: TcpStream) -> Result<()> {
-        let client = Client::new(id, stream);
+        let (tx, rx) = mpsc::channel();
+        let outgoing = Arc::clone(&self.tx);
+        let incoming = Arc::new(Mutex::new(rx));
+        let client = Client::new(id, stream, outgoing, incoming);
+        let tx = Arc::new(Mutex::new(tx));
+        self.send(Event::NewClient {
+            client: id,
+            outgoing: tx,
+        })?;
         dbg!(client);
         Ok(())
     }
@@ -101,7 +139,7 @@ struct Client {
 }
 
 impl Client {
-    fn new(id: usize, stream: TcpStream) -> Client {
+    fn new(id: usize, stream: TcpStream, tx: OutgoingEvents, rx: IncomingEvents) -> Client {
         Client { id }
     }
 }
