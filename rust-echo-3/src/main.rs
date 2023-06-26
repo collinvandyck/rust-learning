@@ -32,5 +32,14 @@ impl Server {
         Ok(())
     }
 
-    fn handle(&self, id: usize, stream: TcpStream) {}
+    fn handle(&self, id: usize, stream: TcpStream) {
+        let client = Client { id, stream };
+        dbg!(client);
+    }
+}
+
+#[derive(Debug)]
+struct Client {
+    id: usize,
+    stream: TcpStream,
 }
