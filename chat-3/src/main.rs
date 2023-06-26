@@ -17,6 +17,20 @@ struct Server {
     port: u32,
 }
 
+enum Quit {
+    Ok(String),
+    Failure(String, Result<()>),
+}
+
+impl Quit {
+    fn from(name: String, res: Result<()>) -> Quit {
+        match res {
+            Ok(_) => Quit::Ok(name),
+            Err(_) => Quit::Failure(name, res),
+        }
+    }
+}
+
 impl Server {
     fn new(port: u32) -> Server {
         Server { port }
