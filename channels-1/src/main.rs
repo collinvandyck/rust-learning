@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     sync::mpsc::{self, Receiver, RecvError, SendError, Sender},
     thread, vec,
 };
@@ -33,6 +34,7 @@ type Res<T> = Result<T, Error>;
 enum Message {
     Register { id: i32, tx: Sender<Message> },
     New { id: i32, val: String },
+    Leave { id: i32 },
 }
 
 struct Channel {
@@ -89,13 +91,13 @@ fn run() -> Res<()> {
 }
 
 fn server(rw: Channel) -> Res<()> {
-    let mut clients = vec![];
+    let mut clients = HashMap::new();
     loop {
         let msg = rw.recv()?;
         match msg {
             Message::Register { id, tx } => {
                 println!("New client with id: {}", id);
-                clients.push(tx);
+                clients.insert(id, tx);
             }
             Message::New { id, val } => {
                 println!("{} sent: {}", id, val);
@@ -105,8 +107,11 @@ fn server(rw: Channel) -> Res<()> {
                 };
                 clients = clients
                     .into_iter()
-                    .filter(|c| c.send(msg.clone()).is_ok())
-                    .collect::<Vec<_>>();
+                    .filter(|(_, c)| c.send(msg.clone()).is_ok())
+                    .collect::<HashMap<_, _>>();
+            }
+            Message::Leave { id } => {
+                println!("{} left.", id);
             }
         }
     }
@@ -121,5 +126,8 @@ fn client(id: i32, rw: Channel) -> Res<()> {
     loop {
         let msg = rw.recv()?;
         println!("{} got msg: {:?}", id, msg);
+        break;
     }
+    rw.send(Message::Leave { id })?;
+    Ok(())
 }
