@@ -1,4 +1,5 @@
 use std::{
+    fmt::{Display, Formatter},
     io,
     net::{TcpListener, TcpStream},
     sync::mpsc::{self, Receiver, RecvError, SendError, Sender},
@@ -36,19 +37,18 @@ impl Server {
 
     // the main control loop
     pub fn control(&self, tx: Sender<Event>, events: Receiver<Event>) -> Result<(), ServerError> {
+        let mut state = State::new();
         loop {
+            println!("Waiting for event, state: {}", state);
             let Event(mut msg, reply) = events.recv()?;
+            reply.send(Ok(()))?;
             msg = dbg!(msg);
             match msg {
                 Message::Conn(id, stream) => {
-                    // ack that we got the event
-                    reply.send(Ok(()))?;
                     let tx = tx.clone();
-                    match self.handle_conn(stream, tx) {
-                        Ok(rx) => {}
-                        Err(e) => {
-                            println!("Error handling conn: {}", e);
-                        }
+                    match self.new_client(id, stream, tx) {
+                        Ok(client) => state.add_client(client),
+                        Err(e) => println!("Error handling conn: {}", e),
                     }
                 }
             }
@@ -57,12 +57,20 @@ impl Server {
 
     // handles an incoming connection. tx is used to send messages back to the control loop.
     // it should return a receiver<Event> that is used to send messages to the client.
-    fn handle_conn(
+    fn new_client(
         &self,
-        _stream: TcpStream,
-        _tx: Sender<Event>,
-    ) -> Result<Receiver<Event>, ServerError> {
-        Err(ServerError::NewClientFailure)
+        id: usize,
+        stream: TcpStream,
+        control: Sender<Event>,
+    ) -> Result<Client, ServerError> {
+        let (tx, rx) = mpsc::channel();
+        let client = Client {
+            id,
+            control,
+            tx,
+            rx,
+        };
+        Ok(client)
     }
 
     // sends a message to the sender, and waits for an ack. an error will be returned
@@ -77,6 +85,34 @@ impl Server {
         println!("Received ack");
         Ok(())
     }
+}
+
+struct State {
+    clients: Vec<Client>,
+}
+
+impl State {
+    fn new() -> Self {
+        let clients = Vec::new();
+        Self { clients }
+    }
+
+    fn add_client(&mut self, client: Client) {
+        self.clients.push(client);
+    }
+}
+
+impl Display for State {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "State {{ clients: {} }}", self.clients.len())
+    }
+}
+
+struct Client {
+    id: usize,              // the id
+    control: Sender<Event>, // send events to the control loop
+    tx: Sender<Event>,      // send messages to the client
+    rx: Receiver<Event>,    // client will receive message from the control loop
 }
 
 #[derive(Error, Debug)]
