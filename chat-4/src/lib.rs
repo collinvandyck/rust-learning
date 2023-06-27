@@ -1,7 +1,7 @@
 use std::{
     io,
     net::{TcpListener, TcpStream},
-    sync::mpsc::{self, RecvError, SendError, Sender},
+    sync::mpsc::{self, Receiver, RecvError, SendError, Sender},
     thread,
 };
 use thiserror::Error;
@@ -21,18 +21,8 @@ impl Server {
         let (tx, rx) = mpsc::channel();
 
         let server = self.clone();
-        let tx1 = tx.clone();
-        thread::spawn(move || server.accept(tx1));
+        thread::spawn(move || server.control(rx));
 
-        drop(tx);
-        loop {
-            let Event(msg, sender) = rx.recv()?;
-            dbg!(msg);
-            sender.send(Ok(()))?;
-        }
-    }
-
-    pub fn accept(&self, tx: Sender<Event>) -> Result<(), ServerError> {
         let addr = format!("0.0.0.0:{}", self.port);
         let listener = TcpListener::bind(addr)?;
         for stream in listener.incoming() {
@@ -41,6 +31,14 @@ impl Server {
             let _ = self.send(tx.clone(), msg)?;
         }
         Ok(())
+    }
+
+    pub fn control(&self, rx: Receiver<Event>) -> Result<(), ServerError> {
+        loop {
+            let Event(msg, sender) = rx.recv()?;
+            dbg!(msg);
+            sender.send(Ok(()))?;
+        }
     }
 
     fn send(&self, tx: Sender<Event>, msg: Message) -> Result<(), ServerError> {
