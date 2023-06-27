@@ -109,41 +109,47 @@ impl Client {
         let mut writer = BufWriter::new(stream);
 
         // spawn the thing that will read messages from the control loop
-        thread::spawn(move || loop {
-            if let Ok(Event(msg, reply)) = incoming.recv() {
-                if reply.send(Ok(())).is_err() {
+        thread::spawn(move || {
+            loop {
+                if let Ok(Event(msg, reply)) = incoming.recv() {
+                    if reply.send(Ok(())).is_err() {
+                        break;
+                    }
+                    match msg {
+                        Message::Chat(id, line) => {
+                            let msg = format!("{}: {}\n", id, line);
+                            if writer
+                                .write(msg.as_bytes())
+                                .and_then(|_| writer.flush())
+                                .is_err()
+                            {
+                                break;
+                            }
+                            println!("Sending chat message to {}: {}", id, line);
+                        }
+                        _ => {}
+                    }
+                } else {
                     break;
                 }
-                match msg {
-                    Message::Chat(id, line) => {
-                        let msg = format!("{}: {}\n", id, line);
-                        if writer
-                            .write(msg.as_bytes())
-                            .and_then(|_| writer.flush())
-                            .is_err()
-                        {
-                            break;
-                        }
-                        println!("Sending chat message to {}: {}", id, line);
-                    }
-                    _ => {}
-                }
-            } else {
-                break;
             }
+            println!("Client {} read loop exiting", id);
         });
 
         // spawn the thing that will read from the tcp socket
         let read_messages = control.clone();
-        thread::spawn(move || loop {
-            let mut buf = String::new();
-            if reader.read_line(&mut buf).is_err() {
-                break;
+        thread::spawn(move || {
+            loop {
+                let mut buf = String::new();
+                if reader.read_line(&mut buf).is_err() {
+                    break;
+                }
+                buf = buf.trim().to_string();
+                if send_event(&read_messages, Message::Chat(id, buf)).is_err() {
+                    break;
+                }
             }
-            buf = buf.trim().to_string();
-            if send_event(&read_messages, Message::Chat(id, buf)).is_err() {
-                break;
-            }
+            println!("Client {} write loop exiting", id);
         });
 
         Ok(Client { id, control, tx })
