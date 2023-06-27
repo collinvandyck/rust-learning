@@ -1,5 +1,4 @@
 use std::{
-    fmt::{format, Display, Formatter},
     io::{self, BufRead, BufReader, BufWriter, Write},
     net::{TcpListener, TcpStream},
     sync::mpsc::{self, Receiver, RecvError, SendError, Sender},
@@ -132,7 +131,7 @@ impl Client {
                     break;
                 }
             }
-            println!("Client {} read loop exiting", id);
+            println!("Client {} write loop exiting", id);
         });
 
         // spawn the thing that will read from the tcp socket
@@ -148,7 +147,7 @@ impl Client {
                     break;
                 }
             }
-            println!("Client {} write loop exiting", id);
+            println!("Client {} read loop exiting", id);
         });
         Ok(Client { id, tx })
     }
