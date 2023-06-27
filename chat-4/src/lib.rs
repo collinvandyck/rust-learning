@@ -135,7 +135,6 @@ impl Client {
         });
 
         // spawn the thing that will read from the tcp socket
-        let read_messages = control.clone();
         thread::spawn(move || {
             loop {
                 let mut buf = String::new();
@@ -143,7 +142,7 @@ impl Client {
                     break;
                 }
                 buf = buf.trim().to_string();
-                if send_event(&read_messages, Message::Chat(id, buf)).is_err() {
+                if send_event(&control, Message::Chat(id, buf)).is_err() {
                     break;
                 }
             }
