@@ -30,7 +30,7 @@ impl Server {
         for (id, stream) in listener.incoming().enumerate() {
             let stream = stream?;
             let msg = Message::Conn(id, stream);
-            let _ = self.send(tx.clone(), msg)?;
+            let _ = send_event(tx.clone(), msg)?;
         }
         Ok(())
     }
@@ -67,19 +67,19 @@ impl Server {
         let client = Client::new(stream, id, control, tx, rx);
         Ok(client)
     }
+}
 
-    // sends a message to the sender, and waits for an ack. an error will be returned
-    // if the send or the ack fails.
-    fn send(&self, tx: Sender<Event>, msg: Message) -> Result<(), ServerError> {
-        let (etx, erx) = mpsc::channel();
-        let event = Event(msg, etx);
-        println!("Sending event");
-        tx.send(event)?;
-        println!("Receiving ack");
-        let _ = erx.recv()?;
-        println!("Received ack");
-        Ok(())
-    }
+// sends a message to the sender, and waits for an ack. an error will be returned
+// if the send or the ack fails.
+fn send_event(tx: Sender<Event>, msg: Message) -> Result<(), ServerError> {
+    let (etx, erx) = mpsc::channel();
+    let event = Event(msg, etx);
+    println!("Sending event");
+    tx.send(event)?;
+    println!("Receiving ack");
+    let _ = erx.recv()?;
+    println!("Received ack");
+    Ok(())
 }
 
 struct State {
