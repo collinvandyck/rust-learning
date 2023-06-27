@@ -1,6 +1,6 @@
 use std::{
-    fmt::{Display, Formatter},
-    io::{self, BufRead, BufReader, BufWriter},
+    fmt::{format, Display, Formatter},
+    io::{self, BufRead, BufReader, BufWriter, Write},
     net::{TcpListener, TcpStream},
     sync::mpsc::{self, Receiver, RecvError, SendError, Sender},
     thread,
@@ -121,7 +121,7 @@ impl Client {
         incoming: Receiver<Event>,
     ) -> Result<Client, ServerError> {
         let mut reader = BufReader::new(stream.try_clone()?);
-        let writer = BufWriter::new(stream);
+        let mut writer = BufWriter::new(stream);
 
         // spawn the thing that will read messages from the control loop
         thread::spawn(move || loop {
@@ -131,6 +131,14 @@ impl Client {
                 }
                 match msg {
                     Message::Chat(id, line) => {
+                        let msg = format!("{}: {}\n", id, line);
+                        if writer
+                            .write(msg.as_bytes())
+                            .and_then(|_| writer.flush())
+                            .is_err()
+                        {
+                            break;
+                        }
                         println!("Sending chat message to {}: {}", id, line);
                     }
                     _ => {}
