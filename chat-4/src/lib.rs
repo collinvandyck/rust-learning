@@ -37,9 +37,8 @@ impl Server {
 
     // the main control loop
     pub fn control(&self, tx: Sender<Event>, events: Receiver<Event>) -> Result<(), ServerError> {
-        let mut state = State::new();
+        let mut state: Vec<Client> = vec![];
         loop {
-            println!("Waiting for event, state: {}", state);
             let Event(mut msg, reply) = events.recv()?;
             reply.send(Ok(()))?;
             msg = dbg!(msg);
@@ -47,12 +46,19 @@ impl Server {
                 Message::Conn(id, stream) => {
                     let tx = tx.clone();
                     match self.new_client(id, stream, tx) {
-                        Ok(client) => state.add_client(client),
+                        Ok(client) => state.push(client),
                         Err(e) => println!("New client error: {}", e),
                     }
                 }
                 Message::Chat(id, line) => {
                     println!("Chat message from {}: {}", id, line);
+                    state.iter().for_each(|c| {
+                        let msg = Message::Chat(id, line.clone());
+                        let tx = c.tx.clone();
+                        if send_event(&tx, msg).is_err() {
+                            println!("Failed to send chat message to {}", c.id);
+                        }
+                    });
                 }
             }
         }
@@ -83,27 +89,6 @@ fn send_event(tx: &Sender<Event>, msg: Message) -> Result<(), ServerError> {
     let _ = erx.recv()?;
     println!("Received ack");
     Ok(())
-}
-
-struct State {
-    clients: Vec<Client>,
-}
-
-impl State {
-    fn new() -> Self {
-        let clients = Vec::new();
-        Self { clients }
-    }
-
-    fn add_client(&mut self, client: Client) {
-        self.clients.push(client);
-    }
-}
-
-impl Display for State {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "State {{ clients: {} }}", self.clients.len())
-    }
 }
 
 struct Client {
