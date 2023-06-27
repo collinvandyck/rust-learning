@@ -92,9 +92,8 @@ fn send_event(tx: &Sender<Event>, msg: Message) -> Result<(), ServerError> {
 }
 
 struct Client {
-    id: usize,              // the id
-    control: Sender<Event>, // send events to the control loop
-    tx: Sender<Event>,      // send messages to the client
+    id: usize,         // the id
+    tx: Sender<Event>, // send messages to the client
 }
 
 impl Client {
@@ -151,8 +150,7 @@ impl Client {
             }
             println!("Client {} write loop exiting", id);
         });
-
-        Ok(Client { id, control, tx })
+        Ok(Client { id, tx })
     }
 }
 
