@@ -21,7 +21,8 @@ impl Server {
         let (tx, rx) = mpsc::channel();
 
         let server = self.clone();
-        thread::spawn(move || server.control(rx));
+        let tx2 = tx.clone();
+        thread::spawn(move || server.control(tx2, rx));
 
         let addr = format!("0.0.0.0:{}", self.port);
         let listener = TcpListener::bind(addr)?;
@@ -34,9 +35,9 @@ impl Server {
     }
 
     // the main control loop
-    pub fn control(&self, rx: Receiver<Event>) -> Result<(), ServerError> {
+    pub fn control(&self, _tx: Sender<Event>, events: Receiver<Event>) -> Result<(), ServerError> {
         loop {
-            let Event(msg, sender) = rx.recv()?;
+            let Event(msg, sender) = events.recv()?;
             dbg!(msg);
             sender.send(Ok(()))?;
         }
