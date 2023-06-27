@@ -1,6 +1,6 @@
 use std::{
     fmt::{Display, Formatter},
-    io,
+    io::{self, BufRead, BufReader, BufWriter},
     net::{TcpListener, TcpStream},
     sync::mpsc::{self, Receiver, RecvError, SendError, Sender},
     thread,
@@ -30,7 +30,7 @@ impl Server {
         for (id, stream) in listener.incoming().enumerate() {
             let stream = stream?;
             let msg = Message::Conn(id, stream);
-            let _ = send_event(tx.clone(), msg)?;
+            let _ = send_event(&tx.clone(), msg)?;
         }
         Ok(())
     }
@@ -51,6 +51,9 @@ impl Server {
                         Err(e) => println!("New client error: {}", e),
                     }
                 }
+                Message::Chat(id, line) => {
+                    println!("Chat message from {}: {}", id, line);
+                }
             }
         }
     }
@@ -64,14 +67,14 @@ impl Server {
         control: Sender<Event>,
     ) -> Result<Client, ServerError> {
         let (tx, rx) = mpsc::channel();
-        let client = Client::new(stream, id, control, tx, rx);
+        let client = Client::new(stream, id, control, tx, rx)?;
         Ok(client)
     }
 }
 
 // sends a message to the sender, and waits for an ack. an error will be returned
 // if the send or the ack fails.
-fn send_event(tx: Sender<Event>, msg: Message) -> Result<(), ServerError> {
+fn send_event(tx: &Sender<Event>, msg: Message) -> Result<(), ServerError> {
     let (etx, erx) = mpsc::channel();
     let event = Event(msg, etx);
     println!("Sending event");
@@ -107,7 +110,6 @@ struct Client {
     id: usize,              // the id
     control: Sender<Event>, // send events to the control loop
     tx: Sender<Event>,      // send messages to the client
-    rx: Receiver<Event>,    // client will receive message from the control loop
 }
 
 impl Client {
@@ -116,14 +118,42 @@ impl Client {
         id: usize,
         control: Sender<Event>,
         tx: Sender<Event>,
-        rx: Receiver<Event>,
-    ) -> Self {
-        Self {
-            id,
-            control,
-            tx,
-            rx,
-        }
+        incoming: Receiver<Event>,
+    ) -> Result<Client, ServerError> {
+        let mut reader = BufReader::new(stream.try_clone()?);
+        let writer = BufWriter::new(stream);
+
+        // spawn the thing that will read messages from the control loop
+        thread::spawn(move || loop {
+            if let Ok(Event(msg, reply)) = incoming.recv() {
+                if reply.send(Ok(())).is_err() {
+                    break;
+                }
+                match msg {
+                    Message::Chat(id, line) => {
+                        println!("Sending chat message to {}: {}", id, line);
+                    }
+                    _ => {}
+                }
+            } else {
+                break;
+            }
+        });
+
+        // spawn the thing that will read from the tcp socket
+        let read_messages = control.clone();
+        thread::spawn(move || loop {
+            let mut buf = String::new();
+            if reader.read_line(&mut buf).is_err() {
+                break;
+            }
+            buf = buf.trim().to_string();
+            if send_event(&read_messages, Message::Chat(id, buf)).is_err() {
+                break;
+            }
+        });
+
+        Ok(Client { id, control, tx })
     }
 }
 
@@ -153,4 +183,5 @@ pub struct Event(Message, Sender<Result<(), RecvError>>);
 #[derive(Debug)]
 pub enum Message {
     Conn(usize, TcpStream),
+    Chat(usize, String),
 }
