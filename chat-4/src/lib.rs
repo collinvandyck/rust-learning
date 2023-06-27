@@ -16,7 +16,7 @@ impl Server {
         Self { port }
     }
 
-    // the main control thread
+    // starts background tasks and listens for incoming conns
     pub fn run(&self) -> Result<(), ServerError> {
         let (tx, rx) = mpsc::channel();
 
@@ -33,6 +33,7 @@ impl Server {
         Ok(())
     }
 
+    // the main control loop
     pub fn control(&self, rx: Receiver<Event>) -> Result<(), ServerError> {
         loop {
             let Event(msg, sender) = rx.recv()?;
