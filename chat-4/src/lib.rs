@@ -48,7 +48,7 @@ impl Server {
                     let tx = tx.clone();
                     match self.new_client(id, stream, tx) {
                         Ok(client) => state.add_client(client),
-                        Err(e) => println!("Error handling conn: {}", e),
+                        Err(e) => println!("New client error: {}", e),
                     }
                 }
             }
@@ -64,12 +64,7 @@ impl Server {
         control: Sender<Event>,
     ) -> Result<Client, ServerError> {
         let (tx, rx) = mpsc::channel();
-        let client = Client {
-            id,
-            control,
-            tx,
-            rx,
-        };
+        let client = Client::new(stream, id, control, tx, rx);
         Ok(client)
     }
 
@@ -113,6 +108,23 @@ struct Client {
     control: Sender<Event>, // send events to the control loop
     tx: Sender<Event>,      // send messages to the client
     rx: Receiver<Event>,    // client will receive message from the control loop
+}
+
+impl Client {
+    fn new(
+        stream: TcpStream,
+        id: usize,
+        control: Sender<Event>,
+        tx: Sender<Event>,
+        rx: Receiver<Event>,
+    ) -> Self {
+        Self {
+            id,
+            control,
+            tx,
+            rx,
+        }
+    }
 }
 
 #[derive(Error, Debug)]
