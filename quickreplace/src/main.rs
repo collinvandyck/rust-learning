@@ -39,5 +39,5 @@ fn parse_args() -> Arguments {
 
 fn main() {
     let args = parse_args();
-    dbg!(args);
+    println!("{:?}", args);
 }
