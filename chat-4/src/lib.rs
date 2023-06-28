@@ -11,6 +11,9 @@ pub struct Server {
     port: u32,
 }
 
+#[allow(dead_code)]
+struct Foo {}
+
 impl Server {
     pub fn new(port: u32) -> Self {
         Self { port }
