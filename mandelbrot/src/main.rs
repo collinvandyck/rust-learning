@@ -1,9 +1,51 @@
-use std::str::FromStr;
+use std::{env, fs::File, io, str::FromStr};
 
+use image::{png::PNGEncoder, ColorType};
 use num::Complex;
 
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 5 {
+        eprintln!("Usage  : {} FILE PIXELS UPPERLEFT LOWERRIGHT", args[0]);
+        eprintln!(
+            "Example: {} mandel.png 1000x750 -1.20,0.35 -1,0.20",
+            args[0]
+        );
+        std::process::exit(1);
+    }
+
+    let bounds = parse_pair(&args[2], 'x').expect("image dimension parse error");
+    let upper_left = parse_complex(&args[3]).expect("upper left parse error");
+    let lower_right = parse_complex(&args[4]).expect("lower right parse error");
+    let mut pixels = vec![0; bounds.0 * bounds.1];
+    render(&mut pixels, bounds, upper_left, lower_right);
+    write_image(&args[1], &pixels, bounds).expect("png write error");
+}
+
+fn write_image(filename: &str, pixels: &[u8], bounds: (usize, usize)) -> Result<(), io::Error> {
+    let output = File::create(filename)?;
+    let encoder = PNGEncoder::new(output);
+    encoder.encode(pixels, bounds.0 as u32, bounds.1 as u32, ColorType::Gray(8))?;
+    Ok(())
+}
+
+fn render(
+    pixels: &mut [u8],
+    bounds: (usize, usize),
+    upper_left: Complex<f64>,
+    lower_right: Complex<f64>,
+) {
+    assert!(pixels.len() == bounds.0 * bounds.1);
+    for row in 0..bounds.1 {
+        for column in 0..bounds.0 {
+            let pixel = (column, row);
+            let point = pixel_to_point(bounds, pixel, upper_left, lower_right);
+            pixels[row * bounds.0 + column] = match escape_time(point, 255) {
+                Some(count) => 255 - count as u8,
+                None => 0,
+            }
+        }
+    }
 }
 
 /// Given the row and column of a pixel in the output image, return the
