@@ -6,3 +6,8 @@ tasks:
     cmds:
       - cargo run
     silent: true
+  test:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - cargo test
+    silent: true
