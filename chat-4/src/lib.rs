@@ -109,7 +109,9 @@ impl Client {
         // spawn the thing that will read messages from the control loop
         thread::spawn(move || {
             loop {
+                println!("Client {} waiting for message", id);
                 if let Ok(Event(msg, reply)) = incoming.recv() {
+                    println!("Client {} received message", id);
                     if reply.send(Ok(())).is_err() {
                         break;
                     }
@@ -128,6 +130,7 @@ impl Client {
                         _ => {}
                     }
                 } else {
+                    println!("Client {} failed to receive message", id);
                     break;
                 }
             }
