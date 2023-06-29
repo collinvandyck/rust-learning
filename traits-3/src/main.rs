@@ -1,3 +1,4 @@
+use std::cmp::{self, Ordering, PartialEq};
 use std::ops::{self};
 
 fn main() {
@@ -11,12 +12,22 @@ fn main() {
     any = dbg!(any);
     let any = -any;
     dbg!(any);
+
+    let any1 = Any { val: Blop {} };
+    let any2 = Any { val: Blop {} };
+    assert_eq!(any1, any2);
+    assert!(any1 <= any2);
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd)]
+struct Blop {}
+
+#[derive(Debug, PartialEq)]
 struct Any<T> {
     val: T,
 }
+
+impl<T> cmp::Eq for Any<T> where T: cmp::PartialEq {}
 
 impl<T> ops::Neg for Any<T>
 where
@@ -25,6 +36,21 @@ where
     type Output = Any<T>;
     fn neg(self) -> Self::Output {
         Any { val: -self.val }
+    }
+}
+
+impl<T> cmp::PartialOrd for Any<T>
+where
+    T: cmp::PartialOrd,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        if self.val < other.val {
+            Some(Ordering::Less)
+        } else if self.val == other.val {
+            Some(Ordering::Equal)
+        } else {
+            Some(Ordering::Greater)
+        }
     }
 }
 
