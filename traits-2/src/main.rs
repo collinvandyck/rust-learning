@@ -60,3 +60,10 @@ impl<W: Write> WriteHtml for W {
         self.write(&[b'H']).map(|_| ())
     }
 }
+
+#[test]
+fn test_write_html() {
+    let mut b = vec![];
+    b.write_html(&HtmlDocument {}).expect("failure");
+    assert_eq!(&vec![b'H'], &b)
+}
