@@ -1,3 +1,5 @@
+use std::io::Write;
+
 fn main() {
     println!("Hello, world!");
 }
@@ -21,3 +23,14 @@ impl Visible for Broom {
 
 #[allow(dead_code)]
 struct Canvas {}
+
+pub struct Sink;
+
+impl Write for Sink {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        Ok(buf.len())
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
