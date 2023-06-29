@@ -1,4 +1,4 @@
-use std::ops::{self, Neg};
+use std::ops::{self};
 
 fn main() {
     println!("Hello, world!");
