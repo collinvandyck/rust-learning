@@ -1,3 +1,8 @@
+use std::io::Write;
+
 fn main() {
-    println!("Hello, world!");
+    let mut buf: Vec<u8> = vec![];
+    let writer: &mut dyn Write = &mut buf;
+    writer.write(b"123").expect("write failure");
+    println!("{}", buf.len());
 }
