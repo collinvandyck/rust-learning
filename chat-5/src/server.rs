@@ -1,4 +1,7 @@
+use serde::Serialize;
+use serde_json;
 use std::{
+    collections::HashMap,
     io::{self, BufRead, BufReader, BufWriter},
     net::{TcpListener, TcpStream},
     thread,
@@ -29,55 +32,16 @@ impl Server {
         stream = dbg!(stream);
         let reader = BufReader::new(stream.try_clone().unwrap());
         let writer = BufWriter::new(stream);
-        let mut rw = ReaderWriter::new(reader, writer);
-        rw.write("hello there!").expect("welp");
-    }
-}
-
-struct ReaderWriter<R, W> {
-    reader: R,
-    writer: W,
-}
-
-impl<R, W> ReaderWriter<R, W>
-where
-    R: BufRead,
-    W: io::Write,
-{
-    fn new(reader: R, writer: W) -> Self {
-        Self { reader, writer }
+        self.to_bs().unwrap();
     }
 
-    fn write(&mut self, val: &str) -> io::Result<()> {
-        self.writer.write_all(val.as_bytes())?;
-        self.writer.write_all(b"\n")?;
-        self.writer.flush()?;
-        Ok(())
-    }
-}
-
-trait Reader {
-    fn next(&mut self) -> io::Result<String>;
-}
-
-impl<T: BufRead> Reader for T {
-    fn next(&mut self) -> io::Result<String> {
-        let mut buf = String::new();
-        buf = self.read_line(&mut buf).map(|_| buf)?;
-        buf = buf.trim().to_string();
-        Ok(buf)
-    }
-}
-
-trait Writer {
-    fn send(&mut self, val: &str) -> io::Result<()>;
-}
-
-impl<T: io::Write> Writer for T {
-    fn send(&mut self, val: &str) -> io::Result<()> {
-        self.write(val.as_bytes())?;
-        self.write(b"\n")?;
-        self.flush()?;
+    fn to_bs(&self) -> io::Result<()> {
+        let mut m = HashMap::new();
+        m.insert("port", self.port);
+        let mut writer = vec![];
+        let mut serializer = serde_json::Serializer::new(&mut writer);
+        m.serialize(&mut serializer)?;
+        dbg!(m);
         Ok(())
     }
 }
