@@ -1,5 +1,5 @@
 use std::{
-    io,
+    io::{self, BufReader, BufWriter},
     net::{TcpListener, TcpStream},
     thread,
 };
@@ -25,7 +25,9 @@ impl Server {
         Ok(())
     }
 
-    fn handle(&self, stream: TcpStream) {
-        dbg!(stream);
+    fn handle(&self, mut stream: TcpStream) {
+        stream = dbg!(stream);
+        let reader = BufReader::new(stream.try_clone().unwrap());
+        let writer = BufWriter::new(stream);
     }
 }
