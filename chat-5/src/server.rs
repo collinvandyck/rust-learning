@@ -39,9 +39,12 @@ impl Server {
 
     fn handle_rw(&self, mut reader: Reader, mut writer: Writer) -> io::Result<()> {
         writer.write("hello there!")?;
+        let line = reader.read_line()?;
+        println!("got: {}", line);
         Ok(())
     }
 
+    #[allow(dead_code)]
     fn to_bs(&self) -> io::Result<()> {
         let mut m = HashMap::new();
         m.insert("port", self.port);
@@ -70,13 +73,29 @@ impl Writer {
     }
 }
 
+trait Something {
+    fn something(&self);
+}
+
+trait Visible: Something {
+    fn view(&self);
+}
+
+impl Visible for BufReader<TcpStream> {
+    fn view(&self) {}
+}
+
+impl Something for BufReader<TcpStream> {
+    fn something(&self) {}
+}
+
 struct Reader {
     r: Box<dyn BufRead>,
 }
 
 impl Reader {
-    fn new(r: Box<dyn BufRead>) -> Reader {
-        Reader { r }
+    fn new(r: Box<dyn BufRead>) -> Self {
+        Self { r }
     }
 
     fn read_line(&mut self) -> io::Result<String> {
