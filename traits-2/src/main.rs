@@ -1,4 +1,7 @@
-use std::io::Write;
+use std::{
+    io::{self, Write},
+    str,
+};
 
 fn main() {
     println!("Hello, world!");
@@ -32,5 +35,28 @@ impl Write for Sink {
     }
     fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
+    }
+}
+
+trait IsEmoji {
+    fn is_emoji(&self) -> bool;
+}
+
+impl IsEmoji for str {
+    fn is_emoji(&self) -> bool {
+        self.len() > 0
+    }
+}
+
+#[allow(dead_code)]
+struct HtmlDocument;
+
+trait WriteHtml {
+    fn write_html(&mut self, html: &HtmlDocument) -> io::Result<()>;
+}
+
+impl<W: Write> WriteHtml for W {
+    fn write_html(&mut self, _html: &HtmlDocument) -> io::Result<()> {
+        self.write(&[b'H']).map(|_| ())
     }
 }
