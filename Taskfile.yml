@@ -12,7 +12,6 @@ tasks:
       - cargo test
     silent: true
   clean:
-    dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - cargo clean
+      - make clean
     silent: true
