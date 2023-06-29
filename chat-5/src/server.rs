@@ -2,6 +2,7 @@ use serde::Serialize;
 use serde_json;
 use std::{
     collections::HashMap,
+    fmt::Debug,
     io::{self, BufRead, BufReader, BufWriter, Write},
     net::{TcpListener, TcpStream},
     thread,
@@ -53,6 +54,19 @@ impl Server {
         m.serialize(&mut serializer)?;
         dbg!(m);
         Ok(())
+    }
+}
+
+trait MyIterator: Debug {
+    type Item: Debug;
+
+    fn next(&mut self) -> Option<Self::Item>;
+
+    fn foo(&mut self) {
+        let b = self.next().unwrap();
+        println!("{:?}", b);
+        println!("{:?}", self);
+        println!("{:?}", self);
     }
 }
 
