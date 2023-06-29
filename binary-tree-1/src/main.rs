@@ -1,6 +1,9 @@
 fn main() {
     let mut tree = Tree::Empty;
     tree.add(5);
+    tree.add(1);
+    tree.add(10);
+    tree.add(0);
     dbg!(tree);
 }
 
@@ -21,7 +24,13 @@ impl<T: Ord> Tree<T> {
                 };
                 *self = Tree::Value(Box::new(node));
             }
-            Tree::Value(node) => {}
+            Tree::Value(node) => {
+                if val > node.item {
+                    node.right.add(val)
+                } else {
+                    node.left.add(val)
+                }
+            }
         }
     }
 }
