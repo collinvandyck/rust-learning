@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::{
     io::{self, BufRead, BufReader, BufWriter, Write},
     net::{TcpListener, TcpStream},
@@ -11,7 +13,6 @@ pub struct Server {
     port: u32,
 }
 
-#[allow(dead_code)]
 struct Foo {}
 
 impl Server {
