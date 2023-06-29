@@ -1,6 +1,5 @@
 use crate::server::Server;
 
-mod io;
 mod server;
 
 fn main() {
