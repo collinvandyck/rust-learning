@@ -27,14 +27,32 @@ impl Server {
 
     fn handle(&self, mut stream: TcpStream) {
         stream = dbg!(stream);
-        let mut reader = BufReader::new(stream.try_clone().unwrap());
-        let mut writer = BufWriter::new(stream);
-        self.handle_rw(&mut reader, &mut writer)
+        let reader = BufReader::new(stream.try_clone().unwrap());
+        let writer = BufWriter::new(stream);
+        let mut rw = ReaderWriter::new(reader, writer);
+        rw.write("hello there!").expect("welp");
+    }
+}
+
+struct ReaderWriter<R, W> {
+    reader: R,
+    writer: W,
+}
+
+impl<R, W> ReaderWriter<R, W>
+where
+    R: BufRead,
+    W: io::Write,
+{
+    fn new(reader: R, writer: W) -> Self {
+        Self { reader, writer }
     }
 
-    fn handle_rw(&self, reader: &mut impl Reader, writer: &mut impl Writer) {
-        reader.next();
-        writer.send("hello");
+    fn write(&mut self, val: &str) -> io::Result<()> {
+        self.writer.write_all(val.as_bytes())?;
+        self.writer.write_all(b"\n")?;
+        self.writer.flush()?;
+        Ok(())
     }
 }
 
@@ -59,6 +77,7 @@ impl<T: io::Write> Writer for T {
     fn send(&mut self, val: &str) -> io::Result<()> {
         self.write(val.as_bytes())?;
         self.write(b"\n")?;
+        self.flush()?;
         Ok(())
     }
 }
