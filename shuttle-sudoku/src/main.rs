@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router};
+use axum::{http::StatusCode, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
 
 const SIZE: usize = 9;
@@ -62,16 +62,17 @@ impl Sudoku {
     }
 }
 
-async fn solve(Json(mut sudoku): Json<Sudoku>) -> Json<Sudoku> {
-    if !sudoku.solve() {
-        println!("Could not solve sudoku");
+async fn solve(Json(mut sudoku): Json<Sudoku>) -> Result<Json<Sudoku>, StatusCode> {
+    if sudoku.solve() {
+        Ok(Json(sudoku))
+    } else {
+        Err(StatusCode::BAD_REQUEST)
     }
-    sudoku.into()
 }
 
 #[shuttle_runtime::main]
 async fn axum() -> shuttle_axum::ShuttleAxum {
-    let router = Router::new().route("/", post(solve));
+    let router = Router::new().route("/solve", post(solve));
 
     Ok(router.into())
 }
