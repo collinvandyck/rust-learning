@@ -5,10 +5,10 @@ use std::collections::HashMap;
 fn main() {
     let mut router = BasicRouter::new();
     router.add_route("/", |_req| get_form_response());
-    router.add_route("/", |req| get_gcd_response(req));
+    router.add_route("/gcd", get_gcd_response);
 }
 
-fn get_gcd_response(req: &Request) -> Response {
+fn get_gcd_response(_req: &Request) -> Response {
     Response {
         code: 200,
         headers: HashMap::new(),
@@ -37,24 +37,38 @@ struct Response {
     body: Vec<u8>,
 }
 
-struct BasicRouter<C>
-where
-    C: Fn(&Request) -> Response,
-{
-    routes: HashMap<String, C>,
+type BoxedCallback = Box<dyn Fn(&Request) -> Response>;
+
+struct BasicRouter {
+    routes: HashMap<String, BoxedCallback>,
 }
 
-impl<C> BasicRouter<C>
-where
-    C: Fn(&Request) -> Response,
-{
-    fn new() -> BasicRouter<C> {
+fn not_found_response() -> Response {
+    Response {
+        code: 404,
+        headers: HashMap::new(),
+        body: vec![],
+    }
+}
+
+impl BasicRouter {
+    fn new() -> BasicRouter {
         BasicRouter {
             routes: HashMap::new(),
         }
     }
 
-    fn add_route(&mut self, url: &str, callback: C) {
-        self.routes.insert(url.to_string(), callback);
+    fn add_route<C>(&mut self, url: &str, callback: C)
+    where
+        C: Fn(&Request) -> Response + 'static,
+    {
+        self.routes.insert(url.to_string(), Box::new(callback));
+    }
+
+    fn handle_request(&self, request: &Request) -> Response {
+        match self.routes.get(&request.url) {
+            None => not_found_response(),
+            Some(callback) => callback(request),
+        }
     }
 }
