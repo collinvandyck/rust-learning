@@ -10,26 +10,10 @@ struct Sudoku {
 
 impl Sudoku {
     fn solve(&mut self) -> bool {
-        let mut row = 0;
-        let mut col = 0;
-        let mut is_empty = false;
-
-        for i in row..SIZE {
-            for j in row..SIZE {
-                if self.board[i][j] == 0 {
-                    row = i;
-                    col = j;
-                    is_empty = true;
-                    break;
-                }
-            }
-            if is_empty {
-                break;
-            }
-        }
-        if !is_empty {
-            return true;
-        }
+        let (row, col) = match self.find_empty() {
+            Some((row, col)) => (row, col),
+            None => return true,
+        };
         for num in 1..=SIZE {
             if self.is_safe(row, col, num as u8) {
                 self.board[row][col] = num as u8;
@@ -40,6 +24,17 @@ impl Sudoku {
             }
         }
         true
+    }
+
+    fn find_empty(&self) -> Option<(usize, usize)> {
+        for i in 0..SIZE {
+            for j in 0..SIZE {
+                if self.board[i][j] == 0 {
+                    return Some((i, j));
+                }
+            }
+        }
+        None
     }
 
     fn is_safe(&self, row: usize, col: usize, num: u8) -> bool {
