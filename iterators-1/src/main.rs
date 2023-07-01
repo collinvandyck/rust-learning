@@ -20,7 +20,7 @@ fn main() {
 
 #[allow(dead_code)]
 fn escape_time(c: Complex<f64>, limit: usize) -> Option<usize> {
-    let zero = Complex { re: 0.0, im: 0.0 };
+    let zero: Complex<f64> = Complex::default();
     successors(Some(zero), |&z| Some(z * z + c))
         .take(limit)
         .enumerate()
