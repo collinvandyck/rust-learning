@@ -16,6 +16,18 @@ fn main() {
     println!("FIBS:");
     let fibs: Vec<usize> = fibonacci().take(5).collect();
     dbg!(fibs);
+
+    let mut nums = vec![1, 2, 3];
+    let foo: Vec<usize> = nums.drain(..).collect();
+    dbg!(nums);
+    dbg!(foo);
+
+    successors(Some(0), |&x| if x == 0 { Some(1) } else { Some(0) })
+        .take(32)
+        .for_each(|x| {
+            print!("{}", x);
+        });
+    println!();
 }
 
 #[allow(dead_code)]
