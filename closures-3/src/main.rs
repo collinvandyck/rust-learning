@@ -41,19 +41,35 @@ fn main() {
         println!("hi: {}", i);
     });
 
+    // this example uses a named closure and does not borrow
+    // the closure before calling the func meaning that func
+    // can only be used once since it is consumed.
+
     let mut i = 0;
     let func = || {
         i += 5;
         println!("wat: {}", i);
     };
     another_mut_once_example(func);
+    // this doesn't work
+    // another_mut_once_example(func);
+
+    // i can call it multiple times with a new closure each time tho
+    another_mut_once_example(|| {
+        i += 10;
+        println!("wat wat: {}", i);
+    });
+    another_mut_once_example(|| {
+        i += 10;
+        println!("wat wat: {}", i);
+    });
 }
 
 fn another_mut_once_example<F>(mut closure: F)
 where
     F: FnMut(),
 {
-    for _ in 1..=5 {
+    for _ in 1..=2 {
         closure();
     }
 }
