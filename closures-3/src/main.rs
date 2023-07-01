@@ -69,6 +69,37 @@ fn main() {
     let add_ten = |x| x + y;
     let copy_of_add_ten = add_ten;
     assert_eq!(add_ten(copy_of_add_ten(22)), 42);
+    println!("y: {}", y);
+
+    // closures that are mut are neither Clone or copy.
+    let mut x = 0;
+    let mut add_to_x = |n| {
+        x += n;
+        x
+    };
+    // this doesn't work since it moves add_to_x.
+    // let mut add_to_x_copy = add_to_x;
+    let x = add_to_x(5);
+    println!("x: {}", x);
+
+    // if a move closure captures only Copy variables, the closure is Copy.
+    // if a move closure captures Clone variables, then it is Clone.
+    let mut greeting = String::from("Hello, ");
+    let mut greet = move |name| {
+        greeting.push_str(name);
+        println!("{}", greeting);
+    };
+    greet("Alfred");
+    greet(" and Bruce");
+
+    let mut greeting = String::from("Hello, ");
+    let greet = move |name| {
+        greeting.push_str(name);
+        println!("{}", greeting);
+    };
+    // these clones end up cloning the greeting since it is moved into the closure.
+    greet.clone()("Alfred");
+    greet.clone()("Bruce");
 }
 
 fn another_mut_once_example<F>(mut closure: F)
