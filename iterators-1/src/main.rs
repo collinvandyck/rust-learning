@@ -28,6 +28,10 @@ fn main() {
             print!("{}", x);
         });
     println!();
+
+    let name: Vec<char> = "Collin".chars().collect();
+    let x: Vec<_> = name.split(|&f| f == 'l').collect();
+    dbg!(x);
 }
 
 #[allow(dead_code)]
