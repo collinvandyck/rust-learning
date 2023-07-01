@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 fn main() {
     let mut router = BasicRouter::new();
-    router.add_route("/", |_req| get_form_response());
+    router.add_route("/", |req| get_form_response(req));
     router.add_route("/gcd", get_gcd_response);
 }
 
@@ -16,9 +16,17 @@ fn get_gcd_response(_req: &Request) -> Response {
     }
 }
 
-fn get_form_response() -> Response {
+fn get_form_response(_req: &Request) -> Response {
     Response {
         code: 200,
+        headers: HashMap::new(),
+        body: vec![],
+    }
+}
+
+fn not_found_response() -> Response {
+    Response {
+        code: 404,
         headers: HashMap::new(),
         body: vec![],
     }
@@ -41,14 +49,6 @@ type BoxedCallback = Box<dyn Fn(&Request) -> Response>;
 
 struct BasicRouter {
     routes: HashMap<String, BoxedCallback>,
-}
-
-fn not_found_response() -> Response {
-    Response {
-        code: 404,
-        headers: HashMap::new(),
-        body: vec![],
-    }
 }
 
 impl BasicRouter {
