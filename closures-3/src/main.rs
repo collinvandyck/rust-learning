@@ -40,6 +40,13 @@ fn main() {
         i += 1;
         println!("hi: {}", i);
     });
+
+    let mut i = 0;
+    let func = || {
+        i += 5;
+        println!("wat: {}", i);
+    };
+    another_mut_once_example(func);
 }
 
 fn another_mut_once_example<F>(mut closure: F)
