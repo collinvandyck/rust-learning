@@ -63,6 +63,12 @@ fn main() {
         i += 10;
         println!("wat wat: {}", i);
     });
+
+    // closures can be Copy if they are not mut and don't move variables.
+    let y = 10;
+    let add_ten = |x| x + y;
+    let copy_of_add_ten = add_ten;
+    assert_eq!(add_ten(copy_of_add_ten(22)), 42);
 }
 
 fn another_mut_once_example<F>(mut closure: F)
