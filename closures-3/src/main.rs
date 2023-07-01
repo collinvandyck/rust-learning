@@ -27,10 +27,28 @@ fn main() {
         println!("Dong! i is now: {}", i)
     };
     call_twice_mut_with_arg(5, &mut incr);
+
+    // using an inline mutable closure instead of predefining it.
+
     call_twice_mut_with_arg(5, &mut |v| {
         i += v;
         println!("Dang! i is now: {}", i)
-    })
+    });
+
+    let mut i = 0;
+    another_mut_once_example(|| {
+        i += 1;
+        println!("hi: {}", i);
+    });
+}
+
+fn another_mut_once_example<F>(mut closure: F)
+where
+    F: FnMut(),
+{
+    for _ in 1..=5 {
+        closure();
+    }
 }
 
 fn call_twice_mut_with_arg<F>(arg: i32, closure: &mut F)
