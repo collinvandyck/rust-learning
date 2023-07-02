@@ -1,9 +1,10 @@
-use crate::chat::coord::Coordinator;
 use crate::chat::error::Error;
 use std::{
     net::{TcpListener, TcpStream},
     sync::mpsc::Sender,
 };
+
+use super::coord;
 
 pub struct Server {
     port: u32,
@@ -16,7 +17,7 @@ pub fn new(port: u32) -> Server {
 
 impl Server {
     fn new(port: u32) -> Self {
-        let coord = Coordinator::start();
+        let coord = coord::start();
         Self { port, coord }
     }
 
