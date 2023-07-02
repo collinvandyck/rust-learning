@@ -1,9 +1,12 @@
 use std::io::{self, ErrorKind, Read, Write};
 
 fn main() {
-    let mut src: &[u8] = &[1, 2, 3, 4, 5];
+    let mut src: &[u8] = b"Hello, World!";
     let mut dst: Vec<u8> = Vec::default();
-    copy(&mut src, &mut dst).expect("copy failed");
+    match copy(&mut src, &mut dst) {
+        Ok(written) => println!("Wrote {} bytes", written),
+        Err(e) => panic!("Failed to write: {}", e),
+    }
     dbg!(dst);
 }
 
