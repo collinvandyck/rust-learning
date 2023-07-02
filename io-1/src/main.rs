@@ -2,7 +2,7 @@
 
 use std::error::Error;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Cursor};
 use std::path::PathBuf;
 use std::{
     env,
@@ -10,8 +10,8 @@ use std::{
 };
 
 fn main() {
-    let mut src: &[u8] = b"Hello, World!";
     let mut dst: Vec<u8> = Vec::default();
+    let mut src = Cursor::new("Hello foo");
     match copy(&mut src, &mut dst) {
         Ok(written) => println!("Wrote {} bytes", written),
         Err(e) => panic!("Failed to write: {}", e),
