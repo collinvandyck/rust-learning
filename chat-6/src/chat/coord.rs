@@ -44,6 +44,7 @@ fn receive_events(rx: Receiver<Event>, tx: Sender<Event>) {
             }
             Event::ClientQuit(id) => {
                 println!("Client with id: {} quit", id);
+                clients.retain(|client| client.id != id);
             }
         }
     }
