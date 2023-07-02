@@ -1,4 +1,6 @@
-use std::io::{self, ErrorKind, Read, Write};
+#![allow(dead_code)]
+
+use std::io::{self, BufRead, ErrorKind, Read, Write};
 
 fn main() {
     let mut src: &[u8] = b"Hello, World!";
@@ -8,10 +10,27 @@ fn main() {
         Err(e) => panic!("Failed to write: {}", e),
     }
     dbg!(dst);
+
+    grep("foo", io::stdin().lock()).expect("could not grep");
 }
 
 const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
+fn grep<R>(target: &str, reader: R) -> io::Result<()>
+where
+    R: BufRead,
+{
+    for line in reader.lines() {
+        let line = line?;
+        if line.contains(target) {
+            println!("{}", line);
+        }
+    }
+    Ok(())
+}
+
+// a low level copy that handles interrupted errors. normal code uses
+// higher level APIs to avoid having to do this.
 pub fn copy<R, W>(reader: &mut R, writer: &mut W) -> io::Result<u64>
 where
     R: Read + ?Sized,
