@@ -21,6 +21,14 @@ fn main() {
     grep("foo", io::stdin().lock()).expect("could not grep");
 }
 
+fn collect_example() -> io::Result<()> {
+    let mut src: &[u8] = b"Hello, World!";
+    let reader = BufReader::new(&mut src);
+    let x = reader.lines().collect::<io::Result<Vec<String>>>()?;
+    dbg!(x);
+    Ok(())
+}
+
 const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
 fn grep_main() -> Result<(), Box<dyn Error>> {
