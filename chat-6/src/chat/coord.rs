@@ -9,6 +9,7 @@ use std::{
 enum Event {
     NewClient(Client),
     Line { client: usize, line: String },
+    ClientQuit(usize),
 }
 
 pub fn start() -> Sender<TcpStream> {
@@ -40,6 +41,9 @@ fn receive_events(rx: Receiver<Event>, tx: Sender<Event>) {
                         println!("Could not send event to client with id: {}", client_id);
                     }
                 }
+            }
+            Event::ClientQuit(id) => {
+                println!("Client with id: {} quit", id);
             }
         }
     }
@@ -75,7 +79,10 @@ fn new_client(id: usize, conn: TcpStream, tx_event: Sender<Event>) -> Client {
                         break;
                     }
                 }
-                _ => break,
+                _ => {
+                    let _ = tx_event.send(Event::ClientQuit(id));
+                    break;
+                }
             }
         }
         println!("Client tx thread stopping");
