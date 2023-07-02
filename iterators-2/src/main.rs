@@ -1,5 +1,4 @@
 fn main() {
-    println!("Hello, world!");
     let range = I32Range { start: 0, end: 10 };
     for x in range {
         println!("x: {}", x);
