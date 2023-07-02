@@ -1,5 +1,4 @@
 use std::io;
-mod error;
 
 pub struct Server {
     port: u32,

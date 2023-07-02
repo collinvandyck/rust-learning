@@ -1,6 +1,6 @@
-mod server;
+mod chat;
 
 fn main() {
-    let s = server::new(3000);
+    let s = chat::server::new(3000);
     s.serve().expect("server failed");
 }
