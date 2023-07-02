@@ -1,4 +1,4 @@
-use std::io::{Read, Write};
+use std::io::Write;
 use std::{
     io::{BufRead, BufReader, BufWriter},
     net::TcpStream,
@@ -15,13 +15,12 @@ enum Event {
 pub fn start() -> Sender<TcpStream> {
     let (tx_conn, rx_conn) = mpsc::channel();
     let (tx_event, rx_event) = mpsc::channel();
-    let tx_event_2 = tx_event.clone();
     let _ = thread::spawn(move || receive_conns(rx_conn, tx_event));
-    let _ = thread::spawn(move || receive_events(rx_event, tx_event_2));
+    let _ = thread::spawn(move || receive_events(rx_event));
     tx_conn
 }
 
-fn receive_events(rx: Receiver<Event>, tx: Sender<Event>) {
+fn receive_events(rx: Receiver<Event>) {
     let mut clients = vec![];
     for event in rx {
         match event {
@@ -33,6 +32,9 @@ fn receive_events(rx: Receiver<Event>, tx: Sender<Event>) {
                 line,
             } => {
                 for client in &clients {
+                    if client.id == client_id {
+                        continue;
+                    }
                     let res = client.tx.send(Event::Line {
                         client: client_id,
                         line: line.clone(),
@@ -43,7 +45,6 @@ fn receive_events(rx: Receiver<Event>, tx: Sender<Event>) {
                 }
             }
             Event::ClientQuit(id) => {
-                println!("Client with id: {} quit", id);
                 clients.retain(|client| client.id != id);
             }
         }
