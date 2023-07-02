@@ -4,6 +4,7 @@ fn main() {
     let mut src: &[u8] = &[1, 2, 3, 4, 5];
     let mut dst: Vec<u8> = Vec::default();
     copy(&mut src, &mut dst).expect("copy failed");
+    dbg!(dst);
 }
 
 const DEFAULT_BUF_SIZE: usize = 8 * 1024;
