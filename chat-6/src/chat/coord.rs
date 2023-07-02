@@ -7,9 +7,9 @@ use std::{
 };
 
 enum Event {
-    NewClient(Client),
-    Line { client: usize, line: String },
-    ClientQuit(usize),
+    Client(Client),
+    Line(usize, String),
+    Quit(usize),
 }
 
 pub fn start() -> Sender<TcpStream> {
@@ -24,27 +24,19 @@ fn receive_events(rx: Receiver<Event>) {
     let mut clients = vec![];
     for event in rx {
         match event {
-            Event::NewClient(client) => {
+            Event::Client(client) => {
                 clients.push(client);
             }
-            Event::Line {
-                client: client_id,
-                line,
-            } => {
-                for client in &clients {
-                    if client.id == client_id {
-                        continue;
+            Event::Line(id, line) => {
+                clients.retain(|client| {
+                    if client.id == id {
+                        return true;
                     }
-                    let res = client.tx.send(Event::Line {
-                        client: client_id,
-                        line: line.clone(),
-                    });
-                    if res.is_err() {
-                        println!("Could not send event to client with id: {}", client_id);
-                    }
-                }
+                    let event = Event::Line(id, line.clone());
+                    client.tx.send(event).is_ok()
+                });
             }
-            Event::ClientQuit(id) => {
+            Event::Quit(id) => {
                 clients.retain(|client| client.id != id);
             }
         }
@@ -55,7 +47,7 @@ fn receive_conns(rx: Receiver<TcpStream>, tx_event: Sender<Event>) {
     for (id, conn) in rx.iter().enumerate() {
         let tx_event_client = tx_event.clone();
         let client = new_client(id, conn, tx_event_client);
-        let tx_res = tx_event.send(Event::NewClient(client));
+        let tx_res = tx_event.send(Event::Client(client));
         if tx_res.is_err() {
             break;
         }
@@ -74,17 +66,14 @@ fn new_client(id: usize, conn: TcpStream, tx_event: Sender<Event>) -> Client {
     let reader = BufReader::new(conn.try_clone().unwrap());
     thread::spawn(move || {
         for line in reader.lines() {
-            match line {
-                Ok(line) => {
-                    let res = tx_event.send(Event::Line { client: id, line });
-                    if res.is_err() {
-                        break;
-                    }
-                }
-                _ => {
-                    tx_event.send(Event::ClientQuit(id)).unwrap();
+            if let Ok(line) = line {
+                let res = tx_event.send(Event::Line(id, line));
+                if res.is_err() {
                     break;
                 }
+            } else {
+                tx_event.send(Event::Quit(id)).unwrap();
+                break;
             }
         }
     });
@@ -93,17 +82,14 @@ fn new_client(id: usize, conn: TcpStream, tx_event: Sender<Event>) -> Client {
     thread::spawn(move || {
         let mut writer = BufWriter::new(conn);
         for event in rx {
-            match event {
-                Event::Line { client, line } => {
-                    let msg = format!("{}: {}\n", client, line);
-                    let res = writer
-                        .write_all(msg.as_bytes())
-                        .and_then(|_| writer.flush());
-                    if res.is_err() {
-                        break;
-                    }
+            if let Event::Line(id, line) = event {
+                let msg = format!("{}: {}\n", id, line);
+                let res = writer
+                    .write_all(msg.as_bytes())
+                    .and_then(|_| writer.flush());
+                if res.is_err() {
+                    break;
                 }
-                _ => {}
             }
         }
     });
