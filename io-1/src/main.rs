@@ -1,6 +1,13 @@
 #![allow(dead_code)]
 
-use std::io::{self, BufRead, ErrorKind, Read, Write};
+use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
+use std::{
+    env,
+    io::{self, BufRead, ErrorKind, Read, Write},
+};
 
 fn main() {
     let mut src: &[u8] = b"Hello, World!";
@@ -15,6 +22,25 @@ fn main() {
 }
 
 const DEFAULT_BUF_SIZE: usize = 8 * 1024;
+
+fn grep_main() -> Result<(), Box<dyn Error>> {
+    let mut args = env::args().skip(1);
+    let target = match args.next() {
+        Some(s) => s,
+        None => Err("usage: grep PATTERN FILE...")?,
+    };
+    let files: Vec<PathBuf> = args.map(PathBuf::from).collect();
+    if files.is_empty() {
+        let stdin = io::stdin();
+        grep(&target, stdin.lock())?;
+    } else {
+        for file in files {
+            let file = File::open(file)?;
+            grep(&target, BufReader::new(file))?;
+        }
+    }
+    Ok(())
+}
 
 fn grep<R>(target: &str, reader: R) -> io::Result<()>
 where
