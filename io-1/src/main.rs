@@ -22,8 +22,8 @@ fn main() {
 }
 
 fn collect_example() -> io::Result<()> {
-    let mut src: &[u8] = b"Hello, World!";
-    let reader = BufReader::new(&mut src);
+    let src: &[u8] = b"Hello, World!";
+    let reader = BufReader::new(src);
     let x = reader.lines().collect::<io::Result<Vec<String>>>()?;
     dbg!(x);
     Ok(())
