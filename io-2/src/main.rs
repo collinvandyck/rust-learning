@@ -9,7 +9,7 @@ fn main() {
         .spawn()
         .expect("wtf");
     let mut stdin = child.stdin.take().unwrap();
-    for word in vec!["Hi", "There", "aeiou"] {
+    for word in vec!["Hi", "There", "aeiou", "areislou"] {
         writeln!(stdin, "{}", word).expect("write fail");
     }
     drop(stdin);
