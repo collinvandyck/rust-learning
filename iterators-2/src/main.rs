@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 fn main() {
     println!("Hello, world!");
     let range = I32Range { start: 0, end: 10 };
@@ -8,13 +6,16 @@ fn main() {
     }
 
     let mut tree = BinaryTree::<i32>::Empty;
+    tree.add(1);
+    tree.add(3);
     tree.add(5);
     tree.add(4);
     tree.add(6);
     tree.add(2);
-    tree.add(1);
-    tree.add(3);
 
+    for n in &tree {
+        println!("{}", n);
+    }
     for n in &tree {
         println!("{}", n);
     }
