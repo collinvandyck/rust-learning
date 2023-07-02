@@ -82,12 +82,11 @@ fn new_client(id: usize, conn: TcpStream, tx_event: Sender<Event>) -> Client {
                     }
                 }
                 _ => {
-                    let _ = tx_event.send(Event::ClientQuit(id));
+                    tx_event.send(Event::ClientQuit(id)).unwrap();
                     break;
                 }
             }
         }
-        println!("Client tx thread stopping");
     });
 
     // read events from the coordinator.
@@ -107,7 +106,6 @@ fn new_client(id: usize, conn: TcpStream, tx_event: Sender<Event>) -> Client {
                 _ => {}
             }
         }
-        println!("Client rx thread stopping");
     });
 
     Client { id, tx }
