@@ -1,12 +1,13 @@
+use crate::chat::coord::Coordinator;
 use crate::chat::error::Error;
 use std::{
     net::{TcpListener, TcpStream},
-    sync::mpsc::{self, Receiver},
-    thread,
+    sync::mpsc::Sender,
 };
 
 pub struct Server {
     port: u32,
+    coord: Sender<TcpStream>,
 }
 
 pub fn new(port: u32) -> Server {
@@ -15,12 +16,11 @@ pub fn new(port: u32) -> Server {
 
 impl Server {
     fn new(port: u32) -> Self {
-        Self { port }
+        let coord = Coordinator::start();
+        Self { port, coord }
     }
 
     pub fn serve(&self) -> Result<(), Error> {
-        let (tx, rx) = mpsc::channel();
-        let coord = thread::spawn(move || Self::coordinator(rx));
         let addr = format!("0.0.0.0:{}", self.port);
         let listener = TcpListener::bind(&addr).or_else(|e| Err(Error::BindFailure(e)))?;
         println!("Listening on {}", addr);
@@ -28,19 +28,12 @@ impl Server {
             match conn {
                 Err(e) => return Err(Error::AcceptFailure(e)),
                 Ok(conn) => {
-                    if tx.send(conn).is_err() {
+                    if self.coord.send(conn).is_err() {
                         break;
                     }
                 }
             }
         }
-        let _ = coord.join();
         Ok(())
-    }
-
-    fn coordinator(rx: Receiver<TcpStream>) {
-        for stream in rx {
-            dbg!(stream);
-        }
     }
 }
