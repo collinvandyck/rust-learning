@@ -44,9 +44,7 @@ impl State {
             .iter()
             .skip(1)
             .map(|r| r.center())
-            .for_each(|pos| {
-                spawn_monster(&mut ecs, &mut rng, pos);
-            });
+            .for_each(|pos| spawn_monster(&mut ecs, &mut rng, pos));
         resources.insert(builder.map);
         resources.insert(Camera::new(builder.player_start));
         Self {
