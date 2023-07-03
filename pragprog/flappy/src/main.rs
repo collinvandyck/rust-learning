@@ -6,6 +6,14 @@ struct State {
     mode: GameMode,
 }
 
+impl State {
+    fn new() -> Self {
+        Self {
+            mode: GameMode::Menu,
+        }
+    }
+}
+
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
@@ -23,10 +31,5 @@ fn main() -> BError {
     let context = BTermBuilder::simple80x50()
         .with_title("Flappy Dragon")
         .build()?;
-    main_loop(
-        context,
-        State {
-            mode: GameMode::Menu,
-        },
-    )
+    main_loop(context, State::new())
 }
