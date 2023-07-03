@@ -31,16 +31,15 @@ impl Map {
                 }
                 let idx = map_idx(x, y);
                 let tile = self.tiles[idx];
-                let tr_x = x - camera.left_x;
-                let tr_y = y - camera.top_y;
+                let point = camera.translate(Point::new(x, y));
                 match tile {
                     TileType::Floor => {
                         let glyph = to_cp437('.');
-                        ctx.set(tr_x, tr_y, WHITE, BLACK, glyph);
+                        ctx.set(point.x, point.y, WHITE, BLACK, glyph);
                     }
                     TileType::Wall => {
                         let glyph = to_cp437('#');
-                        ctx.set(tr_x, tr_y, WHITE, BLACK, glyph);
+                        ctx.set(point.x, point.y, WHITE, BLACK, glyph);
                     }
                 }
             }
