@@ -1,3 +1,6 @@
+#![warn(clippy::all, clippy::pedantic)]
+
+mod camera;
 mod map;
 mod map_builder;
 mod player;

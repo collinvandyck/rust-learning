@@ -11,6 +11,7 @@ pub struct Map {
     pub tiles: Vec<TileType>,
 }
 
+#[allow(clippy::cast_sign_loss)]
 pub fn map_idx(x: i32, y: i32) -> usize {
     (x + (y * SCREEN_WIDTH)) as usize
 }
@@ -46,10 +47,10 @@ impl Map {
         self.in_bounds(point) && self.tiles[map_idx(point.x, point.y)] == TileType::Floor
     }
     pub fn try_idx(&self, point: Point) -> Option<usize> {
-        if !self.in_bounds(point) {
-            None
-        } else {
+        if self.in_bounds(point) {
             Some(map_idx(point.x, point.y))
+        } else {
+            None
         }
     }
 }
