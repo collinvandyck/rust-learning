@@ -10,5 +10,5 @@ fn main() {
 fn what_name() -> String {
     let mut name = String::new();
     stdin().read_line(&mut name).expect("read name");
-    name
+    name.trim().to_lowercase()
 }
