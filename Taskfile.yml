@@ -6,6 +6,11 @@ tasks:
     cmds:
       - cargo run
     silent: true
+  release:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - cargo build --release
+    silent: true
   test:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
