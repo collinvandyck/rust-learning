@@ -16,6 +16,8 @@ mod prelude {
     pub use crate::map_builder::*;
     pub use crate::player::*;
     pub use legion::systems::CommandBuffer;
+    pub use legion::world::SubWorld;
+    pub use legion::*;
 }
 
 use prelude::*;
