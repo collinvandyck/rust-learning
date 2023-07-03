@@ -31,15 +31,14 @@ fn main() {
         println!("name:");
         let name = what_name();
         let known = visitor_list.iter().find(|v| v.name == name);
-        match known {
-            Some(visitor) => visitor.greet(),
-            None => {
-                if name.is_empty() {
-                    break;
-                }
-                println!("Added {name} to visitor list");
-                visitor_list.push(Visitor::new(&name, "New Friend"));
+        if let Some(visitor) = known {
+            visitor.greet();
+        } else {
+            if name.is_empty() {
+                break;
             }
+            println!("Added {name} to visitor list");
+            visitor_list.push(Visitor::new(&name, "New Friend"));
         }
     }
 }
