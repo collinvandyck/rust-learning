@@ -30,7 +30,6 @@ impl Player {
             self.velocity += 0.2;
         }
         let adj_velocity = self.velocity as i32;
-        println!("Adj velocity: {adj_velocity}");
         self.y += adj_velocity;
         self.x += 1;
         if self.y < 0 {
@@ -99,6 +98,9 @@ impl State {
         self.player.render(ctx);
         ctx.print(0, 0, "Press SPACE to flap.");
         if self.player.y > SCREEN_HEIGHT {
+            self.mode = GameMode::End;
+        }
+        if self.player.x > SCREEN_WIDTH {
             self.mode = GameMode::End;
         }
     }
