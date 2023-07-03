@@ -7,11 +7,3 @@ for x in `fd Cargo.toml`; do
 		(cd $dir && cargo clean)
 	fi
 done
-
-exit 0
-for x in `fd -t d -d 3`; do 
-	if [ -d $$x/target ]; then 
-		echo $$x; 
-		(cd $$x && cargo clean); 
-	fi 
-done
