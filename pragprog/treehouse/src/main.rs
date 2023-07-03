@@ -22,7 +22,7 @@ impl Visitor {
 }
 
 fn main() {
-    let visitor_list = [
+    let visitor_list = vec![
         Visitor::new("bert", "welp hi there"),
         Visitor::new("collin", "Welcome"),
         Visitor::new("steve", "huh?"),
