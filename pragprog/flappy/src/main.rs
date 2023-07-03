@@ -119,6 +119,7 @@ impl State {
     fn dead(&mut self, ctx: &mut BTerm) {
         ctx.cls();
         ctx.print_centered(5, "You are dead!");
+        ctx.print_centered(6, format!("Score: {} points.", self.score));
         ctx.print_centered(8, "(P) Play Game");
         ctx.print_centered(9, "(Q) Quit Game");
         if let Some(key) = ctx.key {
@@ -161,6 +162,8 @@ impl State {
         self.player = Player::new(5, 25);
         self.frame_time = 0.0;
         self.mode = GameMode::Playing;
+        self.score = 0;
+        self.obstacle = Obstacle::new(SCREEN_WIDTH, self.score);
     }
 }
 
