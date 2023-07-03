@@ -26,6 +26,9 @@ impl Map {
         ctx.set_active_console(0);
         for y in camera.top_y..camera.bottom_y {
             for x in camera.left_x..camera.right_x {
+                if !self.in_bounds(Point::new(x, y)) {
+                    continue;
+                }
                 let idx = map_idx(x, y);
                 let tile = self.tiles[idx];
                 let tr_x = x - camera.left_x;
@@ -33,11 +36,11 @@ impl Map {
                 match tile {
                     TileType::Floor => {
                         let glyph = to_cp437('.');
-                        ctx.set(tr_x, tr_y, YELLOW, BLACK, glyph);
+                        ctx.set(tr_x, tr_y, WHITE, BLACK, glyph);
                     }
                     TileType::Wall => {
                         let glyph = to_cp437('#');
-                        ctx.set(tr_x, tr_y, GREEN, BLACK, glyph);
+                        ctx.set(tr_x, tr_y, WHITE, BLACK, glyph);
                     }
                 }
             }
