@@ -2,9 +2,19 @@
 
 use std::io::stdin;
 fn main() {
+    let visitors = ["bert", "collin", "steve"];
     println!("name:");
     let name = what_name();
-    println!("Hello {name:?}");
+    let mut found = false;
+    for n in &visitors {
+        if n == &name {
+            println!("Welcome {name}");
+            found = true;
+        }
+    }
+    if !found {
+        println!("Not welcome {name:?}");
+    }
 }
 
 fn what_name() -> String {
