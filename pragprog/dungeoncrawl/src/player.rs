@@ -9,6 +9,7 @@ impl Player {
         Self { position }
     }
     pub fn render(&self, ctx: &mut BTerm, camera: &Camera) {
+        ctx.set_active_console(1);
         let glyph = to_cp437('@');
         let point = camera.translate(self.position);
         ctx.set(point.x, point.y, WHITE, BLACK, glyph);
