@@ -22,6 +22,7 @@ use prelude::*;
 struct State {
     map: Map,
     player: Player,
+    camera: Camera,
 }
 
 impl State {
@@ -31,7 +32,12 @@ impl State {
         let map = builder.map;
         let player_start = builder.player_start;
         let player = Player::new(player_start);
-        Self { map, player }
+        let camera = Camera::new(player_start);
+        Self {
+            map,
+            player,
+            camera,
+        }
     }
 }
 
@@ -39,7 +45,7 @@ impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
         self.player.update(ctx, &self.map);
-        self.map.render(ctx);
+        self.map.render(ctx, &self.camera);
         self.player.render(ctx);
     }
 }
