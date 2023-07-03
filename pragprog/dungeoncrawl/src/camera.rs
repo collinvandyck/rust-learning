@@ -22,4 +22,10 @@ impl Camera {
         self.top_y = player_position.y - DISPLAY_HEIGHT / 2;
         self.bottom_y = player_position.y + DISPLAY_HEIGHT / 2;
     }
+    pub fn translate(&self, point: Point) -> Point {
+        Point {
+            x: point.x - self.left_x,
+            y: point.y - self.top_y,
+        }
+    }
 }

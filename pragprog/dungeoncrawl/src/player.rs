@@ -10,9 +10,8 @@ impl Player {
     }
     pub fn render(&self, ctx: &mut BTerm, camera: &Camera) {
         let glyph = to_cp437('@');
-        let tr_x = self.position.x - camera.left_x;
-        let tr_y = self.position.y - camera.top_y;
-        ctx.set(tr_x, tr_y, WHITE, BLACK, glyph);
+        let point = camera.translate(self.position);
+        ctx.set(point.x, point.y, WHITE, BLACK, glyph);
     }
     pub fn update(&mut self, ctx: &mut BTerm, map: &Map, camera: &mut Camera) {
         if let Some(key) = ctx.key {
