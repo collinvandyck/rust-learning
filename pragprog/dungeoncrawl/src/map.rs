@@ -27,12 +27,14 @@ impl Map {
     }
     pub fn render(&self, ctx: &mut BTerm, camera: &Camera) {
         ctx.set_active_console(0);
+        // first fill in the screen dimensions with walls
         for y in 0..SCREEN_HEIGHT {
             for x in 0..SCREEN_WIDTH {
                 let glyph = to_cp437('#');
                 ctx.set(x, y, WHITE, BLACK, glyph);
             }
         }
+        // then render what is visible in the camera
         for y in camera.top_y..camera.bottom_y {
             for x in camera.left_x..camera.right_x {
                 if !Self::in_bounds(Point::new(x, y)) {
