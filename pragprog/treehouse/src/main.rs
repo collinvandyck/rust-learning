@@ -5,27 +5,53 @@ use std::io::stdin;
 #[derive(Debug)]
 struct Visitor {
     name: String,
-    greeting: String,
+    action: VisitorAction,
+    age: i8,
 }
 
 impl Visitor {
-    fn new(name: &str, greeting: &str) -> Self {
+    fn new(name: &str, action: VisitorAction, age: i8) -> Self {
         Self {
             name: name.to_lowercase(),
-            greeting: greeting.to_lowercase(),
+            action,
+            age,
         }
     }
 
     fn greet(&self) {
-        println!("{}", self.greeting);
+        match &self.action {
+            VisitorAction::Accept => println!("Welcome {}", self.name),
+            VisitorAction::AcceptWithNote { note } => {
+                println!("Welcome {} ({})", self.name, note);
+                if self.age < 21 {
+                    println!("Don't serve alcohol");
+                }
+            }
+            VisitorAction::Probation => println!("{} is a probationary member", self.name),
+            VisitorAction::Refuse => println!("{} is denied", self.name),
+        }
     }
+}
+
+#[derive(Debug)]
+enum VisitorAction {
+    Accept,
+    AcceptWithNote { note: String },
+    Refuse,
+    Probation,
 }
 
 fn main() {
     let mut visitor_list = vec![
-        Visitor::new("bert", "welp hi there"),
-        Visitor::new("collin", "Welcome"),
-        Visitor::new("steve", "huh?"),
+        Visitor::new("bert", VisitorAction::Accept, 45),
+        Visitor::new(
+            "collin",
+            VisitorAction::AcceptWithNote {
+                note: String::from("hi there"),
+            },
+            47,
+        ),
+        Visitor::new("steve", VisitorAction::Refuse, 38),
     ];
     loop {
         println!("name:");
@@ -38,7 +64,7 @@ fn main() {
                 break;
             }
             println!("Added {name} to visitor list");
-            visitor_list.push(Visitor::new(&name, "New Friend"));
+            visitor_list.push(Visitor::new(&name, VisitorAction::Probation, 0));
         }
     }
     println!("Final list of visitors: {visitor_list:#?}");
