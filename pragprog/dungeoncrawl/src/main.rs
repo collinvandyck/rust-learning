@@ -6,6 +6,7 @@ mod map;
 mod map_builder;
 mod spawner;
 mod systems;
+mod turn_state;
 
 mod prelude {
     pub use crate::camera::*;
@@ -14,6 +15,7 @@ mod prelude {
     pub use crate::map_builder::*;
     pub use crate::spawner::*;
     pub use crate::systems::*;
+    pub use crate::turn_state::*;
     pub use bracket_lib::prelude::*;
     pub use legion::systems::CommandBuffer;
     pub use legion::world::SubWorld;
@@ -47,6 +49,7 @@ impl State {
             .for_each(|pos| spawn_monster(&mut ecs, &mut rng, pos));
         resources.insert(builder.map);
         resources.insert(Camera::new(builder.player_start));
+        resources.insert(TurnState::AwaitingInput);
         Self {
             ecs,
             resources,
