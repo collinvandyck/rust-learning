@@ -29,7 +29,9 @@ impl Player {
         if self.velocity < 2.0 {
             self.velocity += 0.2;
         }
-        self.y += self.velocity as i32;
+        let adj_velocity = self.velocity as i32;
+        println!("Adj velocity: {adj_velocity}");
+        self.y += adj_velocity;
         self.x += 1;
         if self.y < 0 {
             self.y = 0;
