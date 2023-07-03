@@ -44,9 +44,9 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
-        self.player.update(ctx, &self.map);
+        self.player.update(ctx, &self.map, &mut self.camera);
         self.map.render(ctx, &self.camera);
-        self.player.render(ctx);
+        self.player.render(ctx, &self.camera);
     }
 }
 
