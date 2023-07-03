@@ -41,7 +41,7 @@ fn main() {
             visitor_list.push(Visitor::new(&name, "New Friend"));
         }
     }
-    println!("Final list of visitors: {visitor_list:?}");
+    println!("Final list of visitors: {visitor_list:#?}");
 }
 
 fn what_name() -> String {
