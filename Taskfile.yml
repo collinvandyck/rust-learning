@@ -6,6 +6,11 @@ tasks:
     cmds:
       - cargo run
     silent: true
+  clippy:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - cargo clippy
+    silent: true
   release:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
