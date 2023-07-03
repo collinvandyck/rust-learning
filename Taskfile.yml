@@ -23,5 +23,5 @@ tasks:
     silent: true
   clean:
     cmds:
-      - make clean
+      - scripts/clean.sh
     silent: true
