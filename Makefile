@@ -4,6 +4,6 @@ clean:
 		    echo $$x; \
 			cd $$x; \
 			cargo clean; \
-			cd ..; \
+			cd -; \
 		fi \
 	done
