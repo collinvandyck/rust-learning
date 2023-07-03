@@ -30,6 +30,9 @@ fn main() {
     loop {
         println!("name:");
         let name = what_name();
+        if name == "" {
+            break;
+        }
         let known = visitor_list.iter().find(|v| v.name == name);
         match known {
             Some(visitor) => visitor.greet(),
