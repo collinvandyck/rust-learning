@@ -22,7 +22,7 @@ impl Visitor {
 }
 
 fn main() {
-    let visitor_list = vec![
+    let mut visitor_list = vec![
         Visitor::new("bert", "welp hi there"),
         Visitor::new("collin", "Welcome"),
         Visitor::new("steve", "huh?"),
@@ -30,13 +30,16 @@ fn main() {
     loop {
         println!("name:");
         let name = what_name();
-        if name == "" {
-            break;
-        }
         let known = visitor_list.iter().find(|v| v.name == name);
         match known {
             Some(visitor) => visitor.greet(),
-            _ => println!("Not welcome {name}"),
+            None => {
+                if name.is_empty() {
+                    break;
+                }
+                println!("Added {name} to visitor list");
+                visitor_list.push(Visitor::new(&name, "New Friend"));
+            }
         }
     }
 }
