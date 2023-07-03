@@ -55,9 +55,15 @@ impl GameState for State {
             ctx.set_active_console(i);
             ctx.cls();
         }
+        // update the current key press on each tick of the game state.
+        // the resources will overwrite it if it exists already.
         self.resources.insert(ctx.key);
+
+        // run the systems
         self.systems.execute(&mut self.ecs, &mut self.resources);
-        // TODO: render draw buffer
+
+        // draw
+        render_draw_buffer(ctx).expect("Render error");
     }
 }
 
