@@ -9,18 +9,21 @@ mod prelude {
 
 use prelude::*;
 
-struct State {}
+struct State {
+    map: Map,
+}
 
 impl State {
     fn new() -> Self {
-        Self {}
+        let map = Map::new();
+        Self { map }
     }
 }
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
-        ctx.print(1, 1, "Hello, world!");
+        self.map.render(ctx);
     }
 }
 
