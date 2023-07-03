@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::{
     error::Error,
     io::{BufRead, BufReader, BufWriter, Write},
@@ -20,8 +22,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = mpsc::sync_channel(1024);
     thread::spawn(move || controller_thread(rx));
     let port = 3000;
-    let addr = format!("0.0.0.0:{}", port);
-    println!("Listening on {}", addr);
+    let addr = format!("0.0.0.0:{port}");
+    println!("Listening on {addr}");
     let listener = TcpListener::bind(addr)?;
     for (id, conn) in listener.incoming().enumerate() {
         let conn = conn?;
@@ -71,7 +73,7 @@ fn handle_conn(id: ClientID, conn: TcpStream, control_tx: SyncSender<Event>) {
     let mut writer = BufWriter::new(conn);
     for event in rx {
         if let Event::Line(id, line) = event {
-            let msg = format!("{}: {}\n", id, line);
+            let msg = format!("{id}: {line}\n");
             let res = writer
                 .write_all(msg.as_bytes())
                 .and_then(|_| writer.flush());
