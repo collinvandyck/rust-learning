@@ -27,12 +27,14 @@ fn main() {
         Visitor::new("collin", "Welcome"),
         Visitor::new("steve", "huh?"),
     ];
-    println!("name:");
-    let name = what_name();
-    let known = visitor_list.iter().find(|v| v.name == name);
-    match known {
-        Some(visitor) => visitor.greet(),
-        _ => println!("Not welcome {name}"),
+    loop {
+        println!("name:");
+        let name = what_name();
+        let known = visitor_list.iter().find(|v| v.name == name);
+        match known {
+            Some(visitor) => visitor.greet(),
+            _ => println!("Not welcome {name}"),
+        }
     }
 }
 
