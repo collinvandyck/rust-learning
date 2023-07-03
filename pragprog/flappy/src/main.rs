@@ -1,6 +1,10 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use bracket_lib::prelude::*;
 
-struct State {}
+struct State {
+    mode: GameMode,
+}
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
@@ -9,9 +13,20 @@ impl GameState for State {
     }
 }
 
+enum GameMode {
+    Menu,
+    Playing,
+    End,
+}
+
 fn main() -> BError {
     let context = BTermBuilder::simple80x50()
         .with_title("Flappy Dragon")
         .build()?;
-    main_loop(context, State {})
+    main_loop(
+        context,
+        State {
+            mode: GameMode::Menu,
+        },
+    )
 }
