@@ -62,7 +62,7 @@ impl GameState for State {
         // run the systems
         self.systems.execute(&mut self.ecs, &mut self.resources);
 
-        // draw
+        // draw to bracket
         render_draw_buffer(ctx).expect("Render error");
     }
 }
