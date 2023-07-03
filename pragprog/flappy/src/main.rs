@@ -6,6 +6,23 @@ const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 const FRAME_DURATION: f32 = 75.0;
 
+struct Obstacle {
+    x: i32,
+    gap_y: i32,
+    size: i32,
+}
+
+impl Obstacle {
+    fn new(x: i32, score: i32) -> Self {
+        let mut random = RandomNumberGenerator::new();
+        Self {
+            x,
+            gap_y: random.range(10, 40),
+            size: i32::max(2, 20 - score),
+        }
+    }
+}
+
 struct Player {
     x: i32,
     y: i32,
@@ -22,7 +39,7 @@ impl Player {
     }
 
     fn render(&mut self, ctx: &mut BTerm) {
-        ctx.set(self.x, self.y, YELLOW, BLACK, to_cp437('@'));
+        ctx.set(0, self.y, YELLOW, BLACK, to_cp437('@'));
     }
 
     fn gravity_and_move(&mut self) {
@@ -99,9 +116,6 @@ impl State {
         self.player.render(ctx);
         ctx.print(0, 0, "Press SPACE to flap.");
         if self.player.y > SCREEN_HEIGHT {
-            self.mode = GameMode::End;
-        }
-        if self.player.x > SCREEN_WIDTH {
             self.mode = GameMode::End;
         }
     }
