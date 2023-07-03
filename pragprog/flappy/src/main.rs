@@ -29,6 +29,7 @@ impl Player {
         if self.velocity < 2.0 {
             self.velocity += 0.2;
         }
+        #[allow(clippy::cast_possible_truncation)]
         let adj_velocity = self.velocity as i32;
         self.y += adj_velocity;
         self.x += 1;
