@@ -4,7 +4,7 @@ use std::io::stdin;
 fn main() {
     println!("name:");
     let name = what_name();
-    println!("Hello {name}");
+    println!("Hello {name:?}");
 }
 
 fn what_name() -> String {
