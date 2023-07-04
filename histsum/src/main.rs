@@ -107,13 +107,12 @@ impl Acc {
         // figure out padding for the topk results
         let max_len = res.iter().fold(0, |mx, s| cmp::max(mx, s.1.len()));
         res.iter()
-            .enumerate()
-            .map(|(idx, (count, string))| {
+            .map(|(count, string)| {
                 let padding = " ".repeat(max_len - string.len());
-                let newline = if idx < res.len() - 1 { "\n" } else { "" };
-                format!("{string}{padding} : {count}{newline}")
+                format!("{string}{padding} : {count}")
             })
-            .collect()
+            .collect::<Vec<String>>()
+            .join("\n")
     }
 }
 
