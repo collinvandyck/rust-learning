@@ -50,22 +50,19 @@ struct Args {
 impl Args {
     fn parse() -> Args {
         let args = env::args().take(2).collect::<Vec<String>>();
-        let topk = args
-            .get(1)
-            .map(|arg| {
-                if arg == "-h" || arg == "--help" {
-                    eprintln!("Usage: {} [topk]", args.get(0).unwrap());
-                    std::process::exit(0);
+        let topk = args.get(1).map_or(DEFAULT_TOPK, |arg| {
+            if arg == "-h" || arg == "--help" {
+                eprintln!("Usage: {} [topk]", args.get(0).unwrap());
+                std::process::exit(0);
+            }
+            match arg.parse::<usize>() {
+                Ok(n) => n,
+                Err(e) => {
+                    eprintln!(r#"Failed to parse topk for "{arg}": {e}"#);
+                    std::process::exit(1);
                 }
-                match arg.parse::<usize>() {
-                    Ok(n) => n,
-                    Err(e) => {
-                        eprintln!(r#"Failed to parse topk for "{arg}": {e}"#);
-                        std::process::exit(1);
-                    }
-                }
-            })
-            .unwrap_or(DEFAULT_TOPK);
+            }
+        });
         Args { topk }
     }
 }
