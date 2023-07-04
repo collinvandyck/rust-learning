@@ -97,28 +97,25 @@ impl Acc {
         }
     }
     fn summarize(&self) -> String {
-        let mut v: Vec<(&String, &u32)> = self.cmds.iter().collect();
-        v.sort_by(|x, y| y.1.cmp(x.1));
-        v = v.into_iter().take(self.topk).collect();
-        let max = v.iter().fold(0, |s, c| cmp::max(s, c.0.len()));
-        let mut res = String::new();
-        v.iter()
-            .take(self.topk)
+        let mut res = self
+            .cmds
+            .iter()
+            .map(|(i, j)| (j, i))
+            .collect::<Vec<(&u32, &String)>>();
+        res.sort_by(|x, y| y.0.cmp(x.0));
+        res = res.into_iter().take(self.topk).collect::<Vec<_>>();
+        let max_len = res.iter().fold(0, |mx, s| cmp::max(mx, s.1.len()));
+        res.iter()
             .enumerate()
-            .for_each(|(i, (s, c))| {
-                let mut padding: Option<String> = None;
-                let str_len = s.len();
-                if max > str_len {
-                    padding = Some(" ".repeat(max - str_len));
-                }
-                let padding: String = padding.unwrap_or("".to_string());
-                let mut line = format!("{}{} : {}", s, padding, c);
-                if i < v.len() - 1 {
-                    line.push_str("\n");
-                }
-                res.push_str(&line);
-            });
-        res
+            .map(|(idx, (count, string))| {
+                let padding = " ".repeat(max_len - string.len());
+                let newline = match res.len() - idx {
+                    1 => "",
+                    _ => "\n",
+                };
+                format!("{}{} : {}{}", string, padding, count, newline)
+            })
+            .collect()
     }
 }
 
