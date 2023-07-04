@@ -4,7 +4,7 @@ tasks:
   default:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - cargo run
+      - cargo run -- {{.CLI_ARGS}}
     silent: true
   clippy:
     dir: '{{.USER_WORKING_DIR}}'
