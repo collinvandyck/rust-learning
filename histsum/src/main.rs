@@ -85,7 +85,7 @@ impl Acc {
         lazy_static! {
             // example line:
             // : 1688435851:0;cmd arg1 arg2
-            static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)?(.*)$").unwrap();
+            static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)? *(.*)$").unwrap();
         }
         if let Some(captures) = LINE_RE.captures(line) {
             if let Some(found) = captures.get(2) {
