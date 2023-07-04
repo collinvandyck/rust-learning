@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::fs;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
@@ -53,11 +54,14 @@ fn main() -> Result<(), HError> {
 }
 
 #[derive(Debug)]
-struct Acc {}
+struct Acc {
+    re: Regex,
+}
 
 impl Acc {
     fn new() -> Self {
-        Self {}
+        let re = Regex::new("").unwrap();
+        Self { re }
     }
     fn accept(&mut self, line: &String) -> Result<(), HError> {
         let line: Vec<char> = line.chars().collect();
