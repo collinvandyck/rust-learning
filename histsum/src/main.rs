@@ -96,12 +96,14 @@ impl Acc {
         }
     }
     fn summarize(&self) -> String {
+        // convert the lookup to a vector and sort it
         let mut res: Vec<(&String, &u32)> = self.cmds.iter().collect();
         res.sort_by(|x, y| y.1.cmp(x.1));
         // take the topk
         res = res.into_iter().take(self.topk).collect::<Vec<_>>();
-        // figure out padding for the topk results
+        // figure out padding for the topk results to make printing nice
         let max_len = res.iter().fold(0, |mx, s| cmp::max(mx, s.0.len()));
+        // map the tuples into formatted strings and join them
         res.iter()
             .map(|(string, count)| {
                 let padding = " ".repeat(max_len - string.len());
