@@ -27,21 +27,23 @@ impl HError {
 }
 
 fn main() -> Result<(), HError> {
-    let mut topk = 20;
-    env::args().skip(1).take(1).for_each(|arg| {
-        if arg == "-h" || arg == "--help" {
-            eprintln!("Usage: histsum [topk]");
-            std::process::exit(0);
-        }
-        match arg.parse::<usize>() {
-            Ok(n) => topk = n,
-            Err(e) => {
-                eprintln!("Failed to parse topk: {}", e);
-                std::process::exit(1);
+    let args = env::args().skip(1).take(1).collect::<Vec<String>>();
+    let topk = match args.get(0) {
+        Some(arg) => {
+            if arg == "-h" || arg == "--help" {
+                eprintln!("Usage: histsum [topk]");
+                std::process::exit(0);
+            }
+            match arg.parse::<usize>() {
+                Ok(n) => n,
+                Err(e) => {
+                    eprintln!("Failed to parse topk: {}", e);
+                    std::process::exit(1);
+                }
             }
         }
-    });
-
+        None => 20,
+    };
     let dir = match home_dir() {
         Some(dir) => dir,
         _ => return Err(HError::NoHomeDir),
