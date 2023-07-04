@@ -1,6 +1,6 @@
 use std::fs;
 use std::io::{self, BufRead, BufReader};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -10,6 +10,15 @@ pub enum HError {
 
     #[error("{0}")]
     IOError(#[from] io::Error),
+
+    #[error("Could not parse: {0}")]
+    ParseError(String),
+}
+
+impl HError {
+    fn parse_err(err: &str) -> Result<(), HError> {
+        Err(HError::ParseError(err.to_string()))
+    }
 }
 
 // example line:
@@ -24,12 +33,37 @@ fn main() -> Result<(), HError> {
     let path = path.to_str().expect("path");
     let hist = fs::OpenOptions::new().read(true).open(path)?;
     let hist = BufReader::new(hist);
-    hist.lines().flatten().fold(Hist {}, parse);
+    let mut acc = Acc::new();
+    hist.lines().for_each(|line| {
+        if let Ok(line) = line {
+            if line.len() == 0 {
+                return;
+            }
+            match acc.accept(&line) {
+                Err(e) => {
+                    println!("Failed at: {}: {}", &line, e);
+                    std::process::exit(1);
+                }
+                _ => (),
+            }
+        }
+    });
+    println!("Results: {acc:#?}");
     Ok(())
 }
 
-struct Hist {}
+#[derive(Debug)]
+struct Acc {}
 
-fn parse(hist: Hist, line: String) -> Hist {
-    Hist {}
+impl Acc {
+    fn new() -> Self {
+        Self {}
+    }
+    fn accept(&mut self, line: &String) -> Result<(), HError> {
+        let line: Vec<char> = line.chars().collect();
+        if line[0] != ':' {
+            return HError::parse_err("expected :");
+        }
+        Ok(())
+    }
 }
