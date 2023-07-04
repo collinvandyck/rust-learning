@@ -28,7 +28,34 @@ impl HError {
 
 const DEFAULT_TOPK: usize = 20;
 
+struct Args {
+    topk: usize,
+}
+
 fn main() -> Result<(), HError> {
+    let Args { topk } = parse_args();
+    let dir = home_dir().unwrap();
+    let path = Path::new(&dir).join(".zsh_history");
+    let path = path.to_str().expect("path");
+    let hist = fs::OpenOptions::new().read(true).open(path)?;
+    let hist = BufReader::new(hist);
+    let mut acc = Acc::new(topk);
+    hist.lines().for_each(|line| {
+        if let Ok(line) = line {
+            match acc.accept(&line) {
+                Err(e) => {
+                    println!("Failed at: {}: {}", &line, e);
+                    std::process::exit(1);
+                }
+                _ => (),
+            }
+        }
+    });
+    println!("{acc}");
+    Ok(())
+}
+
+fn parse_args() -> Args {
     let args = env::args().take(2).collect::<Vec<String>>();
     let topk = args
         .get(1)
@@ -46,31 +73,7 @@ fn main() -> Result<(), HError> {
             }
         })
         .unwrap_or(DEFAULT_TOPK);
-    let dir = match home_dir() {
-        Some(dir) => dir,
-        _ => return Err(HError::NoHomeDir),
-    };
-    let path = Path::new(&dir).join(".zsh_history");
-    let path = path.to_str().expect("path");
-    let hist = fs::OpenOptions::new().read(true).open(path)?;
-    let hist = BufReader::new(hist);
-    let mut acc = Acc::new(topk);
-    hist.lines().for_each(|line| {
-        if let Ok(line) = line {
-            if line.len() == 0 {
-                return;
-            }
-            match acc.accept(&line) {
-                Err(e) => {
-                    println!("Failed at: {}: {}", &line, e);
-                    std::process::exit(1);
-                }
-                _ => (),
-            }
-        }
-    });
-    println!("{acc}");
-    Ok(())
+    Args { topk }
 }
 
 /// Acc accumulates the results of parsing the history file
