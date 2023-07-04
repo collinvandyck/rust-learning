@@ -34,11 +34,7 @@ struct Args {
 
 fn main() -> Result<(), HError> {
     let Args { topk } = parse_args();
-    let dir = home_dir().unwrap();
-    let path = Path::new(&dir).join(".zsh_history");
-    let path = path.to_str().expect("path");
-    let hist = fs::OpenOptions::new().read(true).open(path)?;
-    let hist = BufReader::new(hist);
+    let hist = read_hist_file(".zsh_history")?;
     let mut acc = Acc::new(topk);
     hist.lines().for_each(|line| {
         if let Ok(line) = line {
@@ -53,6 +49,15 @@ fn main() -> Result<(), HError> {
     });
     println!("{acc}");
     Ok(())
+}
+
+fn read_hist_file(file_name: &str) -> Result<impl BufRead, HError> {
+    let dir = home_dir().unwrap();
+    let path = Path::new(&dir).join(file_name);
+    let path = path.to_str().expect("path");
+    let hist = fs::OpenOptions::new().read(true).open(path)?;
+    let hist = BufReader::new(hist);
+    Ok(hist)
 }
 
 fn parse_args() -> Args {
@@ -78,7 +83,6 @@ fn parse_args() -> Args {
 
 /// Acc accumulates the results of parsing the history file
 /// and summarizes them when printed
-#[derive(Debug)]
 struct Acc {
     topk: usize,                // how many entries to display
     cmds: HashMap<String, u32>, // lookup for command counts
