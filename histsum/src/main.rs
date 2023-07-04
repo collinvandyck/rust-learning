@@ -2,9 +2,9 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::fs;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
+use std::{cmp, fs};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -57,7 +57,6 @@ fn main() -> Result<(), HError> {
 #[derive(Debug)]
 struct Acc {
     topk: usize,
-    caps: HashMap<usize, u32>,
     cmds: HashMap<String, u32>,
 }
 
@@ -65,9 +64,8 @@ struct Acc {
 // : 1688435851:0;time ./target/release/histsum
 impl Acc {
     fn new(topk: usize) -> Self {
-        let caps = HashMap::new();
         let cmds = HashMap::new();
-        Self { topk, caps, cmds }
+        Self { topk, cmds }
     }
     fn accept(&mut self, line: &String) -> Result<(), HError> {
         lazy_static! {
@@ -79,7 +77,6 @@ impl Acc {
             Some(res) => res,
             None => return HError::parse_err("regex failed to match"),
         };
-        *self.caps.entry(res.len()).or_insert(0) += 1;
         if res.get(1).is_none() {
             return Ok(());
         }
@@ -100,10 +97,12 @@ impl Display for Acc {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut v: Vec<(&String, &u32)> = self.cmds.iter().collect();
         v.sort_by(|x, y| y.1.cmp(x.1));
+        v = v.into_iter().take(self.topk).collect();
+        let max = v.iter().fold(0, |s, c| cmp::max(s, c.0.len()));
         let mut res = String::new();
         v.iter().take(self.topk).for_each(|(s, c)| {
             res.push_str(format!("{}:\t\t{}\n", s, c).as_str());
         });
-        write!(f, "{}", res)
+        write!(f, "{}\nmax:{}", res, max)
     }
 }
