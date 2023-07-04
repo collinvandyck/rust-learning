@@ -101,7 +101,13 @@ impl Display for Acc {
         let max = v.iter().fold(0, |s, c| cmp::max(s, c.0.len()));
         let mut res = String::new();
         v.iter().take(self.topk).for_each(|(s, c)| {
-            res.push_str(format!("{}:\t\t{}\n", s, c).as_str());
+            let mut padding: Option<String> = None;
+            let str_len = s.len();
+            if max > str_len {
+                padding = Some(" ".repeat(max - str_len));
+            }
+            let padding: String = padding.unwrap_or("".to_string());
+            res.push_str(format!("{}{} : {}\n", s, padding, c).as_str());
         });
         write!(f, "{}\nmax:{}", res, max)
     }
