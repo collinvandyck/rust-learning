@@ -35,7 +35,7 @@ fn main() -> Result<(), HError> {
     let path = path.to_str().expect("path");
     let hist = fs::OpenOptions::new().read(true).open(path)?;
     let hist = BufReader::new(hist);
-    let topk = 20;
+    let topk = 30;
     let mut acc = Acc::new(topk);
     hist.lines().for_each(|line| {
         if let Ok(line) = line {
