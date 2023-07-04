@@ -23,7 +23,7 @@ pub enum HError {
 const DEFAULT_TOPK: usize = 20;
 
 fn main() -> Result<(), HError> {
-    let Args { topk } = parse_args();
+    let Args { topk } = Args::parse();
     let hist = read_hist_file(".zsh_history")?;
     let mut acc = Acc::new(topk);
     hist.lines().flatten().for_each(|line| acc.accept(&line));
@@ -40,29 +40,32 @@ fn read_hist_file(file_name: &str) -> Result<impl BufRead, HError> {
     Ok(hist)
 }
 
+/// arguments to the program
 struct Args {
     topk: usize,
 }
 
-fn parse_args() -> Args {
-    let args = env::args().take(2).collect::<Vec<String>>();
-    let topk = args
-        .get(1)
-        .map(|arg| {
-            if arg == "-h" || arg == "--help" {
-                eprintln!("Usage: {} [topk]", args.get(0).unwrap());
-                std::process::exit(0);
-            }
-            match arg.parse::<usize>() {
-                Ok(n) => n,
-                Err(e) => {
-                    eprintln!(r#"Failed to parse topk for "{}": {}"#, arg, e);
-                    std::process::exit(1);
+impl Args {
+    fn parse() -> Args {
+        let args = env::args().take(2).collect::<Vec<String>>();
+        let topk = args
+            .get(1)
+            .map(|arg| {
+                if arg == "-h" || arg == "--help" {
+                    eprintln!("Usage: {} [topk]", args.get(0).unwrap());
+                    std::process::exit(0);
                 }
-            }
-        })
-        .unwrap_or(DEFAULT_TOPK);
-    Args { topk }
+                match arg.parse::<usize>() {
+                    Ok(n) => n,
+                    Err(e) => {
+                        eprintln!(r#"Failed to parse topk for "{}": {}"#, arg, e);
+                        std::process::exit(1);
+                    }
+                }
+            })
+            .unwrap_or(DEFAULT_TOPK);
+        Args { topk }
+    }
 }
 
 /// Acc accumulates the results of parsing the history file
