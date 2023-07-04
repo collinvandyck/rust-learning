@@ -82,7 +82,7 @@ impl Acc {
             cmds: HashMap::default(),
         }
     }
-    fn parse(&mut self, line: &String) {
+    fn parse(&mut self, line: &str) {
         lazy_static! {
             // example line:
             // : 1688435851:0;cmd arg1 arg2
