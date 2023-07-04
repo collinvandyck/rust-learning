@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use home::home_dir;
 use lazy_static::lazy_static;
 use regex::Regex;
