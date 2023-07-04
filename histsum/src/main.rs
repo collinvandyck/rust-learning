@@ -114,7 +114,7 @@ impl Acc {
             .map(|(idx, (count, string))| {
                 let padding = " ".repeat(max_len - string.len());
                 let newline = if res.len() - idx == 1 { "" } else { "\n" };
-                format!("{}{} : {}{}", string, padding, count, newline)
+                format!("{string}{padding} : {count}{newline}")
             })
             .collect()
     }
