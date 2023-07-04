@@ -40,7 +40,7 @@ fn main() -> Result<(), HError> {
             match arg.parse::<usize>() {
                 Ok(n) => n,
                 Err(e) => {
-                    eprintln!("Failed to parse topk: {}", e);
+                    eprintln!(r#"Failed to parse topk for "{}": {}"#, arg, e);
                     std::process::exit(1);
                 }
             }
