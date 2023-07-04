@@ -34,13 +34,14 @@ fn main() -> Result<(), HError> {
     let path = path.to_str().expect("path");
     let hist = fs::OpenOptions::new().read(true).open(path)?;
     let hist = BufReader::new(hist);
-    let mut acc = Acc::new();
+    let topk = 20;
+    let mut acc = Acc::new(topk);
     hist.lines().for_each(|line| {
         if let Ok(line) = line {
             if line.len() == 0 {
                 return;
             }
-            match acc.accept(&line, 20) {
+            match acc.accept(&line) {
                 Err(e) => {
                     println!("Failed at: {}: {}", &line, e);
                     std::process::exit(1);
@@ -55,6 +56,7 @@ fn main() -> Result<(), HError> {
 
 #[derive(Debug)]
 struct Acc {
+    topk: usize,
     caps: HashMap<usize, u32>,
     cmds: HashMap<String, u32>,
 }
@@ -62,12 +64,12 @@ struct Acc {
 // example line:
 // : 1688435851:0;time ./target/release/histsum
 impl Acc {
-    fn new() -> Self {
+    fn new(topk: usize) -> Self {
         let caps = HashMap::new();
         let cmds = HashMap::new();
-        Self { caps, cmds }
+        Self { topk, caps, cmds }
     }
-    fn accept(&mut self, line: &String, topk: usize) -> Result<(), HError> {
+    fn accept(&mut self, line: &String) -> Result<(), HError> {
         lazy_static! {
             static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)?(.*)$").unwrap();
             static ref CMD_RE: Regex = Regex::new(r"^(.*)\s*$").unwrap();
@@ -84,7 +86,7 @@ impl Acc {
         match res.get(2) {
             Some(line) => {
                 let line = line.as_str();
-                line.split(' ').take(topk).for_each(|cmd| {
+                line.split(' ').take(1).for_each(|cmd| {
                     *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
                 })
             }
@@ -99,8 +101,8 @@ impl Display for Acc {
         let mut v: Vec<(&String, &u32)> = self.cmds.iter().collect();
         v.sort_by(|x, y| y.1.cmp(x.1));
         let mut res = String::new();
-        v.iter().take(10).for_each(|(s, c)| {
-            res.push_str(format!("{}:\t{}\n", s, c).as_str());
+        v.iter().take(self.topk).for_each(|(s, c)| {
+            res.push_str(format!("{}:\t\t{}\n", s, c).as_str());
         });
         write!(f, "{}", res)
     }
