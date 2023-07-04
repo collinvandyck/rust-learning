@@ -19,7 +19,7 @@ tasks:
   rr:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - $(fd -t x -d 1 . target/release)
+      - $(fd -t x -d 1 . target/release) {{.CLI_ARGS}}
     silent: true
   test:
     dir: '{{.USER_WORKING_DIR}}'

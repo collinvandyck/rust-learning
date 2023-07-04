@@ -26,10 +26,13 @@ impl HError {
     }
 }
 
+const DEFAULT_TOPK: usize = 20;
+
 fn main() -> Result<(), HError> {
     let args = env::args().skip(1).take(1).collect::<Vec<String>>();
-    let topk = match args.get(0) {
-        Some(arg) => {
+    let topk = args
+        .get(0)
+        .map(|arg| {
             if arg == "-h" || arg == "--help" {
                 eprintln!("Usage: histsum [topk]");
                 std::process::exit(0);
@@ -41,9 +44,8 @@ fn main() -> Result<(), HError> {
                     std::process::exit(1);
                 }
             }
-        }
-        None => 20,
-    };
+        })
+        .unwrap_or(DEFAULT_TOPK);
     let dir = match home_dir() {
         Some(dir) => dir,
         _ => return Err(HError::NoHomeDir),
@@ -71,21 +73,22 @@ fn main() -> Result<(), HError> {
     Ok(())
 }
 
+/// Acc accumulates the results of parsing the history file
+/// and summarizes them when printed
 #[derive(Debug)]
 struct Acc {
-    topk: usize,
-    cmds: HashMap<String, u32>,
+    topk: usize,                // how many entries to display
+    cmds: HashMap<String, u32>, // lookup for command counts
 }
 
-// example line:
-// : 1688435851:0;time ./target/release/histsum
 impl Acc {
     fn new(topk: usize) -> Self {
-        let cmds = HashMap::new();
+        let cmds = HashMap::default();
         Self { topk, cmds }
     }
     fn accept(&mut self, line: &String) -> Result<(), HError> {
         lazy_static! {
+            // : 1688435851:0;cmd arg1 arg2
             static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)?(.*)$").unwrap();
         }
         let res = LINE_RE.captures(line);
@@ -93,17 +96,14 @@ impl Acc {
             Some(res) => res,
             None => return HError::parse_err("regex failed to match"),
         };
-        if res.get(1).is_none() {
+        if let None = res.get(1) {
             return Ok(());
         }
-        match res.get(2) {
-            Some(line) => {
-                let line = line.as_str();
-                line.split(' ').take(1).for_each(|cmd| {
-                    *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
-                })
-            }
-            None => {}
+        // get the command part
+        if let Some(found) = res.get(2) {
+            found.as_str().split(' ').take(1).for_each(|cmd| {
+                *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
+            })
         }
         Ok(())
     }
