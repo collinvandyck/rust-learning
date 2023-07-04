@@ -109,6 +109,6 @@ impl Display for Acc {
             let padding: String = padding.unwrap_or("".to_string());
             res.push_str(format!("{}{} : {}\n", s, padding, c).as_str());
         });
-        write!(f, "{}\nmax:{}", res, max)
+        write!(f, "{res}")
     }
 }
