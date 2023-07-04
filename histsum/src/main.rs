@@ -1,6 +1,7 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::fs;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
@@ -48,7 +49,7 @@ fn main() -> Result<(), HError> {
             }
         }
     });
-    println!("Results: {acc:#?}");
+    println!("Results: {acc}");
     Ok(())
 }
 
@@ -90,5 +91,11 @@ impl Acc {
             None => {}
         }
         Ok(())
+    }
+}
+
+impl Display for Acc {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "hi")
     }
 }
