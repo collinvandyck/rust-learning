@@ -100,19 +100,18 @@ impl Acc {
         let mut res = self
             .cmds
             .iter()
-            .map(|(i, j)| (j, i))
+            .map(|(i, j)| (j, i)) // reverse the tuple
             .collect::<Vec<(&u32, &String)>>();
         res.sort_by(|x, y| y.0.cmp(x.0));
+        // take the topk
         res = res.into_iter().take(self.topk).collect::<Vec<_>>();
+        // figure out padding for the topk results
         let max_len = res.iter().fold(0, |mx, s| cmp::max(mx, s.1.len()));
         res.iter()
             .enumerate()
             .map(|(idx, (count, string))| {
                 let padding = " ".repeat(max_len - string.len());
-                let newline = match res.len() - idx {
-                    1 => "",
-                    _ => "\n",
-                };
+                let newline = if res.len() - idx == 1 { "" } else { "\n" };
                 format!("{}{} : {}{}", string, padding, count, newline)
             })
             .collect()
