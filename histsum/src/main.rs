@@ -91,7 +91,7 @@ impl Acc {
             if let Some(found) = captures.get(2) {
                 found.as_str().split(' ').take(1).for_each(|cmd| {
                     *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
-                })
+                });
             }
         }
     }
