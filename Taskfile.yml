@@ -16,6 +16,11 @@ tasks:
     cmds:
       - cargo build --release
     silent: true
+  rr:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - $(fd -t x -d 1 . target/release)
+    silent: true
   test:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
