@@ -29,12 +29,12 @@ impl HError {
 const DEFAULT_TOPK: usize = 20;
 
 fn main() -> Result<(), HError> {
-    let args = env::args().skip(1).take(1).collect::<Vec<String>>();
+    let args = env::args().take(2).collect::<Vec<String>>();
     let topk = args
-        .get(0)
+        .get(1)
         .map(|arg| {
             if arg == "-h" || arg == "--help" {
-                eprintln!("Usage: histsum [topk]");
+                eprintln!("Usage: {} [topk]", args.get(0).unwrap());
                 std::process::exit(0);
             }
             match arg.parse::<usize>() {
