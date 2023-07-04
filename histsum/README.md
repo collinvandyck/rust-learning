@@ -1,1 +1,2 @@
-This is a learning project in which I will summarize a history file.
+Summarizes the ~/.zsh_history file, providing a topk of most frequently used
+commands.
