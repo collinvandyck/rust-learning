@@ -101,15 +101,22 @@ impl Display for Acc {
         v = v.into_iter().take(self.topk).collect();
         let max = v.iter().fold(0, |s, c| cmp::max(s, c.0.len()));
         let mut res = String::new();
-        v.iter().take(self.topk).for_each(|(s, c)| {
-            let mut padding: Option<String> = None;
-            let str_len = s.len();
-            if max > str_len {
-                padding = Some(" ".repeat(max - str_len));
-            }
-            let padding: String = padding.unwrap_or("".to_string());
-            res.push_str(format!("{}{} : {}\n", s, padding, c).as_str());
-        });
+        v.iter()
+            .take(self.topk)
+            .enumerate()
+            .for_each(|(i, (s, c))| {
+                let mut padding: Option<String> = None;
+                let str_len = s.len();
+                if max > str_len {
+                    padding = Some(" ".repeat(max - str_len));
+                }
+                let padding: String = padding.unwrap_or("".to_string());
+                let mut line = format!("{}{} : {}", s, padding, c);
+                if i < v.len() - 1 {
+                    line.push_str("\n");
+                }
+                res.push_str(&line);
+            });
         write!(f, "{res}")
     }
 }
