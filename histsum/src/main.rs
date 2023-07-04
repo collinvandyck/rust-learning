@@ -110,7 +110,7 @@ impl Acc {
             .enumerate()
             .map(|(idx, (count, string))| {
                 let padding = " ".repeat(max_len - string.len());
-                let newline = if res.len() - idx == 1 { "" } else { "\n" };
+                let newline = if idx < res.len() - 1 { "\n" } else { "" };
                 format!("{string}{padding} : {count}{newline}")
             })
             .collect()
