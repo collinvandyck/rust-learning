@@ -71,7 +71,6 @@ impl Acc {
     fn accept(&mut self, line: &String) -> Result<(), HError> {
         lazy_static! {
             static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)?(.*)$").unwrap();
-            static ref CMD_RE: Regex = Regex::new(r"^(.*)\s*$").unwrap();
         }
         let res = LINE_RE.captures(line);
         let res = match res {
