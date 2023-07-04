@@ -1,3 +1,4 @@
+use home::home_dir;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
@@ -26,7 +27,7 @@ impl HError {
 }
 
 fn main() -> Result<(), HError> {
-    let dir = match std::env::home_dir() {
+    let dir = match home_dir() {
         Some(dir) => dir,
         _ => return Err(HError::NoHomeDir),
     };
