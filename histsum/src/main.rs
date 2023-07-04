@@ -1,4 +1,6 @@
+use lazy_static::lazy_static;
 use regex::Regex;
+use std::collections::HashMap;
 use std::fs;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
@@ -21,9 +23,6 @@ impl HError {
         Err(HError::ParseError(err.to_string()))
     }
 }
-
-// example line:
-// : 1688435851:0;time ./target/release/histsum
 
 fn main() -> Result<(), HError> {
     let dir = match std::env::home_dir() {
@@ -55,18 +54,40 @@ fn main() -> Result<(), HError> {
 
 #[derive(Debug)]
 struct Acc {
-    re: Regex,
+    caps: HashMap<usize, u32>,
+    cmds: HashMap<String, u32>,
 }
 
+// example line:
+// : 1688435851:0;time ./target/release/histsum
 impl Acc {
     fn new() -> Self {
-        let re = Regex::new("").unwrap();
-        Self { re }
+        let caps = HashMap::new();
+        let cmds = HashMap::new();
+        Self { caps, cmds }
     }
     fn accept(&mut self, line: &String) -> Result<(), HError> {
-        let line: Vec<char> = line.chars().collect();
-        if line[0] != ':' {
-            return HError::parse_err("expected :");
+        lazy_static! {
+            static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)?(.*)$").unwrap();
+            static ref CMD_RE: Regex = Regex::new(r"^(.*)\s*$").unwrap();
+        }
+        let res = LINE_RE.captures(line);
+        let res = match res {
+            Some(res) => res,
+            None => return HError::parse_err("regex failed to match"),
+        };
+        *self.caps.entry(res.len()).or_insert(0) += 1;
+        if res.get(1).is_none() {
+            return Ok(());
+        }
+        match res.get(2) {
+            Some(line) => {
+                let line = line.as_str();
+                line.split(' ').take(1).for_each(|cmd| {
+                    *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
+                })
+            }
+            None => {}
         }
         Ok(())
     }
