@@ -40,7 +40,7 @@ fn main() -> Result<(), HError> {
             if line.len() == 0 {
                 return;
             }
-            match acc.accept(&line) {
+            match acc.accept(&line, 20) {
                 Err(e) => {
                     println!("Failed at: {}: {}", &line, e);
                     std::process::exit(1);
@@ -49,7 +49,7 @@ fn main() -> Result<(), HError> {
             }
         }
     });
-    println!("Results: {acc}");
+    println!("{acc}");
     Ok(())
 }
 
@@ -67,7 +67,7 @@ impl Acc {
         let cmds = HashMap::new();
         Self { caps, cmds }
     }
-    fn accept(&mut self, line: &String) -> Result<(), HError> {
+    fn accept(&mut self, line: &String, topk: usize) -> Result<(), HError> {
         lazy_static! {
             static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)?(.*)$").unwrap();
             static ref CMD_RE: Regex = Regex::new(r"^(.*)\s*$").unwrap();
@@ -84,7 +84,7 @@ impl Acc {
         match res.get(2) {
             Some(line) => {
                 let line = line.as_str();
-                line.split(' ').take(1).for_each(|cmd| {
+                line.split(' ').take(topk).for_each(|cmd| {
                     *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
                 })
             }
@@ -98,9 +98,10 @@ impl Display for Acc {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut v: Vec<(&String, &u32)> = self.cmds.iter().collect();
         v.sort_by(|x, y| y.1.cmp(x.1));
+        let mut res = String::new();
         v.iter().take(10).for_each(|(s, c)| {
-            writeln!(f, "{}: {}", s, c).unwrap();
+            res.push_str(format!("{}:\t{}\n", s, c).as_str());
         });
-        write!(f, "hi")
+        write!(f, "{}", res)
     }
 }
