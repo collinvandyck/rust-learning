@@ -96,18 +96,14 @@ impl Acc {
         }
     }
     fn summarize(&self) -> String {
-        let mut res = self
-            .cmds
-            .iter()
-            .map(|(i, j)| (j, i))
-            .collect::<Vec<(&u32, &String)>>();
-        res.sort_by(|x, y| y.0.cmp(x.0));
+        let mut res: Vec<(&String, &u32)> = self.cmds.iter().collect();
+        res.sort_by(|x, y| y.1.cmp(x.1));
         // take the topk
         res = res.into_iter().take(self.topk).collect::<Vec<_>>();
         // figure out padding for the topk results
-        let max_len = res.iter().fold(0, |mx, s| cmp::max(mx, s.1.len()));
+        let max_len = res.iter().fold(0, |mx, s| cmp::max(mx, s.0.len()));
         res.iter()
-            .map(|(count, string)| {
+            .map(|(string, count)| {
                 let padding = " ".repeat(max_len - string.len());
                 format!("{string}{padding} : {count}")
             })
