@@ -60,7 +60,7 @@ impl Args {
                 match arg.parse::<usize>() {
                     Ok(n) => n,
                     Err(e) => {
-                        eprintln!(r#"Failed to parse topk for "{}": {}"#, arg, e);
+                        eprintln!(r#"Failed to parse topk for "{arg}": {e}"#);
                         std::process::exit(1);
                     }
                 }
