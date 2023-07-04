@@ -22,10 +22,6 @@ pub enum HError {
 
 const DEFAULT_TOPK: usize = 20;
 
-struct Args {
-    topk: usize,
-}
-
 fn main() -> Result<(), HError> {
     let Args { topk } = parse_args();
     let hist = read_hist_file(".zsh_history")?;
@@ -42,6 +38,10 @@ fn read_hist_file(file_name: &str) -> Result<impl BufRead, HError> {
     let hist = fs::OpenOptions::new().read(true).open(path)?;
     let hist = BufReader::new(hist);
     Ok(hist)
+}
+
+struct Args {
+    topk: usize,
 }
 
 fn parse_args() -> Args {
