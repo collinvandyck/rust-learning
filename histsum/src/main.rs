@@ -30,13 +30,13 @@ fn main() -> Result<(), HError> {
     let mut topk = 20;
     env::args().skip(1).take(1).for_each(|arg| {
         if arg == "-h" || arg == "--help" {
-            println!("Usage: histsum [topk]");
+            eprintln!("Usage: histsum [topk]");
             std::process::exit(0);
         }
         match arg.parse::<usize>() {
             Ok(n) => topk = n,
             Err(e) => {
-                println!("Failed to parse topk: {}", e);
+                eprintln!("Failed to parse topk: {}", e);
                 std::process::exit(1);
             }
         }
