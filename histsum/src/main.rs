@@ -20,12 +20,6 @@ pub enum HError {
     ParseError(String),
 }
 
-impl HError {
-    fn parse_err(err: &str) -> Result<(), HError> {
-        Err(HError::ParseError(err.to_string()))
-    }
-}
-
 const DEFAULT_TOPK: usize = 20;
 
 struct Args {
@@ -36,17 +30,7 @@ fn main() -> Result<(), HError> {
     let Args { topk } = parse_args();
     let hist = read_hist_file(".zsh_history")?;
     let mut acc = Acc::new(topk);
-    hist.lines().for_each(|line| {
-        if let Ok(line) = line {
-            match acc.accept(&line) {
-                Err(e) => {
-                    println!("Failed at: {}: {}", &line, e);
-                    std::process::exit(1);
-                }
-                _ => (),
-            }
-        }
-    });
+    hist.lines().flatten().for_each(|line| acc.accept(&line));
     println!("{acc}");
     Ok(())
 }
@@ -93,26 +77,19 @@ impl Acc {
         let cmds = HashMap::default();
         Self { topk, cmds }
     }
-    fn accept(&mut self, line: &String) -> Result<(), HError> {
+    fn accept(&mut self, line: &String) {
         lazy_static! {
+            // example line:
             // : 1688435851:0;cmd arg1 arg2
             static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)?(.*)$").unwrap();
         }
-        let res = LINE_RE.captures(line);
-        let res = match res {
-            Some(res) => res,
-            None => return HError::parse_err("regex failed to match"),
-        };
-        if let None = res.get(1) {
-            return Ok(());
+        if let Some(captures) = LINE_RE.captures(line) {
+            if let Some(found) = captures.get(2) {
+                found.as_str().split(' ').take(1).for_each(|cmd| {
+                    *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
+                })
+            }
         }
-        // get the command part
-        if let Some(found) = res.get(2) {
-            found.as_str().split(' ').take(1).for_each(|cmd| {
-                *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
-            })
-        }
-        Ok(())
     }
 }
 
