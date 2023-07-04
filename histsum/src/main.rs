@@ -26,7 +26,7 @@ fn main() -> Result<(), HError> {
     let Args { topk } = Args::parse();
     let hist = read_hist_file(".zsh_history")?;
     let mut acc = Acc::new(topk);
-    hist.lines().flatten().for_each(|line| acc.accept(&line));
+    hist.lines().flatten().for_each(|line| acc.parse(&line));
     println!("{acc}");
     Ok(())
 }
@@ -77,10 +77,12 @@ struct Acc {
 
 impl Acc {
     fn new(topk: usize) -> Self {
-        let cmds = HashMap::default();
-        Self { topk, cmds }
+        Self {
+            topk,
+            cmds: HashMap::default(),
+        }
     }
-    fn accept(&mut self, line: &String) {
+    fn parse(&mut self, line: &String) {
         lazy_static! {
             // example line:
             // : 1688435851:0;cmd arg1 arg2
@@ -94,10 +96,7 @@ impl Acc {
             }
         }
     }
-}
-
-impl Display for Acc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn summarize(&self) -> String {
         let mut v: Vec<(&String, &u32)> = self.cmds.iter().collect();
         v.sort_by(|x, y| y.1.cmp(x.1));
         v = v.into_iter().take(self.topk).collect();
@@ -119,6 +118,13 @@ impl Display for Acc {
                 }
                 res.push_str(&line);
             });
-        write!(f, "{res}")
+        res
+    }
+}
+
+impl Display for Acc {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let summary = self.summarize();
+        write!(f, "{summary}")
     }
 }
