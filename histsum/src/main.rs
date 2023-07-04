@@ -99,7 +99,7 @@ impl Acc {
         let mut res = self
             .cmds
             .iter()
-            .map(|(i, j)| (j, i)) // reverse the tuple
+            .map(|(i, j)| (j, i))
             .collect::<Vec<(&u32, &String)>>();
         res.sort_by(|x, y| y.0.cmp(x.0));
         // take the topk
