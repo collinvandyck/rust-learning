@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
-use std::{cmp, fs};
+use std::{cmp, env, fs};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -27,6 +27,21 @@ impl HError {
 }
 
 fn main() -> Result<(), HError> {
+    let mut topk = 20;
+    env::args().skip(1).take(1).for_each(|arg| {
+        if arg == "-h" || arg == "--help" {
+            println!("Usage: histsum [topk]");
+            std::process::exit(0);
+        }
+        match arg.parse::<usize>() {
+            Ok(n) => topk = n,
+            Err(e) => {
+                println!("Failed to parse topk: {}", e);
+                std::process::exit(1);
+            }
+        }
+    });
+
     let dir = match home_dir() {
         Some(dir) => dir,
         _ => return Err(HError::NoHomeDir),
@@ -35,7 +50,6 @@ fn main() -> Result<(), HError> {
     let path = path.to_str().expect("path");
     let hist = fs::OpenOptions::new().read(true).open(path)?;
     let hist = BufReader::new(hist);
-    let topk = 30;
     let mut acc = Acc::new(topk);
     hist.lines().for_each(|line| {
         if let Ok(line) = line {
