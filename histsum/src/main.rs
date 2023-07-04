@@ -12,6 +12,9 @@ pub enum HError {
     IOError(#[from] io::Error),
 }
 
+// example line:
+// : 1688435851:0;time ./target/release/histsum
+
 fn main() -> Result<(), HError> {
     let dir = match std::env::home_dir() {
         Some(dir) => dir,
@@ -21,12 +24,12 @@ fn main() -> Result<(), HError> {
     let path = path.to_str().expect("path");
     let hist = fs::OpenOptions::new().read(true).open(path)?;
     let hist = BufReader::new(hist);
-    let mut max = 0;
-    for (id, line) in hist.lines().enumerate() {
-        max = id + 1;
-        let line = line?;
-        println!("{line}");
-    }
-    println!("Total: {max} entries.");
+    hist.lines().flatten().fold(Hist {}, parse);
     Ok(())
+}
+
+struct Hist {}
+
+fn parse(hist: Hist, line: String) -> Hist {
+    Hist {}
 }
