@@ -96,6 +96,11 @@ impl Acc {
 
 impl Display for Acc {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut v: Vec<(&String, &u32)> = self.cmds.iter().collect();
+        v.sort_by(|x, y| y.1.cmp(x.1));
+        v.iter().take(10).for_each(|(s, c)| {
+            writeln!(f, "{}: {}", s, c).unwrap();
+        });
         write!(f, "hi")
     }
 }
