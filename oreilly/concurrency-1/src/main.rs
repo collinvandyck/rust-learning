@@ -45,7 +45,7 @@ fn main() {
             for msg in rx {
                 let Message(val, reply) = msg;
                 println!("Thread {i} processing {:#?}", val);
-                reply.send(val).unwrap();
+                reply.send(val + 1).unwrap();
             }
         });
     }
@@ -53,7 +53,7 @@ fn main() {
         let (msg, msgrx) = Message::new(i);
         tx.send(msg).unwrap();
         let received = msgrx.recv().unwrap();
-        assert_eq!(i, received);
+        assert_eq!(i + 1, received);
     }
 }
 
