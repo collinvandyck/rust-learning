@@ -20,19 +20,14 @@ const DEFAULT_TOPK: usize = 20;
 
 fn main() -> Result<(), HError> {
     let Args { topk } = Args::parse();
-    let hist = read_hist_file(".zsh_history")?;
+    let dir = home_dir().unwrap();
+    let path: PathBuf = [dir, ".zsh_history".into()].iter().collect();
+    let file = fs::File::open(path)?;
+    let read = BufReader::new(file);
     let mut acc = Acc::new(topk);
-    hist.lines().flatten().for_each(|line| acc.parse(&line));
+    read.lines().flatten().for_each(|line| acc.parse(&line));
     println!("{acc}");
     Ok(())
-}
-
-fn read_hist_file(file_name: &str) -> Result<impl BufRead, HError> {
-    let dir = home_dir().unwrap();
-    let path: PathBuf = [dir, file_name.into()].iter().collect();
-    let hist = fs::OpenOptions::new().read(true).open(path)?;
-    let hist = BufReader::new(hist);
-    Ok(hist)
 }
 
 /// arguments to the program
