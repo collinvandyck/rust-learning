@@ -3,13 +3,8 @@ use std::sync::{
     Arc, Mutex,
 };
 
+#[derive(Clone)]
 pub struct SharedReceiver<T>(pub Arc<Mutex<Receiver<T>>>);
-
-impl<T> Clone for SharedReceiver<T> {
-    fn clone(&self) -> Self {
-        SharedReceiver(self.0.clone())
-    }
-}
 
 impl<T> Iterator for SharedReceiver<T> {
     type Item = T;

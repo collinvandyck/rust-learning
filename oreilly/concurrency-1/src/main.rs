@@ -1,9 +1,6 @@
 mod shared_channel;
 
-use std::sync::{
-    mpsc::{Receiver, Sender},
-    Arc,
-};
+use std::sync::mpsc::{Receiver, Sender};
 pub use std::{
     fmt::{Debug, Display},
     sync::mpsc,
@@ -58,7 +55,7 @@ fn main() {
     assert_eq!(84, received);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Message<T>(T, Sender<T>);
 
 impl<T> Message<T> {
