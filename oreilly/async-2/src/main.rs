@@ -9,13 +9,16 @@ fn main() {
     let results = task::block_on(many_requests(requests));
     for result in results {
         match result {
-            Ok(UrlInfo(url, s)) => println!("*** {url}: {} bytes", s.len()),
+            Ok(UrlInfo { url, info }) => println!("*** {url}: {} bytes", info.len()),
             Err(e) => eprintln!("error: {}\n", e),
         }
     }
 }
 
-pub struct UrlInfo(String, String);
+pub struct UrlInfo {
+    url: String,
+    info: String,
+}
 
 pub async fn many_requests(urls: &[String]) -> Vec<Result<UrlInfo, surf::Exception>> {
     let client = surf::Client::new();
@@ -30,7 +33,10 @@ pub async fn many_requests(urls: &[String]) -> Vec<Result<UrlInfo, surf::Excepti
         let (url, handle) = handle;
         let res = handle.await;
         results.push(match res {
-            Ok(s) => Ok(UrlInfo(url.clone(), s)),
+            Ok(s) => Ok(UrlInfo {
+                url: url.clone(),
+                info: s,
+            }),
             Err(e) => Err(e),
         });
     }
