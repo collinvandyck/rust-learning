@@ -3,10 +3,18 @@ use std::sync::Arc;
 use async_3::utils::{self, ChatResult};
 use async_3::{FromClient, FromServer};
 use async_std::net::TcpStream;
-use async_std::{io, prelude::*};
+use async_std::{io, prelude::*, task};
 
 fn main() -> ChatResult<()> {
-    Ok(())
+    let address = std::env::args().nth(1).expect("Usage: client ADDRESS:PORT");
+    task::block_on(async {
+        let socket = TcpStream::connect(address).await?;
+        socket.set_nodelay(true)?;
+        let to_server = send_commands(socket.clone());
+        let from_server = handle_replies(socket);
+        from_server.race(to_server).await?;
+        Ok(())
+    })
 }
 
 async fn send_commands(mut to_server: TcpStream) -> ChatResult<()> {
