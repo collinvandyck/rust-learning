@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_3::utils::{self, ChatResult};
-use async_3::FromClient;
+use async_3::{FromClient, FromServer};
 use async_std::net::TcpStream;
 use async_std::{io, prelude::*};
 
@@ -23,6 +23,25 @@ async fn send_commands(mut to_server: TcpStream) -> ChatResult<()> {
         };
         utils::send_as_json(&mut to_server, &request).await?;
         to_server.flush().await?;
+    }
+    Ok(())
+}
+
+async fn handle_replies(from_server: TcpStream) -> ChatResult<()> {
+    let buffered = io::BufReader::new(from_server);
+    let mut reply_stream = utils::receive_as_json(buffered);
+    while let Some(reply) = reply_stream.next().await {
+        match reply? {
+            FromServer::Message {
+                group_name,
+                message,
+            } => {
+                println!("message posted to {group_name}: {message}")
+            }
+            FromServer::Error(message) => {
+                println!("error from server: {message}")
+            }
+        }
     }
     Ok(())
 }
