@@ -29,7 +29,8 @@ async fn time() -> SystemTime {
     let id = thread::current().id();
     let res = time::SystemTime::now();
 
-    task::sleep(time::Duration::from_secs(5)).await;
+    let r = rand::thread_rng().gen_range(10..11);
+    task::sleep(time::Duration::from_millis(r * 100)).await;
 
     println!("{id:?} produced {res:?}");
     res
