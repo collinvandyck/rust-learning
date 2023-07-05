@@ -57,7 +57,7 @@ async fn handle_replies(from_server: TcpStream) -> ChatResult<()> {
 }
 
 fn parse_command(s: &String) -> Option<FromClient> {
-    let parts = s.split(" ").collect::<Vec<_>>();
+    let parts = s.split(' ').collect::<Vec<_>>();
     if parts.len() <= 1 {
         eprintln!("Invalid command: {s}");
         return None;
