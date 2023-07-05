@@ -39,12 +39,13 @@ fn main() {
     assert_eq!(42, th.join().unwrap().unwrap());
 
     let (tx, rx) = shared_channel::<Message<i32>>();
-    for i in 0..10 {
+    for _ in 0..10 {
         let rx = rx.clone();
         thread::spawn(move || {
+            let id = thread::current().id();
             for msg in rx {
                 let Message(val, reply) = msg;
-                println!("Thread {i} processing {:#?}", val);
+                println!("Thread {id:?} processing {:#?}", val);
                 reply.send(val + 1).unwrap();
             }
         });
