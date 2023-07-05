@@ -50,9 +50,9 @@ fn main() {
         });
     }
     for i in 100..110 {
-        let (msg, msgrx) = Message::new(i);
+        let (msg, res) = Message::new(i);
         tx.send(msg).unwrap();
-        let received = msgrx.recv().unwrap();
+        let received = res.recv().unwrap();
         assert_eq!(i + 1, received);
     }
 }
