@@ -8,7 +8,7 @@ fn main() -> io::Result<()> {
     let res = task::block_on(foo());
     assert_eq!(res, "Foo");
 
-    let v = (0..10)
+    let v = (0..2)
         .into_iter()
         .map(|_| task::spawn_local(time()))
         .collect::<Vec<_>>();
