@@ -39,20 +39,22 @@ fn main() {
     assert_eq!(42, th.join().unwrap().unwrap());
 
     let (tx, rx) = shared_channel::<Message<i32>>();
-    for _ in 0..10 {
+    for i in 0..10 {
         let rx = rx.clone();
         thread::spawn(move || {
             for msg in rx {
-                let Message(val, _) = msg;
-                println!("Thread processing {msg:?}");
-                msg.reply(val).unwrap();
+                let Message(val, reply) = msg;
+                println!("Thread {i} processing {:#?}", val);
+                reply.send(val).unwrap();
             }
         });
     }
-    let (msg, msgrx) = Message::new(84);
-    tx.send(msg).unwrap();
-    let received = msgrx.recv().unwrap();
-    assert_eq!(84, received);
+    for i in 100..110 {
+        let (msg, msgrx) = Message::new(i);
+        tx.send(msg).unwrap();
+        let received = msgrx.recv().unwrap();
+        assert_eq!(i, received);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -63,10 +65,6 @@ impl<T> Message<T> {
         let (tx, rx) = mpsc::channel();
         let msg = Message(val, tx);
         (msg, rx)
-    }
-    fn reply(&self, val: T) -> Result<(), mpsc::SendError<T>> {
-        let Message(_, tx) = self;
-        tx.send(val)
     }
 }
 
