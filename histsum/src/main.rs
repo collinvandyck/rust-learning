@@ -1,7 +1,6 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use home::home_dir;
-use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
 use std::io::{self, BufRead, BufReader};
@@ -65,6 +64,7 @@ impl Args {
 struct Acc {
     topk: usize,                // how many entries to display
     cmds: HashMap<String, u32>, // lookup for command counts
+    re: Regex,                  // to parse the line
 }
 
 impl Acc {
@@ -72,15 +72,11 @@ impl Acc {
         Self {
             topk,
             cmds: HashMap::default(),
+            re: Regex::new(r"^(: \d+:\d;)? *(.*)$").unwrap(),
         }
     }
     fn parse(&mut self, line: &str) {
-        lazy_static! {
-            // example line:
-            // : 1688435851:0;cmd arg1 arg2
-            static ref LINE_RE: Regex = Regex::new(r"^(: \d+:\d;)? *(.*)$").unwrap();
-        }
-        if let Some(captures) = LINE_RE.captures(line) {
+        if let Some(captures) = self.re.captures(line) {
             if let Some(found) = captures.get(2) {
                 found.as_str().split(' ').take(1).for_each(|cmd| {
                     *self.cmds.entry(cmd.to_string()).or_insert(0) += 1;
