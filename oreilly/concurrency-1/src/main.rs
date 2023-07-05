@@ -48,8 +48,7 @@ fn main() {
             for msg in rx {
                 println!("Thread processing {msg:?}");
                 let val = msg.0;
-                let sender = msg.1;
-                sender.send(val).unwrap();
+                msg.reply(val).unwrap();
             }
         });
     }
@@ -62,14 +61,14 @@ fn main() {
 #[derive(Debug)]
 struct Message<T>(T, Sender<T>);
 
-impl<T> Message<T>
-where
-    T: Clone,
-{
+impl<T> Message<T> {
     fn new(val: T) -> (Message<T>, Receiver<T>) {
         let (tx, rx) = mpsc::channel();
         let msg = Message(val, tx);
         (msg, rx)
+    }
+    fn reply(&self, val: T) -> Result<(), mpsc::SendError<T>> {
+        self.1.send(val)
     }
 }
 
