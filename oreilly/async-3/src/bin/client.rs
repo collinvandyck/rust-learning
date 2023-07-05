@@ -5,7 +5,9 @@ use async_3::{FromClient, FromServer};
 use async_std::net::TcpStream;
 use async_std::{io, prelude::*};
 
-fn main() {}
+fn main() -> ChatResult<()> {
+    Ok(())
+}
 
 async fn send_commands(mut to_server: TcpStream) -> ChatResult<()> {
     println!(
