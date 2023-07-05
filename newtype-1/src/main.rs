@@ -18,6 +18,12 @@ where
     }
 }
 
+impl<T> From<Vec<T>> for Things<T> {
+    fn from(value: Vec<T>) -> Self {
+        Things(value)
+    }
+}
+
 impl<T> Deref for Things<T> {
     type Target = Vec<T>;
     fn deref(&self) -> &Self::Target {
