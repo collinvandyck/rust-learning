@@ -36,5 +36,9 @@ fn test_fromclient_json() {
     assert_eq!(
         json,
         r#"{"Post":{"group_name":"Dogs","message":"Samoyeds rock!"}}"#
-    )
+    );
+    assert_eq!(
+        serde_json::from_str::<FromClient>(&json).unwrap(),
+        from_client
+    );
 }
