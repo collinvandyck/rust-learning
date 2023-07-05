@@ -43,8 +43,8 @@ fn main() {
         let rx = rx.clone();
         thread::spawn(move || {
             for msg in rx {
+                let Message(val, _) = msg;
                 println!("Thread processing {msg:?}");
-                let val = msg.0;
                 msg.reply(val).unwrap();
             }
         });
@@ -65,7 +65,8 @@ impl<T> Message<T> {
         (msg, rx)
     }
     fn reply(&self, val: T) -> Result<(), mpsc::SendError<T>> {
-        self.1.send(val)
+        let Message(_, tx) = self;
+        tx.send(val)
     }
 }
 
