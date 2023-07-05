@@ -19,10 +19,13 @@ fn main() -> io::Result<()> {
 }
 
 fn async_blocks() {
-    let foo = async { 5 };
+    let foo = async {
+        task::sleep(time::Duration::from_millis(100)).await;
+        5
+    };
     let bar = async { 6 };
-    let bar = task::block_on(bar);
     let foo = task::block_on(foo);
+    let bar = task::block_on(bar);
     println!("foo: {}, bar: {}", foo, bar);
 }
 
