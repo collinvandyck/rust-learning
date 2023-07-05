@@ -9,7 +9,6 @@ fn main() -> io::Result<()> {
     assert_eq!(res, "Foo");
 
     let v = (0..2)
-        .into_iter()
         .map(|_| task::spawn_local(time()))
         .collect::<Vec<_>>();
 
