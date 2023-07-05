@@ -28,7 +28,10 @@ fn main() -> Result<(), HError> {
     let file = fs::File::open(path)?;
     let read = BufReader::new(file);
     let mut acc = Acc::new(topk);
-    read.lines().flatten().for_each(|line| acc.parse(&line));
+    for line in read.lines() {
+        let line = line?;
+        acc.parse(&line);
+    }
     println!("{acc}");
     Ok(())
 }
