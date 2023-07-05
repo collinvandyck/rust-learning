@@ -28,24 +28,26 @@ async fn send_commands(mut to_server: TcpStream) -> ChatResult<()> {
 }
 
 fn parse_command(s: &String) -> Option<FromClient> {
-    let s = s.split(" ").collect::<Vec<_>>();
-    if s.len() <= 1 {
+    let parts = s.split(" ").collect::<Vec<_>>();
+    if parts.len() <= 1 {
+        eprintln!("Invalid command: {s}");
         return None;
     }
-    let mut s = s.into_iter();
-    let group_name = s.next().unwrap();
-    match s.next().unwrap() {
+    let mut iter = parts.into_iter();
+    let group = iter.next().unwrap();
+    match iter.next().unwrap() {
         "join" => Some(FromClient::Join {
-            group_name: Arc::new(group_name.into()),
+            group_name: Arc::new(group.into()),
         }),
         "post" => {
-            let rest = s.collect::<Vec<_>>();
+            let rest = iter.collect::<Vec<_>>();
             if rest.is_empty() {
+                eprintln!("No message");
                 None
             } else {
                 let msg = rest.join(" ");
                 Some(FromClient::Post {
-                    group_name: Arc::new(group_name.into()),
+                    group_name: Arc::new(group.into()),
                     message: msg.into(),
                 })
             }
