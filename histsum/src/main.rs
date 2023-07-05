@@ -12,14 +12,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum HError {
-    #[error("No home dir")]
-    NoHomeDir,
-
     #[error("{0}")]
     IOError(#[from] io::Error),
-
-    #[error("Could not parse: {0}")]
-    ParseError(String),
 }
 
 const DEFAULT_TOPK: usize = 20;
