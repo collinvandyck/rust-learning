@@ -13,7 +13,17 @@ fn main() -> io::Result<()> {
 
     block_on(get_times(10));
 
+    async_blocks();
+
     Ok(())
+}
+
+fn async_blocks() {
+    let foo = async { 5 };
+    let bar = async { 6 };
+    let bar = task::block_on(bar);
+    let foo = task::block_on(foo);
+    println!("foo: {}, bar: {}", foo, bar);
 }
 
 async fn get_times(num: i32) {
@@ -30,8 +40,12 @@ async fn time() -> SystemTime {
     let res = time::SystemTime::now();
 
     let r = rand::thread_rng().gen_range(10..11);
-    //thread::sleep(time::Duration::from_millis(r * 100));
-    task::sleep(time::Duration::from_millis(r * 100)).await;
+
+    // this jams up the async runtime b/c it's blocking
+    //thread::sleep(time::Duration::from_millis(r * 10));
+
+    // this is the async version which yields to the runtime
+    task::sleep(time::Duration::from_millis(r * 10)).await;
 
     println!("{id:?} produced {res:?}");
     res
