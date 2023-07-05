@@ -4,7 +4,7 @@ use home::home_dir;
 use regex::Regex;
 use std::collections::HashMap;
 use std::io::{self, BufRead, BufReader};
-use std::path::PathBuf;
+use std::path::Path;
 use std::{cmp, env, fs};
 use thiserror::Error;
 
@@ -13,7 +13,7 @@ const DEFAULT_TOPK: usize = 20;
 fn main() -> Result<(), HError> {
     let Args { topk } = Args::parse();
     let dir = home_dir().ok_or(HError::NoHomeDir)?;
-    let path = PathBuf::new().join(dir).join(".zsh_history");
+    let path = Path::new(&dir).join(".zsh_history");
     let file = fs::File::open(path)?;
     let mut acc = Acc::new(topk);
     for line in BufReader::new(file).lines() {

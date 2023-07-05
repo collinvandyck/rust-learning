@@ -34,5 +34,9 @@ fn main() {
     let nums: Vec<i32> = (1..10).collect();
     nums.into_iter().off_thread().for_each(|i| {
         dbg!(i);
-    })
+    });
+    let (tx, rx) = mpsc::channel();
+    tx.send(42).unwrap();
+    let th = thread::spawn(move || rx.into_iter().next());
+    assert_eq!(42, th.join().unwrap().unwrap());
 }
