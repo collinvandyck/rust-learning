@@ -6,7 +6,7 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::io::{self, BufRead, BufReader};
-use std::path::Path;
+use std::path::PathBuf;
 use std::{cmp, env, fs};
 use thiserror::Error;
 
@@ -29,8 +29,7 @@ fn main() -> Result<(), HError> {
 
 fn read_hist_file(file_name: &str) -> Result<impl BufRead, HError> {
     let dir = home_dir().unwrap();
-    let path = Path::new(&dir).join(file_name);
-    let path = path.to_str().expect("path");
+    let path: PathBuf = [dir, file_name.into()].iter().collect();
     let hist = fs::OpenOptions::new().read(true).open(path)?;
     let hist = BufReader::new(hist);
     Ok(hist)
