@@ -24,7 +24,7 @@ const DEFAULT_TOPK: usize = 20;
 fn main() -> Result<(), HError> {
     let Args { topk } = Args::parse();
     let dir = home_dir().ok_or(HError::NoHomeDir)?;
-    let path = PathBuf::new().join(&dir).join(".zsh_history");
+    let path = PathBuf::new().join(dir).join(".zsh_history");
     let file = fs::File::open(path)?;
     let read = BufReader::new(file);
     let mut acc = Acc::new(topk);
