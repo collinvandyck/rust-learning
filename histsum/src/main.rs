@@ -4,7 +4,6 @@ use home::home_dir;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashMap;
-use std::fmt::Display;
 use std::io::{self, BufRead, BufReader};
 use std::path::PathBuf;
 use std::{cmp, env, fs};
@@ -32,7 +31,7 @@ fn main() -> Result<(), HError> {
         let line = line?;
         acc.parse(&line);
     }
-    println!("{acc}");
+    println!("{}", acc.summarize());
     Ok(())
 }
 
@@ -105,12 +104,5 @@ impl Acc {
             })
             .collect::<Vec<String>>()
             .join("\n")
-    }
-}
-
-impl Display for Acc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let summary = self.summarize();
-        write!(f, "{summary}")
     }
 }
