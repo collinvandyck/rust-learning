@@ -15,9 +15,8 @@ fn main() -> Result<(), HError> {
     let dir = home_dir().ok_or(HError::NoHomeDir)?;
     let path = PathBuf::new().join(dir).join(".zsh_history");
     let file = fs::File::open(path)?;
-    let read = BufReader::new(file);
     let mut acc = Acc::new(topk);
-    for line in read.lines() {
+    for line in BufReader::new(file).lines() {
         let line = line?;
         acc.parse(&line);
     }
