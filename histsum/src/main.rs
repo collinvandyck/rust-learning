@@ -14,14 +14,17 @@ use thiserror::Error;
 pub enum HError {
     #[error("{0}")]
     IOError(#[from] io::Error),
+
+    #[error("No home dir")]
+    NoHomeDir,
 }
 
 const DEFAULT_TOPK: usize = 20;
 
 fn main() -> Result<(), HError> {
     let Args { topk } = Args::parse();
-    let dir = home_dir().unwrap();
-    let path: PathBuf = [dir, ".zsh_history".into()].iter().collect();
+    let dir = home_dir().ok_or(HError::NoHomeDir)?;
+    let path = PathBuf::new().join(&dir).join(".zsh_history");
     let file = fs::File::open(path)?;
     let read = BufReader::new(file);
     let mut acc = Acc::new(topk);
