@@ -7,4 +7,6 @@ use crate::FromClient;
 pub type ChatError = Box<dyn Error + Send + Sync + 'static>;
 pub type ChatResult<T> = Result<T, ChatError>;
 
-pub async fn send_as_json(&mut to_server: TcpStream, req: &FromClient) {}
+pub async fn send_as_json(to_server: &mut TcpStream, req: &FromClient) -> ChatResult<()> {
+    Ok(())
+}

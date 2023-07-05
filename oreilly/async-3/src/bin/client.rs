@@ -32,7 +32,7 @@ fn parse_command(s: &String) -> Option<FromClient> {
     if s.len() <= 1 {
         return None;
     }
-    let s = s.into_iter();
+    let mut s = s.into_iter();
     let group_name = s.next().unwrap();
     match s.next().unwrap() {
         "join" => Some(FromClient::Join {

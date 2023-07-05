@@ -6,6 +6,11 @@ tasks:
     cmds:
       - cargo run -- {{.CLI_ARGS}}
     silent: true
+  build:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - cargo build
+    silent: true
   clippy:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
