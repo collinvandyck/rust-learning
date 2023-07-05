@@ -9,15 +9,6 @@ use std::path::PathBuf;
 use std::{cmp, env, fs};
 use thiserror::Error;
 
-#[derive(Error, Debug)]
-pub enum HError {
-    #[error("{0}")]
-    IOError(#[from] io::Error),
-
-    #[error("No home dir")]
-    NoHomeDir,
-}
-
 const DEFAULT_TOPK: usize = 20;
 
 fn main() -> Result<(), HError> {
@@ -33,6 +24,15 @@ fn main() -> Result<(), HError> {
     }
     println!("{}", acc.summarize());
     Ok(())
+}
+
+#[derive(Error, Debug)]
+pub enum HError {
+    #[error("{0}")]
+    IOError(#[from] io::Error),
+
+    #[error("No home dir")]
+    NoHomeDir,
 }
 
 /// arguments to the program
