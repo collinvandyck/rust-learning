@@ -3,10 +3,11 @@ use std::{
     time::{self, SystemTime},
 };
 
+use async_std::task;
 use async_std::task::block_on;
+use rand::Rng;
 
 fn main() -> io::Result<()> {
-    use async_std::task;
     let res = task::block_on(foo());
     assert_eq!(res, "Foo");
 
@@ -16,7 +17,6 @@ fn main() -> io::Result<()> {
 }
 
 async fn get_times(num: i32) {
-    use async_std::task;
     let v = (0..num)
         .map(|_| task::spawn_local(time()))
         .collect::<Vec<_>>();
@@ -28,6 +28,10 @@ async fn get_times(num: i32) {
 async fn time() -> SystemTime {
     let id = thread::current().id();
     let res = time::SystemTime::now();
+
+    let r = rand::thread_rng().gen_range(0..10);
+    task::sleep(time::Duration::from_millis(r * 10)).await;
+
     println!("{id:?} produced {res:?}");
     res
 }

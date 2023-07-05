@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 async-std = { version = "1.12.0", features = ["unstable"] }
+rand = "0.8.5"
 
