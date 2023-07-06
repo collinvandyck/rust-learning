@@ -1,4 +1,10 @@
-use std::{fs::File, io::Read, path::Path, process};
+use core::num;
+use std::{
+    fs::File,
+    io::{self, Read},
+    path::Path,
+    process,
+};
 
 fn main() {
     let res = file_double("data.txt").unwrap_or_else(|e| {
@@ -17,4 +23,10 @@ fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, String> {
         .parse::<i32>()
         .map_err(|e| format!(r#"could not parse '{buf}': {e} "#))?;
     Ok(res * 2)
+}
+
+#[derive(Debug)]
+enum Error {
+    IO(io::Error),
+    Parse(num::ParseIntError),
 }
