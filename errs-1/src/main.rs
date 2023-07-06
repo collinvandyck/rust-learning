@@ -14,14 +14,11 @@ fn main() {
     println!("Res: {res}");
 }
 
-fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, String> {
-    let mut file = File::open(p).map_err(|e| e.to_string())?;
+fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, Error> {
+    let mut file = File::open(p).map_err(Error::IO)?;
     let mut buf = String::new();
-    file.read_to_string(&mut buf).map_err(|e| e.to_string())?;
-    let res = buf
-        .trim()
-        .parse::<i32>()
-        .map_err(|e| format!(r#"could not parse '{buf}': {e} "#))?;
+    file.read_to_string(&mut buf).map_err(Error::IO)?;
+    let res = buf.trim().parse::<i32>().map_err(Error::Parse)?;
     Ok(res * 2)
 }
 
