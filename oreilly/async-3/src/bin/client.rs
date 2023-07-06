@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use async_3::utils::{self, ChatResult};
 use async_3::{FromClient, FromServer};
 use async_std::net::TcpStream;
@@ -66,7 +64,7 @@ fn parse_command(s: &String) -> Option<FromClient> {
     let group = iter.next().unwrap();
     match iter.next().unwrap() {
         "join" => Some(FromClient::Join {
-            group_name: Arc::new(group.into()),
+            group_name: group.into(),
         }),
         "post" => {
             let rest = iter.collect::<Vec<_>>();
@@ -74,9 +72,9 @@ fn parse_command(s: &String) -> Option<FromClient> {
                 eprintln!("No message");
                 None
             } else {
-                let msg = rest.join(" ");
+                let msg = &rest.join(" ");
                 Some(FromClient::Post {
-                    group_name: Arc::new(group.into()),
+                    group_name: group.into(),
                     message: msg.into(),
                 })
             }
