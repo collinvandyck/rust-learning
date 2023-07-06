@@ -44,7 +44,7 @@ impl Error for CliError {
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
             CliError::IO(ref err) => Some(err),
-            CliError::Parse(ref _s, ref err) => Some(err),
+            CliError::Parse(_, ref err) => Some(err),
         }
     }
 }
