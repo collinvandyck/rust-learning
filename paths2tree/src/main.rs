@@ -45,7 +45,7 @@ where
         let mut tree = self;
         for part in parts {
             let pos = tree.children.iter().position(|x| match &x.val {
-                Some(val) => val == &part,
+                Some(val) => *val == part,
                 None => false,
             });
             match pos {
