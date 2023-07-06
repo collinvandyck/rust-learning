@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs::File;
-use std::io::{stdin, BufRead, BufReader};
+use std::io::{BufRead, BufReader};
+use std::ops::Index;
 
 /// one/two
 /// one/three/four
@@ -19,65 +20,47 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut tree = Tree::new();
     for line in file.lines() {
         let line = line?;
-        tree.add(&line);
+        let lines: Vec<String> = line.split('/').map(|f| f.to_string()).collect();
+        tree.add(lines);
     }
     Ok(())
 }
 
-struct Tree(Vec<Node>);
-
-struct Node {
-    val: String,
-    tree: Tree,
+struct Tree<T> {
+    val: Option<T>,
+    children: Vec<Tree<T>>,
 }
 
-impl Node {
-    fn new(val: String) -> Self {
-        Self {
-            val,
-            tree: Tree::new(),
-        }
-    }
-}
-
-impl Tree {
+impl<T> Tree<T>
+where
+    T: PartialEq<T>,
+{
     fn new() -> Self {
-        Self(vec![])
-    }
-    fn add(&mut self, p: &str) {
-        let parts: Vec<&str> = p.split('/').collect();
-        self.add_parts(&parts);
-    }
-
-    fn add_parts(&mut self, parts: &[&str]) {
-        let tree = self;
-        for part in parts {
-            let part = part.to_string();
-            let node = &mut tree.0.iter().find(|p| p.val == part);
-            match node {
-                None => {
-                    let new_node = Node::new(part);
-                    tree.0.push(new_node);
-                }
-                _ => {}
-            }
+        Self {
+            val: None,
+            children: vec![],
         }
-        /*
+    }
+    fn add(&mut self, parts: Vec<T>) {
+        let mut tree = self;
         for part in parts {
-            let part = part.to_string();
-            let node = &mut tree.0.iter().find(|p| p.val == part);
-            match node {
+            let pos = tree.children.iter().position(|x| match &x.val {
+                Some(val) => val == &part,
+                None => false,
+            });
+            match pos {
                 None => {
-                    let mut node = Node::new(part);
-                    tree.0.push(Node::new(part));
-                    tree = &mut node.tree;
+                    // not found. append to the children
+                    let mut sub_tree = Tree::new();
+                    sub_tree.val = Some(part);
+                    tree.children.push(sub_tree);
                 }
-                Some(node) => {
-                    parts.remove(0);
-                    node.tree.add_parts(parts);
+                Some(pos) => {
+                    // found it
+                    let sub_tree = tree.children.get_mut(pos).unwrap();
+                    tree = sub_tree;
                 }
             }
         }
-        */
     }
 }
