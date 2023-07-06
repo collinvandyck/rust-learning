@@ -72,7 +72,7 @@ fn parse_command(s: &String) -> Option<FromClient> {
                 eprintln!("No message");
                 None
             } else {
-                let msg = &rest.join(" ");
+                let msg = rest.join(" ");
                 Some(FromClient::Post {
                     group_name: group.into(),
                     message: msg.into(),

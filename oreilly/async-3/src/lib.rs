@@ -13,8 +13,8 @@ impl From<&str> for ArcString {
     }
 }
 
-impl From<&String> for ArcString {
-    fn from(value: &String) -> Self {
+impl From<String> for ArcString {
+    fn from(value: String) -> Self {
         ArcString::from(value.as_str())
     }
 }
