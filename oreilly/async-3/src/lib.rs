@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 pub mod utils;
 
+struct ArcString(Arc<String>);
+
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub enum FromClient {
     Join {
