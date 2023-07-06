@@ -50,14 +50,16 @@ impl Tree {
     }
 
     fn add_parts(&mut self, parts: &[&str]) {
-        let mut tree = self;
+        let tree = self;
         for part in parts {
             let part = part.to_string();
-            let children = &mut tree.0;
-            let node = tree.0.iter().find(|p| p.val == part);
+            let node = &mut tree.0.iter().find(|p| p.val == part);
             match node {
-                None => {}
-                Some(node) => {}
+                None => {
+                    let new_node = Node::new(part);
+                    tree.0.push(new_node);
+                }
+                _ => {}
             }
         }
         /*
