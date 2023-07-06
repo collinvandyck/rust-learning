@@ -1,7 +1,7 @@
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about=None)]
+#[command(author="Collin", version, about, long_about=None)]
 struct Args {
     /// Name of the person to greet
     #[arg(short, long)]
@@ -11,7 +11,7 @@ struct Args {
     #[arg(short, long, default_value_t = 1)]
     count: u8,
 
-    /// other
+    /// other thing idk
     other: Option<String>,
 }
 
