@@ -17,11 +17,11 @@ fn main() {
 }
 
 fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, CliError> {
-    let mut file = File::open(p).map_err(CliError::IO)?;
+    let mut file = File::open(p)?;
     let mut buf = String::new();
-    file.read_to_string(&mut buf).map_err(CliError::IO)?;
+    file.read_to_string(&mut buf)?;
     let buf = buf.trim().to_string();
-    let res = buf.parse::<i32>().map_err(CliError::Parse)?;
+    let res = buf.parse::<i32>()?;
     Ok(res * 2)
 }
 
