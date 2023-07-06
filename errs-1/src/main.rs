@@ -12,6 +12,8 @@ fn main() {
         process::exit(1);
     });
     println!("Res: {res}");
+
+    println!("Test fail: {:?}", file_double("does not exist"));
 }
 
 fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, Error> {
