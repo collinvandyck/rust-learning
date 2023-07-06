@@ -12,8 +12,8 @@ fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, String> {
     let mut file = File::open(p).map_err(|e| e.to_string())?;
     let mut buf = String::new();
     file.read_to_string(&mut buf).map_err(|e| e.to_string())?;
-    let buf = buf.trim_end();
     let res = buf
+        .trim()
         .parse::<i32>()
         .map_err(|e| format!(r#"could not parse '{buf}': {e} "#))?;
     Ok(res * 2)
