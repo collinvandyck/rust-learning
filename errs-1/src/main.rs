@@ -16,7 +16,7 @@ fn main() {
     }
 }
 
-fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, Box<dyn Error>> {
+fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, CliError> {
     let mut file = File::open(p).map_err(CliError::IO)?;
     let mut buf = String::new();
     file.read_to_string(&mut buf).map_err(CliError::IO)?;
