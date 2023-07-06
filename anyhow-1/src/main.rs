@@ -3,7 +3,7 @@ use anyhow::Context;
 use anyhow::Result;
 
 fn main() {
-    let path = "src/mainf.rs";
+    let path = "src/main.rs";
     match read_file(path) {
         Ok(content) => println!("{content}"),
         Err(e) => println!("Error: {:?}", e),
@@ -12,12 +12,12 @@ fn main() {
     let res = return_err();
     match res {
         Ok(content) => println!("{content}"),
-        Err(e) => println!("Error: {}", e),
+        Err(e) => println!("Error: {:?}", e),
     }
 }
 
 fn return_err() -> Result<String> {
-    let err = anyhow!("Error Happened!!");
+    let err = anyhow!("Error Happened!!").context("welp!");
     let err = Err(err);
     err
 }
