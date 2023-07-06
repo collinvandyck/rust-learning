@@ -1,4 +1,4 @@
-use core::num;
+use core::{fmt, num};
 use std::{
     fs::File,
     io::{self, Read},
@@ -25,4 +25,13 @@ fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, CliError> {
 enum CliError {
     IO(io::Error),
     Parse(num::ParseIntError),
+}
+
+impl fmt::Display for CliError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            CliError::IO(ref err) => write!(f, "IO Error: {}", err),
+            CliError::Parse(ref err) => write!(f, "Parse error: {}", err),
+        }
+    }
 }
