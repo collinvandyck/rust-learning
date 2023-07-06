@@ -45,15 +45,20 @@ impl Tree {
         Self(vec![])
     }
     fn add(&mut self, p: &str) {
-        let parts: Vec<&str> = p.split('/').into_iter().rev().collect();
-        self.add_parts(parts);
+        let parts: Vec<&str> = p.split('/').collect();
+        self.add_parts(&parts);
     }
 
-    fn add_parts(&mut self, mut parts: Vec<&str>) {
+    fn add_parts(&mut self, parts: &[&str]) {
         let mut tree = self;
         for part in parts {
             let part = part.to_string();
             let children = &mut tree.0;
+            let node = tree.0.iter().find(|p| p.val == part);
+            match node {
+                None => {}
+                Some(node) => {}
+            }
         }
         /*
         for part in parts {
