@@ -3,17 +3,14 @@ use std::{
     fs::File,
     io::{self, Read},
     path::Path,
-    process,
 };
 
 fn main() {
-    let res = file_double("data.txt").unwrap_or_else(|e| {
-        eprintln!("Failure: {e:?}");
-        process::exit(1);
-    });
-    println!("Res: {res}");
-
-    println!("Test fail: {:?}", file_double("does not exist"));
+    let filenames = ["data.txt", "notfound.txt"];
+    for f in filenames {
+        let res = file_double(f);
+        println!("{f}: {res:?}");
+    }
 }
 
 fn file_double<T: AsRef<Path>>(p: T) -> Result<i32, CliError> {
