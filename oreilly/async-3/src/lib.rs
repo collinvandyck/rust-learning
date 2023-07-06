@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod utils;
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct ArcString(Arc<String>);
 
 impl From<&str> for ArcString {
