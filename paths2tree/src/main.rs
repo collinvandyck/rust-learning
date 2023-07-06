@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::ops::Index;
@@ -23,9 +24,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         let lines: Vec<String> = line.split('/').map(|f| f.to_string()).collect();
         tree.add(lines);
     }
+    dbg!(tree);
     Ok(())
 }
 
+#[derive(Debug)]
 struct Tree<T> {
     val: Option<T>,
     children: Vec<Tree<T>>,
@@ -33,7 +36,7 @@ struct Tree<T> {
 
 impl<T> Tree<T>
 where
-    T: PartialEq<T>,
+    T: PartialEq<T> + Debug,
 {
     fn new() -> Self {
         Self {
