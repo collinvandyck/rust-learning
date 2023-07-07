@@ -19,16 +19,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     render_pwd()
 }
 
-#[derive(Debug)]
-struct OsErr();
-
-impl Error for OsErr {}
-impl Display for OsErr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Could not convert path to string")
-    }
-}
-
 fn render_pwd() -> Result<(), Box<dyn Error>> {
     let mut paths = vec![];
     let files = fs::read_dir(".")?;
@@ -41,7 +31,7 @@ fn render_pwd() -> Result<(), Box<dyn Error>> {
     for p in paths {
         let p = match p.into_string() {
             Ok(p) => p,
-            Err(_) => return Err(Box::new(OsErr())),
+            Err(_) => continue,
         };
         tree.add(vec![p]);
     }
