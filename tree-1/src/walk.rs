@@ -49,14 +49,13 @@ where
         return Ok(());
     }
     if depth == 0 {
-        let walked = Walked {
-            name: &path.to_string_lossy().to_string(),
+        f(&Walked {
+            name: &to_str,
             depth,
             last: true,
             start: true,
             lasts: &vec![true],
-        };
-        f(&walked);
+        });
     }
     let recurse = args.depth.map_or(true, |max_depth| depth < max_depth);
     if recurse && path.is_dir() {
