@@ -58,5 +58,5 @@ fn print(w: Walked) {
             _ => print!("├─ "),
         }
     }
-    println!("{name}");
+    println!("{name} {last}");
 }
