@@ -16,12 +16,12 @@ use std::io::{BufRead, BufReader};
 ///    └─ six
 fn main() -> Result<(), Box<dyn Error>> {
     render_samples()?;
-    render_pwd()
+    render_pwd(".")
 }
 
-fn render_pwd() -> Result<(), Box<dyn Error>> {
+fn render_pwd(dir: &str) -> Result<(), Box<dyn Error>> {
     let mut paths = vec![];
-    let files = fs::read_dir(".")?;
+    let files = fs::read_dir(dir)?;
     for file in files {
         let file = file?;
         let name = file.file_name();
