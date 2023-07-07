@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let start = args.dir.unwrap_or(".".into());
     let mut paths = vec![];
     let walked = walk(&start, &args.depth, |p| {
-        println!("path: {p:?}");
+        println!("{p}");
         paths.push(p);
     });
     if let Err(e) = walked {
