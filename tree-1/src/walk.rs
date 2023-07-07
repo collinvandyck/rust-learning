@@ -3,26 +3,31 @@ use std::{fs, path::Path};
 use crate::prelude::*;
 
 // walk starts with the current file or dir and then visits each child file and dir
-pub fn walk<F>(start: &str, f: F) -> WalkResult<()>
+pub fn walk<F>(start: &str, mut f: F) -> WalkResult<()>
 where
     F: FnMut(String) -> (),
 {
     let start = Path::new(start);
-    walk_path(start, f)
+    walk_path(start, &mut f)
 }
 
-fn walk_path<F>(path: &Path, f: F) -> WalkResult<()>
+fn walk_path<F>(path: &Path, f: &mut F) -> WalkResult<()>
 where
     F: FnMut(String) -> (),
 {
     visit_path(path, f)?;
     if path.is_dir() {
         let entries = fs::read_dir(path)?;
+        for entry in entries {
+            let entry = entry?;
+            let path = entry.path();
+            walk_path(&path, f)?;
+        }
     }
     Ok(())
 }
 
-fn visit_path<F>(path: &Path, mut f: F) -> WalkResult<()>
+fn visit_path<F>(path: &Path, f: &mut F) -> WalkResult<()>
 where
     F: FnMut(String) -> (),
 {
