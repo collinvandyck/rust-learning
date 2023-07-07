@@ -15,7 +15,15 @@ use std::io::{BufRead, BufReader};
 /// └─ five
 ///    └─ six
 fn main() -> Result<(), Box<dyn Error>> {
-    let file = File::open("input.txt")?;
+    let file_names = ["simple.txt", "input.txt"];
+    for file_name in file_names {
+        render(file_name)?;
+    }
+    Ok(())
+}
+
+fn render(file_name: &str) -> Result<(), Box<dyn Error>> {
+    let file = File::open(file_name)?;
     let file = BufReader::new(file);
     let mut tree = Tree::new();
     for line in file.lines() {
@@ -23,7 +31,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let lines: Vec<String> = line.split('/').map(|f| f.to_string()).collect();
         tree.add(lines);
     }
+    println!("{file_name}:");
     tree.print(0, false);
+    println!();
     Ok(())
 }
 
@@ -75,7 +85,6 @@ where
     fn print(&self, indent: usize, mut root_last: bool) {
         self.children.iter().enumerate().for_each(|(idx, tree)| {
             let is_last = idx == self.children.len() - 1;
-
             if indent == 0 {
                 if is_last {
                     print!("└─")
