@@ -72,10 +72,10 @@ where
             let name = path_to_file_name(&path)?;
             let walked = Walked {
                 name: &name,
+                lasts: &lasts,
                 depth,
                 last,
                 first,
-                lasts: &lasts,
             };
             f(&walked);
             if path.is_dir() {
