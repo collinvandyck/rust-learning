@@ -34,5 +34,17 @@ fn run() -> WalkResult<()> {
 }
 
 fn print(w: Walked) {
-    println!("{w:?}");
+    let Walked {
+        name,
+        depth,
+        last,
+        first,
+    } = w;
+    if depth == 0 {
+        match (first, last) {
+            (_, true) => print!("└─ "),
+            _ => print!("├─ "),
+        }
+    }
+    println!("{name}");
 }
