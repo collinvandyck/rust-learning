@@ -10,6 +10,7 @@ pub struct Walked<'a> {
     pub name: &'a String,
     pub depth: u32,
     pub last: bool,
+    pub start: bool,
     pub lasts: &'a Vec<bool>,
 }
 
@@ -36,24 +37,28 @@ fn walk_path<'a, F>(
 where
     F: Fn(&Walked),
 {
+    let to_str = path.to_string_lossy().to_string();
     if !path.exists() {
-        let to_str = path.to_string_lossy().to_string();
         return Err(Error::NotFound(to_str));
+    }
+    if !path.is_dir() {
+        return Err(Error::NotDirectory(to_str));
     }
     if path.is_symlink() {
         // we don't follow symlinks for now
         return Ok(());
     }
-    if path.is_file() {
-        // if we are here, that means that the only walked result is a file.
-        let name = path_to_file_name(path)?;
+    if depth == 0 {
         let walked = Walked {
-            name: &name,
+            name: &path.to_string_lossy().to_string(),
             depth,
             last: true,
+            start: true,
             lasts: &vec![true],
         };
         f(&walked);
+    }
+    if path.is_file() {
         return Ok(());
     }
     let recurse = args.depth.map_or(true, |max_depth| depth < max_depth);
@@ -73,6 +78,7 @@ where
             let walked = Walked {
                 name: &name,
                 lasts: &lasts,
+                start: false,
                 depth,
                 last,
             };

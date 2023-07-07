@@ -5,6 +5,7 @@ pub type WalkResult<T> = Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     NotFound(String),
+    NotDirectory(String),
     IO(io::Error),
     NoFileName,
 }
@@ -19,6 +20,7 @@ impl Display for Error {
             Self::NotFound(ref s) => write!(f, "Path {s} not found"),
             Self::IO(ref e) => write!(f, "{e}"),
             Self::NoFileName => write!(f, "no filename present"),
+            Self::NotDirectory(ref s) => write!(f, "{s} is not a directory"),
         }
     }
 }

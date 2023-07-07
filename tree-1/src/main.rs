@@ -33,7 +33,8 @@ fn run() -> WalkResult<()> {
 }
 
 fn print(w: &Walked) {
-    if w.depth == 0 {
+    if w.start {
+    } else if w.depth == 0 {
         if w.last {
             print!("└─ ");
         } else {
