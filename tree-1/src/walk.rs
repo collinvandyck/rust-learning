@@ -1,5 +1,5 @@
 use crate::prelude::*;
 
-pub fn walk(dir: String) -> WalkResult<()> {
+pub fn walk(_dir: String) -> WalkResult<()> {
     Ok(())
 }
