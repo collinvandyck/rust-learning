@@ -67,5 +67,5 @@ fn print(w: Walked) {
             print!("├─ ");
         }
     }
-    println!("{name}");
+    println!("{name} (parent_last:{parent_last})");
 }

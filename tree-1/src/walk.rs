@@ -53,10 +53,15 @@ where
     }
     let recurse = max_depth.map_or(true, |max_depth| depth < max_depth);
     if recurse && path.is_dir() {
-        let entries = fs::read_dir(path)?;
-        let mut iter = entries.enumerate().peekable();
-        while let Some((idx, entry)) = iter.next() {
+        let read_dir = fs::read_dir(path)?;
+        let mut entries = vec![];
+        for entry in read_dir {
             let entry = entry?;
+            entries.push(entry);
+        }
+        entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
+        let mut iter = entries.iter().enumerate().peekable();
+        while let Some((idx, entry)) = iter.next() {
             let first = idx == 0;
             let last = iter.peek().is_none();
             let path = entry.path();
