@@ -58,9 +58,6 @@ where
         };
         f(&walked);
     }
-    if path.is_file() {
-        return Ok(());
-    }
     let recurse = args.depth.map_or(true, |max_depth| depth < max_depth);
     if recurse && path.is_dir() {
         let read_dir = fs::read_dir(path)?;
