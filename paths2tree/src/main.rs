@@ -1,8 +1,7 @@
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::ops::Index;
 
 /// one/two
 /// one/three/four
@@ -14,7 +13,7 @@ use std::ops::Index;
 /// │  └─ three
 /// │     └─ four
 /// └─ five
-/// └─ six
+///    └─ six
 fn main() -> Result<(), Box<dyn Error>> {
     let file = File::open("input.txt")?;
     let file = BufReader::new(file);
@@ -24,6 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let lines: Vec<String> = line.split('/').map(|f| f.to_string()).collect();
         tree.add(lines);
     }
+    tree = dbg!(tree);
     tree.print(0);
     Ok(())
 }
@@ -36,7 +36,7 @@ struct Tree<T> {
 
 impl<T> Tree<T>
 where
-    T: PartialEq<T> + Debug,
+    T: PartialEq<T> + Debug + Display,
 {
     fn new() -> Self {
         Self {
@@ -47,12 +47,10 @@ where
     fn add(&mut self, parts: Vec<T>) {
         let mut tree = self;
         for part in parts {
-            dbg!(&part);
             let pos = tree.children.iter().position(|x| match &x.val {
                 Some(val) => *val == part,
                 None => false,
             });
-            dbg!(&pos);
             match pos {
                 None => {
                     // not found. append to the children
@@ -69,12 +67,21 @@ where
             }
         }
     }
+    /// ├─ one
+    /// │  ├─ two
+    /// │  └─ three
+    /// │     └─ four
+    /// └─ five
+    ///    └─ six
     fn print(&self, indent: usize) {
-        if let Some(val) = &self.val {
-            println!("{}{val:?}", "--".repeat(indent - 1));
-        }
-        for child in &self.children {
-            child.print(indent + 1);
-        }
+        self.children.iter().enumerate().for_each(|(idx, tree)| {
+            let last = idx == self.children.len();
+            let val = tree.val.iter().next();
+            // first print out the leading tree part.
+            if indent == 0 || idx == 0 {}
+            print!("├─ {}", val.unwrap());
+            println!();
+            tree.print(indent + 1);
+        });
     }
 }
