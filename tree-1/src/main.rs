@@ -25,6 +25,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         eprintln!("{}", e);
         process::exit(1);
     }
-    println!("Paths: {paths:?}");
+    //println!("Paths: {paths:?}");
     Ok(())
 }
