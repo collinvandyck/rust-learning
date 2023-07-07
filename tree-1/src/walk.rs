@@ -14,7 +14,7 @@ pub struct Walked<'a> {
 // walk starts with the current file or dir and then visits each child file and dir
 pub fn walk<F>(args: &Args, mut f: F) -> WalkResult<()>
 where
-    F: FnMut(&Walked),
+    F: Fn(&Walked),
 {
     let start = match &args.dir {
         Some(dir) => dir.to_string(),
@@ -32,7 +32,7 @@ fn walk_path<'a, F>(
     f: &mut F,
 ) -> WalkResult<()>
 where
-    F: FnMut(&Walked),
+    F: Fn(&Walked),
 {
     if !path.exists() {
         let to_str = path.to_string_lossy().to_string();
