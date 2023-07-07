@@ -39,7 +39,7 @@ fn print(w: Walked) {
         depth,
         last,
         first,
-    } = w;
+    } = dbg!(w);
     if depth == 0 {
         match (first, last) {
             (_, true) => print!("└─ "),
