@@ -10,6 +10,7 @@ mod prelude {
     pub use crate::walk::*;
 }
 
+use colored::Colorize;
 use prelude::*;
 use std::process;
 
@@ -57,9 +58,9 @@ fn print(w: &Walked) {
         }
     }
     if w.is_dir {
-        println!("DIR: {}", w.name);
+        println!("{}", w.name.green());
     } else if w.is_executable {
-        println!("EXEC: {}", w.name);
+        println!("{}", w.name.red());
     } else {
         println!("{}", w.name);
     }
