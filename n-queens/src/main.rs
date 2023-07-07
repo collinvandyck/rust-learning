@@ -1,8 +1,14 @@
-use std::fmt::Display;
+use std::{fmt::Display, process};
 
 fn main() {
-    let board = Board::new(4);
-    println!("{}", board);
+    let n = 4;
+    let mut board = Board::new(n);
+    if board.solve() {
+        println!("{}", board);
+    } else {
+        eprintln!("Could not solve for {n}");
+        process::exit(1);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -17,6 +23,9 @@ impl Board {
             n: n,
             vals: vec![false; n * n],
         }
+    }
+    fn solve(&mut self) -> bool {
+        false
     }
 }
 
