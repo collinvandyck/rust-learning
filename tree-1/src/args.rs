@@ -10,6 +10,10 @@ pub struct Args {
     #[arg(short = 'H', default_value_t = false)]
     pub show_hidden: bool,
 
+    /// Only show directories
+    #[arg(short = 'D', default_value_t = false)]
+    pub dirs_only: bool,
+
     /// The directory to search
     pub dir: Option<String>,
 }

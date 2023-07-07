@@ -100,12 +100,16 @@ where
 
 fn filter(args: &Args, entry: &DirEntry) -> bool {
     match entry.file_name().to_str() {
-        Some(s) => {
-            if !args.show_hidden && s.starts_with('.') {
-                false
-            } else {
-                true
+        Some(name) => {
+            // check for dir only
+            if args.dirs_only && !entry.path().is_dir() {
+                return false;
             }
+            // check for hidden files
+            if !args.show_hidden && name.starts_with('.') {
+                return false;
+            }
+            true
         }
         None => false,
     }
