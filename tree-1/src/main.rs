@@ -33,7 +33,7 @@ fn run() -> WalkResult<()> {
     Ok(())
 }
 
-fn print(w: Walked) {
+fn print(w: &Walked) {
     let Walked {
         name,
         depth,
