@@ -7,5 +7,5 @@ pub struct Args {
     pub depth: Option<u32>,
 
     /// The directory to search
-    pub dir: String,
+    pub dir: Option<String>,
 }
