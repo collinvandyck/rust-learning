@@ -98,9 +98,7 @@ where
                 }
             }
             println!(" {}", tree.val.iter().next().unwrap());
-            if !root_last {
-                root_last = is_last && indent == 0;
-            }
+            root_last = root_last || (is_last && indent == 0);
             tree.print(indent + 1, root_last);
         });
     }
