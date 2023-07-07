@@ -11,7 +11,15 @@ where
     walk_path(start, f)
 }
 
-fn walk_path<F>(path: &Path, mut f: F) -> WalkResult<()>
+fn walk_path<F>(path: &Path, f: F) -> WalkResult<()>
+where
+    F: FnMut(String) -> (),
+{
+    visit_path(path, f)?;
+    Ok(())
+}
+
+fn visit_path<F>(path: &Path, mut f: F) -> WalkResult<()>
 where
     F: FnMut(String) -> (),
 {
