@@ -20,10 +20,19 @@ fn main() {
     }
 }
 
+/// ├─ one
+/// │  ├─ two
+/// │  └─ three
+/// │     └─ four
+/// └─ five
+///    └─ six
 fn run() -> WalkResult<()> {
     let args = Args::parse();
     let start = args.dir.unwrap_or(".".into());
-    walk(&start, args.depth, |w| {
-        println!("{w:?}");
-    })
+    walk(&start, args.depth, print)?;
+    Ok(())
+}
+
+fn print(w: Walked) {
+    println!("{w:?}");
 }
