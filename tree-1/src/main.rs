@@ -50,7 +50,7 @@ fn print(w: Walked) {
         if root_last {
             print!("  {}", "  ".repeat(depth as usize));
         } else {
-            print!("│ {}", "  ".repeat(depth as usize));
+            print!("{}", "│  ".repeat(depth as usize));
         }
         match (first, last) {
             (_, true) => print!("└─ "),
