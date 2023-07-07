@@ -4,7 +4,7 @@ use crate::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Walked<'a> {
-    pub name: String,
+    pub name: &'a String,
     pub depth: u32,
     pub last: bool,
     pub first: bool,
@@ -42,7 +42,7 @@ where
         // if we are here, that means that the only walked result is a file.
         let name = path_to_file_name(path)?;
         let walked = Walked {
-            name,
+            name: &name,
             depth,
             last: true,
             first: true,
@@ -67,7 +67,7 @@ where
             let path = entry.path();
             let name = path_to_file_name(&path)?;
             let walked = Walked {
-                name,
+                name: &name,
                 depth,
                 last,
                 first,
