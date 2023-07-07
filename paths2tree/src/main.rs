@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::fmt::{Debug, Display};
-use std::fs::{self, DirEntry, File};
+use std::fs::{self, File};
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
