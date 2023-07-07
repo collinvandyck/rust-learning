@@ -15,6 +15,10 @@ use std::io::{BufRead, BufReader};
 /// └─ five
 ///    └─ six
 fn main() -> Result<(), Box<dyn Error>> {
+    render_samples()
+}
+
+fn render_samples() -> Result<(), Box<dyn Error>> {
     let file_names = ["simple.txt", "input.txt"];
     for file_name in file_names {
         render(file_name)?;
