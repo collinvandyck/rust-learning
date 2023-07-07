@@ -12,8 +12,14 @@ pub struct Walked<'a> {
     pub last: bool,
     pub start: bool,
     pub lasts: &'a Vec<bool>,
-    pub is_dir: bool,
-    pub is_executable: bool,
+    pub details: EntryDetails,
+}
+
+#[derive(Debug, Clone)]
+pub enum EntryDetails {
+    File,
+    Dir,
+    Executable,
 }
 
 // walk starts with the current file or dir and then visits each child file and dir
@@ -56,8 +62,7 @@ where
             depth,
             last: true,
             start: true,
-            is_dir: true,
-            is_executable: false,
+            details: EntryDetails::Dir,
             lasts: &vec![],
         });
     }
@@ -86,12 +91,18 @@ where
             {
                 is_executable = name.ends_with(".exe");
             }
+            let details = if path.is_dir() {
+                EntryDetails::Dir
+            } else if is_executable {
+                EntryDetails::Executable
+            } else {
+                EntryDetails::File
+            };
             let walked = Walked {
                 name: &name,
                 lasts: &lasts,
-                is_dir: path.is_dir(),
                 start: false,
-                is_executable,
+                details,
                 depth,
                 last,
             };

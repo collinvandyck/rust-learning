@@ -58,11 +58,9 @@ fn print(w: &Walked) {
             }
         }
     }
-    if w.is_dir {
-        println!("{}", w.name.green());
-    } else if w.is_executable {
-        println!("{}", w.name.red());
-    } else {
-        println!("{}", w.name);
+    match w.details {
+        EntryDetails::File => println!("{}", w.name),
+        EntryDetails::Dir => println!("{}", w.name.green()),
+        EntryDetails::Executable => println!("{}", w.name.red()),
     }
 }
