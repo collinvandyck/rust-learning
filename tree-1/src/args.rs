@@ -6,6 +6,10 @@ pub struct Args {
     #[arg(short, long)]
     pub depth: Option<u32>,
 
+    /// Show hidden files
+    #[arg(short = 'H', default_value_t = false)]
+    pub hidden: bool,
+
     /// The directory to search
     pub dir: Option<String>,
 }
