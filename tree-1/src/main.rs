@@ -23,9 +23,5 @@ fn main() {
 fn run() -> WalkResult<()> {
     let args = Args::parse();
     let start = args.dir.unwrap_or(".".into());
-    let mut paths = vec![];
-    walk(&start, args.depth, |p| {
-        println!("{p}");
-        paths.push(p);
-    })
+    walk(&start, args.depth, |_p| {})
 }
