@@ -7,7 +7,6 @@ pub struct Walked<'a> {
     pub name: &'a String,
     pub depth: u32,
     pub last: bool,
-    pub first: bool,
     pub lasts: &'a Vec<bool>,
 }
 
@@ -49,7 +48,6 @@ where
             name: &name,
             depth,
             last: true,
-            first: true,
             lasts: &vec![true],
         };
         f(&walked);
@@ -64,9 +62,8 @@ where
             entries.push(entry);
         }
         entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
-        let mut iter = entries.iter().enumerate().peekable();
-        while let Some((idx, entry)) = iter.next() {
-            let first = idx == 0;
+        let mut iter = entries.iter().peekable();
+        while let Some(entry) = iter.next() {
             let last = iter.peek().is_none();
             let path = entry.path();
             let name = path_to_file_name(&path)?;
@@ -75,7 +72,6 @@ where
                 lasts: &lasts,
                 depth,
                 last,
-                first,
             };
             f(&walked);
             if path.is_dir() {

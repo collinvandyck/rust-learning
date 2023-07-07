@@ -37,7 +37,6 @@ fn print(w: &Walked) {
         name,
         depth,
         last,
-        first: _,
         lasts,
     } = w.clone();
     if depth == 0 {
