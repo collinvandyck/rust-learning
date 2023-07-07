@@ -15,6 +15,6 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
-    walk(args.dir)?;
+    walk(&args.dir)?;
     Ok(())
 }
