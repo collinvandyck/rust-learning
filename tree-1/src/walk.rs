@@ -3,12 +3,12 @@ use std::{fs, path::Path};
 use crate::prelude::*;
 
 #[derive(Debug, Clone)]
-pub struct Walked {
+pub struct Walked<'a> {
     pub name: String,
     pub depth: u32,
     pub last: bool,
     pub first: bool,
-    pub lasts: Vec<bool>,
+    pub lasts: &'a Vec<bool>,
 }
 
 // walk starts with the current file or dir and then visits each child file and dir
@@ -46,7 +46,7 @@ where
             depth,
             last: true,
             first: true,
-            lasts: vec![true],
+            lasts: &vec![true],
         };
         f(&walked);
         return Ok(());
@@ -71,7 +71,7 @@ where
                 depth,
                 last,
                 first,
-                lasts: lasts.clone(),
+                lasts: &lasts,
             };
             f(&walked);
             if path.is_dir() {

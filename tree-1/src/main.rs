@@ -49,7 +49,7 @@ fn print(w: &Walked) {
         }
     } else {
         // lhs tree rendering
-        for v in &lasts {
+        for v in lasts {
             if *v {
                 print!("   ");
             } else {
