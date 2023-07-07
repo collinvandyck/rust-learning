@@ -1,4 +1,7 @@
-use std::{fs, path::Path};
+use std::{
+    fs::{self, DirEntry},
+    path::Path,
+};
 
 use crate::prelude::*;
 
@@ -62,7 +65,7 @@ where
             entries.push(entry);
         }
         entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
-        let mut iter = entries.iter().peekable();
+        let mut iter = entries.iter().filter(|s| filter(args, s)).peekable();
         while let Some(entry) = iter.next() {
             let last = iter.peek().is_none();
             let path = entry.path();
@@ -82,6 +85,19 @@ where
         }
     }
     Ok(())
+}
+
+fn filter(args: &Args, entry: &DirEntry) -> bool {
+    match entry.file_name().to_str() {
+        Some(s) => {
+            if !args.show_hidden && s.starts_with('.') {
+                false
+            } else {
+                true
+            }
+        }
+        None => false,
+    }
 }
 
 fn path_to_file_name(p: &Path) -> WalkResult<String> {

@@ -8,7 +8,7 @@ pub struct Args {
 
     /// Show hidden files
     #[arg(short = 'H', default_value_t = false)]
-    pub hidden: bool,
+    pub show_hidden: bool,
 
     /// The directory to search
     pub dir: Option<String>,
