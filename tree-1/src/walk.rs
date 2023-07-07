@@ -74,7 +74,7 @@ where
             let entry = entry?;
             entries.push(entry);
         }
-        entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
+        entries.sort_by_key(|x| x.file_name());
         let mut iter = entries.iter().filter(|s| filter(args, s)).peekable();
         while let Some(entry) = iter.next() {
             let last = iter.peek().is_none();
