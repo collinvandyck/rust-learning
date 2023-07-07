@@ -33,7 +33,13 @@ where
     if path.is_file() {
         // if we are here, that means that the only walked result is a file.
         let name = path_to_file_name(path)?;
-        println!("{name}");
+        let walked = Walked {
+            name,
+            depth,
+            last: true,
+            first: true,
+        };
+        f(walked);
         return Ok(());
     }
     let recurse = max_depth.map_or(true, |max_depth| depth < max_depth);
@@ -42,10 +48,17 @@ where
         let mut iter = entries.enumerate().peekable();
         while let Some((idx, entry)) = iter.next() {
             let entry = entry?;
+            let first = idx == 0;
             let last = iter.peek().is_none();
             let path = entry.path();
             let name = path_to_file_name(&path)?;
-            println!("{name}");
+            let walked = Walked {
+                name,
+                depth,
+                last,
+                first,
+            };
+            f(walked);
             if path.is_dir() {
                 walk_path(&path, depth + 1, max_depth, f)?;
             }
@@ -55,7 +68,6 @@ where
 }
 
 fn path_to_file_name(p: &Path) -> WalkResult<String> {
-    dbg!(p);
     p.file_name()
         .ok_or(Error::NoFileName)
         .and_then(|f| Ok(f.to_string_lossy().to_string()))
