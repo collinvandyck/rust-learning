@@ -15,7 +15,10 @@ fn walk_path<F>(path: &Path, mut f: F) -> WalkResult<()>
 where
     F: FnMut(String) -> (),
 {
-    let s = path.to_string_lossy().to_string();
-    f(s);
+    f(to_string(path));
     Ok(())
+}
+
+fn to_string(path: &Path) -> String {
+    path.to_string_lossy().to_string()
 }
