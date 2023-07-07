@@ -34,27 +34,28 @@ fn run() -> WalkResult<()> {
 }
 
 fn print(w: &Walked) {
-    if w.start {
-    } else if w.depth == 0 {
-        if w.last {
-            print!("└─ ");
-        } else {
-            print!("├─ ");
-        }
-    } else {
-        // lhs tree rendering
-        for v in w.lasts {
-            if *v {
-                print!("   ");
+    if !w.start {
+        if w.depth == 0 {
+            if w.last {
+                print!("└─ ");
             } else {
-                print!("│  ");
+                print!("├─ ");
             }
-        }
-        // render the marker right before the name
-        if w.last {
-            print!("└─ ");
         } else {
-            print!("├─ ");
+            // lhs tree rendering
+            for v in w.lasts {
+                if *v {
+                    print!("   ");
+                } else {
+                    print!("│  ");
+                }
+            }
+            // render the marker right before the name
+            if w.last {
+                print!("└─ ");
+            } else {
+                print!("├─ ");
+            }
         }
     }
     if w.is_dir {
