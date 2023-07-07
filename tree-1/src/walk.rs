@@ -8,6 +8,7 @@ pub struct Walked {
     pub depth: u32,
     pub last: bool,
     pub first: bool,
+    pub root_last: bool,
 }
 
 // walk starts with the current file or dir and then visits each child file and dir
@@ -16,10 +17,16 @@ where
     F: FnMut(Walked),
 {
     let start = Path::new(start);
-    walk_path(start, 0, max_depth, &mut f)
+    walk_path(start, 0, max_depth, false, &mut f)
 }
 
-fn walk_path<'a, F>(path: &Path, depth: u32, max_depth: Option<u32>, f: &mut F) -> WalkResult<()>
+fn walk_path<'a, F>(
+    path: &Path,
+    depth: u32,
+    max_depth: Option<u32>,
+    mut root_last: bool,
+    f: &mut F,
+) -> WalkResult<()>
 where
     F: FnMut(Walked),
 {
@@ -37,6 +44,7 @@ where
         let walked = Walked {
             name,
             depth,
+            root_last,
             last: true,
             first: true,
         };
@@ -58,10 +66,14 @@ where
                 depth,
                 last,
                 first,
+                root_last,
             };
             f(walked);
             if path.is_dir() {
-                walk_path(&path, depth + 1, max_depth, f)?;
+                if !root_last && depth == 0 && last {
+                    root_last = true
+                }
+                walk_path(&path, depth + 1, max_depth, root_last, f)?;
             }
         }
     }

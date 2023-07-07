@@ -39,6 +39,7 @@ fn print(w: Walked) {
         depth,
         last,
         first,
+        root_last,
     } = w;
     if depth == 0 {
         match (first, last) {
@@ -46,7 +47,11 @@ fn print(w: Walked) {
             _ => print!("├─ "),
         }
     } else {
-        print!("│ {}", "  ".repeat(depth as usize));
+        if root_last {
+            print!("  {}", "  ".repeat(depth as usize));
+        } else {
+            print!("│ {}", "  ".repeat(depth as usize));
+        }
         match (first, last) {
             (_, true) => print!("└─ "),
             _ => print!("├─ "),
