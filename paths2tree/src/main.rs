@@ -1,7 +1,9 @@
 use std::error::Error;
+use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{BufRead, BufReader};
+use std::{ffi, io};
 
 /// one/two
 /// one/three/four
@@ -15,7 +17,39 @@ use std::io::{BufRead, BufReader};
 /// └─ five
 ///    └─ six
 fn main() -> Result<(), Box<dyn Error>> {
-    render_samples()
+    render_samples()?;
+    render_pwd()
+}
+
+#[derive(Debug)]
+struct OsErr();
+
+impl Error for OsErr {}
+impl Display for OsErr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Could not convert path to string")
+    }
+}
+
+fn render_pwd() -> Result<(), Box<dyn Error>> {
+    let mut paths = vec![];
+    let files = fs::read_dir(".")?;
+    for file in files {
+        let file = file?;
+        let name = file.file_name();
+        paths.push(name);
+    }
+    let mut tree = Tree::new();
+    for p in paths {
+        let p = match p.into_string() {
+            Ok(p) => p,
+            Err(_) => return Err(Box::new(OsErr())),
+        };
+        tree.add(vec![p]);
+    }
+    println!("\nPWD:\n");
+    tree.print(0, false);
+    Ok(())
 }
 
 fn render_samples() -> Result<(), Box<dyn Error>> {
