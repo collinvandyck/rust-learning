@@ -39,24 +39,24 @@ fn print(w: Walked) {
         depth,
         last,
         first,
-        parent_last: root_last,
+        parent_last,
     } = w.clone();
     if depth == 0 {
-        match (first, last) {
-            (_, true) => print!("└─ "),
-            _ => print!("├─ "),
+        if last {
+            print!("└─ ");
+        } else {
+            print!("├─ ");
         }
     } else {
-        if root_last {
+        if parent_last {
             print!("  {}", "  ".repeat(depth as usize));
         } else {
             print!("{}", "│  ".repeat((depth) as usize));
-            //print!("{}", "  ".repeat((depth - 1) as usize));
         }
         match (first, last) {
             (_, true) => print!("└─ "),
             _ => print!("├─ "),
         }
     }
-    println!("{name} {last}");
+    println!("{name} last:{last} parent_last:{parent_last}");
 }
