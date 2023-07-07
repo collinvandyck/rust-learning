@@ -74,7 +74,7 @@ where
             let entry = entry?;
             entries.push(entry);
         }
-        entries.sort_by_key(|x| x.file_name());
+        entries.sort_by_key(DirEntry::file_name);
         let mut iter = entries.iter().filter(|s| filter(args, s)).peekable();
         while let Some(entry) = iter.next() {
             let last = iter.peek().is_none();
@@ -100,8 +100,8 @@ where
             };
             let walked = Walked {
                 name: &name,
-                lasts: &lasts,
                 start: false,
+                lasts,
                 details,
                 depth,
                 last,
@@ -137,5 +137,5 @@ fn filter(args: &Args, entry: &DirEntry) -> bool {
 fn path_to_file_name(p: &Path) -> WalkResult<String> {
     p.file_name()
         .ok_or(Error::NoFileName)
-        .and_then(|f| Ok(f.to_string_lossy().to_string()))
+        .map(|f| f.to_string_lossy().to_string())
 }
