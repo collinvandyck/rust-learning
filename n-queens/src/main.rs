@@ -4,7 +4,7 @@ fn main() {
     let n = 4;
     let mut board = Board::new(n);
     if board.solve() {
-        println!("{}", board);
+        println!("Solved for n={n}\n{}", board);
     } else {
         eprintln!("Could not solve for {n}");
         process::exit(1);
@@ -82,42 +82,35 @@ impl Board {
         // sanity check
         assert_eq!(true, self.at(row, col));
 
-        // check upper left
-        if self.check_deltas(row, col, -1, -1) {
-            return false;
-        }
-
-        // check upper right
-        if self.check_deltas(row, col, -1, 1) {
-            return false;
-        }
-
-        // check lower left
-        if self.check_deltas(row, col, 1, -1) {
-            return false;
-        }
-
-        // check lower right
-        if self.check_deltas(row, col, 1, 1) {
-            return false;
+        for delta_x in -1..=1 {
+            for delta_y in -1..=1 {
+                if delta_x == 0 && delta_y == 0 {
+                    continue;
+                }
+                if !self.check_deltas(row, col, delta_x, delta_y) {
+                    return false;
+                }
+            }
         }
         true
     }
     fn check_deltas(&self, row: usize, col: usize, row_delta: i32, col_delta: i32) -> bool {
         let mut row = row as i32;
         let mut col = col as i32;
-        while row >= 0
-            && row < self.n.try_into().unwrap()
-            && col >= 0
-            && col < self.n.try_into().unwrap()
-        {
+        loop {
+            row += row_delta;
+            col += col_delta;
+            if self.oob(row) || self.oob(col) {
+                break;
+            }
             if self.at(row as usize, col as usize) {
                 return false;
             }
-            row += row_delta;
-            col += col_delta;
         }
         true
+    }
+    fn oob(&self, dim: i32) -> bool {
+        dim < 0 || dim >= self.n.try_into().unwrap()
     }
     fn set(&mut self, row: usize, col: usize, val: bool) {
         self.vals[row * self.n + col] = val
