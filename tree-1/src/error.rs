@@ -17,7 +17,7 @@ impl error::Error for Error {}
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::NotFound(ref s) => write!(f, "Path {s} not found"),
+            Self::NotFound(ref s) => write!(f, "{s} not found"),
             Self::IO(ref e) => write!(f, "{e}"),
             Self::NoFileName => write!(f, "no filename present"),
             Self::NotDirectory(ref s) => write!(f, "{s} is not a directory"),
