@@ -72,12 +72,20 @@ where
         entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
         let mut iter = entries.iter().filter(|s| filter(args, s)).peekable();
         while let Some(entry) = iter.next() {
-            use std::os::unix::fs::PermissionsExt;
             let last = iter.peek().is_none();
             let path = entry.path();
             let meta = path.metadata()?;
-            let is_executable = meta.permissions().mode() & 0o111 != 0;
             let name = path_to_file_name(&path)?;
+            let is_executable;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                is_executable = meta.permissions().mode() & 0o111 != 0;
+            }
+            #[cfg(not(unix))]
+            {
+                is_executable = name.ends_with(".exe");
+            }
             let walked = Walked {
                 name: &name,
                 lasts: &lasts,
