@@ -11,16 +11,20 @@ mod prelude {
 }
 
 use prelude::*;
-use std::error::Error;
+use std::{error::Error, process};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     let start = args.dir.unwrap_or(".".into());
     let mut paths = vec![];
-    walk(&start, |p| {
+    let walked = walk(&start, |p| {
         println!("path: {p:?}");
         paths.push(p);
-    })?;
+    });
+    if let Err(e) = walked {
+        eprintln!("{}", e);
+        process::exit(1);
+    }
     println!("Paths: {paths:?}");
     Ok(())
 }
