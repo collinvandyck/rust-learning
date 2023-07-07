@@ -56,5 +56,11 @@ fn print(w: &Walked) {
             print!("├─ ");
         }
     }
-    println!("{}", w.name);
+    if w.is_dir {
+        println!("DIR: {}", w.name);
+    } else if w.is_executable {
+        println!("EXEC: {}", w.name);
+    } else {
+        println!("{}", w.name);
+    }
 }
