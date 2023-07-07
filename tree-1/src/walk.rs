@@ -15,12 +15,17 @@ fn walk_path<F>(path: &Path, mut f: F) -> WalkResult<()>
 where
     F: FnMut(String) -> (),
 {
+    let pstr = check_path(path)?;
+    f(pstr);
+    Ok(())
+}
+
+fn check_path(path: &Path) -> WalkResult<String> {
     let pstr = to_string(path);
     if !path.exists() {
         return Err(Error::NotFound(pstr.clone()));
     }
-    f(pstr);
-    Ok(())
+    Ok(pstr)
 }
 
 fn to_string(path: &Path) -> String {
