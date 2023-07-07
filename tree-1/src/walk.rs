@@ -24,7 +24,7 @@ fn walk_path<'a, F>(
     path: &Path,
     depth: u32,
     max_depth: Option<u32>,
-    mut parent_last: bool,
+    parent_last: bool,
     f: &mut F,
 ) -> WalkResult<()>
 where

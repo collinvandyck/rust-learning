@@ -38,7 +38,7 @@ fn print(w: Walked) {
         name,
         depth,
         last,
-        first,
+        first: _,
         parent_last,
     } = w.clone();
     if depth == 0 {
@@ -48,15 +48,24 @@ fn print(w: Walked) {
             print!("├─ ");
         }
     } else {
+        // lhs tree rendering
         if parent_last {
-            print!("  {}", "  ".repeat(depth as usize));
+            if depth > 1 {
+                // render the bars for the parents up to depth-1 times.
+                print!("{}", "│  ".repeat((depth - 1) as usize));
+                print!("  {}", "  ".repeat(depth as usize));
+            } else {
+                print!("  {}", "  ".repeat(depth as usize));
+            }
         } else {
             print!("{}", "│  ".repeat((depth) as usize));
         }
-        match (first, last) {
-            (_, true) => print!("└─ "),
-            _ => print!("├─ "),
+        // render the marker right before the name
+        if last {
+            print!("└─ ");
+        } else {
+            print!("├─ ");
         }
     }
-    println!("{name} last:{last} parent_last:{parent_last}");
+    println!("{name}");
 }
