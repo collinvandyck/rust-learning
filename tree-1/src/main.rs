@@ -40,7 +40,7 @@ fn print(w: Walked) {
         last,
         first,
         root_last,
-    } = w;
+    } = w.clone();
     if depth == 0 {
         match (first, last) {
             (_, true) => print!("└─ "),
@@ -50,7 +50,8 @@ fn print(w: Walked) {
         if root_last {
             print!("  {}", "  ".repeat(depth as usize));
         } else {
-            print!("{}", "│  ".repeat(depth as usize));
+            print!("{}", "│  ".repeat((depth) as usize));
+            //print!("{}", "  ".repeat((depth - 1) as usize));
         }
         match (first, last) {
             (_, true) => print!("└─ "),
