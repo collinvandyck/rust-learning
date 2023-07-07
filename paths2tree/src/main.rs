@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let lines: Vec<String> = line.split('/').map(|f| f.to_string()).collect();
         tree.add(lines);
     }
-    dbg!(tree);
+    tree.print(0);
     Ok(())
 }
 
@@ -47,16 +47,19 @@ where
     fn add(&mut self, parts: Vec<T>) {
         let mut tree = self;
         for part in parts {
+            dbg!(&part);
             let pos = tree.children.iter().position(|x| match &x.val {
                 Some(val) => *val == part,
                 None => false,
             });
+            dbg!(&pos);
             match pos {
                 None => {
                     // not found. append to the children
                     let mut sub_tree = Tree::new();
                     sub_tree.val = Some(part);
                     tree.children.push(sub_tree);
+                    tree = tree.children.last_mut().unwrap();
                 }
                 Some(pos) => {
                     // found it
@@ -64,6 +67,14 @@ where
                     tree = sub_tree;
                 }
             }
+        }
+    }
+    fn print(&self, indent: usize) {
+        if let Some(val) = &self.val {
+            println!("{}{val:?}", "--".repeat(indent - 1));
+        }
+        for child in &self.children {
+            child.print(indent + 1);
         }
     }
 }
