@@ -54,7 +54,7 @@ where
             depth,
             last: true,
             start: true,
-            lasts: &vec![true],
+            lasts: &vec![],
         });
     }
     let recurse = args.depth.map_or(true, |max_depth| depth < max_depth);
