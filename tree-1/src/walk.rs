@@ -12,6 +12,8 @@ pub struct Walked<'a> {
     pub last: bool,
     pub start: bool,
     pub lasts: &'a Vec<bool>,
+    pub is_dir: bool,
+    pub is_executable: bool,
 }
 
 // walk starts with the current file or dir and then visits each child file and dir
@@ -54,6 +56,8 @@ where
             depth,
             last: true,
             start: true,
+            is_dir: true,
+            is_executable: false,
             lasts: &vec![],
         });
     }
@@ -68,13 +72,18 @@ where
         entries.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
         let mut iter = entries.iter().filter(|s| filter(args, s)).peekable();
         while let Some(entry) = iter.next() {
+            use std::os::unix::fs::PermissionsExt;
             let last = iter.peek().is_none();
             let path = entry.path();
+            let meta = path.metadata()?;
+            let is_executable = meta.permissions().mode() & 0o111 != 0;
             let name = path_to_file_name(&path)?;
             let walked = Walked {
                 name: &name,
                 lasts: &lasts,
+                is_dir: path.is_dir(),
                 start: false,
+                is_executable,
                 depth,
                 last,
             };
