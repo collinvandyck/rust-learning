@@ -8,7 +8,7 @@ where
     F: FnMut(String) -> (),
 {
     let start = Path::new(start);
-    walk_path(start, 1, max_depth, &mut f)
+    walk_path(start, 0, max_depth, &mut f)
 }
 
 fn walk_path<F>(path: &Path, depth: u32, max_depth: &Option<u32>, f: &mut F) -> WalkResult<()>
