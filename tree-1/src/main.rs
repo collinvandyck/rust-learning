@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     let start = args.dir.unwrap_or(".".into());
     let mut paths = vec![];
-    let walked = walk(&start, |p| {
+    let walked = walk(&start, &args.depth, |p| {
         println!("path: {p:?}");
         paths.push(p);
     });
@@ -25,6 +25,5 @@ fn main() -> Result<(), Box<dyn Error>> {
         eprintln!("{}", e);
         process::exit(1);
     }
-    //println!("Paths: {paths:?}");
     Ok(())
 }
