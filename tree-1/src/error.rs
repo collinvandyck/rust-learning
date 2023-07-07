@@ -6,6 +6,7 @@ pub type WalkResult<T> = Result<T, Error>;
 pub enum Error {
     NotFound(String),
     IO(io::Error),
+    NoFileName,
 }
 
 impl Error {}
@@ -17,6 +18,7 @@ impl Display for Error {
         match self {
             Self::NotFound(ref s) => write!(f, "Path {s} not found"),
             Self::IO(ref e) => write!(f, "{e}"),
+            Self::NoFileName => write!(f, "no filename present"),
         }
     }
 }

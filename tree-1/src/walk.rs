@@ -2,54 +2,61 @@ use std::{fs, path::Path};
 
 use crate::prelude::*;
 
+pub struct Walked {
+    pub name: String,
+    pub depth: u32,
+    pub last: bool,
+    pub first: bool,
+}
+
 // walk starts with the current file or dir and then visits each child file and dir
 pub fn walk<F>(start: &str, max_depth: Option<u32>, mut f: F) -> WalkResult<()>
 where
-    F: FnMut(String),
+    F: FnMut(Walked),
 {
     let start = Path::new(start);
     walk_path(start, 0, max_depth, &mut f)
 }
 
-fn walk_path<F>(path: &Path, depth: u32, max_depth: Option<u32>, f: &mut F) -> WalkResult<()>
+fn walk_path<'a, F>(path: &Path, depth: u32, max_depth: Option<u32>, f: &mut F) -> WalkResult<()>
 where
-    F: FnMut(String),
+    F: FnMut(Walked),
 {
-    visit_path(path, depth, f)?;
-    let recurse = match max_depth {
-        Some(max_depth) => depth < max_depth,
-        None => true,
-    };
+    if !path.exists() {
+        let to_str = path.to_string_lossy().to_string();
+        return Err(Error::NotFound(to_str));
+    }
+    if path.is_symlink() {
+        // we don't follow symlinks for now
+        return Ok(());
+    }
+    if path.is_file() {
+        // if we are here, that means that the only walked result is a file.
+        let name = path_to_file_name(path)?;
+        println!("{name}");
+        return Ok(());
+    }
+    let recurse = max_depth.map_or(true, |max_depth| depth < max_depth);
     if recurse && path.is_dir() {
         let entries = fs::read_dir(path)?;
-        for entry in entries {
+        let mut iter = entries.enumerate().peekable();
+        while let Some((idx, entry)) = iter.next() {
             let entry = entry?;
+            let last = iter.peek().is_none();
             let path = entry.path();
-            walk_path(&path, depth + 1, max_depth, f)?;
+            let name = path_to_file_name(&path)?;
+            println!("{name}");
+            if path.is_dir() {
+                walk_path(&path, depth + 1, max_depth, f)?;
+            }
         }
     }
     Ok(())
 }
 
-fn visit_path<F>(path: &Path, depth: u32, f: &mut F) -> WalkResult<()>
-where
-    F: FnMut(String),
-{
-    let pstr = check_path(path)?;
-    if !path.is_dir() || depth > 0 {
-        f(pstr);
-    }
-    Ok(())
-}
-
-fn check_path(path: &Path) -> WalkResult<String> {
-    let pstr = to_string(path);
-    if !path.exists() {
-        return Err(Error::NotFound(pstr));
-    }
-    Ok(pstr)
-}
-
-fn to_string(path: &Path) -> String {
-    path.to_string_lossy().to_string()
+fn path_to_file_name(p: &Path) -> WalkResult<String> {
+    dbg!(p);
+    p.file_name()
+        .ok_or(Error::NoFileName)
+        .and_then(|f| Ok(f.to_string_lossy().to_string()))
 }
