@@ -11,19 +11,21 @@ mod prelude {
 }
 
 use prelude::*;
-use std::{error::Error, process};
+use std::process;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let args = Args::parse();
-    let start = args.dir.unwrap_or(".".into());
-    let mut paths = vec![];
-    let walked = walk(&start, &args.depth, |p| {
-        println!("{p}");
-        paths.push(p);
-    });
-    if let Err(e) = walked {
+fn main() {
+    if let Err(e) = run() {
         eprintln!("{}", e);
         process::exit(1);
     }
-    Ok(())
+}
+
+fn run() -> WalkResult<()> {
+    let args = Args::parse();
+    let start = args.dir.unwrap_or(".".into());
+    let mut paths = vec![];
+    walk(&start, &args.depth, |p| {
+        println!("{p}");
+        paths.push(p);
+    })
 }
