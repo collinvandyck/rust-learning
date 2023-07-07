@@ -45,6 +45,12 @@ fn print(w: Walked) {
             (_, true) => print!("└─ "),
             _ => print!("├─ "),
         }
+    } else {
+        print!("│ {}", "  ".repeat(depth as usize));
+        match (first, last) {
+            (_, true) => print!("└─ "),
+            _ => print!("├─ "),
+        }
     }
     println!("{name}");
 }
