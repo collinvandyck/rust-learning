@@ -29,10 +29,7 @@ fn render_pwd() -> Result<(), Box<dyn Error>> {
     }
     let mut tree = Tree::new();
     for p in paths {
-        let p = match p.into_string() {
-            Ok(p) => p,
-            Err(_) => continue,
-        };
+        let p = p.into_string().expect("failed to convert path to utf8");
         tree.add(vec![p]);
     }
     println!("\nPWD:\n");
