@@ -15,7 +15,7 @@ fn walk_path<F>(path: &Path, depth: u32, max_depth: &Option<u32>, f: &mut F) -> 
 where
     F: FnMut(String) -> (),
 {
-    visit_path(path, f)?;
+    visit_path(path, depth, f)?;
     let recurse = match max_depth {
         Some(max_depth) => depth < *max_depth,
         None => true,
@@ -31,12 +31,14 @@ where
     Ok(())
 }
 
-fn visit_path<F>(path: &Path, f: &mut F) -> WalkResult<()>
+fn visit_path<F>(path: &Path, depth: u32, f: &mut F) -> WalkResult<()>
 where
     F: FnMut(String) -> (),
 {
     let pstr = check_path(path)?;
-    f(pstr);
+    if !path.is_dir() || depth > 0 {
+        f(pstr);
+    }
     Ok(())
 }
 
