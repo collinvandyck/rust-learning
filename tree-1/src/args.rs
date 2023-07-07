@@ -4,8 +4,8 @@ pub use clap::Parser;
 pub struct Args {
     /// How many levels of depth to search for files
     #[arg(short, long)]
-    depth: Option<u32>,
+    pub depth: Option<u32>,
 
     /// The directory to search
-    dir: String,
+    pub dir: String,
 }
