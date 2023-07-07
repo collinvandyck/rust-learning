@@ -1,10 +1,10 @@
 use std::{fmt::Display, process};
 
 fn main() {
-    let n = 4;
+    let n = 8;
     let mut board = Board::new(n);
     if board.solve() {
-        println!("Solved for n={n}\n{}", board);
+        println!("Solved for n={n} iterations={}\n{board}", board.iterations);
     } else {
         eprintln!("Could not solve for {n}");
         process::exit(1);
@@ -13,6 +13,8 @@ fn main() {
 
 #[derive(Debug, Clone)]
 struct Board {
+    max_stack: i32,
+    iterations: i32,
     n: usize,
     vals: Vec<bool>,
 }
@@ -20,18 +22,24 @@ struct Board {
 impl Board {
     fn new(n: usize) -> Self {
         Self {
+            iterations: 0,
+            max_stack: 0,
             n: n,
             vals: vec![false; n * n],
         }
     }
     // attempt to solve the board. we must place N pieces on the board.
     fn solve(&mut self) -> bool {
-        self.solve_n(self.n)
+        self.solve_n(0, self.n)
     }
     // solve for remain queens
-    fn solve_n(&mut self, remain: usize) -> bool {
+    fn solve_n(&mut self, stack: i32, remain: usize) -> bool {
+        self.iterations += 1;
         if remain == 0 {
             return true;
+        }
+        if stack > self.max_stack {
+            self.max_stack = stack;
         }
         for col in 0..self.n {
             for row in 0..self.n {
@@ -52,7 +60,7 @@ impl Board {
                 }
 
                 // if valid, recurse
-                let success = self.solve_n(remain - 1);
+                let success = self.solve_n(stack + 1, remain - 1);
                 if success {
                     return true;
                 }
