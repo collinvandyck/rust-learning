@@ -1,4 +1,4 @@
-use std::{fmt::Display, io};
+use std::{error, fmt::Display, io};
 
 pub type WalkResult<T> = Result<T, Error>;
 
@@ -10,7 +10,7 @@ pub enum Error {
 
 impl Error {}
 
-impl std::error::Error for Error {}
+impl error::Error for Error {}
 
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
