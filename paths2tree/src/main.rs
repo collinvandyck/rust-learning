@@ -1,9 +1,7 @@
 use std::error::Error;
-use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader};
-use std::{ffi, io};
 
 /// one/two
 /// one/three/four
