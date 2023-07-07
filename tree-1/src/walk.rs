@@ -3,21 +3,21 @@ use std::{fs, path::Path};
 use crate::prelude::*;
 
 // walk starts with the current file or dir and then visits each child file and dir
-pub fn walk<F>(start: &str, max_depth: &Option<u32>, mut f: F) -> WalkResult<()>
+pub fn walk<F>(start: &str, max_depth: Option<u32>, mut f: F) -> WalkResult<()>
 where
-    F: FnMut(String) -> (),
+    F: FnMut(String),
 {
     let start = Path::new(start);
     walk_path(start, 0, max_depth, &mut f)
 }
 
-fn walk_path<F>(path: &Path, depth: u32, max_depth: &Option<u32>, f: &mut F) -> WalkResult<()>
+fn walk_path<F>(path: &Path, depth: u32, max_depth: Option<u32>, f: &mut F) -> WalkResult<()>
 where
-    F: FnMut(String) -> (),
+    F: FnMut(String),
 {
     visit_path(path, depth, f)?;
     let recurse = match max_depth {
-        Some(max_depth) => depth < *max_depth,
+        Some(max_depth) => depth < max_depth,
         None => true,
     };
     if recurse && path.is_dir() {
@@ -33,7 +33,7 @@ where
 
 fn visit_path<F>(path: &Path, depth: u32, f: &mut F) -> WalkResult<()>
 where
-    F: FnMut(String) -> (),
+    F: FnMut(String),
 {
     let pstr = check_path(path)?;
     if !path.is_dir() || depth > 0 {
@@ -45,7 +45,7 @@ where
 fn check_path(path: &Path) -> WalkResult<String> {
     let pstr = to_string(path);
     if !path.exists() {
-        return Err(Error::NotFound(pstr.clone()));
+        return Err(Error::NotFound(pstr));
     }
     Ok(pstr)
 }
