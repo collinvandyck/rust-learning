@@ -1,7 +1,8 @@
 use std::error::Error;
 use std::fmt::{Debug, Display};
-use std::fs::{self, File};
+use std::fs::{self, DirEntry, File};
 use std::io::{BufRead, BufReader};
+use std::path::Path;
 
 /// one/two
 /// one/three/four
@@ -16,24 +17,30 @@ use std::io::{BufRead, BufReader};
 ///    └─ six
 fn main() -> Result<(), Box<dyn Error>> {
     render_samples()?;
-    render_pwd(".")
+    render_pwd(Path::new("."))
 }
 
-fn render_pwd(dir: &str) -> Result<(), Box<dyn Error>> {
-    let mut paths = vec![];
-    let files = fs::read_dir(dir)?;
-    for file in files {
-        let file = file?;
-        let name = file.file_name();
-        paths.push(name);
-    }
+fn render_pwd(dir: &Path) -> Result<(), Box<dyn Error>> {
     let mut tree = Tree::new();
-    for p in paths {
-        let p = p.into_string().expect("failed to convert path to utf8");
-        tree.add(vec![p]);
-    }
+    walk_dir(dir, &mut tree)?;
     println!("\nPWD:\n");
     tree.print(0, false);
+    Ok(())
+}
+
+fn walk_dir(dir: &Path, tree: &mut Tree<String>) -> Result<(), Box<dyn Error>> {
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            walk_dir(&path, tree)?;
+        } else {
+            let path = path.to_str().unwrap();
+            let path = path.to_string();
+            let lines: Vec<String> = path.split('/').map(|f| f.to_string()).collect();
+            tree.add(lines);
+        }
+    }
     Ok(())
 }
 
