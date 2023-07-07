@@ -31,9 +31,8 @@ fn render(file_name: &str) -> Result<(), Box<dyn Error>> {
         let lines: Vec<String> = line.split('/').map(|f| f.to_string()).collect();
         tree.add(lines);
     }
-    println!("{file_name}:");
+    println!("\n{file_name}:\n");
     tree.print(0, false);
-    println!();
     Ok(())
 }
 
@@ -76,12 +75,6 @@ where
             }
         }
     }
-    /// ├─ one
-    /// │  ├─ two
-    /// │  └─ three
-    /// │     └─ four
-    /// └─ five
-    ///    └─ six
     fn print(&self, indent: usize, mut root_last: bool) {
         self.children.iter().enumerate().for_each(|(idx, tree)| {
             let is_last = idx == self.children.len() - 1;
