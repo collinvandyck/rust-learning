@@ -2,6 +2,7 @@ use std::{fs, path::Path};
 
 use crate::prelude::*;
 
+#[derive(Debug)]
 pub struct Walked {
     pub name: String,
     pub depth: u32,

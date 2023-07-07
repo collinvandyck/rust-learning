@@ -23,5 +23,7 @@ fn main() {
 fn run() -> WalkResult<()> {
     let args = Args::parse();
     let start = args.dir.unwrap_or(".".into());
-    walk(&start, args.depth, |_p| {})
+    walk(&start, args.depth, |w| {
+        println!("{w:?}");
+    })
 }
