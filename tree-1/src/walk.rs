@@ -32,14 +32,14 @@ where
         None => ".".to_string(),
     };
     let start = Path::new(&start);
-    walk_path(args, start, 0, vec![], &mut f)
+    walk_path(args, start, 0, &vec![], &mut f)
 }
 
-fn walk_path<'a, F>(
+fn walk_path<F>(
     args: &Args,
     path: &Path,
     depth: u32,
-    lasts: Vec<bool>,
+    lasts: &Vec<bool>,
     f: &mut F,
 ) -> WalkResult<()>
 where
@@ -110,7 +110,7 @@ where
             if path.is_dir() {
                 let mut lasts = lasts.clone();
                 lasts.push(last);
-                walk_path(args, &path, depth + 1, lasts, f)?;
+                walk_path(args, &path, depth + 1, &lasts, f)?;
             }
         }
     }
