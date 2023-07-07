@@ -33,21 +33,15 @@ fn run() -> WalkResult<()> {
 }
 
 fn print(w: &Walked) {
-    let Walked {
-        name,
-        depth,
-        last,
-        lasts,
-    } = w.clone();
-    if depth == 0 {
-        if last {
+    if w.depth == 0 {
+        if w.last {
             print!("└─ ");
         } else {
             print!("├─ ");
         }
     } else {
         // lhs tree rendering
-        for v in lasts {
+        for v in w.lasts {
             if *v {
                 print!("   ");
             } else {
@@ -55,11 +49,11 @@ fn print(w: &Walked) {
             }
         }
         // render the marker right before the name
-        if last {
+        if w.last {
             print!("└─ ");
         } else {
             print!("├─ ");
         }
     }
-    println!("{name}");
+    println!("{}", w.name);
 }
