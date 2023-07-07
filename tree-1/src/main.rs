@@ -39,7 +39,7 @@ fn print(w: Walked) {
         depth,
         last,
         first,
-        root_last,
+        parent_last: root_last,
     } = w.clone();
     if depth == 0 {
         match (first, last) {
