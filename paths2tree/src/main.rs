@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let lines: Vec<String> = line.split('/').map(|f| f.to_string()).collect();
         tree.add(lines);
     }
-    tree.print(0);
+    tree.print(0, false);
     Ok(())
 }
 
@@ -72,7 +72,7 @@ where
     /// │     └─ four
     /// └─ five
     ///    └─ six
-    fn print(&self, indent: usize) {
+    fn print(&self, indent: usize, mut root_last: bool) {
         self.children.iter().enumerate().for_each(|(idx, tree)| {
             let is_last = idx == self.children.len() - 1;
 
@@ -84,7 +84,11 @@ where
                 }
             } else {
                 // we are in a subtree
-                print!("│  {}", "   ".repeat(indent - 1));
+                if root_last {
+                    print!("   {}", "   ".repeat(indent - 1));
+                } else {
+                    print!("│  {}", "   ".repeat(indent - 1));
+                }
                 if is_last {
                     print!("└─")
                 } else {
@@ -92,7 +96,10 @@ where
                 }
             }
             println!(" {}", tree.val.iter().next().unwrap());
-            tree.print(indent + 1);
+            if !root_last {
+                root_last = is_last && indent == 0;
+            }
+            tree.print(indent + 1, root_last);
         });
     }
 }
