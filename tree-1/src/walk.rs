@@ -17,14 +17,13 @@ where
     F: FnMut(Walked),
 {
     let start = Path::new(start);
-    walk_path(start, 0, max_depth, false, vec![], &mut f)
+    walk_path(start, 0, max_depth, vec![], &mut f)
 }
 
 fn walk_path<'a, F>(
     path: &Path,
     depth: u32,
     max_depth: Option<u32>,
-    parent_last: bool,
     lasts: Vec<bool>,
     f: &mut F,
 ) -> WalkResult<()>
@@ -78,7 +77,7 @@ where
             if path.is_dir() {
                 let mut lasts = lasts.clone();
                 lasts.push(last);
-                walk_path(&path, depth + 1, max_depth, last, lasts, f)?;
+                walk_path(&path, depth + 1, max_depth, lasts, f)?;
             }
         }
     }
