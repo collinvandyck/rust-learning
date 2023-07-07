@@ -1,7 +1,7 @@
 use std::{fmt::Display, process};
 
 fn main() {
-    let n = 8;
+    let n = 10;
     let mut board = Board::new(n);
     if board.solve() {
         println!("Solved for n={n} iterations={}\n{board}", board.iterations);
