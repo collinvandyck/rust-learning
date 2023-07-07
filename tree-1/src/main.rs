@@ -28,8 +28,7 @@ fn main() {
 ///    └─ six
 fn run() -> WalkResult<()> {
     let args = Args::parse();
-    let start = args.dir.unwrap_or(".".into());
-    walk(&start, args.depth, print)?;
+    walk(&args, print)?;
     Ok(())
 }
 

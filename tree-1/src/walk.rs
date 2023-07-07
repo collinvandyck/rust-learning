@@ -12,18 +12,22 @@ pub struct Walked<'a> {
 }
 
 // walk starts with the current file or dir and then visits each child file and dir
-pub fn walk<F>(start: &str, max_depth: Option<u32>, mut f: F) -> WalkResult<()>
+pub fn walk<F>(args: &Args, mut f: F) -> WalkResult<()>
 where
     F: FnMut(&Walked),
 {
-    let start = Path::new(start);
-    walk_path(start, 0, max_depth, vec![], &mut f)
+    let start = match &args.dir {
+        Some(dir) => dir.to_string(),
+        None => ".".to_string(),
+    };
+    let start = Path::new(&start);
+    walk_path(args, start, 0, vec![], &mut f)
 }
 
 fn walk_path<'a, F>(
+    args: &Args,
     path: &Path,
     depth: u32,
-    max_depth: Option<u32>,
     lasts: Vec<bool>,
     f: &mut F,
 ) -> WalkResult<()>
@@ -51,7 +55,7 @@ where
         f(&walked);
         return Ok(());
     }
-    let recurse = max_depth.map_or(true, |max_depth| depth < max_depth);
+    let recurse = args.depth.map_or(true, |max_depth| depth < max_depth);
     if recurse && path.is_dir() {
         let read_dir = fs::read_dir(path)?;
         let mut entries = vec![];
@@ -77,7 +81,7 @@ where
             if path.is_dir() {
                 let mut lasts = lasts.clone();
                 lasts.push(last);
-                walk_path(&path, depth + 1, max_depth, lasts, f)?;
+                walk_path(args, &path, depth + 1, lasts, f)?;
             }
         }
     }
