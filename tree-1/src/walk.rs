@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{fs, path::Path};
 
 use crate::prelude::*;
 
@@ -16,6 +16,9 @@ where
     F: FnMut(String) -> (),
 {
     visit_path(path, f)?;
+    if path.is_dir() {
+        let entries = fs::read_dir(path)?;
+    }
     Ok(())
 }
 
