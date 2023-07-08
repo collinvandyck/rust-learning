@@ -8,6 +8,8 @@ use crate::prelude::*;
 
 type IterType = Box<dyn Iterator<Item = io::Result<String>>>;
 
+// BetterIter is an iterator that composes other iterators and
+// consumes them in order.
 pub struct BetterIter {
     iters: VecDeque<IterType>,
 }
