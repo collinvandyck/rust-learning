@@ -8,6 +8,7 @@ mod prelude {
     pub use crate::args::*;
     pub use crate::error::*;
     pub use crate::walk::*;
+    pub use colored::Colorize;
 }
 
 use colored::Colorize;
@@ -51,9 +52,6 @@ fn print(w: &Walked) {
             print!("├─ ");
         }
     }
-    match w.details {
-        EntryDetails::File => println!("{}", w.name),
-        EntryDetails::Dir => println!("{}", w.name.green()),
-        EntryDetails::Executable => println!("{}", w.name.red()),
-    }
+    let formatted = w.details.colorize(w.name);
+    println!("{}", formatted);
 }

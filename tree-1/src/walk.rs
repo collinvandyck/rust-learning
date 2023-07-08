@@ -22,6 +22,16 @@ pub enum EntryDetails {
     Executable,
 }
 
+impl EntryDetails {
+    pub fn colorize<'a>(&self, name: &'a str) -> String {
+        match self {
+            EntryDetails::File => name.to_string(),
+            EntryDetails::Dir => name.green().to_string(),
+            EntryDetails::Executable => name.red().to_string(),
+        }
+    }
+}
+
 // walk starts with the current file or dir and then visits each child file and dir
 pub fn walk<F>(args: &Args, mut f: F) -> WalkResult<()>
 where
