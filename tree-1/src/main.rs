@@ -35,27 +35,19 @@ fn run() -> WalkResult<()> {
 
 fn print(w: &Walked) {
     if !w.start {
-        if w.depth == 0 {
-            if w.last {
-                print!("└─ ");
+        // lhs tree rendering
+        for v in w.lasts {
+            if *v {
+                print!("   ");
             } else {
-                print!("├─ ");
+                print!("│  ");
             }
+        }
+        // render the marker right before the name
+        if w.last {
+            print!("└─ ");
         } else {
-            // lhs tree rendering
-            for v in w.lasts {
-                if *v {
-                    print!("   ");
-                } else {
-                    print!("│  ");
-                }
-            }
-            // render the marker right before the name
-            if w.last {
-                print!("└─ ");
-            } else {
-                print!("├─ ");
-            }
+            print!("├─ ");
         }
     }
     match w.details {
