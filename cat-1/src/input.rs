@@ -25,7 +25,7 @@ impl Input {
             let reader = BufReader::new(file);
             readers.push_back(Box::new(reader) as Box<dyn BufRead>);
         }
-        let current = readers.pop_front();
+        let current = None;
         Ok(Self { readers, current })
     }
 }
@@ -43,8 +43,14 @@ impl Iterator for Input {
             None => None,
             Some(ref mut reader) => {
                 let mut buf = String::new();
-                if let Err(e) = reader.read_line(&mut buf) {
-                    eprintln!("Read failed: {e}");
+                let read = reader.read_line(&mut buf);
+                let done = match read {
+                    Err(_) => true,
+                    Ok(0) => true,
+                    _ => false,
+                };
+                if done {
+                    self.current = None;
                     return None;
                 }
                 let buf = buf.trim_end().to_string();
