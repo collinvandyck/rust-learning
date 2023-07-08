@@ -33,29 +33,29 @@ impl Input {
 impl Iterator for Input {
     type Item = CatResult<String>;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current.is_none() && self.readers.is_empty() {
-            return None;
-        }
-        if self.current.is_none() {
-            self.current = self.readers.pop_front();
-        }
-        match self.current {
-            None => None,
-            Some(ref mut reader) => {
-                let mut buf = String::new();
-                let read = reader.read_line(&mut buf);
-                let done = match read {
-                    Err(_) => true,
-                    Ok(0) => true,
-                    _ => false,
-                };
-                if done {
-                    self.current = None;
-                    return None;
+        while self.current.is_some() || !self.readers.is_empty() {
+            match self.current {
+                None => {
+                    self.current = self.readers.pop_front();
+                    continue;
                 }
-                let buf = buf.trim_end().to_string();
-                Some(Ok(buf))
+                Some(ref mut reader) => {
+                    let mut buf = String::new();
+                    let read = reader.read_line(&mut buf);
+                    let done = match read {
+                        Err(_) => true,
+                        Ok(0) => true,
+                        _ => false,
+                    };
+                    if done {
+                        self.current = None;
+                        continue;
+                    }
+                    let buf = buf.trim_end().to_string();
+                    return Some(Ok(buf));
+                }
             }
         }
+        None
     }
 }
