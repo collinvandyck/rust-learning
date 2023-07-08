@@ -1,7 +1,9 @@
 version: '3'
 vars:
 includes:
-  default: ../Taskfile.yml
+  super: 
+    taskfile: ../Taskfile.yml
+    
 tasks:
   foo:
     cmds:
