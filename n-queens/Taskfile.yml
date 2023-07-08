@@ -1,0 +1,10 @@
+version: '3'
+vars:
+includes:
+  default: ../Taskfile.yml
+tasks:
+  foo:
+    cmds:
+      - echo FOOOOO
+    silent: true
+
