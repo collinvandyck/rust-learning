@@ -7,7 +7,8 @@ use std::{
 use crate::prelude::*;
 
 // gyahhhhh
-type IterType = Box<dyn Iterator<Item = io::Result<String>>>;
+type IterResult = io::Result<String>;
+type IterType = Box<dyn Iterator<Item = IterResult>>;
 
 // BetterIterator is an iterator that composes other iterators and
 // consumes them in order.
