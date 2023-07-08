@@ -8,29 +8,29 @@ use crate::prelude::*;
 
 // gyahhhhh
 type IterResult = io::Result<String>;
-type IterType = Box<dyn Iterator<Item = IterResult>>;
+type Iterable = Box<dyn Iterator<Item = IterResult>>;
 
 // BetterIterator is an iterator that composes other iterators and
 // consumes them in order.
-pub struct BetterIterator(VecDeque<IterType>);
+pub struct BetterIterator(VecDeque<Iterable>);
 
 impl BetterIterator {
     pub fn new(args: &Args) -> CatResult<BetterIterator> {
         let mut iters = VecDeque::new();
         for file in &args.files {
             let file = File::open(file)?;
-            iters.push_back(Self::iter_from_read(file));
+            iters.push_back(Self::new_iterable(file));
         }
         if iters.is_empty() {
             let file = io::stdin();
-            iters.push_back(Self::iter_from_read(file));
+            iters.push_back(Self::new_iterable(file));
         }
         Ok(Self(iters))
     }
-    fn iter_from_read<T: Read + 'static>(file: T) -> IterType {
+    fn new_iterable<T: Read + 'static>(file: T) -> Iterable {
         let reader = BufReader::new(file);
         let lines = reader.lines();
-        Box::new(lines) as IterType
+        Box::new(lines) as Iterable
     }
 }
 
