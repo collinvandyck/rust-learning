@@ -1,4 +1,4 @@
-use std::{error, fmt::Display, fs::write, io};
+use std::{error, fmt::Display, io};
 
 pub type WalkResult<T> = Result<T, Error>;
 
