@@ -41,16 +41,13 @@ impl Iterator for Input {
                 }
                 Some(ref mut reader) => {
                     let mut buf = String::new();
-                    let read = reader.read_line(&mut buf);
-                    let done = match read {
-                        Err(_) => true,
-                        Ok(0) => true,
-                        _ => false,
+                    match reader.read_line(&mut buf) {
+                        Ok(s) if s > 0 => false,
+                        _ => {
+                            self.current = None;
+                            continue;
+                        }
                     };
-                    if done {
-                        self.current = None;
-                        continue;
-                    }
                     let buf = buf.trim_end().to_string();
                     return Some(Ok(buf));
                 }
