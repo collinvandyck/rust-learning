@@ -23,7 +23,7 @@ pub enum EntryDetails {
 }
 
 impl EntryDetails {
-    pub fn colorize<'a>(&self, name: &'a str) -> String {
+    pub fn colorize(&self, name: &str) -> String {
         match self {
             EntryDetails::File => name.to_string(),
             EntryDetails::Dir => name.green().to_string(),
