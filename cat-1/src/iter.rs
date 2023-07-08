@@ -30,8 +30,7 @@ impl BetterIterator {
     fn iter_from_read<T: Read + 'static>(file: T) -> IterType {
         let reader = BufReader::new(file);
         let lines = reader.lines();
-        let iter = Box::new(lines) as IterType;
-        iter
+        Box::new(lines) as IterType
     }
 }
 
