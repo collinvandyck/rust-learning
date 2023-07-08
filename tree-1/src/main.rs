@@ -11,7 +11,6 @@ mod prelude {
     pub use colored::Colorize;
 }
 
-use colored::Colorize;
 use prelude::*;
 use std::process;
 
