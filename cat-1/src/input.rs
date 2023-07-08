@@ -16,6 +16,7 @@ pub struct Input {
     current: Option<Reader>,
 }
 
+#[allow(dead_code)]
 impl Input {
     pub fn new(args: &Args) -> CatResult<Self> {
         // build args.files into a vec of buf readers

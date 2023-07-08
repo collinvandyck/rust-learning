@@ -24,14 +24,9 @@ fn main() {
 
 fn run(args: &Args) -> CatResult<()> {
     let input = BetterIter::new(args)?;
-    consume(args, input)?;
-    Ok(())
-}
-
-fn consume(_args: &Args, input: BetterIter) -> CatResult<()> {
     for line in input {
         let line = line?;
-        println!("{line}")
+        println!("{line}");
     }
     Ok(())
 }
