@@ -37,7 +37,7 @@ impl BetterIterator {
 impl Iterator for BetterIterator {
     type Item = Result<String>;
     fn next(&mut self) -> Option<Self::Item> {
-        while !self.iters.is_empty() {
+        loop {
             match self.iters.get_mut(0) {
                 Some(iter) => {
                     if let Some(res) = iter.next() {
