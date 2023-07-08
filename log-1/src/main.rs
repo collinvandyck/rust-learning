@@ -6,4 +6,7 @@ fn main() {
     info!("Hello!");
     error!("Hello!");
     warn!("Warning");
+
+    let val = std::env::var("foo").unwrap_or("UNKNOWN".to_string());
+    println!("foo:  {}", val);
 }
