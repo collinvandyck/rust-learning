@@ -14,6 +14,10 @@ pub struct Args {
     #[arg(short = 'D', default_value_t = false)]
     pub dirs_only: bool,
 
+    /// Only show executables
+    #[arg(short = 'E', default_value_t = false)]
+    pub executables_only: bool,
+
     /// The directory to search
     pub dir: Option<String>,
 }
