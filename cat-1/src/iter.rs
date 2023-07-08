@@ -40,7 +40,7 @@ impl Iterator for BetterIter {
     fn next(&mut self) -> Option<Self::Item> {
         while !self.iters.is_empty() {
             match self.iters.get_mut(0) {
-                Some(ref mut iter) => match iter.next() {
+                Some(iter) => match iter.next() {
                     Some(res) => return Some(res),
                     None => {
                         self.iters.pop_front();
