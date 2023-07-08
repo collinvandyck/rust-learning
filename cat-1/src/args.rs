@@ -1,7 +1,7 @@
-use clap::Parser;
+pub use clap::Parser;
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 pub struct Args {
     /// The files to concatenate
-    files: Vec<String>,
+    pub files: Vec<String>,
 }
