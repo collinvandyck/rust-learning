@@ -1,7 +1,7 @@
 use std::{env, fmt::Display, process};
 
 fn main() {
-    let mut n = 1;
+    let mut n = 8;
     env::args().skip(1).take(1).for_each(|x| {
         n = x.parse::<usize>().unwrap();
     });
@@ -27,7 +27,7 @@ impl Board {
         Self {
             iterations: 0,
             max_stack: 0,
-            n: n,
+            n,
             vals: vec![false; n * n],
         }
     }
