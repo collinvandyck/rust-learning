@@ -27,7 +27,7 @@ impl Input {
             readers.push_back(Box::new(reader) as Box<dyn BufRead>);
         }
         // if no files were specified we just use stdin.
-        if readers.len() == 0 {
+        if readers.is_empty() {
             let file = io::stdin();
             let reader = BufReader::new(file);
             readers.push_back(Box::new(reader) as Box<dyn BufRead>);

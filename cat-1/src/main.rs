@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 mod args;
 mod error;
 mod input;
@@ -23,7 +25,7 @@ fn main() {
 }
 
 fn run(args: &Args) -> CatResult<()> {
-    let input = BetterIter::new(args)?;
+    let input = BetterIterator::new(args)?;
     for line in input {
         let line = line?;
         println!("{line}");

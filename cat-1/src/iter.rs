@@ -10,12 +10,12 @@ type IterType = Box<dyn Iterator<Item = io::Result<String>>>;
 
 // BetterIter is an iterator that composes other iterators and
 // consumes them in order.
-pub struct BetterIter {
+pub struct BetterIterator {
     iters: VecDeque<IterType>,
 }
 
-impl BetterIter {
-    pub fn new(args: &Args) -> CatResult<BetterIter> {
+impl BetterIterator {
+    pub fn new(args: &Args) -> CatResult<BetterIterator> {
         let mut iters = VecDeque::new();
         for file in &args.files {
             let file = File::open(file)?;
@@ -35,7 +35,7 @@ impl BetterIter {
     }
 }
 
-impl Iterator for BetterIter {
+impl Iterator for BetterIterator {
     type Item = Result<String>;
     fn next(&mut self) -> Option<Self::Item> {
         while !self.iters.is_empty() {
