@@ -1,11 +1,13 @@
 mod args;
 mod error;
 mod input;
+mod iter;
 
 mod prelude {
     pub use crate::args::*;
     pub use crate::error::*;
     pub use crate::input::*;
+    pub use crate::iter::*;
 }
 
 use std::process;
@@ -21,12 +23,12 @@ fn main() {
 }
 
 fn run(args: &Args) -> CatResult<()> {
-    let input = Input::new(args)?;
+    let input = BetterIter::new(args)?;
     consume(args, input)?;
     Ok(())
 }
 
-fn consume(_args: &Args, input: Input) -> CatResult<()> {
+fn consume(_args: &Args, input: BetterIter) -> CatResult<()> {
     for line in input {
         let line = line?;
         println!("{line}")

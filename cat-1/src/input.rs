@@ -6,12 +6,14 @@ use std::{
 
 use crate::prelude::*;
 
+type Reader = Box<dyn BufRead>;
+
 // Input is built from the command line args. The readers will be
 // either buf readers on files or stdin. The current field represents
 // the current thing we are consuming.
 pub struct Input {
-    readers: VecDeque<Box<dyn BufRead>>,
-    current: Option<Box<dyn BufRead>>,
+    readers: VecDeque<Reader>,
+    current: Option<Reader>,
 }
 
 impl Input {
