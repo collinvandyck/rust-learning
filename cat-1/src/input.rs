@@ -31,8 +31,25 @@ impl Input {
 }
 
 impl Iterator for Input {
-    type Item = String;
+    type Item = CatResult<String>;
     fn next(&mut self) -> Option<Self::Item> {
-        Some("foo".to_string())
+        if self.current.is_none() && self.readers.is_empty() {
+            return None;
+        }
+        if self.current.is_none() {
+            self.current = self.readers.pop_front();
+        }
+        match self.current {
+            None => None,
+            Some(ref mut reader) => {
+                let mut buf = String::new();
+                if let Err(e) = reader.read_line(&mut buf) {
+                    eprintln!("Read failed: {e}");
+                    return None;
+                }
+                let buf = buf.trim_end().to_string();
+                Some(Ok(buf))
+            }
+        }
     }
 }

@@ -26,8 +26,9 @@ fn run(args: &Args) -> CatResult<()> {
     Ok(())
 }
 
-fn consume(args: &Args, input: Input) -> CatResult<()> {
+fn consume(_args: &Args, input: Input) -> CatResult<()> {
     for line in input {
+        let line = line?;
         println!("{line}")
     }
     Ok(())
