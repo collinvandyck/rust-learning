@@ -1,7 +1,10 @@
-use std::{fmt::Display, process};
+use std::{env, fmt::Display, process};
 
 fn main() {
-    let n = 10;
+    let mut n = 1;
+    env::args().skip(1).take(1).for_each(|x| {
+        n = x.parse::<usize>().unwrap();
+    });
     let mut board = Board::new(n);
     if board.solve() {
         println!("Solved for n={n} iterations={}\n{board}", board.iterations);
