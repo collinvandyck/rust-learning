@@ -39,13 +39,13 @@ impl Iterator for BetterIterator {
     fn next(&mut self) -> Option<Self::Item> {
         while !self.iters.is_empty() {
             match self.iters.get_mut(0) {
-                Some(iter) => match iter.next() {
-                    Some(res) => return Some(res),
-                    None => {
-                        self.iters.pop_front();
-                        continue;
+                Some(iter) => {
+                    if let Some(res) = iter.next() {
+                        return Some(res);
                     }
-                },
+                    self.iters.pop_front();
+                    continue;
+                }
                 None => break,
             }
         }
