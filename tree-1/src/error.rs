@@ -1,4 +1,4 @@
-use std::{error, fmt::Display, io};
+use std::{error, fmt::Display, fs::write, io};
 
 pub type WalkResult<T> = Result<T, Error>;
 
@@ -8,6 +8,7 @@ pub enum Error {
     NotDirectory(String),
     IO(io::Error),
     NoFileName,
+    InvalidArgs(String),
 }
 
 impl Error {}
@@ -21,6 +22,7 @@ impl Display for Error {
             Self::IO(ref e) => write!(f, "{e}"),
             Self::NoFileName => write!(f, "no filename present"),
             Self::NotDirectory(ref s) => write!(f, "{s} is not a directory"),
+            Self::InvalidArgs(ref s) => write!(f, "{s}"),
         }
     }
 }

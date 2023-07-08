@@ -1,5 +1,7 @@
 pub use clap::Parser;
 
+use crate::prelude::*;
+
 #[derive(Parser, Debug)]
 pub struct Args {
     /// How many levels of depth to search for files
@@ -20,4 +22,15 @@ pub struct Args {
 
     /// The directory to search
     pub dir: Option<String>,
+}
+
+impl Args {
+    pub fn validate(&self) -> WalkResult<()> {
+        if self.executables_only && self.dirs_only {
+            return Err(Error::InvalidArgs(
+                "executable and dirs cannot be set at the same time".into(),
+            ));
+        }
+        Ok(())
+    }
 }

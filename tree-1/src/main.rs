@@ -29,6 +29,7 @@ fn main() {
 ///    └─ six
 fn run() -> WalkResult<()> {
     let args = Args::parse();
+    args.validate()?;
     walk(&args, print)?;
     Ok(())
 }
