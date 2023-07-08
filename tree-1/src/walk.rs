@@ -79,18 +79,8 @@ where
         while let Some(entry) = iter.next() {
             let last = iter.peek().is_none();
             let path = entry.path();
-            let meta = path.metadata()?;
             let name = path_to_file_name(&path)?;
-            let is_executable;
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                is_executable = meta.permissions().mode() & 0o111 != 0;
-            }
-            #[cfg(not(unix))]
-            {
-                is_executable = name.ends_with(".exe");
-            }
+            let is_executable = is_executable(&path)?;
             let details = if path.is_dir() {
                 EntryDetails::Dir
             } else if is_executable {
@@ -117,7 +107,23 @@ where
     Ok(())
 }
 
+fn is_executable(path: &Path) -> WalkResult<bool> {
+    let meta = path.metadata()?;
+    let is_executable;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        is_executable = meta.permissions().mode() & 0o111 != 0;
+    }
+    #[cfg(not(unix))]
+    {
+        is_executable = name.ends_with(".exe");
+    }
+    Ok(is_executable)
+}
+
 fn filter(args: &Args, entry: &DirEntry) -> bool {
+    let path = entry.path();
     match entry.file_name().to_str() {
         Some(name) => {
             // check for dir only
@@ -127,6 +133,11 @@ fn filter(args: &Args, entry: &DirEntry) -> bool {
             // check for hidden files
             if !args.show_hidden && name.starts_with('.') {
                 return false;
+            }
+            if args.executables_only && path.is_file() {
+                if let Ok(false) = is_executable(&path) {
+                    return false;
+                }
             }
             true
         }
