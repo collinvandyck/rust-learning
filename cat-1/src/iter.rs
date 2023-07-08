@@ -6,9 +6,10 @@ use std::{
 
 use crate::prelude::*;
 
+// gyahhhhh
 type IterType = Box<dyn Iterator<Item = io::Result<String>>>;
 
-// BetterIter is an iterator that composes other iterators and
+// BetterIterator is an iterator that composes other iterators and
 // consumes them in order.
 pub struct BetterIterator {
     iters: VecDeque<IterType>,
