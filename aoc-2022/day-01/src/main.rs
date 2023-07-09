@@ -12,7 +12,6 @@ fn main() {
             process::exit(1);
         }
     };
-    elves = dbg!(elves);
     elves.sort_by_key(|e| -1 * e.presents as i32);
     let most = elves.iter().next().unwrap();
     dbg!(most);
@@ -50,5 +49,6 @@ fn run() -> Result<Vec<Elf>, io::Error> {
             presents: count,
         })
     }
+    dbg!(&elves.iter().take(1).collect::<Vec<_>>());
     Ok(elves)
 }
