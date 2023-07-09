@@ -1,5 +1,5 @@
 use std::{
-    fs::{self, File},
+    fs::File,
     io::{BufRead, BufReader},
 };
 
@@ -20,6 +20,7 @@ fn run() {
         let rhs_choice = Choice::from(rhs).unwrap();
         game.make_move(lhs_choice, rhs_choice);
     }
+    println!("Score: {}", game.score);
 }
 
 #[derive(Debug, PartialEq)]
@@ -77,7 +78,7 @@ impl Game {
     }
     fn make_move(&mut self, choice_one: Choice, choice_two: Choice) {
         let outcome = choice_one.outcome(&choice_two);
-        self.score = outcome.score() + choice_one.score();
+        self.score += outcome.score() + choice_one.score();
     }
 }
 
