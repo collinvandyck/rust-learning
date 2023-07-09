@@ -41,6 +41,13 @@ impl Choice {
             _ => Outcome::Draw,
         }
     }
+    fn score(&self) -> i32 {
+        match self {
+            Choice::Rock => 1,
+            Choice::Paper => 2,
+            Choice::Scissors => 3,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -48,6 +55,16 @@ enum Outcome {
     Win,
     Lose,
     Draw,
+}
+
+impl Outcome {
+    fn score(&self) -> i32 {
+        match self {
+            Outcome::Win => 6,
+            Outcome::Draw => 3,
+            Outcome::Lose => 0,
+        }
+    }
 }
 
 struct Player {
@@ -74,7 +91,8 @@ impl Game {
     }
     fn make_move(&mut self, choice_one: Choice, choice_two: Choice) {
         let outcome = choice_one.outcome(&choice_two);
-        dbg!((choice_one, choice_two, outcome));
+        let score = outcome.score() + choice_one.score();
+        self.player_one.score += score;
     }
 }
 
