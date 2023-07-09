@@ -67,32 +67,17 @@ impl Outcome {
     }
 }
 
-struct Player {
-    score: i32,
-}
-
-impl Player {
-    fn new() -> Self {
-        Self { score: 0 }
-    }
-}
-
 struct Game {
-    player_one: Player,
-    player_two: Player,
+    score: i32,
 }
 
 impl Game {
     fn new() -> Self {
-        Self {
-            player_one: Player::new(),
-            player_two: Player::new(),
-        }
+        Self { score: 0 }
     }
     fn make_move(&mut self, choice_one: Choice, choice_two: Choice) {
         let outcome = choice_one.outcome(&choice_two);
-        let score = outcome.score() + choice_one.score();
-        self.player_one.score += score;
+        self.score = outcome.score() + choice_one.score();
     }
 }
 
