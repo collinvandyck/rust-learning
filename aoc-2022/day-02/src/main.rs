@@ -17,13 +17,14 @@ fn run() {
         let lhs = chars.get(0).unwrap();
         let rhs = chars.get(2).unwrap();
         let opponent_move = Choice::from(lhs).unwrap();
-        let your_move = Choice::from(rhs).unwrap();
+        let desired_outcome = Outcome::from(rhs).unwrap();
+        let your_move = opponent_move.for_opponent_outcome(&desired_outcome);
         game.make_move(&your_move, &opponent_move);
     }
     println!("Score: {}", game.score);
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 enum Choice {
     Rock,
     Paper,
@@ -31,6 +32,17 @@ enum Choice {
 }
 
 impl Choice {
+    fn for_opponent_outcome(&self, outcome: &Outcome) -> Choice {
+        match (self, outcome) {
+            (Choice::Rock, Outcome::Win) => Choice::Paper,
+            (Choice::Rock, Outcome::Lose) => Choice::Scissors,
+            (Choice::Paper, Outcome::Win) => Choice::Scissors,
+            (Choice::Paper, Outcome::Lose) => Choice::Rock,
+            (Choice::Scissors, Outcome::Win) => Choice::Rock,
+            (Choice::Scissors, Outcome::Lose) => Choice::Paper,
+            _ => *self,
+        }
+    }
     fn outcome(&self, other: &Self) -> Outcome {
         match (self, other) {
             (Choice::Rock, Choice::Scissors) => Outcome::Win,
@@ -59,6 +71,14 @@ enum Outcome {
 }
 
 impl Outcome {
+    fn from(value: &char) -> Option<Self> {
+        match value {
+            'X' => Some(Outcome::Lose),
+            'Y' => Some(Outcome::Draw),
+            'Z' => Some(Outcome::Win),
+            _ => None,
+        }
+    }
     fn score(&self) -> i32 {
         match self {
             Outcome::Win => 6,
@@ -87,9 +107,9 @@ impl Game {
 impl Choice {
     fn from(value: &char) -> Option<Self> {
         match value {
-            'A' | 'X' => Some(Choice::Rock),
-            'B' | 'Y' => Some(Choice::Paper),
-            'C' | 'Z' => Some(Choice::Scissors),
+            'A' => Some(Choice::Rock),
+            'B' => Some(Choice::Paper),
+            'C' => Some(Choice::Scissors),
             _ => None,
         }
     }
