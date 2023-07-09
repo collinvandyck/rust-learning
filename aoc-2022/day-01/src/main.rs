@@ -12,15 +12,20 @@ fn main() {
             process::exit(1);
         }
     };
-    elves.sort_by_key(|e| -1 * e.presents as i32);
+    elves.sort_by_key(|e| -1 * e.calories as i32);
     let most = elves.iter().next().unwrap();
-    dbg!(most);
+    println!(
+        "Most calories carries by elf {}: {}",
+        most.id, most.calories
+    );
+    let top3: u32 = elves.iter().take(3).map(|e| e.calories).sum();
+    println!("Top 3 calories: {top3}");
 }
 
 #[derive(Debug, Clone)]
 struct Elf {
     id: u32,
-    presents: u32,
+    calories: u32,
 }
 
 fn run() -> Result<Vec<Elf>, io::Error> {
@@ -34,7 +39,7 @@ fn run() -> Result<Vec<Elf>, io::Error> {
         if line == "" {
             elves.push(Elf {
                 id: elf_id,
-                presents: count,
+                calories: count,
             });
             elf_id += 1;
             count = 0;
@@ -46,9 +51,8 @@ fn run() -> Result<Vec<Elf>, io::Error> {
     if count != 0 {
         elves.push(Elf {
             id: elf_id,
-            presents: count,
+            calories: count,
         })
     }
-    dbg!(&elves.iter().take(1).collect::<Vec<_>>());
     Ok(elves)
 }
