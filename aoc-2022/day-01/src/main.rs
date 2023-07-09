@@ -5,14 +5,17 @@ use std::{
 };
 
 fn main() {
-    let elves = match run() {
+    let mut elves = match run() {
         Ok(elves) => elves,
         Err(e) => {
             eprintln!("{e}");
             process::exit(1);
         }
     };
-    dbg!(elves);
+    elves = dbg!(elves);
+    elves.sort_by_key(|e| -1 * e.presents as i32);
+    let most = elves.iter().next().unwrap();
+    dbg!(most);
 }
 
 #[derive(Debug, Clone)]
