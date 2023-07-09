@@ -16,9 +16,9 @@ fn run() {
         let chars: Vec<char> = line.chars().take(3).collect();
         let lhs = chars.get(0).unwrap();
         let rhs = chars.get(2).unwrap();
-        let lhs_choice = Choice::from(lhs).unwrap();
-        let rhs_choice = Choice::from(rhs).unwrap();
-        game.make_move(lhs_choice, rhs_choice);
+        let opponent_move = Choice::from(lhs).unwrap();
+        let your_move = Choice::from(rhs).unwrap();
+        game.make_move(&your_move, &opponent_move);
     }
     println!("Score: {}", game.score);
 }
@@ -76,9 +76,11 @@ impl Game {
     fn new() -> Self {
         Self { score: 0 }
     }
-    fn make_move(&mut self, choice_one: Choice, choice_two: Choice) {
-        let outcome = choice_one.outcome(&choice_two);
-        self.score += outcome.score() + choice_one.score();
+    fn make_move(&mut self, you: &Choice, opponent: &Choice) -> i32 {
+        let outcome = you.outcome(&opponent);
+        let score = outcome.score() + you.score();
+        self.score += score;
+        score
     }
 }
 
