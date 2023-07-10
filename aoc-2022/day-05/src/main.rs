@@ -90,10 +90,15 @@ impl Ship {
         stack.0.push_front(crt);
     }
     fn perform(&mut self, mv: MoveOp) {
+        let mut crts = vec![];
         for _ in 0..mv.count {
             let from_idx = mv.from - 1;
-            let to_idx = mv.to - 1;
             let crt = self.pop_from(from_idx);
+            crts.push(crt);
+        }
+        crts.reverse();
+        let to_idx = mv.to - 1;
+        for crt in crts {
             self.push_to(to_idx, crt);
         }
     }
