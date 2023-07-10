@@ -61,7 +61,8 @@ impl Ship {
 impl Display for Ship {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut buf = String::new();
-        write!(f, "{self:?}")
+        let max_stack_len = self.0.iter().map(|s| s.0.len()).max().unwrap_or(0);
+        write!(f, "{buf}: {max_stack_len:?}")
     }
 }
 
