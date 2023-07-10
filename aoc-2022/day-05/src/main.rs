@@ -2,7 +2,6 @@ use std::{
     collections::VecDeque,
     fs::File,
     io::{BufRead, BufReader},
-    ops::{Deref, Index},
 };
 
 fn main() {
@@ -20,9 +19,6 @@ fn run(filename: &str) {
         }
         let mut chars = line.chars();
         let mut stack_idx = 0;
-        // loop over the entries in the line. we'll add items into
-        // this vector, and if it's not empty at the end we'll add them
-        // into the ship.
         let mut ship = Ship::new();
         loop {
             let part: String = chars.by_ref().take(3).collect();
