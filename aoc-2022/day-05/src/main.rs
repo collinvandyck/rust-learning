@@ -20,11 +20,13 @@ fn run(filename: &str) {
         loop {
             let part: String = chars.take(3).collect();
             if part.len() < 3 {
+                // end of line
                 println!("Done");
                 break;
             }
             dbg!(part);
-            let _ = chars.take(1).collect::<Vec<_>>();
+            // discard the space
+            chars.next();
         }
     }
 }
