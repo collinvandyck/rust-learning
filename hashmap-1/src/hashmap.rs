@@ -11,7 +11,7 @@ pub struct HashMap<K, V> {
 #[allow(dead_code)]
 impl<K, V> HashMap<K, V>
 where
-    K: Hash,
+    K: Hash + PartialEq,
 {
     pub fn new() -> Self {
         Self::new_size(8)
@@ -25,7 +25,8 @@ where
     }
     pub fn add(&mut self, key: K, val: V) {
         let idx = self.index(&key);
-        dbg!(idx);
+        let bucket = self.buckets.get_mut(idx).unwrap();
+        bucket.add(Item::new(key, val));
     }
     fn index(&self, key: &K) -> usize {
         let mut h = DefaultHasher::new();
@@ -40,9 +41,21 @@ struct Bucket<K, V> {
     items: Vec<Item<K, V>>,
 }
 
-impl<K, V> Bucket<K, V> {
+impl<K, V> Bucket<K, V>
+where
+    K: Hash + PartialEq,
+{
     fn new() -> Self {
         Self { items: vec![] }
+    }
+    fn add(&mut self, item: Item<K, V>) {
+        for i in self.items.iter_mut() {
+            if i.key == item.key {
+                i.val = item.val;
+                return;
+            }
+        }
+        self.items.push(item);
     }
 }
 
