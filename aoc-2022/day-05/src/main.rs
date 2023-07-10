@@ -62,10 +62,22 @@ impl Display for Ship {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut buf = String::new();
         let max_stack_len = self.0.iter().map(|s| s.0.len()).max().unwrap_or(0);
-        for ms in max_stack_len..0 {
-            println!("ms: {ms}");
+        for ms in (0..max_stack_len).rev() {
+            // ms is the index we will get from each stack, if it exists.
+            // ..
+            // iterate over each stack and print out the value
+            self.0.iter().for_each(|s| match s.0.get(ms) {
+                Some(crt) => buf += &format!("[{}] ", crt.0),
+                None => buf += &format!("    "),
+            });
+            buf += "\n";
         }
-        write!(f, "{buf}: {max_stack_len:?}")
+        self.0
+            .iter()
+            .enumerate()
+            .for_each(|(i, _)| buf += &format!(" {}  ", i + 1));
+        buf += "\n";
+        write!(f, "{buf}")
     }
 }
 
