@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs::File,
     io::{BufRead, BufReader},
 };
@@ -44,29 +44,29 @@ fn badges(filename: &str) {
 
 #[derive(Debug)]
 struct Compartment {
-    items: HashMap<Item, bool>,
+    items: HashSet<Item>,
 }
 
 impl Compartment {
     fn new(input: &str) -> Self {
-        let mut items = HashMap::new();
+        let mut items = HashSet::new();
         input.chars().for_each(|c| {
             let item = Item(c);
-            items.insert(item, true);
+            items.insert(item);
         });
         Compartment { items }
     }
     fn intersect(&self, other: &Compartment) -> Compartment {
         let mut res = Compartment::new("");
-        self.items.keys().for_each(|k| {
-            if other.items.contains_key(k) {
-                res.items.insert(*k, true);
+        self.items.iter().for_each(|k| {
+            if other.items.contains(k) {
+                res.items.insert(*k);
             }
         });
         res
     }
     fn priority(&self) -> u32 {
-        self.items.keys().map(Item::priority).sum::<u32>()
+        self.items.iter().map(Item::priority).sum::<u32>()
     }
 }
 
