@@ -44,6 +44,7 @@ fn run(filename: &str) {
             break;
         }
         let op = MoveOp::from(&line);
+        println!("Op: {op:?}");
         ship.perform(op);
         println!("Ship:\n{ship}");
     }
