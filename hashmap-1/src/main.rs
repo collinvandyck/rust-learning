@@ -9,5 +9,6 @@ use prelude::*;
 fn main() {
     let mut h = HashMap::new();
     h.add("foo", "bar");
-    println!("Hello, world!");
+    dbg!(h.get("foo"));
+    dbg!(h.get("bar"));
 }

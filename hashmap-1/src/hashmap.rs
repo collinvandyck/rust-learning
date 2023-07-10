@@ -28,6 +28,11 @@ where
         let bucket = self.buckets.get_mut(idx).unwrap();
         bucket.add(Item::new(key, val));
     }
+    pub fn get(&self, key: K) -> Option<&V> {
+        let idx = self.index(&key);
+        let bucket = self.buckets.get(idx).unwrap();
+        bucket.get(&key)
+    }
     fn index(&self, key: &K) -> usize {
         let mut h = DefaultHasher::new();
         key.hash(&mut h);
@@ -56,6 +61,14 @@ where
             }
         }
         self.items.push(item);
+    }
+    fn get(&self, key: &K) -> Option<&V> {
+        for i in self.items.iter() {
+            if &i.key == key {
+                return Some(&i.val);
+            }
+        }
+        None
     }
 }
 
