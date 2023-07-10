@@ -37,6 +37,14 @@ fn run(filename: &str) {
         }
     }
     println!("Ship:\n{ship}");
+    // process the moves.
+    for line in iter {
+        let line = line.unwrap();
+        if line == "" {
+            break;
+        }
+        println!("Move: {line}");
+    }
 }
 
 #[derive(Debug)]
@@ -63,9 +71,6 @@ impl Display for Ship {
         let mut buf = String::new();
         let max_stack_len = self.0.iter().map(|s| s.0.len()).max().unwrap_or(0);
         for ms in (0..max_stack_len).rev() {
-            // ms is the index we will get from each stack, if it exists.
-            // ..
-            // iterate over each stack and print out the value
             self.0.iter().for_each(|s| match s.0.get(ms) {
                 Some(crt) => buf += &format!("[{}] ", crt.0),
                 None => buf += &format!("    "),
