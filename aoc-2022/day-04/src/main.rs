@@ -9,8 +9,23 @@ fn main() {
     for line in read.lines() {
         let line = line.unwrap();
         let mut parts = line.split(',');
-        let first = parts.next().unwrap();
-        let second = parts.next().unwrap();
+        let first = Range::from_str(parts.next().unwrap());
+        let second = Range::from_str(parts.next().unwrap());
         dbg!((first, second));
+    }
+}
+
+#[derive(Debug)]
+struct Range {
+    from: i32,
+    to: i32,
+}
+
+impl Range {
+    fn from_str(s: &str) -> Self {
+        let mut iter = s.split('-');
+        let from = iter.next().unwrap().parse::<i32>().unwrap();
+        let to = iter.next().unwrap().parse::<i32>().unwrap();
+        Self { from, to }
     }
 }
