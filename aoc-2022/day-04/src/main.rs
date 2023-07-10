@@ -8,9 +8,9 @@ fn main() {
     let read = BufReader::new(file);
     for line in read.lines() {
         let line = line.unwrap();
-        let mut parts = line.split(',');
-        let first = Range::from_str(parts.next().unwrap());
-        let second = Range::from_str(parts.next().unwrap());
+        let parts = line.split(',').map(Range::from_str).collect::<Vec<_>>();
+        let first = parts.get(0).unwrap();
+        let second = parts.get(1).unwrap();
         dbg!((first, second));
     }
 }
