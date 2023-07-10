@@ -30,7 +30,7 @@ fn badges(filename: &str) {
     let read = BufReader::new(file);
     let lines = read.lines().collect::<Vec<_>>();
     let mut result: u32 = 0;
-    lines.chunks(3).into_iter().for_each(|chunk| {
+    lines.chunks(3).for_each(|chunk| {
         result += chunk
             .iter()
             .flatten()
