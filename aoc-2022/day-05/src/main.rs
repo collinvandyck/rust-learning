@@ -43,7 +43,29 @@ fn run(filename: &str) {
         if line == "" {
             break;
         }
-        println!("Move: {line}");
+        let op = MoveOp::from(&line);
+        ship.perform(op);
+        println!("Ship:\n{ship}");
+    }
+}
+
+#[derive(Debug)]
+struct MoveOp {
+    count: usize,
+    from: usize,
+    to: usize,
+}
+
+impl MoveOp {
+    fn from(s: &str) -> MoveOp {
+        let mut iter = s.split(" ");
+        iter.next(); // move
+        let count = iter.next().unwrap().parse::<usize>().unwrap();
+        iter.next(); // from
+        let from = iter.next().unwrap().parse::<usize>().unwrap();
+        iter.next(); // to
+        let to = iter.next().unwrap().parse::<usize>().unwrap();
+        MoveOp { count, from, to }
     }
 }
 
@@ -63,6 +85,20 @@ impl Ship {
         }
         let stack = self.0.get_mut(stack_idx).unwrap();
         stack.0.push_front(crt);
+    }
+    fn perform(&mut self, mv: MoveOp) {
+        for _ in 0..mv.count {
+            let from_idx = mv.from - 1;
+            let to_idx = mv.to - 1;
+            let crt = self.pop_from(from_idx);
+            self.push_to(to_idx, crt);
+        }
+    }
+    fn pop_from(&mut self, stack_idx: usize) -> Crate {
+        self.0.get_mut(stack_idx).unwrap().0.pop_back().unwrap()
+    }
+    fn push_to(&mut self, stack_idx: usize, crt: Crate) {
+        self.0.get_mut(stack_idx).unwrap().0.push_back(crt)
     }
 }
 
@@ -92,6 +128,9 @@ struct Stack(VecDeque<Crate>);
 impl Stack {
     fn new() -> Self {
         Self(VecDeque::new())
+    }
+    fn pop(&mut self) -> Crate {
+        self.0.pop_back().unwrap()
     }
 }
 
