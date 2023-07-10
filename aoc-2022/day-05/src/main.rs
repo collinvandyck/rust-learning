@@ -6,7 +6,7 @@ use std::{
 };
 
 fn main() {
-    run("example.txt");
+    run("input.txt");
 }
 
 fn run(filename: &str) {
