@@ -1,33 +1,66 @@
-use std::{borrow::Borrow, fmt::Debug, hash::Hash};
+use std::{borrow::Borrow, fmt::Debug};
 
 fn main() {
-    let m: Map<String, String> = Map::new();
-    dbg!(m.get("foo"));
-    let s = String::from("foobar");
-    dbg!(m.get(&s));
+    let mut list: List<String, String> = List::new();
+    list.add("foo", "bar");
+    let k = "bar";
+    let v = "baz";
+    list.add(k, v);
+    list.add(k, v);
+    let k = "abc".to_string();
+    let v = "foobar";
+    list.add(&k, v);
+    dbg!(k);
+    list = dbg!(list);
+    dbg!(list.get("bar"));
 }
 
-struct Map<K, V> {
-    _k: Option<K>,
-    _v: Option<V>,
+#[derive(Debug)]
+struct List<K, V> {
+    items: Vec<Item<K, V>>,
 }
 
-impl<K, V> Map<K, V> {
-    pub fn new() -> Self {
-        Self { _k: None, _v: None }
+#[derive(Debug)]
+struct Item<K, V>(K, V);
+
+impl<K, V> Item<K, V> {
+    fn new(k: K, v: V) -> Self {
+        Self(k, v)
     }
-    pub fn get<Q>(&self, k: &Q) -> Option<&V>
+    fn key(&self) -> &K {
+        &self.0
+    }
+    fn val(&self) -> &V {
+        &self.1
+    }
+}
+
+impl<K, V> List<K, V> {
+    pub fn new() -> Self {
+        Self { items: vec![] }
+    }
+
+    fn add<KR, KV>(&mut self, k: KR, v: KV)
+    where
+        KR: Into<K>,
+        KV: Into<V>,
+    {
+        self.items.push(Item::new(k.into(), v.into()));
+    }
+
+    fn get<Q>(&self, k: &Q) -> Vec<&V>
     where
         K: Borrow<Q>,
-        Q: Debug + Hash + Eq + ?Sized,
+        Q: PartialEq + Eq + ?Sized,
     {
-        dbg!(k.borrow());
-        print_type_of(&k);
-        // ...
-        None
+        self.items
+            .iter()
+            .filter(|i| i.key().borrow() == k)
+            .map(|i| i.val())
+            .collect::<Vec<_>>()
     }
 }
 
-fn print_type_of<T>(_: &T) {
+fn _print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
