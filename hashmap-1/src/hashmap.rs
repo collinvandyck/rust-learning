@@ -24,11 +24,14 @@ where
         Self { buckets }
     }
     pub fn add(&mut self, key: K, val: V) {
+        let idx = self.index(&key);
+        dbg!(idx);
+    }
+    fn index(&self, key: &K) -> usize {
         let mut h = DefaultHasher::new();
         key.hash(&mut h);
         let hash = h.finish();
-        let idx = hash % self.buckets.len() as u64;
-        dbg!(idx);
+        hash as usize % self.buckets.len()
     }
 }
 
