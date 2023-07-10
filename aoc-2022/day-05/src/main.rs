@@ -16,9 +16,9 @@ fn run(filename: &str) {
         if line == "" {
             break;
         }
-        let chars = &mut line.chars();
+        let mut chars = line.chars();
         loop {
-            let part: String = chars.take(3).collect();
+            let part: String = chars.by_ref().take(3).collect();
             if part.len() < 3 {
                 // end of line
                 println!("Done");
