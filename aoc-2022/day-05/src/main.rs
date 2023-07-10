@@ -1,5 +1,6 @@
 use std::{
     collections::VecDeque,
+    fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
 };
@@ -12,6 +13,7 @@ fn run(filename: &str) {
     let file = File::open(filename).unwrap();
     let file = BufReader::new(file);
     let mut iter = file.lines();
+    let mut ship = Ship::new();
     loop {
         let line = iter.next().unwrap().unwrap();
         if line == "" {
@@ -19,7 +21,6 @@ fn run(filename: &str) {
         }
         let mut chars = line.chars();
         let mut stack_idx = 0;
-        let mut ship = Ship::new();
         loop {
             let part: String = chars.by_ref().take(3).collect();
             if part.len() < 3 {
@@ -35,8 +36,10 @@ fn run(filename: &str) {
             stack_idx += 1;
         }
     }
+    println!("Ship:\n{ship}");
 }
 
+#[derive(Debug)]
 struct Ship(Vec<Stack>);
 
 impl Ship {
@@ -55,6 +58,14 @@ impl Ship {
     }
 }
 
+impl Display for Ship {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut buf = String::new();
+        write!(f, "{self:?}")
+    }
+}
+
+#[derive(Debug)]
 struct Stack(VecDeque<Crate>);
 
 impl Stack {
