@@ -62,7 +62,8 @@ impl Range {
         one.to -= delta;
         two.from -= delta;
         two.to -= delta;
-        dbg!(one.to >= two.from || one.to <= two.to)
+        dbg!((self, other, one, two));
+        one.to >= two.from && one.to <= two.to
     }
 
     fn starting(one: Range, two: Range) -> (Range, Range) {
@@ -76,10 +77,8 @@ impl Range {
 
 #[test]
 fn test_overlaps() {
-    assert_overlaps(Range { from: 5, to: 7 }, Range { from: 7, to: 9 });
-}
-
-fn assert_overlaps(one: Range, two: Range) {
-    assert!(one.overlaps(&two));
-    assert!(two.overlaps(&one));
+    assert!(Range { from: 5, to: 7 }.overlaps(&Range { from: 7, to: 9 }));
+    assert!(Range { from: 2, to: 8 }.overlaps(&Range { from: 3, to: 7 }));
+    assert!(Range { from: 6, to: 6 }.overlaps(&Range { from: 4, to: 6 }));
+    assert!(Range { from: 2, to: 6 }.overlaps(&Range { from: 4, to: 8 }));
 }
