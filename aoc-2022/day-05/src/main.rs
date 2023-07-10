@@ -48,6 +48,8 @@ fn run(filename: &str) {
         ship.perform(op);
         println!("Ship:\n{ship}");
     }
+    println!("Tops:");
+    ship.print_tops();
 }
 
 #[derive(Debug)]
@@ -100,6 +102,13 @@ impl Ship {
     }
     fn push_to(&mut self, stack_idx: usize, crt: Crate) {
         self.0.get_mut(stack_idx).unwrap().0.push_back(crt)
+    }
+    fn print_tops(&self) {
+        self.0.iter().for_each(|s| {
+            let f = s.0.get(s.0.len() - 1).unwrap();
+            print!("{}", f.0);
+        });
+        println!();
     }
 }
 
