@@ -6,7 +6,17 @@ use std::{
 pub struct HashMap<K, V> {
     buckets: Vec<Bucket<K, V>>,
 }
-
+/*
+    #[stable(feature = "rust1", since = "1.0.0")]
+    #[inline]
+    pub fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        self.base.get(k)
+    }
+*/
 impl<K, V> HashMap<K, V>
 where
     K: Hash + PartialEq + Sized,
