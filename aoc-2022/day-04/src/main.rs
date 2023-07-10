@@ -63,7 +63,7 @@ impl Range {
         two.from -= delta;
         two.to -= delta;
         dbg!((self, other, one, two));
-        one.to >= two.from && one.to <= two.to
+        one.to >= two.from
     }
 
     fn starting(one: Range, two: Range) -> (Range, Range) {
