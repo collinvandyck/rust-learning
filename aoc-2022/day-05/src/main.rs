@@ -24,7 +24,6 @@ fn run(filename: &str) {
             let part: String = chars.by_ref().take(3).collect();
             if part.len() < 3 {
                 // end of line
-                println!("Done");
                 break;
             }
             if part.starts_with('[') && part.ends_with(']') {
@@ -47,7 +46,6 @@ impl Ship {
     fn insert_crate(&mut self, stack_idx: usize, crt: Crate) {
         if self.0.len() <= stack_idx {
             let grow = stack_idx - self.0.len() + 1;
-            dbg!(grow);
             for _ in 0..grow {
                 self.0.push(Stack::new());
             }
