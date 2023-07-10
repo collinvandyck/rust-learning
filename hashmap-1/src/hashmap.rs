@@ -11,7 +11,7 @@ pub struct HashMap<K, V> {
 #[allow(dead_code)]
 impl<K, V> HashMap<K, V>
 where
-    K: Hash + PartialEq,
+    K: Hash + PartialEq + Sized,
 {
     pub fn new() -> Self {
         Self::new_size(8)
