@@ -28,17 +28,18 @@ fn run(filename: &str) {
 fn badges(filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
-    let mut lines = read.lines().collect::<Vec<_>>();
+    let lines = read.lines().collect::<Vec<_>>();
+    let mut result: u32 = 0;
     lines.chunks(3).into_iter().for_each(|chunk| {
-        println!("Group!");
-        let res = chunk
+        result += chunk
             .iter()
             .flatten()
             .map(|x| Compartment::new(x))
             .reduce(|first, second| first.intersect(&second))
-            .unwrap();
-        dbg!(res);
-    })
+            .unwrap()
+            .priority();
+    });
+    println!("Badge priority result: {result}");
 }
 
 #[derive(Debug)]
