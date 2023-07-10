@@ -62,7 +62,6 @@ impl Range {
         one.to -= delta;
         two.from -= delta;
         two.to -= delta;
-        dbg!((self, other, one, two));
         one.to >= two.from
     }
 
