@@ -12,17 +12,29 @@ impl FS {
     pub fn new() -> Self {
         FS::Dir("/".to_string(), vec![])
     }
-    pub fn add_dir(&mut self, name: &str) {
-        match self {
+    pub fn add_dir(&mut self, path: &Path, name: &str) {
+        let (dir_name, children) = match self {
             FS::File(_, _) => panic!("file"),
-            FS::Dir(_, children) => {
-                let name = name.to_string();
-                let exists = children.iter().any(|c| match c {
-                    FS::Dir(n, _) if n == c.name() => true,
-                    _ => false,
-                });
-                if !exists {
-                    children.push(FS::Dir(name.to_string(), vec![]))
+            FS::Dir(n, c) => (n, c),
+        };
+        if path.is_empty() {
+            // we are where we need to be
+            let name = name.to_string();
+            let exists = children.iter().any(|c| match c {
+                FS::Dir(n, _) if n == c.name() => true,
+                _ => false,
+            });
+            if !exists {
+                children.push(FS::Dir(name.to_string(), vec![]))
+            }
+        } else {
+            // we need to advance. find the child dir that matches
+            // the first element in path and then call add_dir on it.
+            let first = path.first();
+            for child in children {
+                match child {
+                    FS::Dir(dn, _) if dn == name => {}
+                    _ => panic!("file"),
                 }
             }
         }
@@ -39,7 +51,8 @@ impl FS {
 fn test_fs() {
     let mut path = Path::from("");
     let mut fs = FS::new();
-    fs.add_dir("foo");
+    fs.add_dir(&path, "foo");
+    fs.add_dir(&path, "bar");
     dbg!(fs);
 }
 
@@ -69,6 +82,12 @@ impl Path {
         } else {
             self.0.push(s.into());
         }
+    }
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+    pub fn first(&self) -> &str {
+        self.0.first().unwrap()
     }
 }
 
