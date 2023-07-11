@@ -46,7 +46,8 @@ fn test_fs() {
 struct Path(Vec<String>);
 
 impl Path {
-    fn from(s: &str) -> Self {
+    fn from<S: Into<String>>(s: S) -> Self {
+        let s = s.into();
         let mut parts = s
             .trim_start_matches("/")
             .split('/')
@@ -58,10 +59,22 @@ impl Path {
         }
         Self(parts)
     }
+    fn cd<S: Into<String>>(&mut self, s: S) {
+        let s: String = s.into();
+        if s.starts_with('/') {
+            *self = Path::from(s)
+        } else {
+            self.0.push(s.into())
+        }
+    }
 }
 
 #[test]
 fn test_path() {
     assert_eq!(Path::from(""), Path(vec![]));
     assert_eq!(Path::from("/"), Path(vec![]));
+
+    let mut p = Path::from("/");
+    p.cd("foo");
+    assert_eq!(p, Path(vec!["foo".to_string()]));
 }
