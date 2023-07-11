@@ -24,12 +24,7 @@ fn process(filename: &str) {
                 loop {
                     let peek = iter.peek();
                     match peek {
-                        Some(Token::Info(FSInfo::DirHeader { name })) => {
-                            state.add_dir(name.to_string())
-                        }
-                        Some(Token::Info(FSInfo::FileInfo { size, name })) => {
-                            state.add_file(name.to_string(), *size)
-                        }
+                        Some(Token::Info(fs_info)) => state.add(fs_info),
                         _ => break,
                     }
                     iter.next();
@@ -58,13 +53,7 @@ impl State {
     fn cd(&mut self, path: String) {
         self.pwd = Some(path);
     }
-    fn add_dir(&mut self, dir: String) {
-        let pwd = self.pwd.as_ref().unwrap();
-        let split = split_dir(pwd);
-        self.add_dir_path(dir, split);
-    }
-    fn add_dir_path(&mut self, dir: String, path: Vec<&str>) {}
-    fn add_file(&mut self, name: String, size: u64) {}
+    fn add(&mut self, fs_info: &FSInfo) {}
 }
 
 #[test]
@@ -82,20 +71,24 @@ fn split_dir(s: &str) -> Vec<&str> {
         .collect::<Vec<_>>()
 }
 
+#[allow(dead_code)]
 struct FSDir {
     name: String,
     children: Vec<FS>,
 }
 
+#[allow(dead_code)]
 impl FSDir {
-    fn add_info(&mut self, info: FSInfo) {}
+    fn add_info(&mut self, _info: FSInfo) {}
 }
 
+#[allow(dead_code)]
 struct FSFile {
     name: String,
     size: usize,
 }
 
+#[allow(dead_code)]
 enum FS {
     Dir(FSDir),
     File(FSFile),
@@ -111,6 +104,7 @@ enum Token {
     Info(FSInfo),
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 enum FSInfo {
     DirHeader { name: String },
