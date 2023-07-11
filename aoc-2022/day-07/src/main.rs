@@ -11,15 +11,25 @@ use prelude::*;
 fn main() {
     let lines = parse_lines("example.txt");
     let mut path = Path::from("/");
-    for line in lines {
+    let mut iter = lines.iter().peekable();
+    loop {
+        let line = iter.next();
+        if line.is_none() {
+            break;
+        }
+        let line = line.unwrap();
         match line {
-            Line::Cd(dir) => {
-                path.cd(dir);
-                dbg!(&path);
-            }
-            Line::Ls() => {}
-            Line::Dir(_name) => {}
-            Line::File(_size, _name) => {}
+            Line::Cd(dir) => path.cd(dir),
+            Line::Ls() => loop {
+                let line = iter.peek();
+                match line {
+                    Some(Line::Dir(_name)) => {}
+                    Some(Line::File(_size, _name)) => {}
+                    _ => break,
+                }
+                iter.next();
+            },
+            _ => panic!("parse error"),
         }
     }
 }
