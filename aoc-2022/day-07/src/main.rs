@@ -62,8 +62,8 @@ impl State {
 
 #[test]
 fn test_split_dir() {
-    assert_eq!(split_dir(""), Vec::<&str>::new());
-    assert_eq!(split_dir("/"), Vec::<&str>::new());
+    assert_eq!(split_dir(""), vec![] as Vec<&str>);
+    assert_eq!(split_dir("/"), vec![] as Vec<&str>);
     assert_eq!(split_dir("/abc/def"), ["abc", "def"]);
     assert_eq!(split_dir("/abc"), ["abc"]);
 }
