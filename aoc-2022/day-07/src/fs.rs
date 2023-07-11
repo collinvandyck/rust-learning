@@ -42,15 +42,25 @@ fn test_fs() {
     dbg!(fs);
 }
 
+#[derive(Debug, PartialEq, Eq)]
 struct Path(Vec<String>);
 
 impl Path {
     fn from(s: &str) -> Self {
-        Self(
-            s.trim_start_matches("/")
-                .split('/')
-                .map(str::to_string)
-                .collect::<Vec<_>>(),
-        )
+        let mut parts = s
+            .trim_start_matches("/")
+            .split('/')
+            .map(str::to_string)
+            .filter(|s| s.is_empty())
+            .collect::<Vec<_>>();
+        if parts.len() == 1 && parts.get(0) == Some(&"".to_string()) {
+            parts = vec![];
+        }
+        Self(parts)
     }
+}
+
+#[test]
+fn test_path() {
+    assert_eq!(Path::from(""), Path(vec![]))
 }
