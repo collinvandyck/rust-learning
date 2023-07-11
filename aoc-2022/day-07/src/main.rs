@@ -37,7 +37,7 @@ fn process(filename: &str) {
 
 struct State {
     root: FSDir,
-    pwd: Option<String>,
+    pwd: String,
 }
 
 impl State {
@@ -47,14 +47,14 @@ impl State {
                 name: "/".into(),
                 children: vec![],
             },
-            pwd: None,
+            pwd: "/".into(),
         }
     }
     fn cd(&mut self, path: String) {
-        self.pwd = Some(path);
+        self.pwd = path
     }
     fn add(&mut self, fs_info: &FSInfo) {
-        let pwd = self.pwd.as_ref().unwrap();
+        let pwd = self.pwd.as_ref();
         let split = split_dir(pwd);
         dbg!((split, fs_info));
     }
