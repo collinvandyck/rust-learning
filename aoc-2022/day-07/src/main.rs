@@ -54,8 +54,8 @@ impl State {
         self.pwd = path
     }
     fn add(&mut self, fs_info: &FSInfo) {
-        let pwd = self.pwd.as_ref();
-        let split = split_dir(pwd);
+        let pwd: &str = self.pwd.as_ref();
+        let split: Vec<&str> = split_dir(pwd);
         dbg!((split, fs_info));
     }
 }
