@@ -73,12 +73,11 @@ fn split_dir(s: &str) -> Vec<&str> {
     if s.starts_with('/') {
         skip = 1;
     }
-    let res = s.split("/").skip(skip).collect::<Vec<_>>();
+    let mut res = s.split("/").skip(skip).collect::<Vec<_>>();
     if dbg!(res[0]) == "" {
-        res[1..].to_vec()
-    } else {
-        res
+        res = res[1..].to_vec();
     }
+    res
 }
 
 struct FSDir {
