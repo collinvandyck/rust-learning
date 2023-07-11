@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::{
     fs::File,
     io::{BufRead, BufReader},
@@ -18,7 +20,7 @@ pub fn parse_lines(filename: &str) -> Vec<Line> {
     read.lines()
         .flatten()
         .map(|s| {
-            let parts = s.as_str().split(' ').collect::<Vec<_>>();
+            let parts = s.as_str().split(' ').collect::<Vec<&str>>();
             match parts[..] {
                 ["$", "cd", dir] => Line::Cd(dir.to_string()),
                 ["$", "ls"] => Line::Ls(),
