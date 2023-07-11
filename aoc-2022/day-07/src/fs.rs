@@ -43,10 +43,10 @@ fn test_fs() {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Path(Vec<String>);
+pub struct Path(Vec<String>);
 
 impl Path {
-    fn from<S: Into<String>>(s: S) -> Self {
+    pub fn from<S: Into<String>>(s: S) -> Self {
         let s = s.into();
         let mut parts = s
             .trim_start_matches("/")
@@ -59,7 +59,7 @@ impl Path {
         }
         Self(parts)
     }
-    fn cd<S: Into<String>>(&mut self, s: S) {
+    pub fn cd<S: Into<String>>(&mut self, s: S) {
         let s: String = s.into();
         if s.starts_with('/') {
             *self = Path::from(s)

@@ -10,6 +10,17 @@ use prelude::*;
 
 fn main() {
     let lines = parse_lines("example.txt");
-    dbg!(lines);
+    let mut path = Path::from("/");
+    for line in lines {
+        match line {
+            Line::Cd(dir) => {
+                path.cd(dir);
+                dbg!(&path);
+            }
+            Line::Ls() => {}
+            Line::Dir(_name) => {}
+            Line::File(_size, _name) => {}
+        }
+    }
 }
 
