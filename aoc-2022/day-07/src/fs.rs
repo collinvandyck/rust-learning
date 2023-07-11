@@ -62,5 +62,6 @@ impl Path {
 
 #[test]
 fn test_path() {
-    assert_eq!(Path::from(""), Path(vec![]))
+    assert_eq!(Path::from(""), Path(vec![]));
+    assert_eq!(Path::from("/"), Path(vec![]));
 }
