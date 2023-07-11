@@ -22,12 +22,12 @@ fn process(filename: &str) {
             Token::CmdLs => {
                 // consume as long as the next token is a dir header or file info
                 loop {
-                    let peek = iter.peek();
-                    match peek {
-                        Some(Token::Info(fs_info)) => state.add(fs_info),
-                        _ => break,
+                    if let Some(Token::Info(fs_info)) = iter.peek() {
+                        state.add(fs_info);
+                        iter.next();
+                        continue;
                     }
-                    iter.next();
+                    break;
                 }
             }
             _ => panic!("Invalid token sequence"),
@@ -53,7 +53,11 @@ impl State {
     fn cd(&mut self, path: String) {
         self.pwd = Some(path);
     }
-    fn add(&mut self, fs_info: &FSInfo) {}
+    fn add(&mut self, fs_info: &FSInfo) {
+        let pwd = self.pwd.as_ref().unwrap();
+        let split = split_dir(pwd);
+        dbg!((split, fs_info));
+    }
 }
 
 #[test]
