@@ -1,10 +1,14 @@
+use std::fs;
+
 fn main() {
-    println!("Hello, world!");
+    let s = fs::read_to_string("input.txt").unwrap();
+    let res = first_marker(&s);
+    println!("{res:?}")
 }
 
 fn first_marker(s: &str) -> Option<usize> {
     let chars = s.chars().collect::<Vec<_>>();
-    let idx = chars.windows(4).enumerate().find(|(i, chars)| {
+    let idx = chars.windows(4).enumerate().find(|(_i, chars)| {
         let mut chs = chars.to_vec();
         chs.sort();
         chs.windows(2).all(|v| v[0] != v[1])
