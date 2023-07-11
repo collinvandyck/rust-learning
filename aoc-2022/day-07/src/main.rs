@@ -60,6 +60,26 @@ impl State {
     fn add_file(&mut self, name: String, size: u64) {}
 }
 
+#[test]
+fn test_split_dir() {
+    assert_eq!(split_dir("/"), Vec::<&str>::new());
+    assert_eq!(split_dir("/abc/def"), ["abc", "def"]);
+    assert_eq!(split_dir("/abc"), ["abc"]);
+}
+
+fn split_dir(s: &str) -> Vec<&str> {
+    let mut skip = 0;
+    if s.starts_with('/') {
+        skip = 1;
+    }
+    let res = s.split("/").skip(skip).collect::<Vec<_>>();
+    if dbg!(res[0]) == "" {
+        res[1..].to_vec()
+    } else {
+        res
+    }
+}
+
 struct FSDir {
     name: String,
     children: Vec<FS>,
