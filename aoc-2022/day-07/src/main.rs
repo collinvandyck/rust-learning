@@ -10,6 +10,7 @@ use prelude::*;
 
 fn main() {
     let lines = parse_lines("example.txt");
+    let mut fs = FS::new();
     let mut path = Path::from("/");
     let mut iter = lines.iter().peekable();
     loop {

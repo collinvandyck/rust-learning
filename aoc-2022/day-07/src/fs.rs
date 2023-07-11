@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use crate::prelude::*;
+
 #[derive(Debug)]
 pub enum FS {
     File(String, u64),
@@ -35,6 +37,7 @@ impl FS {
 
 #[test]
 fn test_fs() {
+    let mut path = Path::from("");
     let mut fs = FS::new();
     fs.add_dir("foo");
     dbg!(fs);
