@@ -24,8 +24,10 @@ fn process(filename: &str) {
                 loop {
                     let peek = iter.peek();
                     match peek {
-                        Some(Token::DirHeader { name }) => state.add_dir(name.to_string()),
-                        Some(Token::FileInfo { size, name }) => {
+                        Some(Token::Info(FSInfo::DirHeader { name })) => {
+                            state.add_dir(name.to_string())
+                        }
+                        Some(Token::Info(FSInfo::FileInfo { size, name })) => {
                             state.add_file(name.to_string(), *size)
                         }
                         _ => break,
@@ -56,7 +58,12 @@ impl State {
     fn cd(&mut self, path: String) {
         self.pwd = Some(path);
     }
-    fn add_dir(&mut self, dir: String) {}
+    fn add_dir(&mut self, dir: String) {
+        let pwd = self.pwd.as_ref().unwrap();
+        let split = split_dir(pwd);
+        self.add_dir_path(dir, split);
+    }
+    fn add_dir_path(&mut self, dir: String, path: Vec<&str>) {}
     fn add_file(&mut self, name: String, size: u64) {}
 }
 
@@ -75,36 +82,13 @@ fn split_dir(s: &str) -> Vec<&str> {
         .collect::<Vec<_>>()
 }
 
-fn split_dir_old2(s: &str) -> Vec<&str> {
-    let mut skip = 0;
-    if s.starts_with('/') {
-        skip = 1;
-    }
-    let res = s.split("/").skip(skip).collect::<Vec<_>>();
-    let mut res = res.as_slice();
-    if res.len() > 0 {
-        if res[0] == "" {
-            res = &res[1..];
-        }
-    }
-    res.to_vec()
-}
-
-fn split_dir_old(s: &str) -> Vec<&str> {
-    let mut skip = 0;
-    if s.starts_with('/') {
-        skip = 1;
-    }
-    let mut res = s.split("/").skip(skip).collect::<Vec<_>>();
-    if dbg!(res[0]) == "" {
-        res = res[1..].to_vec();
-    }
-    res
-}
-
 struct FSDir {
     name: String,
     children: Vec<FS>,
+}
+
+impl FSDir {
+    fn add_info(&mut self, info: FSInfo) {}
 }
 
 struct FSFile {
@@ -124,6 +108,11 @@ impl FS {}
 enum Token {
     CmdCd { name: String },
     CmdLs,
+    Info(FSInfo),
+}
+
+#[derive(Debug)]
+enum FSInfo {
     DirHeader { name: String },
     FileInfo { size: u64, name: String },
 }
@@ -140,15 +129,15 @@ fn lex(filename: &str) -> Vec<Token> {
                     name: name.to_string(),
                 },
                 ["$", "ls"] => Token::CmdLs,
-                ["dir", name] => Token::DirHeader {
+                ["dir", name] => Token::Info(FSInfo::DirHeader {
                     name: name.to_string(),
-                },
+                }),
                 [size, name] => {
                     let size = size.parse::<u64>().unwrap();
-                    Token::FileInfo {
+                    Token::Info(FSInfo::FileInfo {
                         size: size,
                         name: name.to_string(),
-                    }
+                    })
                 }
                 _ => panic!("boom"),
             }
