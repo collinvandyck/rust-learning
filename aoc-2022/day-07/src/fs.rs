@@ -63,8 +63,10 @@ impl Path {
         let s: String = s.into();
         if s.starts_with('/') {
             *self = Path::from(s)
+        } else if &s[..] == ".." {
+            self.0.pop();
         } else {
-            self.0.push(s.into())
+            self.0.push(s.into());
         }
     }
 }
@@ -79,4 +81,6 @@ fn test_path() {
     assert_eq!(p, Path(vec!["foo".to_string()]));
     p.cd("bar");
     assert_eq!(p, Path(vec!["foo".to_string(), "bar".to_string()]));
+    p.cd("..");
+    assert_eq!(p, Path(vec!["foo".to_string()]));
 }
