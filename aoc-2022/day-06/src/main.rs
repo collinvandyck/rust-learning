@@ -3,7 +3,9 @@ use std::fs;
 fn main() {
     let s = fs::read_to_string("input.txt").unwrap();
     let res = start_of_packet(&s);
-    println!("{res:?}")
+    println!("Start of packet: {res:?}");
+    let res = start_of_message(&s);
+    println!("Start of message: {res:?}");
 }
 
 fn start_of_packet(s: &str) -> Option<usize> {
