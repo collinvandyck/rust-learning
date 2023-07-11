@@ -77,4 +77,6 @@ fn test_path() {
     let mut p = Path::from("/");
     p.cd("foo");
     assert_eq!(p, Path(vec!["foo".to_string()]));
+    p.cd("bar");
+    assert_eq!(p, Path(vec!["foo".to_string(), "bar".to_string()]));
 }
