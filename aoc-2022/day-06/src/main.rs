@@ -16,4 +16,6 @@ fn first_marker(s: &str) -> Option<usize> {
 fn test_first_marker() {
     assert_eq!(first_marker("bvwbjplbgvbhsrlpgdmjqwftvncz"), Some(5));
     assert_eq!(first_marker("nppdvjthqldpwncqszvftbrmjlhg"), Some(6));
+    assert_eq!(first_marker("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"), Some(10));
+    assert_eq!(first_marker("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"), Some(11));
 }
