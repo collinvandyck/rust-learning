@@ -50,8 +50,8 @@ impl Path {
         let mut parts = s
             .trim_start_matches("/")
             .split('/')
-            .map(str::to_string)
             .filter(|s| s.is_empty())
+            .map(str::to_string)
             .collect::<Vec<_>>();
         if parts.len() == 1 && parts.get(0) == Some(&"".to_string()) {
             parts = vec![];
