@@ -73,6 +73,21 @@ fn split_dir(s: &str) -> Vec<&str> {
     if s.starts_with('/') {
         skip = 1;
     }
+    let res = s.split("/").skip(skip).collect::<Vec<_>>();
+    let mut res = res.as_slice();
+    if res.len() > 0 {
+        if res[0] == "" {
+            res = &res[1..];
+        }
+    }
+    res.to_vec()
+}
+
+fn split_dir_old(s: &str) -> Vec<&str> {
+    let mut skip = 0;
+    if s.starts_with('/') {
+        skip = 1;
+    }
     let mut res = s.split("/").skip(skip).collect::<Vec<_>>();
     if dbg!(res[0]) == "" {
         res = res[1..].to_vec();
