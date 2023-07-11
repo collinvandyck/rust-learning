@@ -69,6 +69,13 @@ fn test_split_dir() {
 }
 
 fn split_dir(s: &str) -> Vec<&str> {
+    s.trim_start_matches('/')
+        .split("/")
+        .filter(|x| !x.is_empty())
+        .collect::<Vec<_>>()
+}
+
+fn split_dir_old2(s: &str) -> Vec<&str> {
     let mut skip = 0;
     if s.starts_with('/') {
         skip = 1;
