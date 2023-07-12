@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
-use crate::prelude::*;
-
+#[derive(Debug)]
 pub struct FS {
     pwd: Path,
     root: FSObject,
@@ -17,6 +16,15 @@ impl FS {
     pub fn cd(&mut self, p: &str) {
         self.pwd.cd(p)
     }
+}
+
+#[test]
+fn test_fs() {
+    let mut fs = FS::new();
+    println!("doing cd");
+    fs.cd("/bar");
+    println!("done doing cd");
+    dbg!(fs);
 }
 
 #[derive(Debug)]
@@ -37,29 +45,21 @@ impl FSObject {
     }
 }
 
-#[test]
-fn test_fs() {
-    let mut fs = FSObject::new();
-    dbg!(fs);
-}
-
 #[derive(Debug, PartialEq, Eq)]
 pub struct Path(Vec<String>);
 
 impl Path {
     pub fn from<S: Into<String>>(s: S) -> Self {
-        let s = s.into();
-        let mut parts = s
+        let mut res = Path(vec![]);
+        s.into()
             .trim_start_matches("/")
             .split('/')
-            .filter(|s| s.is_empty())
             .map(str::to_string)
-            .collect::<Vec<_>>();
-        if parts.len() == 1 && parts.get(0) == Some(&"".to_string()) {
-            parts = vec![];
-        }
-        Self(parts)
+            .filter(|s| !s.is_empty())
+            .for_each(|p| res.cd(p));
+        res
     }
+
     pub fn cd<S: Into<String>>(&mut self, s: S) {
         let s: String = s.into();
         if s.starts_with('/') {
@@ -82,6 +82,11 @@ impl Path {
 fn test_path() {
     assert_eq!(Path::from(""), Path(vec![]));
     assert_eq!(Path::from("/"), Path(vec![]));
+    assert_eq!(Path::from("/bar"), Path(vec!["bar".to_string()]));
+    assert_eq!(
+        Path::from("bar/baz"),
+        Path(vec!["bar".to_string(), "baz".to_string()])
+    );
 
     let mut p = Path::from("/");
     p.cd("foo");
