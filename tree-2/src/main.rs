@@ -26,15 +26,11 @@ impl Tree {
             root: Node::Dir("/".to_string(), vec![]),
         }
     }
-    fn cd(&mut self, mut dir: &str) {
+    fn cd(&mut self, dir: &str) {
         let iter = PathIter::new(dir);
-        for segment in iter {}
-        if dir.ends_with('/') {
-            dir = &dir[..dir.len() - 1];
-        }
-        for segment in dir.split('/') {
-            match &segment {
-                &"" => self.pwd = "/".to_string(),
+        for segment in iter {
+            match dbg!(&segment) {
+                &"/" => self.pwd = "/".to_string(),
                 &".." => {}
                 _path => {}
             }
