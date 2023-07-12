@@ -24,11 +24,7 @@ impl<'a> Iterator for PathIter<'a> {
         if self.len == 0 {
             return None;
         }
-        match self.iter.next() {
-            Some("") => Some("/"),
-            Some(p) => Some(p),
-            None => None,
-        }
+        self.iter.next().map(|s| if s == "" { "/" } else { s })
     }
 }
 
