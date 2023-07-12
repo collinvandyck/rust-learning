@@ -1,5 +1,40 @@
 use std::str;
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct Path(Vec<String>);
+
+impl Path {
+    pub fn new(s: &str) -> Self {
+        let mut v = vec![];
+        PathIter::new(s).for_each(|p| {
+            v.push(p.to_string());
+        });
+        Self(v)
+    }
+    pub fn cd(&mut self, dir: &str) {
+        let iter = PathIter::new(dir);
+        for segment in iter {
+            match segment {
+                "/" => {
+                    self.0 = vec!["/".to_string()];
+                }
+                ".." => {
+                    if self.0.len() > 1 {
+                        self.0.pop();
+                    }
+                }
+                _ => self.0.push(segment.to_string()),
+            };
+        }
+    }
+}
+
+#[test]
+fn test_path() {
+    let path = Path::new("/");
+    assert_eq!(path, Path::new("/"));
+}
+
 pub struct PathIter<'a> {
     iter: str::Split<'a, char>,
     len: usize,

@@ -15,26 +15,19 @@ fn main() {
 
 #[derive(Debug)]
 struct Tree {
-    pwd: String,
+    pwd: Path,
     root: Node,
 }
 
 impl Tree {
     fn new() -> Self {
         Self {
-            pwd: "/".to_string(),
+            pwd: Path::new("/"),
             root: Node::Dir("/".to_string(), vec![]),
         }
     }
     fn cd(&mut self, dir: &str) {
-        let iter = PathIter::new(dir);
-        for segment in iter {
-            match dbg!(&segment) {
-                &"/" => self.pwd = "/".to_string(),
-                &".." => {}
-                _path => {}
-            }
-        }
+        self.pwd.cd(dir);
     }
 }
 
