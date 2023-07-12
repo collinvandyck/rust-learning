@@ -1,13 +1,19 @@
+use std::str;
+
 pub struct PathIter<'a> {
-    path: &'a str,
+    iter: str::Split<'a, char>,
+    len: usize,
 }
 
 impl<'a> PathIter<'a> {
     pub fn new(s: &'a str) -> Self {
-        PathIter { path: s }
+        PathIter {
+            iter: s.trim_end_matches('/').split('/'),
+            len: s.len(),
+        }
     }
     #[cfg(test)]
-    fn to_vec(&mut self) -> Vec<&str> {
+    fn to_vec(self) -> Vec<&'a str> {
         self.collect::<Vec<&str>>()
     }
 }
@@ -15,35 +21,26 @@ impl<'a> PathIter<'a> {
 impl<'a> Iterator for PathIter<'a> {
     type Item = &'a str;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.path.starts_with('/') {
-            self.path = &self.path[1..];
-            return Some("/");
-        }
-        if self.path.is_empty() {
+        if self.len == 0 {
             return None;
         }
-        let to = match self.path.find('/') {
-            Some(idx) => idx,
-            None => self.path.len(),
-        };
-        let res = &self.path[..to];
-        self.path = &self.path[to..];
-        if self.path.starts_with("/") {
-            self.path = &self.path[1..];
+        match dbg!(self.iter.next()) {
+            Some("") => Some("/"),
+            Some(p) => Some(p),
+            None => None,
         }
-        Some(res)
     }
 }
 
 #[test]
 fn test_path_iter() {
-    assert_eq!(PathIter::new("").to_vec(), vec![] as Vec<&str>,);
-    assert_eq!(PathIter::new("/").to_vec(), vec!["/"],);
     assert_eq!(PathIter::new("/foo").to_vec(), vec!["/", "foo"],);
+    assert_eq!(PathIter::new("/").to_vec(), vec!["/"],);
     assert_eq!(PathIter::new("/foo/bar").to_vec(), vec!["/", "foo", "bar"],);
     assert_eq!(PathIter::new("foo/bar").to_vec(), vec!["foo", "bar"],);
     assert_eq!(
         PathIter::new("foo/bar/baz/").to_vec(),
         vec!["foo", "bar", "baz"],
     );
+    assert_eq!(PathIter::new("").to_vec(), vec![] as Vec<&str>,);
 }
