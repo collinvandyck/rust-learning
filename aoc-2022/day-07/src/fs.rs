@@ -22,7 +22,7 @@ impl FS {
 fn test_fs() {
     let mut fs = FS::new();
     println!("doing cd");
-    fs.cd("/bar");
+    fs.cd("/bar/baz");
     println!("done doing cd");
     dbg!(fs);
 }
