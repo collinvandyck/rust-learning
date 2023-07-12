@@ -45,4 +45,14 @@ fn test_path_iter() {
         PathIter::new("/foo/bar").into_iter().collect::<Vec<&str>>(),
         vec!["/", "foo", "bar"],
     );
+    assert_eq!(
+        PathIter::new("foo/bar").into_iter().collect::<Vec<&str>>(),
+        vec!["foo", "bar"],
+    );
+    assert_eq!(
+        PathIter::new("foo/bar/baz/")
+            .into_iter()
+            .collect::<Vec<&str>>(),
+        vec!["foo", "bar", "baz"],
+    );
 }
