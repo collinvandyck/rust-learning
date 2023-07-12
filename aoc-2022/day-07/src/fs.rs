@@ -14,16 +14,15 @@ impl FS {
         }
     }
     pub fn cd(&mut self, p: &str) {
-        self.pwd.cd(p)
+        self.pwd.cd(p);
     }
+    fn ensure(&mut self, p: &Path) {}
 }
 
 #[test]
 fn test_fs() {
     let mut fs = FS::new();
-    println!("doing cd");
     fs.cd("/bar/baz");
-    println!("done doing cd");
     dbg!(fs);
 }
 
@@ -59,7 +58,6 @@ impl Path {
             .for_each(|p| res.cd(p));
         res
     }
-
     pub fn cd<S: Into<String>>(&mut self, s: S) {
         let s: String = s.into();
         if s.starts_with('/') {
@@ -70,11 +68,27 @@ impl Path {
             self.0.push(s.into());
         }
     }
+    fn pop_first(&self) -> Self {
+        let mut v = self.0.clone();
+        if !v.is_empty() {
+            v.remove(0);
+        }
+        Self(v)
+    }
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
     pub fn first(&self) -> &str {
         self.0.first().unwrap()
+    }
+}
+
+impl IntoIterator for &Path {
+    type Item = String;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+    fn into_iter(self) -> Self::IntoIter {
+        let v = self.0.clone();
+        v.into_iter()
     }
 }
 
