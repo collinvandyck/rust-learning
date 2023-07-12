@@ -2,57 +2,41 @@
 
 use crate::prelude::*;
 
-#[derive(Debug)]
-pub enum FS {
-    File(String, u64),
-    Dir(String, Vec<FS>),
+pub struct FS {
+    pwd: Path,
+    root: FSObject,
 }
 
 impl FS {
-    pub fn new() -> Self {
-        FS::Dir("/".to_string(), vec![])
-    }
-    pub fn add_dir(&mut self, path: &Path, name: &str) {
-        let (dir_name, children) = match self {
-            FS::File(_, _) => panic!("file"),
-            FS::Dir(n, c) => (n, c),
-        };
-        if path.is_empty() {
-            // we are where we need to be
-            let name = name.to_string();
-            let exists = children.iter().any(|c| match c {
-                FS::Dir(n, _) if n == c.name() => true,
-                _ => false,
-            });
-            if !exists {
-                children.push(FS::Dir(name.to_string(), vec![]))
-            }
-        } else {
-            // we need to advance. find the child dir that matches
-            // the first element in path and then call add_dir on it.
-            let first = path.first();
-            for child in children {
-                match child {
-                    FS::Dir(dn, _) if dn == name => {}
-                    _ => panic!("file"),
-                }
-            }
+    fn new() -> Self {
+        Self {
+            pwd: Path::from("/"),
+            root: FSObject::new(),
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum FSObject {
+    File(String, u64),
+    Dir(String, Vec<FSObject>),
+}
+
+impl FSObject {
+    pub fn new() -> Self {
+        FSObject::Dir("/".to_string(), vec![])
     }
     fn name(&self) -> &String {
         match self {
-            FS::File(name, _) => name,
-            FS::Dir(name, _) => name,
+            FSObject::File(name, _) => name,
+            FSObject::Dir(name, _) => name,
         }
     }
 }
 
 #[test]
 fn test_fs() {
-    let mut path = Path::from("");
-    let mut fs = FS::new();
-    fs.add_dir(&path, "foo");
-    fs.add_dir(&path, "bar");
+    let mut fs = FSObject::new();
     dbg!(fs);
 }
 
