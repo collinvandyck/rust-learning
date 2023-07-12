@@ -30,7 +30,11 @@ impl<'a> Iterator for PathIter<'a> {
 #[test]
 fn test_path_iter() {
     assert_eq!(
+        PathIter::new("/foo").into_iter().collect::<Vec<&str>>(),
+        vec!["foo"],
+    );
+    assert_eq!(
+        PathIter::new("/foo/bar").into_iter().collect::<Vec<&str>>(),
         vec!["foo", "bar"],
-        PathIter::new("/foo/bar").into_iter().collect::<Vec<&str>>()
     );
 }
