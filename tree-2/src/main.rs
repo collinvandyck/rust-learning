@@ -8,7 +8,6 @@ use prelude::*;
 
 fn main() {
     let mut t = Tree::new();
-    t.root.mkdir_p("/foo/bar/baz");
     t.cd("collin");
     dbg!(t);
 }
