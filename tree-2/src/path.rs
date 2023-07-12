@@ -31,8 +31,14 @@ impl Path {
 
 #[test]
 fn test_path() {
-    let path = Path::new("/");
+    let mut path = Path::new("/");
     assert_eq!(path, Path::new("/"));
+    path.cd("foo/bar");
+    assert_eq!(path, Path::new("/foo/bar"));
+    path.cd("/baz/");
+    assert_eq!(path, Path::new("/baz"));
+    path.cd("../../../abc/def");
+    assert_eq!(path, Path::new("/abc/def"));
 }
 
 pub struct PathIter<'a> {
