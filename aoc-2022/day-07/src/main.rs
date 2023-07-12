@@ -9,9 +9,8 @@ mod prelude {
 use prelude::*;
 
 fn main() {
+    let mut fs = FS::new();
     let lines = parse_lines("example.txt");
-    let mut fs = FSObject::new();
-    let mut path = Path::from("/");
     let mut iter = lines.iter().peekable();
     loop {
         let line = iter.next();
@@ -20,7 +19,7 @@ fn main() {
         }
         let line = line.unwrap();
         match line {
-            Line::Cd(dir) => path.cd(dir),
+            Line::Cd(dir) => fs.cd(dir),
             Line::Ls() => loop {
                 let line = iter.peek();
                 match line {

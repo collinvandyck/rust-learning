@@ -8,11 +8,14 @@ pub struct FS {
 }
 
 impl FS {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             pwd: Path::from("/"),
             root: FSObject::new(),
         }
+    }
+    pub fn cd(&mut self, p: &str) {
+        self.pwd.cd(p)
     }
 }
 
