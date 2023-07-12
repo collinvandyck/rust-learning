@@ -6,7 +6,7 @@ impl<'a> PathIter<'a> {
     pub fn new(s: &'a str) -> Self {
         PathIter { path: s }
     }
-    #[allow(dead_code)]
+    #[cfg(test)]
     fn to_vec(&mut self) -> Vec<&str> {
         self.collect::<Vec<&str>>()
     }
