@@ -24,7 +24,7 @@ impl<'a> Iterator for PathIter<'a> {
         if self.len == 0 {
             return None;
         }
-        match dbg!(self.iter.next()) {
+        match self.iter.next() {
             Some("") => Some("/"),
             Some(p) => Some(p),
             None => None,
@@ -34,13 +34,13 @@ impl<'a> Iterator for PathIter<'a> {
 
 #[test]
 fn test_path_iter() {
-    assert_eq!(PathIter::new("/foo").to_vec(), vec!["/", "foo"],);
+    assert_eq!(PathIter::new("").to_vec(), vec![] as Vec<&str>,);
     assert_eq!(PathIter::new("/").to_vec(), vec!["/"],);
+    assert_eq!(PathIter::new("/foo").to_vec(), vec!["/", "foo"],);
     assert_eq!(PathIter::new("/foo/bar").to_vec(), vec!["/", "foo", "bar"],);
     assert_eq!(PathIter::new("foo/bar").to_vec(), vec!["foo", "bar"],);
     assert_eq!(
         PathIter::new("foo/bar/baz/").to_vec(),
         vec!["foo", "bar", "baz"],
     );
-    assert_eq!(PathIter::new("").to_vec(), vec![] as Vec<&str>,);
 }
