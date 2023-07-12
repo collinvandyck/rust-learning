@@ -13,6 +13,7 @@ impl<'a> Iterator for PathIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.path.starts_with('/') {
             self.path = &self.path[1..];
+            return Some("/");
         }
         if self.path.is_empty() {
             return None;
@@ -23,6 +24,9 @@ impl<'a> Iterator for PathIter<'a> {
         };
         let res = &self.path[..to];
         self.path = &self.path[to..];
+        if self.path.starts_with("/") {
+            self.path = &self.path[1..];
+        }
         Some(res)
     }
 }
