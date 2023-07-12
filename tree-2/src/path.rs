@@ -6,6 +6,10 @@ impl<'a> PathIter<'a> {
     pub fn new(s: &'a str) -> Self {
         PathIter { path: s }
     }
+    #[allow(dead_code)]
+    fn to_vec(&mut self) -> Vec<&str> {
+        self.collect::<Vec<&str>>()
+    }
 }
 
 impl<'a> Iterator for PathIter<'a> {
@@ -33,30 +37,13 @@ impl<'a> Iterator for PathIter<'a> {
 
 #[test]
 fn test_path_iter() {
+    assert_eq!(PathIter::new("").to_vec(), vec![] as Vec<&str>,);
+    assert_eq!(PathIter::new("/").to_vec(), vec!["/"],);
+    assert_eq!(PathIter::new("/foo").to_vec(), vec!["/", "foo"],);
+    assert_eq!(PathIter::new("/foo/bar").to_vec(), vec!["/", "foo", "bar"],);
+    assert_eq!(PathIter::new("foo/bar").to_vec(), vec!["foo", "bar"],);
     assert_eq!(
-        PathIter::new("").into_iter().collect::<Vec<&str>>(),
-        vec![] as Vec<&str>,
-    );
-    assert_eq!(
-        PathIter::new("/").into_iter().collect::<Vec<&str>>(),
-        vec!["/"],
-    );
-    assert_eq!(
-        PathIter::new("/foo").into_iter().collect::<Vec<&str>>(),
-        vec!["/", "foo"],
-    );
-    assert_eq!(
-        PathIter::new("/foo/bar").into_iter().collect::<Vec<&str>>(),
-        vec!["/", "foo", "bar"],
-    );
-    assert_eq!(
-        PathIter::new("foo/bar").into_iter().collect::<Vec<&str>>(),
-        vec!["foo", "bar"],
-    );
-    assert_eq!(
-        PathIter::new("foo/bar/baz/")
-            .into_iter()
-            .collect::<Vec<&str>>(),
+        PathIter::new("foo/bar/baz/").to_vec(),
         vec!["foo", "bar", "baz"],
     );
 }
