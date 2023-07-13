@@ -32,6 +32,7 @@ pub enum Node {
 
 impl Node {
     pub fn find(&self, predicate: fn(&Node) -> bool) -> Option<Vec<&Node>> {
+        println!("find: visiting #{self:?}");
         if predicate(self) {
             return Some(vec![self]);
         }

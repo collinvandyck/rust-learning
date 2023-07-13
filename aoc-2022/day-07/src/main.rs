@@ -35,12 +35,17 @@ fn main() {
             _ => panic!("parse error"),
         }
     }
-    fs = dbg!(fs);
-    println!("Total size: {}", fs.root.total_size());
     let res: Option<u64> = fs
         .root
         .find(|f| match f {
-            f @ Node::Dir(_, _) => f.total_size() <= 100000,
+            f @ Node::Dir(name, _) => {
+                let size = f.total_size();
+                let ok = size <= 100000;
+                if ok {
+                    println!("Dir {name} has total size {size}");
+                }
+                ok
+            }
             _ => false,
         })
         .map(|mut res| {
