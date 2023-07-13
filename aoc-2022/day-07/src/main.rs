@@ -39,6 +39,7 @@ fn run(filename: &str) {
             _ => panic!("parse error"),
         }
     }
+    println!("{filename}: total usage: {}", fs.root.total_size());
     let res: u64 = fs
         .root
         .find(|f| match f {
