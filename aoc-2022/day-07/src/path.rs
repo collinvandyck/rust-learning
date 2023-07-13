@@ -1,7 +1,7 @@
 use std::str;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Path(Vec<String>);
+pub struct Path(pub Vec<String>);
 
 impl Path {
     pub fn new(s: &str) -> Self {
