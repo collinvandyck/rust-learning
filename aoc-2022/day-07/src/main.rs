@@ -23,12 +23,13 @@ fn main() {
         match line {
             Line::Cd(dir) => fs.cd(dir),
             Line::Ls() => loop {
-                let line = iter.peek();
-                match line {
-                    Some(Line::Dir(_name)) => {}
-                    Some(Line::File(_size, _name)) => {}
+                match iter.peek() {
+                    Some(Line::Dir(name)) => Some(Node::Dir(name.to_string(), vec![])),
+                    Some(Line::File(size, name)) => Some(Node::File(name.to_string(), *size)),
                     _ => break,
                 }
+                .into_iter()
+                .for_each(|f| fs.add(f));
                 iter.next();
             },
             _ => panic!("parse error"),

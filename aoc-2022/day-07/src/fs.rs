@@ -15,67 +15,68 @@ impl FS {
     }
     pub fn cd(&mut self, p: &str) {
         self.pwd.cd(p);
-        self.mkdirs_p();
     }
-    // ensures that the FS has the directories listed by pwd
-    fn mkdirs_p(&mut self) {
-        println!("mkdirs_p");
-        let parts: Vec<&String> = self.pwd.0.iter().collect::<Vec<_>>();
-        let mut parts = parts.iter();
-        let mut cur = &mut self.root;
-        loop {
-            match parts.next() {
-                Some(part) => {
-                    if let Node::Dir(name, children) = cur {
-                        if &name != part {
-                            break;
-                        }
-                        println!("cur={cur:?}");
-                    } else {
-                        // no match
-                        break;
-                    }
-                }
-                None => break,
-            }
-        }
+    pub fn add(&mut self, node: Node) {
+        let parts = self.pwd.parts();
+        self.root.add(parts, node)
     }
 }
 
 #[derive(Debug)]
-enum Node {
+pub enum Node {
     Dir(String, Vec<Node>),
     File(String, u64),
 }
 
 impl Node {
-    fn mkdirs_p(&mut self, mut parts: Vec<String>) {
-        if parts.is_empty() {
-            return;
-        }
-        let part = parts.remove(0);
-        match self {
-            Node::Dir(name, children) if name == &part => {
-                if let Some(part) = parts.get(0) {
-                    let found = children.iter_mut().find(|child| child.name() == part);
-                    let child = match found {
-                        Some(node) => node,
+    fn add(&mut self, mut parts: Vec<String>, node: Node) {
+        if let Some(part) = parts.get(0).cloned() {
+            parts.remove(0);
+            match self {
+                Node::Dir(_, children) => {
+                    let child = match children.iter_mut().find(|c| c.name() == &part) {
+                        Some(child) => child,
                         None => {
-                            let new_child = Node::Dir(part.to_string(), vec![]);
-                            children.push(new_child);
-                            children.iter_mut().last().unwrap()
+                            children.push(Node::Dir(part.to_string(), vec![]));
+                            children.last_mut().unwrap()
                         }
                     };
-                    child.mkdirs_p(parts);
+                    child.add(parts, node);
+                }
+                _ => panic!("File found, expected dir"),
+            }
+        } else {
+            // no more parts -- add the node
+            if let Node::Dir(_, children) = self {
+                children.push(node);
+            }
+        }
+    }
+    fn mkdirs_p(&mut self, mut parts: Vec<String>) {
+        if let Some(part) = parts.get(0).cloned() {
+            parts.remove(0);
+            if let Node::Dir(name, children) = self {
+                if name == &part {
+                    if parts.is_empty() {
+                        return;
+                    }
+                    let part = parts.remove(0);
+                    let next = children.iter_mut().find(|c| c.name() == &part);
+                    let next = match next {
+                        Some(next) => next,
+                        _ => {
+                            children.push(Node::Dir(part.to_string(), vec![]));
+                            children.last_mut().unwrap()
+                        }
+                    };
+                    next.mkdirs_p(parts);
+                } else {
+                    // the name didn't match. add a child directory
+                    children.push(Node::Dir(part.to_string(), vec![]));
+                    let next = children.last_mut().unwrap();
+                    next.mkdirs_p(parts);
                 }
             }
-            Node::Dir(_, children) => {
-                let new_child = Node::Dir(part.to_string(), vec![]);
-                children.push(new_child);
-                let child = children.iter_mut().last().unwrap();
-                child.mkdirs_p(parts);
-            }
-            Node::File(_, _) => panic!("file encountered"),
         }
     }
     fn name(&self) -> &String {

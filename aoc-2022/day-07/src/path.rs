@@ -11,6 +11,11 @@ impl Path {
         });
         Self(v)
     }
+    pub fn parts(&self) -> Vec<String> {
+        let mut res = self.0.clone();
+        res.remove(0);
+        res
+    }
     pub fn cd(&mut self, dir: &str) {
         let iter = PathIter::new(dir);
         for segment in iter {
