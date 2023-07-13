@@ -35,7 +35,7 @@ fn main() {
             _ => panic!("parse error"),
         }
     }
-    let res: Option<u64> = fs
+    let res: u64 = fs
         .root
         .find(|f| match f {
             f @ Node::Dir(name, _) => {
@@ -48,9 +48,8 @@ fn main() {
             }
             _ => false,
         })
-        .map(|mut res| {
-            res = dbg!(res);
-            res.iter().map(|r| r.total_size()).sum()
-        });
+        .into_iter()
+        .map(|node| node.total_size())
+        .sum();
     dbg!(res);
 }

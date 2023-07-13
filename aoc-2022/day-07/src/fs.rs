@@ -31,22 +31,20 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn find(&self, predicate: fn(&Node) -> bool) -> Option<Vec<&Node>> {
+    pub fn find(&self, predicate: fn(&Node) -> bool) -> Vec<&Node> {
         println!("find: visiting #{self:?}");
-        if predicate(self) {
-            return Some(vec![self]);
-        }
         let mut res = vec![];
+        if predicate(self) {
+            res.push(self);
+        }
         if let Node::Dir(_, children) = self {
             for child in children {
-                if let Some(others) = child.find(predicate) {
-                    for other in others {
-                        res.push(other);
-                    }
+                for other in child.find(predicate) {
+                    res.push(other);
                 }
             }
         }
-        Some(res)
+        res
     }
     pub fn total_size(&self) -> u64 {
         match self {
