@@ -32,7 +32,6 @@ pub enum Node {
 
 impl Node {
     pub fn find(&self, predicate: fn(&Node) -> bool) -> Vec<&Node> {
-        println!("find: visiting #{self:?}");
         let mut res = vec![];
         if predicate(self) {
             res.push(self);

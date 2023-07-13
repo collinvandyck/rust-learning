@@ -38,19 +38,11 @@ fn main() {
     let res: u64 = fs
         .root
         .find(|f| match f {
-            f @ Node::Dir(name, _) => {
-                let size = f.total_size();
-                let ok = size <= 100000;
-                println!("Dir {name} has total size {size}");
-                ok
-            }
+            f @ Node::Dir(_, _) => f.total_size() <= 100000,
             _ => false,
         })
         .into_iter()
-        .map(|node| {
-            println!("Result node: {node:?}");
-            node.total_size()
-        })
+        .map(|node| node.total_size())
         .sum();
     dbg!(res);
 }
