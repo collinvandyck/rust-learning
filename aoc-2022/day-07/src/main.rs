@@ -37,9 +37,12 @@ fn main() {
     }
     fs = dbg!(fs);
     println!("Total size: {}", fs.root.total_size());
-    let dirs = fs.root.find(|f| match f {
-        f @ Node::Dir(_, _) => f.total_size() <= 100000,
-        _ => false,
-    });
-    dbg!(dirs);
+    let res: Option<u64> = fs
+        .root
+        .find(|f| match f {
+            f @ Node::Dir(_, _) => f.total_size() <= 100000,
+            _ => false,
+        })
+        .map(|res| res.iter().map(|r| r.total_size()).sum());
+    dbg!(res);
 }
