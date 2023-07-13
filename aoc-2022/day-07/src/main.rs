@@ -41,15 +41,16 @@ fn main() {
             f @ Node::Dir(name, _) => {
                 let size = f.total_size();
                 let ok = size <= 100000;
-                if ok {
-                    println!("Dir {name} has total size {size}");
-                }
+                println!("Dir {name} has total size {size}");
                 ok
             }
             _ => false,
         })
         .into_iter()
-        .map(|node| node.total_size())
+        .map(|node| {
+            println!("Result node: {node:?}");
+            node.total_size()
+        })
         .sum();
     dbg!(res);
 }
