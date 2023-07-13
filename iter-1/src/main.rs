@@ -1,6 +1,6 @@
 fn main() {
     let v = vec![vec![2, 3], vec![4, 5, 6]];
-    let f = Flatten::new(v.into_iter());
+    let f = Flatten::new(v.iter());
     for x in f {
         println!("{x}");
     }
@@ -10,7 +10,10 @@ pub struct Flatten<O> {
     outer: O,
 }
 
-impl<O> Flatten<O> {
+impl<O> Flatten<O>
+where
+    O: Iterator,
+{
     fn new(iter: O) -> Self {
         Flatten { outer: iter }
     }
