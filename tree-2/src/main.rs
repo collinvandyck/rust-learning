@@ -22,7 +22,7 @@ impl Tree {
     fn new() -> Self {
         Self {
             pwd: Path::new("/"),
-            root: Node::Dir("/".to_string(), vec![]),
+            root: Node::root(),
         }
     }
     fn cd(&mut self, dir: &str) {
@@ -37,6 +37,12 @@ enum Node {
 }
 
 impl Node {
+    fn root() -> Self {
+        Self::new_dir("/")
+    }
+    fn new_dir(p: &str) -> Self {
+        Node::Dir(p.to_string(), vec![])
+    }
     fn mkdir_p(&mut self, mut dirs: &str) {
         if dirs.starts_with('/') {
             dirs = &dirs[1..]

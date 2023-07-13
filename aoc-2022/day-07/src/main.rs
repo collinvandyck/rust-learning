@@ -1,8 +1,10 @@
 mod fs;
+mod path;
 mod shell;
 
 mod prelude {
     pub use crate::fs::*;
+    pub use crate::path::*;
     pub use crate::shell::*;
 }
 
