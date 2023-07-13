@@ -9,10 +9,14 @@ mod prelude {
 }
 
 use prelude::*;
-
 fn main() {
+    run("example.txt");
+    run("input.txt");
+}
+
+fn run(filename: &str) {
     let mut fs = FS::new();
-    let lines = parse_lines("example.txt");
+    let lines = parse_lines(filename);
     let mut iter = lines.iter().peekable();
     loop {
         let line = iter.next();
@@ -44,5 +48,6 @@ fn main() {
         .into_iter()
         .map(|node| node.total_size())
         .sum();
-    dbg!(res);
+
+    println!("{filename}: {res}");
 }
