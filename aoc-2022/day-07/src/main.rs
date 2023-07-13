@@ -39,7 +39,16 @@ fn run(filename: &str) {
             _ => panic!("parse error"),
         }
     }
-    println!("{filename}: total usage: {}", fs.root.total_size());
+    let capacity = 70_000_000 as u64;
+    let usage = fs.root.total_size();
+    let free = capacity - usage;
+    let desired_free = 30_000_000 as u64;
+    let needs_free = if free >= desired_free {
+        0
+    } else {
+        desired_free - free
+    };
+    println!("{filename}: cap: {capacity} usage: {usage} free: {free} needs_free: {needs_free}");
     let res: u64 = fs
         .root
         .find(|f| match f {
