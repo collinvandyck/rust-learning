@@ -80,8 +80,14 @@ impl Node {
     }
     fn name(&self) -> &String {
         match self {
-            Node::Dir(name, _) => name,
-            Node::File(name, _) => name,
+            Node::Dir(name, _) | Node::File(name, _) => name,
         }
     }
+}
+
+#[test]
+fn test_node_mkdirs_p() {
+    let mut node = Node::Dir("/".to_string(), vec![]);
+    node.mkdirs_p(vec!["/".to_string(), "foo".to_string(), "bar".to_string()]);
+    dbg!(node);
 }
