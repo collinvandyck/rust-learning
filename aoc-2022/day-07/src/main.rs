@@ -35,5 +35,6 @@ fn main() {
             _ => panic!("parse error"),
         }
     }
-    dbg!(fs);
+    fs = dbg!(fs);
+    println!("Total size: {}", fs.root.total_size())
 }

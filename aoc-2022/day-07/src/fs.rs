@@ -1,9 +1,11 @@
+use std::fmt::Display;
+
 use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct FS {
     pwd: Path,
-    root: Node,
+    pub root: Node,
 }
 
 impl FS {
@@ -29,6 +31,12 @@ pub enum Node {
 }
 
 impl Node {
+    pub fn total_size(&self) -> u64 {
+        match self {
+            Node::Dir(_, children) => children.iter().map(|c| c.total_size()).sum(),
+            Node::File(_, size) => *size,
+        }
+    }
     fn add(&mut self, mut path: Vec<String>, node: Node) {
         if let Some(part) = path.get(0).cloned() {
             path.remove(0);
