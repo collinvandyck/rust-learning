@@ -34,4 +34,5 @@ fn main() {
             _ => panic!("parse error"),
         }
     }
+    dbg!(fs);
 }
