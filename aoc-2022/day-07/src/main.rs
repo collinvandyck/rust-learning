@@ -43,6 +43,9 @@ fn main() {
             f @ Node::Dir(_, _) => f.total_size() <= 100000,
             _ => false,
         })
-        .map(|res| res.iter().map(|r| r.total_size()).sum());
+        .map(|mut res| {
+            res = dbg!(res);
+            res.iter().map(|r| r.total_size()).sum()
+        });
     dbg!(res);
 }
