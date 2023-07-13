@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, vec};
 
 use crate::prelude::*;
 
@@ -31,6 +31,20 @@ pub enum Node {
 }
 
 impl Node {
+    pub fn find(&self, predicate: fn(&Node) -> bool) -> Vec<&Node> {
+        if predicate(self) {
+            return vec![self];
+        }
+        let mut res = vec![];
+        if let Node::Dir(_, children) = self {
+            for child in children {
+                for x in child.find(predicate) {
+                    res.push(x);
+                }
+            }
+        }
+        res
+    }
     pub fn total_size(&self) -> u64 {
         match self {
             Node::Dir(_, children) => children.iter().map(|c| c.total_size()).sum(),
