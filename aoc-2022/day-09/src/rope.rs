@@ -8,20 +8,17 @@ pub struct Rope {
     start: NamePoint,
     head: NamePoint,
     tail: NamePoint,
-    knots: Knots,
+    knots: Vec<NamePoint>,
     tail_visits: HashSet<Point>,
 }
 
-#[derive(Debug)]
-struct Knots(Vec<NamePoint>);
-
 impl Rope {
     pub fn new(num_knots: usize) -> Self {
-        let mut knots = Knots(vec![]);
+        let mut knots = vec![];
         for i in (1..=num_knots - 1).rev() {
-            knots.0.push(NamePoint::new(format!("{i}").as_str()));
+            knots.push(NamePoint::new(format!("{i}").as_str()));
         }
-        knots.0.push(NamePoint::new("H"));
+        knots.push(NamePoint::new("H"));
         knots = dbg!(knots);
         let origin = Point::zero();
         let mut res = Self {
@@ -55,8 +52,7 @@ impl Rope {
     pub fn move_knots(&mut self, dir: Direction) {
         // move each knot
         self.knots
-            .0
-            .iter()
+            .iter_mut()
             .rev()
             .for_each(|k| println!("Processing knot {k:?}"))
     }
