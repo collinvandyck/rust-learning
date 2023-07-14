@@ -10,11 +10,11 @@ mod prelude {
 
 use prelude::*;
 fn main() {
-    run("example.txt");
-    run("input.txt");
+    run("example.txt", 95437, 24933642);
+    run("input.txt", 1182909, 2832508);
 }
 
-fn run(filename: &str) {
+fn run(filename: &str, part_1_answer: u64, part_2_answer: u64) {
     let mut fs = FS::new();
     let lines = parse_lines(filename);
     let mut iter = lines.iter().peekable();
@@ -51,6 +51,7 @@ fn run(filename: &str) {
         .map(|node| node.total_size())
         .sum();
     println!("{filename}: part1: size of chosen dirs: {size_of_chosen_dirs}");
+    assert_eq!(size_of_chosen_dirs, part_1_answer);
 
     // part two
     let capacity = 70_000_000 as u64;
@@ -72,4 +73,5 @@ fn run(filename: &str) {
     candidates.sort_by_key(|f| f.total_size());
     let res = candidates.get(0).unwrap().total_size();
     println!("The candidate directory to be deleted has size {res}");
+    assert_eq!(res, part_2_answer);
 }
