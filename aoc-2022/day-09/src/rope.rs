@@ -1,19 +1,19 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::Deref};
 
 use crate::prelude::*;
 
 pub struct Rope {
-    start: Point,
-    head: Point,
-    tail: Point,
+    start: NamePoint,
+    head: NamePoint,
+    tail: NamePoint,
 }
 
 impl Rope {
     pub fn new() -> Self {
         Self {
-            start: Point::new(),
-            head: Point::new(),
-            tail: Point::new(),
+            start: NamePoint::new("s"),
+            head: NamePoint::new("H"),
+            tail: NamePoint::new("T"),
         }
     }
     pub fn exec(&mut self, mov: &Move) {
@@ -21,19 +21,16 @@ impl Rope {
         self.mov_tail();
     }
     fn mov_head(&mut self, mov: &Move) {
-        self.head = match mov.direction {
+        self.head.point = match mov.direction {
             Direction::Right => self.head.combine(&Point(1, 0)),
             Direction::Left => self.head.combine(&Point(-1, 0)),
             Direction::Up => self.head.combine(&Point(0, -1)),
             Direction::Down => self.head.combine(&Point(0, 1)),
         };
-        println!("mov head #{mov} now is {:?}", self.head);
     }
-    fn mov_tail(&mut self) {
-        println!("mov tail")
-    }
+    fn mov_tail(&mut self) {}
     fn points(&self) -> [Point; 3] {
-        [self.start, self.head, self.tail]
+        [self.start.point, self.head.point, self.tail.point]
     }
 }
 
@@ -43,9 +40,6 @@ impl Display for Rope {
         let mut upper_left = Point::new();
         let mut lower_right = Point::new();
         for point in self.points() {
-            println!(
-                "Looking at point {point:?} upper_left:{upper_left:?} lower_right:{lower_right:?}"
-            );
             upper_left = Point(
                 i32::min(upper_left.0, point.0),
                 i32::min(upper_left.1, point.1),
@@ -55,7 +49,35 @@ impl Display for Rope {
                 i32::max(lower_right.1, point.1),
             );
         }
+        let mut buf = String::new();
+        for row in 0..=lower_right.1 - upper_left.1 {
+            for col in 0..=lower_right.0 - upper_left.0 {
+                println!("{row}x{col}")
+            }
+        }
         write!(f, "{:?}", (upper_left, lower_right))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct NamePoint {
+    name: String,
+    point: Point,
+}
+
+impl NamePoint {
+    fn new(s: &str) -> Self {
+        Self {
+            name: s.to_string(),
+            point: Point::new(),
+        }
+    }
+}
+
+impl Deref for NamePoint {
+    type Target = Point;
+    fn deref(&self) -> &Self::Target {
+        &self.point
     }
 }
 
