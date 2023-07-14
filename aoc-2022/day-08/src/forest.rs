@@ -26,7 +26,28 @@ impl Forest {
         count
     }
     fn tree_visible(&self, row: usize, col: usize) -> bool {
-        true
+        if row == 0 {
+            return true;
+        }
+        if row == self.rows() - 1 {
+            return true;
+        }
+        if col == 0 {
+            return true;
+        }
+        if col == self.cols() - 1 {
+            return true;
+        }
+        self.higher_than_neighbors(row, col)
+    }
+    fn higher_than_neighbors(&self, row: usize, col: usize) -> bool {
+        let height = self.height_at(row, col);
+        println!("Height at {row}x{col} is {height}");
+        false
+    }
+    fn height_at(&self, row: usize, col: usize) -> usize {
+        let r = self.trees.get(row).unwrap();
+        r.get(col).unwrap().0
     }
     fn rows(&self) -> usize {
         self.trees.len()
