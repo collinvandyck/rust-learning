@@ -56,15 +56,9 @@ impl Display for Rope {
         for y in (self.upper_left.1..=self.lower_right.1).rev() {
             for x in self.upper_left.0..=self.lower_right.0 {
                 let point = Point::new(x, y);
-                let mut found = false;
-                for np in &points {
-                    if np.point == point {
-                        buf.push_str(&np.name);
-                        found = true;
-                        break;
-                    }
-                }
-                if !found {
+                if let Some(np) = points.iter().find(|p| p.point == point) {
+                    buf.push_str(&np.name);
+                } else {
                     buf.push_str("_");
                 }
                 buf.push_str(" ");
