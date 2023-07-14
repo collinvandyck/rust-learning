@@ -1,6 +1,6 @@
 use std::str;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path(pub Vec<String>);
 
 impl Path {

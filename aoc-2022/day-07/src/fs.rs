@@ -2,7 +2,7 @@ use std::vec;
 
 use crate::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FS {
     pwd: Path,
     pub root: Node,
@@ -24,7 +24,32 @@ impl FS {
     }
 }
 
-#[derive(Debug)]
+impl<'a> IntoIterator for &'a FS {
+    type Item = Node;
+    type IntoIter = FSIter<'a>;
+    fn into_iter(self) -> Self::IntoIter {
+        FSIter { fs: self }
+    }
+}
+
+pub struct FSIter<'a> {
+    fs: &'a FS,
+}
+
+impl<'a> FSIter<'a> {
+    fn new(fs: &'a FS) -> Self {
+        Self { fs }
+    }
+}
+
+impl<'a> Iterator for FSIter<'a> {
+    type Item = Node;
+    fn next(&mut self) -> Option<Self::Item> {
+        None
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum Node {
     Dir(String, Vec<Node>),
     File(String, u64),
