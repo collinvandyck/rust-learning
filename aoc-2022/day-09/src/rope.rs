@@ -42,11 +42,20 @@ impl Rope {
 
         // if the difference is 2 in either up/left/down/right, adjust tail
         // by that amount
-        let easy = match difference.abs() {
-            Point(0, 2) | Point(2, 0) => true,
-            _ => false,
+        match difference.abs() {
+            Point(0, 2) => {
+                // y has changed
+                self.tail.point = self.tail.point.combine(&difference.combine(&Point(0, -1)));
+            }
+            Point(2, 0) => {
+                // x has changed
+                self.tail.point = self.tail.point.combine(&difference.combine(&Point(-1, 0)));
+            }
+            _ => {
+                // not in easy mode
+            }
         };
-        println!("Difference: {difference:?} easy: {easy}");
+        println!("Difference: {difference:?}");
     }
     fn register_bounds(&mut self, point: Point) {
         self.upper_left = Point(
