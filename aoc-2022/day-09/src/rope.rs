@@ -28,8 +28,8 @@ impl Rope {
         self.head.point = match mov.direction {
             Direction::Right => self.head.combine(&Point(1, 0)),
             Direction::Left => self.head.combine(&Point(-1, 0)),
-            Direction::Up => self.head.combine(&Point(0, -1)),
-            Direction::Down => self.head.combine(&Point(0, 1)),
+            Direction::Up => self.head.combine(&Point(0, 1)),
+            Direction::Down => self.head.combine(&Point(0, -1)),
         };
         self.register_bounds(self.head.point);
     }
@@ -53,9 +53,9 @@ impl Display for Rope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let points = self.points();
         let mut buf = String::new();
-        for row in 0..=self.lower_right.1 - self.upper_left.1 {
-            for col in 0..=self.lower_right.0 - self.upper_left.0 {
-                let point = Point::new(col, row);
+        for y in (self.upper_left.1..=self.lower_right.1).rev() {
+            for x in self.upper_left.0..=self.lower_right.0 {
+                let point = Point::new(x, y);
                 let mut found = false;
                 for np in &points {
                     if np.point == point {
