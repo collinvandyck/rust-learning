@@ -12,7 +12,7 @@ use prelude::*;
 
 fn main() {
     run("example.txt", 21, 8);
-    //run("input.txt", 1785, 0);
+    run("input.txt", 1785, 345168);
 }
 
 fn run(filename: &str, expected_visible: u32, expected_scenic_score: u32) {
