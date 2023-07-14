@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 #[derive(Debug)]
 pub struct Forest {
     trees: Vec<Vec<Tree>>,
