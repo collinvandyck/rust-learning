@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display, ops::Deref, slice};
+use std::{collections::HashSet, fmt::Display, ops::Deref};
 
 use crate::prelude::*;
 
@@ -18,9 +18,10 @@ struct Knots(Vec<NamePoint>);
 impl Rope {
     pub fn new(num_knots: usize) -> Self {
         let mut knots = Knots(vec![]);
-        for i in 0..num_knots {
+        for i in (1..=num_knots - 1).rev() {
             knots.0.push(NamePoint::new(format!("{i}").as_str()));
         }
+        knots.0.push(NamePoint::new("H"));
         knots = dbg!(knots);
         let origin = Point::zero();
         let mut res = Self {
@@ -46,6 +47,8 @@ impl Rope {
             //println!("Move complete tails:{}\n{self}", self.tail_visits());
         }
     }
+    // moves all of the knots, starting
+    pub fn move_knots(&mut self, mov: &Move) {}
     pub fn tail_visits(&self) -> usize {
         self.tail_visits.len()
     }
