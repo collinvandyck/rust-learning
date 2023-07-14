@@ -53,14 +53,7 @@ impl Forest {
                     })
                     .reduce(|acc, x| acc * x)
                     .into_iter()
-                    .for_each(|s| {
-                        if debug {
-                            println!("The score at {row}x{col} is {s}");
-                        }
-                        if s > score {
-                            score = s;
-                        }
-                    });
+                    .for_each(|s| score = u32::max(s, score));
             }
         }
         score
