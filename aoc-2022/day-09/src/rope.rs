@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::prelude::*;
 
 pub struct Rope {
@@ -30,9 +32,16 @@ impl Rope {
     fn mov_tail(&mut self) {
         println!("mov tail")
     }
+    fn points(&self) -> [&Point; 3] {
+        [self.start, self.head, self.tail]
+    }
 }
 
-#[derive(Debug)]
+impl Display for Rope {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {}
+}
+
+#[derive(Debug, Copy, Clone)]
 pub struct Point(i32, i32);
 
 impl Point {
