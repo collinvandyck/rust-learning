@@ -39,7 +39,14 @@ impl Rope {
     }
     fn mov_tail(&mut self) {
         let difference = self.head.difference(&self.tail);
-        println!("Difference: {difference:?}");
+
+        // if the difference is 2 in either up/left/down/right, adjust tail
+        // by that amount
+        let easy = match difference.abs() {
+            Point(0, 2) | Point(2, 0) => true,
+            _ => false,
+        };
+        println!("Difference: {difference:?} easy: {easy}");
     }
     fn register_bounds(&mut self, point: Point) {
         self.upper_left = Point(
@@ -107,6 +114,9 @@ impl Point {
     }
     fn zero() -> Self {
         Self(0, 0)
+    }
+    fn abs(&self) -> Self {
+        Self(i32::abs(self.0), i32::abs(self.1))
     }
     fn combine(&self, other: &Point) -> Self {
         Self(self.0 + other.0, self.1 + other.1)
