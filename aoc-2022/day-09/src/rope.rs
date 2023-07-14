@@ -16,9 +16,13 @@ impl Rope {
     }
     pub fn exec(&mut self, mov: &Move) {
         self.mov_head(mov);
+        self.mov_tail();
     }
     fn mov_head(&mut self, mov: &Move) {
         println!("mov head #{mov}")
+    }
+    fn mov_tail(&mut self) {
+        println!("mov tail")
     }
 }
 
