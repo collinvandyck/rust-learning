@@ -42,7 +42,28 @@ impl Forest {
     }
     fn higher_than_neighbors(&self, row: usize, col: usize) -> bool {
         let height = self.height_at(row, col);
-        println!("Height at {row}x{col} is {height}");
+        // check above
+        if (0..row).map(|r| self.height_at(r, col)).all(|h| h < height) {
+            return true;
+        }
+        // check below
+        if (row + 1..self.rows())
+            .map(|r| self.height_at(r, col))
+            .all(|h| h < height)
+        {
+            return true;
+        }
+        // check left
+        if (0..col).map(|c| self.height_at(row, c)).all(|h| h < height) {
+            return true;
+        }
+        // check right
+        if (col + 1..self.cols())
+            .map(|c| self.height_at(row, c))
+            .all(|h| h < height)
+        {
+            return true;
+        }
         false
     }
     fn height_at(&self, row: usize, col: usize) -> usize {
