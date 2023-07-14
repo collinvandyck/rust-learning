@@ -24,6 +24,6 @@ fn run(filename: &str) {
     for line in read.lines() {
         let line = line.unwrap();
         let mov = Move::from(&line);
-        rope.exec(mov);
+        rope.exec(&mov);
     }
 }
