@@ -14,12 +14,12 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    run("example.txt", 13);
-    run("input.txt", 6311);
+    run("example.txt", 2, 13);
+    run("input.txt", 2, 6311);
 }
 
-fn run(filename: &str, expected_tail_visits: usize) {
-    let mut rope = Rope::new();
+fn run(filename: &str, num_knots: usize, expected_tail_visits: usize) {
+    let mut rope = Rope::new(num_knots);
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     for line in read.lines() {
