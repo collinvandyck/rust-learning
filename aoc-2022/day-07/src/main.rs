@@ -53,6 +53,17 @@ fn run(filename: &str, part_1_answer: u64, part_2_answer: u64) {
     println!("{filename}: part1: size of chosen dirs: {size_of_chosen_dirs}");
     assert_eq!(size_of_chosen_dirs, part_1_answer);
 
+    // part one, take two, this time with iterators.
+    let size_of_chosen_dirs: u64 = fs
+        .into_iter()
+        .filter(|f| match f {
+            f @ Node::Dir(_, _) => f.total_size() <= 100000,
+            _ => false,
+        })
+        .map(|node| node.total_size())
+        .sum();
+    assert_eq!(size_of_chosen_dirs, part_1_answer);
+
     // part two
     let capacity = 70_000_000 as u64;
     let usage = fs.root.total_size();

@@ -25,27 +25,37 @@ impl FS {
 }
 
 impl<'a> IntoIterator for &'a FS {
-    type Item = Node;
+    type Item = &'a Node;
     type IntoIter = FSIter<'a>;
     fn into_iter(self) -> Self::IntoIter {
-        FSIter { fs: self }
+        FSIter::new(self)
     }
 }
 
 pub struct FSIter<'a> {
-    fs: &'a FS,
+    stack: Vec<&'a Node>,
 }
 
 impl<'a> FSIter<'a> {
     fn new(fs: &'a FS) -> Self {
-        Self { fs }
+        let stack = vec![&fs.root];
+        Self { stack }
     }
 }
 
 impl<'a> Iterator for FSIter<'a> {
-    type Item = Node;
+    type Item = &'a Node;
     fn next(&mut self) -> Option<Self::Item> {
-        None
+        if self.stack.is_empty() {
+            return None;
+        }
+        let node = self.stack.remove(0);
+        if let Node::Dir(_, children) = node {
+            for child in children {
+                self.stack.insert(0, child);
+            }
+        }
+        Some(node)
     }
 }
 
