@@ -13,7 +13,7 @@ impl Path {
     }
     pub fn parts(&self) -> Vec<String> {
         let mut res = self.0.clone();
-        res.remove(0);
+        res.remove(0); // remove the leading "/" since we always start at "/"
         res
     }
     pub fn cd(&mut self, dir: &str) {
