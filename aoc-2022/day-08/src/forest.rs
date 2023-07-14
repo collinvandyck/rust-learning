@@ -42,7 +42,7 @@ impl Forest {
                         }
                         score
                     })
-                    .filter(|x| *x > 0)
+                    .filter(|x| dbg!(*x) > 0)
                     .reduce(|acc, x| acc * x)
                     .into_iter()
                     .for_each(|s| {
