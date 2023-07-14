@@ -11,10 +11,10 @@ use std::{
 use prelude::*;
 
 fn main() {
-    run("example.txt");
+    run("example.txt", 21);
 }
 
-fn run(filename: &str) {
+fn run(filename: &str, expected_visible: u32) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let mut forest = Forest::new();
@@ -28,5 +28,6 @@ fn run(filename: &str) {
             .collect::<Vec<_>>();
         forest.add_line(line);
     }
-    dbg!(forest);
+    let visible = forest.visible();
+    assert_eq!(visible, expected_visible);
 }

@@ -10,6 +10,9 @@ impl Forest {
     pub fn add_line(&mut self, line: Vec<Tree>) {
         self.trees.push(line);
     }
+    pub fn visible(&self) -> u32 {
+        0
+    }
 }
 
 #[derive(Debug)]
