@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Debug)]
 pub struct Move {
     direction: Direction,
@@ -32,6 +34,12 @@ impl Move {
             }
             _ => panic!("parse error: #{parts:?}"),
         }
+    }
+}
+
+impl Display for Move {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} {}", self.direction, self.amount)
     }
 }
 

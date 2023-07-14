@@ -14,7 +14,9 @@ impl Rope {
             tail: Point::new(),
         }
     }
-    pub fn exec(&mut self, mov: Move) {}
+    pub fn exec(&mut self, mov: Move) {
+        println!("{mov}")
+    }
 }
 
 pub struct Point(i32, i32);
