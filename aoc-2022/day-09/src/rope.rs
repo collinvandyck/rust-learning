@@ -167,3 +167,13 @@ impl Point {
         Self(x, y)
     }
 }
+
+#[test]
+fn test_hashmap() {
+    let mut hs = HashSet::new();
+    let p = Point(0, 0);
+    hs.insert(p);
+    hs.insert(p);
+    hs.insert(p);
+    assert_eq!(1, hs.len());
+}
