@@ -51,7 +51,15 @@ impl Rope {
                 // x has changed
                 self.tail.point = self.tail.point.combine(&difference.combine(&Point(-1, 0)));
             }
-            _ => {
+            Point(0, 0) | Point(1, 0) | Point(0, 1) | Point(1, 1) => {
+                // not enough of a difference to matter
+            }
+            Point(_, _) => {
+                println!(
+                    "head: {:?} tail: {:?} diff: {:?}",
+                    self.head.point, self.tail.point, difference
+                );
+                self.tail.point = self.tail.point.combine(&difference.normalize());
                 // not in easy mode
             }
         };
@@ -132,5 +140,23 @@ impl Point {
     }
     fn difference(&self, other: &Point) -> Self {
         Self(self.0 - other.0, self.1 - other.1)
+    }
+    // normalizes the point to an adjustment of at most 1 in any direction
+    fn normalize(&self) -> Self {
+        let mut x = self.0;
+        let mut y = self.1;
+        if x < -1 {
+            x = -1;
+        }
+        if x > 1 {
+            x = 1;
+        }
+        if y < -1 {
+            y = -1;
+        }
+        if y > 1 {
+            y = 1;
+        }
+        Self(x, y)
     }
 }

@@ -22,7 +22,7 @@ fn run(filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     println!("{rope}");
-    for line in read.lines().take(1) {
+    for line in read.lines().take(3) {
         let line = line.unwrap();
         let mov = Move::from(&line);
         rope.exec(&mov);
