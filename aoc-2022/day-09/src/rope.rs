@@ -12,19 +12,25 @@ pub struct Rope {
     tail_visits: HashSet<Point>,
 }
 
+#[derive(Debug)]
 struct Knots(Vec<NamePoint>);
 
 impl Rope {
     pub fn new(num_knots: usize) -> Self {
-        let knots = Knots(vec![]);
+        let mut knots = Knots(vec![]);
+        for i in 0..num_knots {
+            knots.0.push(NamePoint::new(format!("{i}").as_str()));
+        }
+        knots = dbg!(knots);
+        let origin = Point::zero();
         let mut res = Self {
             start: NamePoint::new("s"),
             head: NamePoint::new("H"),
             tail: NamePoint::new("T"),
-            upper_left: Point::zero(),
-            lower_right: Point::zero(),
+            upper_left: origin,
+            lower_right: origin,
             tail_visits: HashSet::new(),
-            knots: knots,
+            knots,
         };
         res.register_tail();
         res
