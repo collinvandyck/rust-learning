@@ -39,6 +39,20 @@ fn run(filename: &str) {
             _ => panic!("parse error"),
         }
     }
+
+    // part one
+    let size_of_chosen_dirs: u64 = fs
+        .root
+        .find(&mut |f| match f {
+            f @ Node::Dir(_, _) => f.total_size() <= 100000,
+            _ => false,
+        })
+        .into_iter()
+        .map(|node| node.total_size())
+        .sum();
+    println!("{filename}: part1: size of chosen dirs: {size_of_chosen_dirs}");
+
+    // part two
     let capacity = 70_000_000 as u64;
     let usage = fs.root.total_size();
     let free = capacity - usage;
@@ -49,15 +63,13 @@ fn run(filename: &str) {
         desired_free - free
     };
     println!("{filename}: cap: {capacity} usage: {usage} free: {free} needs_free: {needs_free}");
-    let size_of_chosen_dirs: u64 = fs
-        .root
-        .find(&mut |f| match f {
-            f @ Node::Dir(_, _) => f.total_size() <= 100000,
-            _ => false,
-        })
-        .into_iter()
-        .map(|node| node.total_size())
-        .sum();
+    // find the smallest total sized directory which is at least needs_free
 
-    println!("{filename}: part1: size of chosen dirs: {size_of_chosen_dirs}");
+    let mut candidates = fs.root.find(&mut |f| match f {
+        f @ Node::Dir(_, _) => f.total_size() >= needs_free,
+        _ => false,
+    });
+    candidates.sort_by_key(|f| f.total_size());
+    let res = candidates.get(0).unwrap().total_size();
+    println!("The candidate directory to be deleted has size {res}");
 }
