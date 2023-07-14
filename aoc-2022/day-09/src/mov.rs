@@ -43,7 +43,7 @@ impl Display for Move {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Direction {
     Up,
     Down,

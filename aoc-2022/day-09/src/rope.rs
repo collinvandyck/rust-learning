@@ -21,19 +21,20 @@ impl Rope {
         }
     }
     pub fn exec(&mut self, mov: &Move) {
-        self.mov_head(mov);
-        self.mov_tail();
-    }
-    fn mov_head(&mut self, mov: &Move) {
         for _ in 0..mov.amount {
-            self.head.point = match mov.direction {
-                Direction::Right => self.head.combine(&Point(1, 0)),
-                Direction::Left => self.head.combine(&Point(-1, 0)),
-                Direction::Up => self.head.combine(&Point(0, 1)),
-                Direction::Down => self.head.combine(&Point(0, -1)),
-            };
+            self.mov_head(mov.direction);
+            self.mov_tail();
             self.register_bounds(self.head.point);
+            self.register_bounds(self.tail.point);
         }
+    }
+    fn mov_head(&mut self, direction: Direction) {
+        self.head.point = match direction {
+            Direction::Right => self.head.combine(&Point(1, 0)),
+            Direction::Left => self.head.combine(&Point(-1, 0)),
+            Direction::Up => self.head.combine(&Point(0, 1)),
+            Direction::Down => self.head.combine(&Point(0, -1)),
+        };
     }
     fn mov_tail(&mut self) {}
     fn register_bounds(&mut self, point: Point) {
