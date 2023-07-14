@@ -26,6 +26,7 @@ impl Rope {
             self.mov_tail();
             self.register_bounds(self.head.point);
             self.register_bounds(self.tail.point);
+            println!("{self}");
         }
     }
     fn mov_head(&mut self, direction: Direction) {
