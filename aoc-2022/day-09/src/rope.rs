@@ -27,11 +27,12 @@ impl Rope {
     pub fn exec(&mut self, mov: &Move) {
         for _ in 0..mov.amount {
             self.mov_head(mov.direction);
-            self.mov_tail();
             self.register_bounds(self.head.point);
+            println!("Moved head {:?}\n{self}", mov.direction);
+            self.mov_tail();
             self.register_bounds(self.tail.point);
             self.register_tail();
-            println!("{self}");
+            println!("Move complete tails:{}\n{self}", self.tail_visits());
         }
     }
     pub fn tail_visits(&self) -> usize {
@@ -67,7 +68,6 @@ impl Rope {
                 self.tail.point = self.tail.point.combine(&difference.normalize());
             }
         };
-        println!("Difference: {difference:?}");
     }
     fn register_bounds(&mut self, point: Point) {
         self.upper_left = Point(
