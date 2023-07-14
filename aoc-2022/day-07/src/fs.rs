@@ -66,23 +66,6 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn find<F>(&self, predicate: &mut F) -> Vec<&Node>
-    where
-        F: FnMut(&Node) -> bool,
-    {
-        let mut res = vec![];
-        if predicate(self) {
-            res.push(self);
-        }
-        if let Node::Dir(_, children) = self {
-            for child in children {
-                for other in child.find(predicate) {
-                    res.push(other);
-                }
-            }
-        }
-        res
-    }
     pub fn total_size(&self) -> u64 {
         match self {
             Node::Dir(_, children) => children.iter().map(|c| c.total_size()).sum(),
