@@ -28,6 +28,5 @@ fn run(filename: &str) {
         println!("{mov:?}");
         rope.exec(&mov);
         println!("{rope}");
-        break;
     }
 }
