@@ -2,8 +2,8 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct Move {
-    direction: Direction,
-    amount: usize,
+    pub direction: Direction,
+    pub amount: usize,
 }
 
 impl Move {
