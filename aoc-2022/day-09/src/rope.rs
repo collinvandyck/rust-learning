@@ -7,7 +7,7 @@ pub struct Move {
 impl Move {
     pub fn from(s: &str) -> Self {
         let parts = s.split(' ').filter(|s| s != &" ").collect::<Vec<&str>>();
-        match dbg!(&parts[..]) {
+        match &parts[..] {
             &[dir, n] => {
                 let n = n.parse::<usize>().unwrap();
                 match dir {
@@ -30,7 +30,7 @@ impl Move {
                     _ => panic!("Unknown direction: {dir}"),
                 }
             }
-            _ => panic!("parse error"),
+            _ => panic!("parse error: #{parts:?}"),
         }
     }
 }

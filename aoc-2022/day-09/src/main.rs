@@ -20,7 +20,6 @@ fn run(filename: &str) {
     let read = BufReader::new(file);
     for line in read.lines() {
         let line = line.unwrap();
-        let mov = Move::from(&line);
-        dbg!(mov);
+        let _mov = Move::from(&line);
     }
 }
