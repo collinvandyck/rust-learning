@@ -25,13 +25,15 @@ impl Rope {
         self.mov_tail();
     }
     fn mov_head(&mut self, mov: &Move) {
-        self.head.point = match mov.direction {
-            Direction::Right => self.head.combine(&Point(1, 0)),
-            Direction::Left => self.head.combine(&Point(-1, 0)),
-            Direction::Up => self.head.combine(&Point(0, 1)),
-            Direction::Down => self.head.combine(&Point(0, -1)),
-        };
-        self.register_bounds(self.head.point);
+        for _ in 0..mov.amount {
+            self.head.point = match mov.direction {
+                Direction::Right => self.head.combine(&Point(1, 0)),
+                Direction::Left => self.head.combine(&Point(-1, 0)),
+                Direction::Up => self.head.combine(&Point(0, 1)),
+                Direction::Down => self.head.combine(&Point(0, -1)),
+            };
+            self.register_bounds(self.head.point);
+        }
     }
     fn mov_tail(&mut self) {}
     fn register_bounds(&mut self, point: Point) {
