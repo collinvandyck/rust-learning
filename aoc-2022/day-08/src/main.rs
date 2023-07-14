@@ -12,6 +12,7 @@ use prelude::*;
 
 fn main() {
     run("example.txt", 21);
+    run("input.txt", 1785);
 }
 
 fn run(filename: &str, expected_visible: u32) {
