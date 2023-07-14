@@ -38,6 +38,9 @@ impl Rope {
     }
     pub fn exec(&mut self, mov: &Move) {
         for _ in 0..mov.amount {
+            // new stuff
+            self.move_knots(mov.direction);
+
             self.mov_head(mov.direction);
             self.register_bounds(self.head.point);
             //println!("Moved head {:?}\n{self}", mov.direction);
@@ -47,8 +50,16 @@ impl Rope {
             //println!("Move complete tails:{}\n{self}", self.tail_visits());
         }
     }
-    // moves all of the knots, starting
-    pub fn move_knots(&mut self, mov: &Move) {}
+    // moves all of the knots, starting with the first knot at the end of the knots
+    // vec ("H") and then processing each knot that exists before it.
+    pub fn move_knots(&mut self, dir: Direction) {
+        // move each knot
+        self.knots
+            .0
+            .iter()
+            .rev()
+            .for_each(|k| println!("Processing knot {k:?}"))
+    }
     pub fn tail_visits(&self) -> usize {
         self.tail_visits.len()
     }

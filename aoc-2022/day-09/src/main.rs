@@ -15,7 +15,7 @@ use prelude::*;
 
 fn main() {
     run("example.txt", 2, 13);
-    run("input.txt", 10, 6311);
+    run("input.txt", 2, 6311);
 }
 
 fn run(filename: &str, num_knots: usize, expected_tail_visits: usize) {
