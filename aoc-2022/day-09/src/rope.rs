@@ -53,7 +53,7 @@ impl Display for Rope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let points = self.points();
         let mut buf = String::new();
-        for row in (0..=self.lower_right.1 - self.upper_left.1).rev() {
+        for row in 0..=self.lower_right.1 - self.upper_left.1 {
             for col in 0..=self.lower_right.0 - self.upper_left.0 {
                 let point = Point::new(col, row);
                 let mut found = false;
