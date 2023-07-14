@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::Deref, slice};
+use std::{collections::HashSet, fmt::Display, ops::Deref, slice};
 
 use crate::prelude::*;
 
@@ -8,17 +8,21 @@ pub struct Rope {
     start: NamePoint,
     head: NamePoint,
     tail: NamePoint,
+    tail_visits: HashSet<Point>,
 }
 
 impl Rope {
     pub fn new() -> Self {
-        Self {
+        let mut res = Self {
             start: NamePoint::new("s"),
             head: NamePoint::new("H"),
             tail: NamePoint::new("T"),
             upper_left: Point::zero(),
             lower_right: Point::zero(),
-        }
+            tail_visits: HashSet::new(),
+        };
+        res.register_tail();
+        res
     }
     pub fn exec(&mut self, mov: &Move) {
         for _ in 0..mov.amount {
@@ -26,8 +30,12 @@ impl Rope {
             self.mov_tail();
             self.register_bounds(self.head.point);
             self.register_bounds(self.tail.point);
+            self.register_tail();
             println!("{self}");
         }
+    }
+    pub fn tail_visits(&self) -> usize {
+        self.tail_visits.len()
     }
     fn mov_head(&mut self, direction: Direction) {
         self.head.point = match direction {
@@ -55,12 +63,8 @@ impl Rope {
                 // not enough of a difference to matter
             }
             Point(_, _) => {
-                println!(
-                    "head: {:?} tail: {:?} diff: {:?}",
-                    self.head.point, self.tail.point, difference
-                );
+                // we must move the tail diagonally
                 self.tail.point = self.tail.point.combine(&difference.normalize());
-                // not in easy mode
             }
         };
         println!("Difference: {difference:?}");
@@ -74,6 +78,9 @@ impl Rope {
             i32::max(self.lower_right.0, point.0),
             i32::max(self.lower_right.1, point.1),
         )
+    }
+    fn register_tail(&mut self) {
+        self.tail_visits.insert(self.tail.point);
     }
     fn points(&self) -> [NamePoint; 3] {
         [self.head.clone(), self.tail.clone(), self.start.clone()]
@@ -122,7 +129,7 @@ impl Deref for NamePoint {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Point(i32, i32);
 
 impl Point {
