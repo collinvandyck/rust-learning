@@ -28,11 +28,11 @@ impl Rope {
         for _ in 0..mov.amount {
             self.mov_head(mov.direction);
             self.register_bounds(self.head.point);
-            println!("Moved head {:?}\n{self}", mov.direction);
+            //println!("Moved head {:?}\n{self}", mov.direction);
             self.mov_tail();
             self.register_bounds(self.tail.point);
             self.register_tail();
-            println!("Move complete tails:{}\n{self}", self.tail_visits());
+            //println!("Move complete tails:{}\n{self}", self.tail_visits());
         }
     }
     pub fn tail_visits(&self) -> usize {
@@ -66,7 +66,6 @@ impl Rope {
                 // not enough of a difference to matter
             }
             Point(_, _) => {
-                println!("normalize");
                 // we must move the tail diagonally
                 self.tail.point = self.tail.point.combine(&difference.normalize());
             }

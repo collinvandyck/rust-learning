@@ -15,13 +15,13 @@ use prelude::*;
 
 fn main() {
     run("example.txt", 13);
+    run("input.txt", 6311);
 }
 
 fn run(filename: &str, expected_tail_visits: usize) {
     let mut rope = Rope::new();
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
-    println!("{rope}");
     for line in read.lines() {
         let line = line.unwrap();
         let mov = Move::from(&line);
