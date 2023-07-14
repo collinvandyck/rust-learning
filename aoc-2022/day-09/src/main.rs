@@ -4,9 +4,11 @@ use std::{
 };
 
 mod mov;
+mod rope;
 
 mod prelude {
     pub use crate::mov::*;
+    pub use crate::rope::*;
 }
 
 use prelude::*;
@@ -16,10 +18,12 @@ fn main() {
 }
 
 fn run(filename: &str) {
+    let mut rope = Rope::new();
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     for line in read.lines() {
         let line = line.unwrap();
-        let _mov = Move::from(&line);
+        let mov = Move::from(&line);
+        rope.exec(mov);
     }
 }
