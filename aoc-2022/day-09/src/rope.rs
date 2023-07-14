@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::Deref};
+use std::{fmt::Display, ops::Deref, slice};
 
 use crate::prelude::*;
 
@@ -44,9 +44,6 @@ impl Rope {
             i32::max(self.lower_right.1, point.1),
         )
     }
-    fn points(&self) -> [Point; 3] {
-        [self.start.point, self.head.point, self.tail.point]
-    }
 }
 
 impl Display for Rope {
@@ -55,10 +52,12 @@ impl Display for Rope {
         let mut buf = String::new();
         for row in 0..=self.lower_right.1 - self.upper_left.1 {
             for col in 0..=self.lower_right.0 - self.upper_left.0 {
-                println!("{row}x{col}")
+                buf.push_str("_");
+                buf.push_str(" ");
             }
+            buf.push('\n');
         }
-        write!(f, "{:?}", (self.upper_left, self.lower_right))
+        write!(f, "{buf}")
     }
 }
 
