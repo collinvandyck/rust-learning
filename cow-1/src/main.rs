@@ -3,6 +3,10 @@ use std::borrow::Cow;
 fn main() {
     let b = Bar;
     println!("{}", b.hi());
+    let b = Bar;
+    println!("{}", &b.hi());
+    let b = Bar;
+    println!("{}", (&b).hi());
 }
 
 #[derive(Clone)]
