@@ -63,7 +63,6 @@ fn run(filename: &str, part_1_answer: u64, part_2_answer: u64) {
     };
     println!("{filename}: cap: {capacity} usage: {usage} free: {free} needs_free: {needs_free}");
     // find the smallest total sized directory which is at least needs_free
-
     let mut candidates = fs
         .into_iter()
         .filter(|f| match f {
