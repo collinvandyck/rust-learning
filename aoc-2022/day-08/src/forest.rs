@@ -24,7 +24,37 @@ impl Forest {
         count
     }
     pub fn scenic_score(&self) -> u32 {
-        0
+        let mut score = 0;
+        for row in 0..self.rows() {
+            for col in 0..self.cols() {
+                let height = self.height_at(row, col);
+                let ranges = self.neighbor_ranges(row, col);
+                ranges
+                    .iter()
+                    .map(|rg| {
+                        let mut score: u32 = 0;
+                        for h in rg.iter().map(|(r, c)| self.height_at(*r, *c)) {
+                            if h <= height {
+                                score += 1;
+                            }
+                            if h >= height {
+                                break;
+                            }
+                        }
+                        score
+                    })
+                    .filter(|s| s > &0)
+                    .reduce(|acc, x| acc * x)
+                    .into_iter()
+                    .for_each(|s| {
+                        println!("Range score for {row}x{col}: {s}");
+                        if s > score {
+                            score = s;
+                        }
+                    });
+            }
+        }
+        score
     }
     fn tree_visible(&self, row: usize, col: usize) -> bool {
         if row == 0 {
