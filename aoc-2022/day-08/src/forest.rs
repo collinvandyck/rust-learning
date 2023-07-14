@@ -1,5 +1,3 @@
-use std::slice::SliceIndex;
-
 #[derive(Debug)]
 pub struct Forest {
     trees: Vec<Vec<Tree>>,
