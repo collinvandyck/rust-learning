@@ -23,6 +23,9 @@ impl Forest {
         }
         count
     }
+    pub fn scenic_score(&self) -> u32 {
+        0
+    }
     fn tree_visible(&self, row: usize, col: usize) -> bool {
         if row == 0 {
             return true;

@@ -11,11 +11,11 @@ use std::{
 use prelude::*;
 
 fn main() {
-    run("example.txt", 21);
-    run("input.txt", 1785);
+    run("example.txt", 21, 8);
+    run("input.txt", 1785, 0);
 }
 
-fn run(filename: &str, expected_visible: u32) {
+fn run(filename: &str, expected_visible: u32, expected_scenic_score: u32) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let mut forest = Forest::new();
@@ -31,4 +31,6 @@ fn run(filename: &str, expected_visible: u32) {
     }
     let visible = forest.visible();
     assert_eq!(visible, expected_visible);
+    let scenic_score = forest.scenic_score();
+    assert_eq!(scenic_score, expected_scenic_score);
 }
