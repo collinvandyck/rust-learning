@@ -43,11 +43,9 @@ impl Forest {
                         }
                         score
                     })
-                    .filter(|s| s > &0)
                     .reduce(|acc, x| acc * x)
                     .into_iter()
                     .for_each(|s| {
-                        println!("Range score for {row}x{col}: {s}");
                         if s > score {
                             score = s;
                         }
