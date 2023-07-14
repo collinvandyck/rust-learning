@@ -27,14 +27,23 @@ impl Forest {
         let mut score = 0;
         for row in 0..self.rows() {
             for col in 0..self.cols() {
+                let debug = false;
                 let height = self.height_at(row, col);
                 let ranges = self.neighbor_ranges(row, col);
-                println!("Looking at {row}x{col}");
+                if debug {
+                    println!("Looking at {row}x{col}");
+                }
                 ranges
                     .iter()
                     .map(|rg| {
                         let mut score: u32 = 0;
-                        for h in rg.iter().map(|(r, c)| self.height_at(*r, *c)) {
+                        for h in rg.iter().map(|(r, c)| {
+                            let f = self.height_at(*r, *c);
+                            if debug {
+                                println!("height for {r}x{c} is {f}");
+                            }
+                            f
+                        }) {
                             score += 1;
                             if h >= height {
                                 break;
@@ -42,11 +51,12 @@ impl Forest {
                         }
                         score
                     })
-                    .filter(|x| dbg!(*x) > 0)
                     .reduce(|acc, x| acc * x)
                     .into_iter()
                     .for_each(|s| {
-                        println!("The score at {row}x{col} is {s}");
+                        if debug {
+                            println!("The score at {row}x{col} is {s}");
+                        }
                         if s > score {
                             score = s;
                         }
@@ -81,9 +91,9 @@ impl Forest {
     }
     fn neighbor_ranges(&self, row: usize, col: usize) -> Vec<Vec<(usize, usize)>> {
         let mut res = vec![];
-        res.push((0..row).map(|r| (r, col)).collect());
+        res.push((0..row).rev().map(|r| (r, col)).collect());
         res.push((row + 1..self.rows()).map(|r| (r, col)).collect());
-        res.push((0..col).map(|c| (row, c)).collect());
+        res.push((0..col).rev().map(|c| (row, c)).collect());
         res.push((col + 1..self.cols()).map(|c| (row, c)).collect());
         res
     }
