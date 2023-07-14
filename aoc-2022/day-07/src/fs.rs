@@ -31,7 +31,10 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn find(&self, predicate: fn(&Node) -> bool) -> Vec<&Node> {
+    pub fn find<F>(&self, predicate: &mut F) -> Vec<&Node>
+    where
+        F: FnMut(&Node) -> bool,
+    {
         let mut res = vec![];
         if predicate(self) {
             res.push(self);

@@ -49,9 +49,9 @@ fn run(filename: &str) {
         desired_free - free
     };
     println!("{filename}: cap: {capacity} usage: {usage} free: {free} needs_free: {needs_free}");
-    let res: u64 = fs
+    let size_of_chosen_dirs: u64 = fs
         .root
-        .find(|f| match f {
+        .find(&mut |f| match f {
             f @ Node::Dir(_, _) => f.total_size() <= 100000,
             _ => false,
         })
@@ -59,5 +59,5 @@ fn run(filename: &str) {
         .map(|node| node.total_size())
         .sum();
 
-    println!("{filename}: {res}");
+    println!("{filename}: part1: size of chosen dirs: {size_of_chosen_dirs}");
 }
