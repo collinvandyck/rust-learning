@@ -1,4 +1,4 @@
-use std::{fmt::Display, vec};
+use std::vec;
 
 use crate::prelude::*;
 
