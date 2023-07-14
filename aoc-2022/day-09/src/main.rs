@@ -26,4 +26,5 @@ fn run(filename: &str) {
         let mov = Move::from(&line);
         rope.exec(&mov);
     }
+    println!("{rope}")
 }
