@@ -3,6 +3,14 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+mod rope;
+
+mod prelude {
+    pub use crate::rope::*;
+}
+
+use prelude::*;
+
 fn main() {
     run("example.txt");
 }
@@ -12,6 +20,7 @@ fn run(filename: &str) {
     let read = BufReader::new(file);
     for line in read.lines() {
         let line = line.unwrap();
-        println!("{line}");
+        let mov = Move::from(&line);
+        dbg!(mov);
     }
 }
