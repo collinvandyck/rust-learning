@@ -17,7 +17,7 @@ where
     B: Into<Cow<'a, Bar>>,
 {
     fn hi(self) -> &'static str {
-        let bar = self.into();
+        let bar: Cow<Bar> = self.into();
 
         // bar is either owned or borrowed:
         match bar {
