@@ -42,19 +42,6 @@ fn run(filename: &str, part_1_answer: u64, part_2_answer: u64) {
 
     // part one
     let size_of_chosen_dirs: u64 = fs
-        .root
-        .find(&mut |f| match f {
-            f @ Node::Dir(_, _) => f.total_size() <= 100000,
-            _ => false,
-        })
-        .into_iter()
-        .map(|node| node.total_size())
-        .sum();
-    println!("{filename}: part1: size of chosen dirs: {size_of_chosen_dirs}");
-    assert_eq!(size_of_chosen_dirs, part_1_answer);
-
-    // part one, take two, this time with iterators.
-    let size_of_chosen_dirs: u64 = fs
         .into_iter()
         .filter(|f| match f {
             f @ Node::Dir(_, _) => f.total_size() <= 100000,
@@ -77,10 +64,13 @@ fn run(filename: &str, part_1_answer: u64, part_2_answer: u64) {
     println!("{filename}: cap: {capacity} usage: {usage} free: {free} needs_free: {needs_free}");
     // find the smallest total sized directory which is at least needs_free
 
-    let mut candidates = fs.root.find(&mut |f| match f {
-        f @ Node::Dir(_, _) => f.total_size() >= needs_free,
-        _ => false,
-    });
+    let mut candidates = fs
+        .into_iter()
+        .filter(|f| match f {
+            f @ Node::Dir(_, _) => f.total_size() >= needs_free,
+            _ => false,
+        })
+        .collect::<Vec<_>>();
     candidates.sort_by_key(|f| f.total_size());
     let res = candidates.get(0).unwrap().total_size();
     println!("The candidate directory to be deleted has size {res}");
