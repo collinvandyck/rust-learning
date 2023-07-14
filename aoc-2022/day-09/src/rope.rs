@@ -54,16 +54,19 @@ impl Rope {
         match difference.abs() {
             Point(0, 2) => {
                 // y has changed
-                self.tail.point = self.tail.point.combine(&difference.combine(&Point(0, -1)));
+                let adjust = &difference.combine(&Point(0, -1)).normalize();
+                self.tail.point = self.tail.point.combine(adjust);
             }
             Point(2, 0) => {
                 // x has changed
-                self.tail.point = self.tail.point.combine(&difference.combine(&Point(-1, 0)));
+                let adjust = &difference.combine(&Point(-1, 0)).normalize();
+                self.tail.point = self.tail.point.combine(adjust);
             }
             Point(0, 0) | Point(1, 0) | Point(0, 1) | Point(1, 1) => {
                 // not enough of a difference to matter
             }
             Point(_, _) => {
+                println!("normalize");
                 // we must move the tail diagonally
                 self.tail.point = self.tail.point.combine(&difference.normalize());
             }
@@ -97,7 +100,7 @@ impl Display for Rope {
                 if let Some(np) = points.iter().find(|p| p.point == point) {
                     buf.push_str(&np.name);
                 } else {
-                    buf.push_str("_");
+                    buf.push_str(".");
                 }
                 buf.push_str(" ");
             }
