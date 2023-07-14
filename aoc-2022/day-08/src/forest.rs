@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 #[derive(Debug)]
 pub struct Forest {
     trees: Vec<Vec<Tree>>,
@@ -40,29 +42,20 @@ impl Forest {
     }
     fn higher_than_neighbors(&self, row: usize, col: usize) -> bool {
         let height = self.height_at(row, col);
-        // check above
-        if (0..row).map(|r| self.height_at(r, col)).all(|h| h < height) {
-            return true;
-        }
-        // check below
-        if (row + 1..self.rows())
-            .map(|r| self.height_at(r, col))
-            .all(|h| h < height)
-        {
-            return true;
-        }
-        // check left
-        if (0..col).map(|c| self.height_at(row, c)).all(|h| h < height) {
-            return true;
-        }
-        // check right
-        if (col + 1..self.cols())
-            .map(|c| self.height_at(row, c))
-            .all(|h| h < height)
-        {
-            return true;
-        }
-        false
+        let ranges = self.neighbor_ranges(row, col);
+        ranges.iter().any(|rg| {
+            rg.iter()
+                .map(|(r, c)| self.height_at(*r, *c))
+                .all(|h| h < height)
+        })
+    }
+    fn neighbor_ranges(&self, row: usize, col: usize) -> Vec<Vec<(usize, usize)>> {
+        let mut res = vec![];
+        res.push((0..row).map(|r| (r, col)).collect());
+        res.push((row + 1..self.rows()).map(|r| (r, col)).collect());
+        res.push((0..col).map(|c| (row, c)).collect());
+        res.push((col + 1..self.cols()).map(|c| (row, c)).collect());
+        res
     }
     fn height_at(&self, row: usize, col: usize) -> usize {
         let r = self.trees.get(row).unwrap();
