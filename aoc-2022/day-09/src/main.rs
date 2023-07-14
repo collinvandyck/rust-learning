@@ -14,10 +14,10 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    run("example.txt");
+    run("example.txt", 13);
 }
 
-fn run(filename: &str) {
+fn run(filename: &str, expected_tail_visits: usize) {
     let mut rope = Rope::new();
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
@@ -29,4 +29,5 @@ fn run(filename: &str) {
     }
     let tail_visits = rope.tail_visits();
     println!("Tail visits: {tail_visits}");
+    assert_eq!(tail_visits, expected_tail_visits);
 }
