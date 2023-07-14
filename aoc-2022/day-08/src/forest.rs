@@ -27,23 +27,13 @@ impl Forest {
         let mut score = 0;
         for row in 0..self.rows() {
             for col in 0..self.cols() {
-                let debug = false;
                 let height = self.height_at(row, col);
                 let ranges = self.neighbor_ranges(row, col);
-                if debug {
-                    println!("Looking at {row}x{col}");
-                }
                 ranges
                     .iter()
                     .map(|rg| {
                         let mut score: u32 = 0;
-                        for h in rg.iter().map(|(r, c)| {
-                            let f = self.height_at(*r, *c);
-                            if debug {
-                                println!("height for {r}x{c} is {f}");
-                            }
-                            f
-                        }) {
+                        for h in rg.iter().map(|(r, c)| self.height_at(*r, *c)) {
                             score += 1;
                             if h >= height {
                                 break;
