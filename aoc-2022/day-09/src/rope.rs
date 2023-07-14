@@ -36,7 +36,10 @@ impl Rope {
             Direction::Down => self.head.combine(&Point(0, -1)),
         };
     }
-    fn mov_tail(&mut self) {}
+    fn mov_tail(&mut self) {
+        let difference = self.head.difference(&self.tail);
+        println!("Difference: {difference:?}");
+    }
     fn register_bounds(&mut self, point: Point) {
         self.upper_left = Point(
             i32::min(self.upper_left.0, point.0),
@@ -106,5 +109,8 @@ impl Point {
     }
     fn combine(&self, other: &Point) -> Self {
         Self(self.0 + other.0, self.1 + other.1)
+    }
+    fn difference(&self, other: &Point) -> Self {
+        Self(self.0 - other.0, self.1 - other.1)
     }
 }
