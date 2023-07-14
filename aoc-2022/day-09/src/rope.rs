@@ -16,8 +16,8 @@ impl Rope {
             start: NamePoint::new("s"),
             head: NamePoint::new("H"),
             tail: NamePoint::new("T"),
-            upper_left: Point::new(),
-            lower_right: Point::new(),
+            upper_left: Point::zero(),
+            lower_right: Point::zero(),
         }
     }
     pub fn exec(&mut self, mov: &Move) {
@@ -44,15 +44,31 @@ impl Rope {
             i32::max(self.lower_right.1, point.1),
         )
     }
+    fn points(&self) -> [NamePoint; 3] {
+        [self.head.clone(), self.tail.clone(), self.start.clone()]
+    }
 }
 
 impl Display for Rope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // get the min and max points
+        let points = self.points();
+        println!("Points: {points:?}");
         let mut buf = String::new();
-        for row in 0..=self.lower_right.1 - self.upper_left.1 {
+        for row in (0..=self.lower_right.1 - self.upper_left.1).rev() {
             for col in 0..=self.lower_right.0 - self.upper_left.0 {
-                buf.push_str("_");
+                eprintln!("Looking at {row}x{col}");
+                let point = Point::new(col, row);
+                let mut found = false;
+                for np in &points {
+                    if np.point == point {
+                        buf.push_str(&np.name);
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    buf.push_str("_");
+                }
                 buf.push_str(" ");
             }
             buf.push('\n');
@@ -71,7 +87,7 @@ impl NamePoint {
     fn new(s: &str) -> Self {
         Self {
             name: s.to_string(),
-            point: Point::new(),
+            point: Point::zero(),
         }
     }
 }
@@ -83,11 +99,14 @@ impl Deref for NamePoint {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Point(i32, i32);
 
 impl Point {
-    fn new() -> Self {
+    fn new(x: i32, y: i32) -> Self {
+        Self(x, y)
+    }
+    fn zero() -> Self {
         Self(0, 0)
     }
     fn combine(&self, other: &Point) -> Self {

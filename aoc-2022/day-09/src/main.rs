@@ -21,10 +21,13 @@ fn run(filename: &str) {
     let mut rope = Rope::new();
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
+    println!("{rope}");
     for line in read.lines() {
         let line = line.unwrap();
         let mov = Move::from(&line);
+        println!("{mov:?}");
         rope.exec(&mov);
-        println!("{rope}")
+        println!("{rope}");
+        break;
     }
 }
