@@ -66,6 +66,22 @@ impl Monkey {
     //  If true: throw to monkey 2
     //  If false: throw to monkey 0
     fn parse_test(iter: &mut impl Iterator<Item = String>) -> Test {
+        let line = iter.next().unwrap();
+        let line = line.trim().split(' ').collect::<Vec<&str>>();
+        if let ["Test:", "divisible", "by", num] = line[..] {
+            let divisible_by = num.parse::<i32>().unwrap();
+            let line = iter.next().unwrap();
+            let line = line.trim().split(' ').collect::<Vec<&str>>();
+            if let ["If", "true:", "throw", "to", "monkey", num] = line[..] {
+                let throw_to_true = num.parse::<i32>().unwrap();
+                let line = iter.next().unwrap();
+                let line = line.trim().split(' ').collect::<Vec<&str>>();
+                if let ["If", "false:", "throw", "to", "monkey", num] = line[..] {
+                    let throw_to_false = num.parse::<i32>().unwrap();
+                    return Test::new(divisible_by, throw_to_true, throw_to_false);
+                }
+            }
+        }
         panic!("Invalid test!")
     }
 }
