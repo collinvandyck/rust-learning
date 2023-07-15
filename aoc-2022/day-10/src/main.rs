@@ -24,14 +24,7 @@ fn main() {
 }
 
 fn part_one(filename: &str) {
-    let file = File::open(filename).unwrap();
-    let read = BufReader::new(file);
-    let ops = read
-        .lines()
-        .map(std::result::Result::unwrap)
-        .map(|l| Op::parse(&l))
-        .collect::<Vec<_>>();
-    let mut machine = Machine::new(ops);
+    let mut machine = load_machine(filename);
     let mut sum = 0_i64;
     machine.run(|s| {
         if s.tick == 20 || (s.tick + 20) % 40 == 0 {
@@ -44,4 +37,15 @@ fn part_one(filename: &str) {
         }
     });
     println!("Sum of signal strengths: {sum}");
+}
+
+fn load_machine(filename: &str) -> Machine {
+    let file = File::open(filename).unwrap();
+    let read = BufReader::new(file);
+    let ops = read
+        .lines()
+        .map(std::result::Result::unwrap)
+        .map(|l| Op::parse(&l))
+        .collect::<Vec<_>>();
+    Machine::new(ops)
 }
