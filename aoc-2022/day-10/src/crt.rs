@@ -12,9 +12,6 @@ impl Crt {
         if self.pos > self.cols {
             self.pos = 1;
         }
-        if tick > 80 {
-            return;
-        }
         println!("tick: {tick} val: {val} pos:{}", self.pos);
         if self.pos % self.cols == 0 {
             println!();
