@@ -11,6 +11,7 @@ mod item;
 mod monkey;
 mod op;
 mod test;
+mod value;
 
 mod prelude {
     pub use crate::game::*;
@@ -18,6 +19,7 @@ mod prelude {
     pub use crate::monkey::*;
     pub use crate::op::*;
     pub use crate::test::*;
+    pub use crate::value::*;
 }
 
 use prelude::*;
