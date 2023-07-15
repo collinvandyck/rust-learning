@@ -1,7 +1,12 @@
-pub struct Game {}
+use crate::prelude::*;
+
+pub struct Game {
+    monkeys: Vec<Monkey>,
+}
 
 impl Game {
     pub fn new(iter: impl Iterator<Item = String>) -> Self {
-        Self {}
+        let monkeys = vec![];
+        Self { monkeys }
     }
 }
