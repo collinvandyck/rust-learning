@@ -14,18 +14,14 @@ impl Num {
         let mut res = Self::new();
         let divisor: u64 = 10;
         loop {
-            println!("v: {v} divisor: {divisor}");
             let part = v % divisor;
-            res.insert(part);
+            res.0.insert(0, part);
             v = v / divisor;
             if v == 0 {
                 break;
             }
         }
         res
-    }
-    fn insert(&mut self, v: u64) {
-        self.0.insert(0, v)
     }
     fn add(&self, other: &Num) -> Self {
         let v1 = &self.0;
