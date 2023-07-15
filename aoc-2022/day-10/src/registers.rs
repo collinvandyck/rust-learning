@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub struct Registers {
-    pub x: i32,
+    pub x: i64,
 }
 
 impl Registers {

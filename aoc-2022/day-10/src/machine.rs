@@ -9,7 +9,7 @@ pub struct Machine {
 }
 
 pub struct State<'a> {
-    pub tick: u64,
+    pub tick: i64,
     pub registers: &'a Registers,
 }
 
@@ -32,7 +32,7 @@ impl Machine {
         if !self.load() {
             return;
         }
-        for tick in 1_u64.. {
+        for tick in 1_i64.. {
             // load an operation if we don't have one yet
             if !self.load() {
                 break;

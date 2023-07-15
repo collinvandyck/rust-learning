@@ -3,7 +3,7 @@ use crate::prelude::*;
 #[derive(Debug)]
 pub enum Op {
     Noop,
-    Addx(i32),
+    Addx(i64),
 }
 
 impl Op {
@@ -15,7 +15,7 @@ impl Op {
         match parts[..] {
             ["noop"] => Self::Noop,
             ["addx", amt] => {
-                let amt = amt.parse::<i32>().unwrap();
+                let amt = amt.parse::<i64>().unwrap();
                 Self::Addx(amt)
             }
             _ => panic!("Parse error"),

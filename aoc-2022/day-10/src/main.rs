@@ -35,7 +35,7 @@ fn part_one(filename: &str) {
     let mut sum = 0_i64;
     machine.run(|s| {
         if s.tick == 20 || (s.tick + 20) % 40 == 0 {
-            let strength = (s.tick as i64) * s.registers.x as i64;
+            let strength = s.tick * s.registers.x;
             println!(
                 "Callback tick:{} registers:{:?} strength:{}",
                 s.tick, s.registers, strength
