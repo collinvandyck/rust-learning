@@ -12,7 +12,11 @@ pub struct Monkey {
 }
 
 impl Monkey {
-    pub fn inspect(&mut self) {}
+    pub fn inspect(&mut self) {
+        self.items.iter_mut().for_each(|item| {
+            item.inspect(&self.op);
+        });
+    }
 }
 
 // things to load monkey with
