@@ -11,11 +11,21 @@ pub struct Monkey {
     test: Test,
 }
 
+pub struct SendTo {
+    pub idx: usize,
+    pub item: Item,
+}
+
 impl Monkey {
-    pub fn inspect(&mut self) {
-        self.items.iter_mut().for_each(|item| {
-            item.inspect(&self.op);
-        });
+    pub fn inspect(&mut self) -> Vec<SendTo> {
+        self.items
+            .drain(..)
+            .map(|mut item| {
+                item.inspect(&self.op);
+                let idx = self.test.evaluate(&item);
+                SendTo { idx, item }
+            })
+            .collect()
     }
 }
 
@@ -82,11 +92,11 @@ impl Monkey {
             let line = iter.next().unwrap();
             let line = line.trim().split(' ').collect::<Vec<&str>>();
             if let ["If", "true:", "throw", "to", "monkey", num] = line[..] {
-                let throw_to_true = num.parse::<i32>().unwrap();
+                let throw_to_true = num.parse::<usize>().unwrap();
                 let line = iter.next().unwrap();
                 let line = line.trim().split(' ').collect::<Vec<&str>>();
                 if let ["If", "false:", "throw", "to", "monkey", num] = line[..] {
-                    let throw_to_false = num.parse::<i32>().unwrap();
+                    let throw_to_false = num.parse::<usize>().unwrap();
                     return Test::new(divisible_by, throw_to_true, throw_to_false);
                 }
             }

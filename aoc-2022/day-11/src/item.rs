@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct Item {
-    worry: i32,
+    pub worry: i32,
 }
 
 impl Item {
