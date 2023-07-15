@@ -31,5 +31,5 @@ fn run(filename: &str) {
         .map(|l| Op::parse(&l))
         .collect::<Vec<_>>();
     let mut machine = Machine::new(ops);
-    machine.run();
+    machine.run(|r| {});
 }

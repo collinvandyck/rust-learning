@@ -20,7 +20,10 @@ impl Machine {
         }
     }
     // runs to completion, when there is no more work to be done
-    pub fn run(&mut self) {
+    pub fn run<F>(&mut self, mut f: F)
+    where
+        F: FnMut(&Registers),
+    {
         if !self.load() {
             return;
         }
@@ -41,6 +44,7 @@ impl Machine {
                     exec.apply(&mut self.registers);
                 }
             }
+            f(&self.registers);
             println!("END Tick: {tick} registers: {:?}", self.registers);
         }
     }
