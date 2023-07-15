@@ -37,7 +37,7 @@ impl Machine {
             if !self.load() {
                 break;
             }
-            println!("STR Tick: {tick} registers: {:?}", self.registers);
+            //println!("STR Tick: {tick} registers: {:?}", self.registers);
             callback(State {
                 tick,
                 registers: &self.registers,
@@ -53,7 +53,7 @@ impl Machine {
                     exec.apply(&mut self.registers);
                 }
             }
-            println!("END Tick: {tick} registers: {:?}", self.registers);
+            //println!("END Tick: {tick} registers: {:?}", self.registers);
         }
     }
     // loads the next op if necessary, and returns true if we have an op
@@ -61,7 +61,7 @@ impl Machine {
         if self.cur.is_none() {
             // there is no operation. load the next op.
             if let Some(op) = self.ops.next() {
-                println!("Loaded: {op:?}");
+                //println!("Loaded: {op:?}");
                 let cycles = op.cycles();
                 let exec = OpExec { op, cycles };
                 self.cur = Some(exec);
