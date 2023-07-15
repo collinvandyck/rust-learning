@@ -33,7 +33,7 @@ fn run(filename: &str) {
     let mut machine = Machine::new(ops);
     let signal = 0_i64;
     machine.run(|s| {
-        if s.tick == 20 || (s.tick > 20 && s.tick % 60 == 0) {
+        if s.tick == 20 || (s.tick + 20) % 40 == 0 {
             let strength = (s.tick as i64) * s.registers.x as i64;
             println!(
                 "Callback tick:{} registers:{:?} strength:{}",

@@ -38,6 +38,10 @@ impl Machine {
                 break;
             }
             println!("STR Tick: {tick} registers: {:?}", self.registers);
+            callback(State {
+                tick,
+                registers: &self.registers,
+            });
 
             // execute the current operation.
             if let Some(mut exec) = self.cur.take() {
@@ -49,10 +53,6 @@ impl Machine {
                     exec.apply(&mut self.registers);
                 }
             }
-            callback(State {
-                tick,
-                registers: &self.registers,
-            });
             println!("END Tick: {tick} registers: {:?}", self.registers);
         }
     }
