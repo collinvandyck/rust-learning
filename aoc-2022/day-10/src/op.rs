@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+#[derive(Debug)]
 pub enum Op {
     Noop,
     Addx(i32),

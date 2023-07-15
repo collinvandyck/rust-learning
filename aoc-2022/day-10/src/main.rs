@@ -28,4 +28,5 @@ fn run(filename: &str) {
         .map(Op::parse)
         .collect::<Vec<_>>();
     let mut machine = Machine::new(ops);
+    machine.run();
 }
