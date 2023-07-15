@@ -30,5 +30,7 @@ fn run_example(filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let mut game = Game::new(read.lines().map(std::result::Result::unwrap));
-    game.run();
+    println!("Start:\n{game}");
+    game.run(20);
+    println!("Finish:\n{game}");
 }

@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::prelude::*;
 
 pub struct Game {
@@ -16,7 +18,41 @@ impl Game {
         Self { monkeys }
     }
 
-    pub fn run(&mut self) {
-        // TODO: do stuff
+    pub fn run(&mut self, rounds: usize) {
+        for _ in 0..rounds {
+            self.round();
+        }
+    }
+
+    fn round(&mut self) {
+        for idx in 0..self.monkeys.len() {
+            self.run_monkey(idx).into_iter().for_each(|send| {
+                let dst = self.monkeys.get_mut(send.idx);
+                if dst.is_none() {
+                    panic!("Moneky does not exist at {}", send.idx);
+                }
+                dst.unwrap().add(send.item);
+            })
+        }
+    }
+
+    fn run_monkey(&mut self, idx: usize) -> Vec<SendTo> {
+        self.monkeys
+            .get_mut(idx)
+            .iter_mut()
+            .flat_map(|m| m.inspect())
+            .collect()
+    }
+}
+
+impl Display for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let res = self
+            .monkeys
+            .iter()
+            .map(|m| format!("{m}"))
+            .collect::<Vec<String>>()
+            .join("\n");
+        write!(f, "{res}")
     }
 }

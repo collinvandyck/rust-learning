@@ -1,5 +1,5 @@
 use core::str;
-use std::result;
+use std::{fmt::Display, result};
 
 use crate::prelude::*;
 
@@ -26,6 +26,9 @@ impl Monkey {
                 SendTo { idx, item }
             })
             .collect()
+    }
+    pub fn add(&mut self, item: Item) {
+        self.items.push(item);
     }
 }
 
@@ -102,5 +105,18 @@ impl Monkey {
             }
         }
         panic!("Invalid test!")
+    }
+}
+
+impl Display for Monkey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let idx = self.idx;
+        let vals = self
+            .items
+            .iter()
+            .map(|i| i.worry)
+            .map(|w| format!("{w}"))
+            .collect::<Vec<String>>();
+        write!(f, "Monkey {idx}: {}", vals.join(","))
     }
 }
