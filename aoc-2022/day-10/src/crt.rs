@@ -7,10 +7,7 @@ impl Crt {
     pub fn new() -> Self {
         Self { cols: 40, pos: 0 }
     }
-    pub fn draw(&mut self, _tick: usize, val: i64) {
-        //println!("tick: {tick} val: {val} pos:{}", self.pos);
-
-        // TODO: print the pixel or not
+    pub fn draw(&mut self, val: i64) {
         if self.pos >= val - 1 && self.pos <= val + 1 {
             print!("{}", '#');
         } else {

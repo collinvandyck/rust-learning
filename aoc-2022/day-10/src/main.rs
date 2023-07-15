@@ -20,12 +20,9 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    /*
     part_one("example-1.txt");
     part_one("example-2.txt");
     part_one("input.txt");
-    */
-
     part_two("input.txt");
 }
 
@@ -49,9 +46,8 @@ fn part_two(filename: &str) {
     let mut machine = load_machine(filename);
     let mut crt = Crt::new();
     machine.run(|s| {
-        let tick: usize = s.tick.try_into().unwrap();
         let val: i64 = s.registers.x;
-        crt.draw(tick, val);
+        crt.draw(val);
     })
 }
 
