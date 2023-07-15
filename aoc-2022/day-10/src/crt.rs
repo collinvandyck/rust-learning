@@ -9,9 +9,9 @@ impl Crt {
     }
     pub fn draw(&mut self, val: i64) {
         if self.pos >= val - 1 && self.pos <= val + 1 {
-            print!("{}", '#');
+            print!("#");
         } else {
-            print!("{}", '.');
+            print!(".");
         }
 
         self.pos += 1;

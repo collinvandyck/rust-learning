@@ -48,7 +48,7 @@ fn part_two(filename: &str) {
     machine.run(|s| {
         let val: i64 = s.registers.x;
         crt.draw(val);
-    })
+    });
 }
 
 fn load_machine(filename: &str) -> Machine {
