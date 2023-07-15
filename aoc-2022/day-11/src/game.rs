@@ -5,8 +5,19 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(iter: impl Iterator<Item = String>) -> Self {
-        let monkeys = vec![];
+    pub fn new(mut iter: impl Iterator<Item = String>) -> Self {
+        let mut monkeys = vec![];
+        while let Some(monkey) = Monkey::load(&mut iter) {
+            monkeys.push(monkey);
+            match iter.next() {
+                Some(line) => {
+                    if !line.is_empty() {
+                        panic!("line was not empty");
+                    }
+                }
+                None => break,
+            }
+        }
         Self { monkeys }
     }
 }
