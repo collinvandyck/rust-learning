@@ -8,6 +8,7 @@ pub struct Monkey {
     idx: usize,
     items: Vec<Item>,
     op: Op,
+    test: Test,
 }
 
 impl Monkey {
@@ -15,10 +16,13 @@ impl Monkey {
         let idx = Self::parse_monkey(iter.next().unwrap());
         let items = Self::parse_items(iter.next().unwrap());
         let op = Self::parse_operation(iter.next().unwrap());
-        iter.next();
-        iter.next();
-        iter.next();
-        dbg!(Some(Self { idx, items, op }))
+        let test = Self::parse_test(iter);
+        dbg!(Some(Self {
+            idx,
+            items,
+            op,
+            test
+        }))
     }
     fn parse_monkey(input: String) -> usize {
         let parts = &input.split(' ').collect::<Vec<&str>>()[..];
@@ -57,5 +61,11 @@ impl Monkey {
             }
         }
         panic!("invalid operation: {input}")
+    }
+    // Test: divisible by 19
+    //  If true: throw to monkey 2
+    //  If false: throw to monkey 0
+    fn parse_test(iter: &mut impl Iterator<Item = String>) -> Test {
+        panic!("Invalid test!")
     }
 }

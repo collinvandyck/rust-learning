@@ -7,12 +7,14 @@ mod game;
 mod item;
 mod monkey;
 mod op;
+mod test;
 
 mod prelude {
     pub use crate::game::*;
     pub use crate::item::*;
     pub use crate::monkey::*;
     pub use crate::op::*;
+    pub use crate::test::*;
 }
 
 use prelude::*;
