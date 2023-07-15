@@ -10,11 +10,11 @@ impl Op {
     /// noop
     /// addx 3
     /// addx -5
-    pub fn parse(line: String) -> Self {
+    pub fn parse(line: &str) -> Self {
         let parts = line.split(' ').collect::<Vec<&str>>();
-        match &parts[..] {
-            &["noop"] => Self::Noop,
-            &["addx", amt] => {
+        match parts[..] {
+            ["noop"] => Self::Noop,
+            ["addx", amt] => {
                 let amt = amt.parse::<i32>().unwrap();
                 Self::Addx(amt)
             }

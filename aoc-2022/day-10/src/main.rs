@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::{
     fs::File,
     io::{BufRead, BufReader},
@@ -24,8 +26,8 @@ fn run(filename: &str) {
     let read = BufReader::new(file);
     let ops = read
         .lines()
-        .map(|l| l.unwrap())
-        .map(Op::parse)
+        .map(std::result::Result::unwrap)
+        .map(|l| Op::parse(&l))
         .collect::<Vec<_>>();
     let mut machine = Machine::new(ops);
     machine.run();

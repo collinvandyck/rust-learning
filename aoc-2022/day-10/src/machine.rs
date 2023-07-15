@@ -15,8 +15,8 @@ impl Machine {
         let cur = None;
         Self {
             registers,
-            cur,
             ops,
+            cur,
         }
     }
     // runs to completion, when there is no more work to be done
@@ -24,7 +24,7 @@ impl Machine {
         if !self.load() {
             return;
         }
-        for tick in (1 as u64).. {
+        for tick in 1_u64.. {
             // load an operation if we don't have one yet
             if !self.load() {
                 break;
@@ -55,7 +55,7 @@ impl Machine {
                 self.cur = Some(exec);
             }
         }
-        !self.cur.is_none()
+        self.cur.is_some()
     }
 }
 
