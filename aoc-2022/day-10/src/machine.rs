@@ -29,7 +29,6 @@ impl Machine {
             if !self.load() {
                 break;
             }
-
             println!("Tick: {tick}");
 
             // execute the current operation.
