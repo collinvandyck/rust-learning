@@ -50,7 +50,7 @@ impl Monkey {
         let mut iter = input.trim().split(':');
         if let Some("Operation") = iter.next() {
             if let Some(stmt) = iter.next() {
-                let parts = dbg!(stmt.trim().split(' ').collect::<Vec<&str>>());
+                let parts = stmt.trim().split(' ').collect::<Vec<&str>>();
                 if let ["new", "=", left, op @ ("+" | "*"), right] = parts[..] {
                     return Op::from(left, op, right);
                 }
