@@ -7,9 +7,9 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(mut iter: impl Iterator<Item = String>) -> Self {
+    pub fn new(worry_divisor: u64, mut iter: impl Iterator<Item = String>) -> Self {
         let mut monkeys = vec![];
-        while let Some(monkey) = Monkey::load(&mut iter) {
+        while let Some(monkey) = Monkey::load(worry_divisor, &mut iter) {
             monkeys.push(monkey);
             if iter.next().is_none() {
                 break;

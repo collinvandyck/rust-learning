@@ -9,6 +9,7 @@ pub struct Monkey {
     items: Vec<Item>,
     op: Op,
     test: Test,
+    worry_divisor: u64,
     pub inspections: u32,
 }
 
@@ -36,7 +37,7 @@ impl Monkey {
 
 // things to load monkey with
 impl Monkey {
-    pub fn load(iter: &mut impl Iterator<Item = String>) -> Option<Self> {
+    pub fn load(worry_divisor: u64, iter: &mut impl Iterator<Item = String>) -> Option<Self> {
         let idx = Self::parse_monkey(iter.next().unwrap().as_str());
         let items = Self::parse_items(iter.next().unwrap().as_str());
         let op = Self::parse_operation(iter.next().unwrap().as_str());
@@ -46,6 +47,7 @@ impl Monkey {
             items,
             op,
             test,
+            worry_divisor,
             inspections: 0,
         })
     }

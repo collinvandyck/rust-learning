@@ -23,14 +23,15 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    run_example("example.txt");
-    run_example("input.txt");
+    run_example(3, "example.txt");
+    run_example(3, "input.txt");
 }
 
-fn run_example(filename: &str) {
+fn run_example(worry_divisor: u64, filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
-    let mut game = Game::new(read.lines().map(std::result::Result::unwrap));
+    let iter = read.lines().map(std::result::Result::unwrap);
+    let mut game = Game::new(worry_divisor, iter);
     println!("Start:\n{game}");
     let monkey_business = game.run(20);
     println!("Finish:\n{game}");
