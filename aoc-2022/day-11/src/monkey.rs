@@ -9,7 +9,7 @@ pub struct Monkey {
     items: Vec<Item>,
     op: Op,
     test: Test,
-    inspections: u32,
+    pub inspections: u32,
 }
 
 pub struct SendTo {

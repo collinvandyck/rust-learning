@@ -18,10 +18,17 @@ impl Game {
         Self { monkeys }
     }
 
-    pub fn run(&mut self, rounds: usize) {
+    pub fn run(&mut self, rounds: usize) -> u32 {
         for _ in 0..rounds {
             self.round();
         }
+        self.monkey_business()
+    }
+
+    fn monkey_business(&self) -> u32 {
+        let mut vals: Vec<u32> = self.monkeys.iter().map(|m| m.inspections).collect();
+        vals.sort();
+        vals.into_iter().rev().take(2).reduce(|a, b| a * b).unwrap()
     }
 
     fn round(&mut self) {
