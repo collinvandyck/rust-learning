@@ -9,13 +9,8 @@ impl Game {
         let mut monkeys = vec![];
         while let Some(monkey) = Monkey::load(&mut iter) {
             monkeys.push(monkey);
-            match iter.next() {
-                Some(line) => {
-                    if !line.trim().is_empty() {
-                        panic!("Unexpected line: {line}");
-                    }
-                }
-                None => break,
+            if iter.next().is_none() {
+                break;
             }
         }
         Self { monkeys }

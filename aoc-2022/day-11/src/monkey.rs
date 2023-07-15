@@ -13,9 +13,9 @@ pub struct Monkey {
 
 impl Monkey {
     pub fn load(iter: &mut impl Iterator<Item = String>) -> Option<Self> {
-        let idx = Self::parse_monkey(iter.next().unwrap());
-        let items = Self::parse_items(iter.next().unwrap());
-        let op = Self::parse_operation(iter.next().unwrap());
+        let idx = Self::parse_monkey(iter.next().unwrap().as_str());
+        let items = Self::parse_items(iter.next().unwrap().as_str());
+        let op = Self::parse_operation(iter.next().unwrap().as_str());
         let test = Self::parse_test(iter);
         dbg!(Some(Self {
             idx,
@@ -24,7 +24,7 @@ impl Monkey {
             test
         }))
     }
-    fn parse_monkey(input: String) -> usize {
+    fn parse_monkey(input: &str) -> usize {
         let parts = &input.split(' ').collect::<Vec<&str>>()[..];
         if let ["Monkey", num] = parts {
             if let Some(num) = num.split(':').next() {
@@ -34,7 +34,7 @@ impl Monkey {
         panic!("invalid monkey: {input}");
     }
     // Starting items: 54, 65, 75, 74
-    fn parse_items(input: String) -> Vec<Item> {
+    fn parse_items(input: &str) -> Vec<Item> {
         let mut iter = input.trim().split(':');
         if let Some("Starting items") = iter.next() {
             if let Some(nums) = iter.next() {
@@ -50,7 +50,7 @@ impl Monkey {
         panic!("invalid items: {input}");
     }
     // Operation: new = old + 6
-    fn parse_operation(input: String) -> Op {
+    fn parse_operation(input: &str) -> Op {
         let mut iter = input.trim().split(':');
         if let Some("Operation") = iter.next() {
             if let Some(stmt) = iter.next() {
