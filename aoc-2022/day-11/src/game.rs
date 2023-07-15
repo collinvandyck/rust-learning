@@ -15,4 +15,8 @@ impl Game {
         }
         Self { monkeys }
     }
+
+    pub fn run(&mut self) {
+        // TODO: do stuff
+    }
 }

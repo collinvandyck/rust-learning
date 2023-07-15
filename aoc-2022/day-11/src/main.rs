@@ -29,5 +29,6 @@ fn main() {
 fn run_example(filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
-    let _game = Game::new(read.lines().map(std::result::Result::unwrap));
+    let mut game = Game::new(read.lines().map(std::result::Result::unwrap));
+    game.run();
 }
