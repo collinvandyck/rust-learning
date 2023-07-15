@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::{
     fs::File,
     io::{BufRead, BufReader},

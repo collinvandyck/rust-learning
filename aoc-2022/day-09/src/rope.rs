@@ -12,7 +12,7 @@ pub struct Rope {
 impl Rope {
     pub fn new(num_knots: usize) -> Self {
         let mut knots = vec![];
-        for i in (1..=num_knots - 1).rev() {
+        for i in (1..num_knots).rev() {
             knots.push(NamePoint::new(format!("{i}").as_str()));
         }
         knots.push(NamePoint::new("H"));
@@ -38,10 +38,10 @@ impl Rope {
         // move the head knot according to direction.
         if let Some(knot) = self.knots.last_mut() {
             knot.point = match dir {
-                Direction::Right => knot.point.combine(&Point(1, 0)),
-                Direction::Left => knot.point.combine(&Point(-1, 0)),
-                Direction::Up => knot.point.combine(&Point(0, 1)),
-                Direction::Down => knot.point.combine(&Point(0, -1)),
+                Direction::Right => knot.point.combine(Point(1, 0)),
+                Direction::Left => knot.point.combine(Point(-1, 0)),
+                Direction::Up => knot.point.combine(Point(0, 1)),
+                Direction::Down => knot.point.combine(Point(0, -1)),
             };
         }
 
@@ -53,7 +53,7 @@ impl Rope {
             let tidx = hidx - 1;
             let tail = self.knots.get(tidx).unwrap();
             let next = self.knots.get(hidx).unwrap();
-            if let Some(next) = self.next_tail(&tail.point, &next) {
+            if let Some(next) = Self::next_tail(tail.point, next.point) {
                 self.knots.get_mut(tidx).unwrap().point = next;
                 self.register_bounds();
             }
@@ -62,28 +62,28 @@ impl Rope {
     pub fn tail_visits(&self) -> usize {
         self.tail_visits.len()
     }
-    fn next_tail(&self, tail: &Point, next: &Point) -> Option<Point> {
+    fn next_tail(tail: Point, next: Point) -> Option<Point> {
         let difference = next.difference(tail);
         // if the difference is 2 in either up/left/down/right, adjust tail
         // by that amount
         match difference.abs() {
             Point(0, 2) => {
                 // y has changed
-                let adjust = &difference.combine(&Point(0, -1)).normalize();
+                let adjust = difference.combine(Point(0, -1)).normalize();
                 Some(tail.combine(adjust))
             }
             Point(2, 0) => {
                 // x has changed
-                let adjust = &difference.combine(&Point(-1, 0)).normalize();
+                let adjust = difference.combine(Point(-1, 0)).normalize();
                 Some(tail.combine(adjust))
             }
-            Point(0, 0) | Point(1, 0) | Point(0, 1) | Point(1, 1) => {
+            Point(0 | 1, 0 | 1) => {
                 // not enough of a difference to matter
                 None
             }
             Point(_, _) => {
                 // we must move the tail diagonally
-                Some(tail.combine(&difference.normalize()))
+                Some(tail.combine(difference.normalize()))
             }
         }
     }
@@ -97,13 +97,13 @@ impl Rope {
             self.lower_right = Point(
                 i32::max(self.lower_right.0, point.0),
                 i32::max(self.lower_right.1, point.1),
-            )
+            );
         });
     }
     fn register_tail(&mut self) {
         self.knots.get(0).iter().for_each(|k| {
             self.tail_visits.insert(k.point);
-        })
+        });
     }
 }
 
@@ -121,14 +121,14 @@ impl Display for Rope {
                     .find(|(_, p)| p.point == point)
                 {
                     if idx == 0 {
-                        buf.push_str("T");
+                        buf.push('T');
                     } else {
                         buf.push_str(&np.name);
                     }
                 } else {
-                    buf.push_str(".");
+                    buf.push('.');
                 }
-                buf.push_str(" ");
+                buf.push(' ');
             }
             buf.push('\n');
         }
@@ -168,17 +168,17 @@ impl Point {
     fn zero() -> Self {
         Self(0, 0)
     }
-    fn abs(&self) -> Self {
+    fn abs(self) -> Self {
         Self(i32::abs(self.0), i32::abs(self.1))
     }
-    fn combine(&self, other: &Point) -> Self {
+    fn combine(self, other: Point) -> Self {
         Self(self.0 + other.0, self.1 + other.1)
     }
-    fn difference(&self, other: &Point) -> Self {
+    fn difference(self, other: Point) -> Self {
         Self(self.0 - other.0, self.1 - other.1)
     }
     // normalizes the point to an adjustment of at most 1 in any direction
-    fn normalize(&self) -> Self {
+    fn normalize(self) -> Self {
         let mut x = self.0;
         let mut y = self.1;
         if x < -1 {
