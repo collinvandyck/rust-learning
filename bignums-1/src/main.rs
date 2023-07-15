@@ -23,14 +23,37 @@ impl Num {
         }
         res
     }
+    // 56
+    // 78
+    //
+    // 14 -> 10 + 4
     fn add(&self, other: &Num) -> Self {
         let v1 = &self.0;
         let v2 = &other.0;
-        for n1 in v1.iter().rev() {
-            for n2 in v2.iter().rev() {}
-        }
-        Self::new()
+        let v1_iter = v1.iter().rev();
+        let v2_iter = v2.iter().rev();
+        let iter = std::iter::zip(v1_iter, v2_iter);
+        let mut res = Self::new();
+        let mut carry = 0_u64;
+        iter.for_each(|(n1, n2)| {
+            let mut sum = n1 + n2 + carry;
+            if sum >= 10 {
+                carry = 1;
+                sum -= 10;
+            } else {
+                carry = 0;
+            }
+            res.0.insert(0, sum)
+        });
+        res
     }
+}
+
+#[test]
+fn test_num_add() {
+    let n1 = Num::from(64);
+    let n2 = Num::from(11);
+    assert_eq!(Num::from(75), n1.add(&n2));
 }
 
 #[test]
