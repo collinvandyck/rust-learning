@@ -1,4 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
+#![allow(dead_code)]
 
 use std::{
     fs::File,
