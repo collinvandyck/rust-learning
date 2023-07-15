@@ -8,6 +8,11 @@ pub struct Machine {
     cur: Option<OpExec>,
 }
 
+pub struct State<'a> {
+    pub tick: u64,
+    pub registers: &'a Registers,
+}
+
 impl Machine {
     pub fn new(ops: Vec<Op>) -> Self {
         let registers = Registers::new();
@@ -20,9 +25,9 @@ impl Machine {
         }
     }
     // runs to completion, when there is no more work to be done
-    pub fn run<F>(&mut self, mut f: F)
+    pub fn run<F>(&mut self, mut callback: F)
     where
-        F: FnMut(&Registers),
+        F: FnMut(State),
     {
         if !self.load() {
             return;
@@ -44,7 +49,10 @@ impl Machine {
                     exec.apply(&mut self.registers);
                 }
             }
-            f(&self.registers);
+            callback(State {
+                tick,
+                registers: &self.registers,
+            });
             println!("END Tick: {tick} registers: {:?}", self.registers);
         }
     }

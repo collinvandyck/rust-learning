@@ -31,5 +31,14 @@ fn run(filename: &str) {
         .map(|l| Op::parse(&l))
         .collect::<Vec<_>>();
     let mut machine = Machine::new(ops);
-    machine.run(|r| {});
+    let signal = 0_i64;
+    machine.run(|s| {
+        if s.tick == 20 || (s.tick > 20 && s.tick % 60 == 0) {
+            let strength = (s.tick as i64) * s.registers.x as i64;
+            println!(
+                "Callback tick:{} registers:{:?} strength:{}",
+                s.tick, s.registers, strength
+            );
+        }
+    });
 }
