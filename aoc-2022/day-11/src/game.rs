@@ -11,8 +11,8 @@ impl Game {
             monkeys.push(monkey);
             match iter.next() {
                 Some(line) => {
-                    if !line.is_empty() {
-                        panic!("line was not empty");
+                    if !line.trim().is_empty() {
+                        panic!("Unexpected line: {line}");
                     }
                 }
                 None => break,
