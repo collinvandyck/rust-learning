@@ -23,10 +23,7 @@ impl Num {
         }
         res
     }
-    // 56
-    // 78
-    //
-    // 14 -> 10 + 4
+    #[allow(dead_code)]
     fn add(&self, other: &Num) -> Self {
         let v1 = &self.0;
         let v2 = &other.0;
