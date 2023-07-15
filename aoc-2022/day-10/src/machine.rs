@@ -29,18 +29,19 @@ impl Machine {
             if !self.load() {
                 break;
             }
-            println!("Tick: {tick}");
+            println!("STR Tick: {tick} registers: {:?}", self.registers);
 
             // execute the current operation.
             if let Some(mut exec) = self.cur.take() {
                 // if we still need to wait, return early
                 if exec.dec_wait() {
                     self.cur = Some(exec);
-                    continue;
+                } else {
+                    // the exec is done.
+                    exec.apply(&mut self.registers);
                 }
-                // the exec is done.
-                exec.apply(&mut self.registers);
             }
+            println!("END Tick: {tick} registers: {:?}", self.registers);
         }
     }
     // loads the next op if necessary, and returns true if we have an op
