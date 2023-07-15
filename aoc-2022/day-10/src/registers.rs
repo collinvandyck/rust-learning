@@ -1,9 +1,10 @@
+#[derive(Debug)]
 pub struct Registers {
-    x: i32,
+    pub x: i32,
 }
 
 impl Registers {
     pub fn new() -> Self {
-        Self { x: 0 }
+        Self { x: 1 }
     }
 }

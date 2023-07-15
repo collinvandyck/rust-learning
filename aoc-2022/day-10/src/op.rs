@@ -27,5 +27,16 @@ impl Op {
             Self::Addx(_) => 2,
         }
     }
-    pub fn apply(&self, registers: &mut Registers) {}
+    pub fn apply(&self, registers: &mut Registers) {
+        match self {
+            Op::Noop => {
+                println!("noop exec");
+            }
+            Op::Addx(v) => {
+                let x = registers.x;
+                registers.x += v;
+                println!("addx ({v}) exec {x} -> {}", registers.x);
+            }
+        }
+    }
 }

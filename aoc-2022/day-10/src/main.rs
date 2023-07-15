@@ -29,4 +29,5 @@ fn run(filename: &str) {
         .collect::<Vec<_>>();
     let mut machine = Machine::new(ops);
     machine.run();
+    println!("{machine}");
 }

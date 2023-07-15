@@ -1,4 +1,4 @@
-use std::vec::IntoIter;
+use std::{fmt::Display, vec::IntoIter};
 
 use crate::prelude::*;
 
@@ -21,10 +21,18 @@ impl Machine {
     }
     // runs to completion, when there is no more work to be done
     pub fn run(&mut self) {
+        if !self.load() {
+            return;
+        }
         for tick in (1 as u64).. {
+            // load an operation if we don't have one yet
+            if !self.load() {
+                break;
+            }
+
             println!("Tick: {tick}");
 
-            // if we have a current operation, move it forward
+            // execute the current operation.
             if let Some(mut exec) = self.cur.take() {
                 // if we still need to wait, return early
                 if exec.dec_wait() {
@@ -34,15 +42,20 @@ impl Machine {
                 // the exec is done.
                 exec.apply(&mut self.registers);
             }
-            match self.ops.next() {
-                Some(op) => {
-                    let cycles = op.cycles();
-                    let exec = OpExec { op, cycles };
-                    self.cur = Some(exec);
-                }
-                None => break,
+        }
+    }
+    // loads the next op if necessary, and returns true if we have an op
+    fn load(&mut self) -> bool {
+        if self.cur.is_none() {
+            // there is no operation. load the next op.
+            if let Some(op) = self.ops.next() {
+                println!("Loaded: {op:?}");
+                let cycles = op.cycles();
+                let exec = OpExec { op, cycles };
+                self.cur = Some(exec);
             }
         }
+        !self.cur.is_none()
     }
 }
 
@@ -58,5 +71,11 @@ impl OpExec {
     }
     fn apply(&self, registers: &mut Registers) {
         self.op.apply(registers);
+    }
+}
+
+impl Display for Machine {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.registers)
     }
 }
