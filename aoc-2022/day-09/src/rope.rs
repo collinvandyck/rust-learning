@@ -16,7 +16,6 @@ impl Rope {
             knots.push(NamePoint::new(format!("{i}").as_str()));
         }
         knots.push(NamePoint::new("H"));
-        knots = dbg!(knots);
         let origin = Point::zero();
         let mut res = Self {
             upper_left: origin,
@@ -29,19 +28,8 @@ impl Rope {
     }
     pub fn exec(&mut self, mov: &Move) {
         for _ in 0..mov.amount {
-            // new stuff
             self.move_knots(mov.direction);
-            self.register_bounds();
-
-            /*
-            self.mov_head(mov.direction);
-            self.register_bounds_for_point(self.head.point);
-            //println!("Moved head {:?}\n{self}", mov.direction);
-            self.mov_tail();
-            self.register_bounds_for_point(self.tail.point);
             self.register_tail();
-            //println!("Move complete tails:{}\n{self}", self.tail_visits());
-            */
         }
     }
     // moves all of the knots, starting with the first knot at the end of the knots
@@ -49,7 +37,6 @@ impl Rope {
     pub fn move_knots(&mut self, dir: Direction) {
         // move the head knot according to direction.
         if let Some(knot) = self.knots.last_mut() {
-            println!("Moving knot {knot:?}");
             knot.point = match dir {
                 Direction::Right => knot.point.combine(&Point(1, 0)),
                 Direction::Left => knot.point.combine(&Point(-1, 0)),
@@ -57,15 +44,18 @@ impl Rope {
                 Direction::Down => knot.point.combine(&Point(0, -1)),
             };
         }
+
+        self.register_bounds();
+
         // move all of the following knots, one at a time.
         let length = self.knots.len();
         for hidx in (1..length).rev() {
-            for tidx in (0..length - 1).rev() {
-                let next = self.knots.get(hidx).unwrap().point;
-                let tail = self.knots.get(tidx).unwrap().point;
-                if let Some(next) = self.next_tail(&tail, &next) {
-                    self.knots.get_mut(tidx).unwrap().point = next;
-                }
+            let tidx = hidx - 1;
+            let tail = self.knots.get(tidx).unwrap();
+            let next = self.knots.get(hidx).unwrap();
+            if let Some(next) = self.next_tail(&tail.point, &next) {
+                self.knots.get_mut(tidx).unwrap().point = next;
+                self.register_bounds();
             }
         }
     }
@@ -97,33 +87,6 @@ impl Rope {
             }
         }
     }
-    /*
-    fn mov_tail(&mut self) {
-        let difference = self.head.difference(&self.tail);
-
-        // if the difference is 2 in either up/left/down/right, adjust tail
-        // by that amount
-        match difference.abs() {
-            Point(0, 2) => {
-                // y has changed
-                let adjust = &difference.combine(&Point(0, -1)).normalize();
-                self.tail.point = self.tail.point.combine(adjust);
-            }
-            Point(2, 0) => {
-                // x has changed
-                let adjust = &difference.combine(&Point(-1, 0)).normalize();
-                self.tail.point = self.tail.point.combine(adjust);
-            }
-            Point(0, 0) | Point(1, 0) | Point(0, 1) | Point(1, 1) => {
-                // not enough of a difference to matter
-            }
-            Point(_, _) => {
-                // we must move the tail diagonally
-                self.tail.point = self.tail.point.combine(&difference.normalize());
-            }
-        };
-    }
-    */
     fn register_bounds(&mut self) {
         self.knots.iter().for_each(|knot| {
             let point = knot.point;
@@ -150,8 +113,18 @@ impl Display for Rope {
         for y in (self.upper_left.1..=self.lower_right.1).rev() {
             for x in self.upper_left.0..=self.lower_right.0 {
                 let point = Point::new(x, y);
-                if let Some(np) = self.knots.iter().find(|p| p.point == point) {
-                    buf.push_str(&np.name);
+                if let Some((idx, np)) = self
+                    .knots
+                    .iter()
+                    .enumerate()
+                    .rev()
+                    .find(|(_, p)| p.point == point)
+                {
+                    if idx == 0 {
+                        buf.push_str("T");
+                    } else {
+                        buf.push_str(&np.name);
+                    }
                 } else {
                     buf.push_str(".");
                 }
