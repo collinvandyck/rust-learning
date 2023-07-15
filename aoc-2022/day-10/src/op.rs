@@ -21,10 +21,11 @@ impl Op {
             _ => panic!("Parse error"),
         }
     }
-    pub fn cycles(&self) -> usize {
+    pub fn cycles(&self) -> i32 {
         match self {
             Self::Noop => 1,
             Self::Addx(_) => 2,
         }
     }
+    pub fn apply(&self, registers: &mut Registers) {}
 }
