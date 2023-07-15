@@ -1,9 +1,12 @@
-pub struct Machine {}
-
 use crate::prelude::*;
+
+pub struct Machine {
+    registers: Registers,
+}
 
 impl Machine {
     pub fn new(ops: Vec<Op>) -> Self {
-        Self {}
+        let registers = Registers::new();
+        Self { registers }
     }
 }

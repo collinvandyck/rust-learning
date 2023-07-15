@@ -5,10 +5,12 @@ use std::{
 
 mod machine;
 mod op;
+mod registers;
 
 mod prelude {
     pub use crate::machine::*;
     pub use crate::op::*;
+    pub use crate::registers::*;
 }
 
 use prelude::*;
