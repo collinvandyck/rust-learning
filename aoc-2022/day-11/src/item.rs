@@ -9,12 +9,12 @@ impl Item {
     pub fn new(worry: u64) -> Self {
         Self { worry }
     }
-    pub fn inspect(&mut self, op: &Op) {
+    pub fn inspect(&mut self, op: &Op, worry_divisor: u64) {
         // first, mutate the worry value on inspection
         self.worry = op.calculate(self.worry);
 
         // divide by three b/c no items are damaged
-        self.worry /= 3;
+        self.worry /= worry_divisor;
     }
 }
 

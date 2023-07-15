@@ -24,7 +24,7 @@ impl Monkey {
             .drain(..)
             .map(|mut item| {
                 self.inspections += 1;
-                item.inspect(&self.op);
+                item.inspect(&self.op, self.worry_divisor);
                 let idx = self.test.evaluate(&item);
                 SendTo { idx, item }
             })
