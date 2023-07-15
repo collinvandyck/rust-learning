@@ -18,12 +18,12 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    run("example-1.txt");
-    run("example-2.txt");
-    run("input.txt");
+    part_one("example-1.txt");
+    part_one("example-2.txt");
+    part_one("input.txt");
 }
 
-fn run(filename: &str) {
+fn part_one(filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let ops = read
