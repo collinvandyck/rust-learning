@@ -18,8 +18,9 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    //run("example-1.txt");
+    run("example-1.txt");
     run("example-2.txt");
+    run("input.txt");
 }
 
 fn run(filename: &str) {
@@ -31,7 +32,7 @@ fn run(filename: &str) {
         .map(|l| Op::parse(&l))
         .collect::<Vec<_>>();
     let mut machine = Machine::new(ops);
-    let signal = 0_i64;
+    let mut sum = 0_i64;
     machine.run(|s| {
         if s.tick == 20 || (s.tick + 20) % 40 == 0 {
             let strength = (s.tick as i64) * s.registers.x as i64;
@@ -39,6 +40,8 @@ fn run(filename: &str) {
                 "Callback tick:{} registers:{:?} strength:{}",
                 s.tick, s.registers, strength
             );
+            sum += strength;
         }
     });
+    println!("Sum of signal strengths: {sum}");
 }
