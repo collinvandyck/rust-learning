@@ -30,9 +30,7 @@ impl Num {
     fn add(&self, other: &Num) -> Self {
         let v1 = &self.0;
         let v2 = &other.0;
-        let v1_iter = v1.iter().rev();
-        let v2_iter = v2.iter().rev();
-        let iter = std::iter::zip(v1_iter, v2_iter);
+        let iter = std::iter::zip(v1.iter().rev(), v2.iter().rev());
         let mut res = Self::new();
         let mut carry = 0_u64;
         iter.for_each(|(n1, n2)| {
