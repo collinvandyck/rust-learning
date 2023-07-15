@@ -36,12 +36,12 @@ impl Monkey {
         let items = Self::parse_items(iter.next().unwrap().as_str());
         let op = Self::parse_operation(iter.next().unwrap().as_str());
         let test = Self::parse_test(iter);
-        dbg!(Some(Self {
+        Some(Self {
             idx,
             items,
             op,
-            test
-        }))
+            test,
+        })
     }
     fn parse_monkey(input: &str) -> usize {
         let parts = &input.split(' ').collect::<Vec<&str>>()[..];
