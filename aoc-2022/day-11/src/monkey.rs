@@ -66,7 +66,7 @@ impl Monkey {
                 return nums
                     .split(',')
                     .map(str::trim)
-                    .map(str::parse::<i32>)
+                    .map(str::parse::<u64>)
                     .map(result::Result::unwrap)
                     .map(Item::new)
                     .collect();
@@ -94,7 +94,7 @@ impl Monkey {
         let line = iter.next().unwrap();
         let line = line.trim().split(' ').collect::<Vec<&str>>();
         if let ["Test:", "divisible", "by", num] = line[..] {
-            let divisible_by = num.parse::<i32>().unwrap();
+            let divisible_by = num.parse::<u64>().unwrap();
             let line = iter.next().unwrap();
             let line = line.trim().split(' ').collect::<Vec<&str>>();
             if let ["If", "true:", "throw", "to", "monkey", num] = line[..] {

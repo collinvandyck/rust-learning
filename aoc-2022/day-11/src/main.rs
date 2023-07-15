@@ -24,6 +24,7 @@ use prelude::*;
 
 fn main() {
     run_example("example.txt");
+    run_example("input.txt");
 }
 
 fn run_example(filename: &str) {

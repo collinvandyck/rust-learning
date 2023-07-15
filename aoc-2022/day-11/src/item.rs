@@ -2,11 +2,11 @@ use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct Item {
-    pub worry: i32,
+    pub worry: u64,
 }
 
 impl Item {
-    pub fn new(worry: i32) -> Self {
+    pub fn new(worry: u64) -> Self {
         Self { worry }
     }
     pub fn inspect(&mut self, op: &Op) {

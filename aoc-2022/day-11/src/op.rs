@@ -12,14 +12,14 @@ impl Op {
         let right = Operand::parse(right);
         Self { left, op, right }
     }
-    pub fn calculate(&self, old: i32) -> i32 {
+    pub fn calculate(&self, old: u64) -> u64 {
         let (left, right) = self.values(old);
         match self.op {
             Operator::Add => left + right,
             Operator::Multiply => left * right,
         }
     }
-    fn values(&self, old: i32) -> (i32, i32) {
+    fn values(&self, old: u64) -> (u64, u64) {
         (self.left.value(old), self.right.value(old))
     }
 }
@@ -27,17 +27,17 @@ impl Op {
 #[derive(Debug)]
 enum Operand {
     Old,
-    Value(i32),
+    Value(u64),
 }
 
 impl Operand {
     fn parse(s: &str) -> Self {
         match s {
             "old" => Operand::Old,
-            s => Operand::Value(s.parse::<i32>().unwrap()),
+            s => Operand::Value(s.parse::<u64>().unwrap()),
         }
     }
-    fn value(&self, old: i32) -> i32 {
+    fn value(&self, old: u64) -> u64 {
         match self {
             Operand::Old => old,
             Operand::Value(v) => *v,
