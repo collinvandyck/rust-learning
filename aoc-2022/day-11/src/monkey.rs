@@ -9,6 +9,7 @@ pub struct Monkey {
     items: Vec<Item>,
     op: Op,
     test: Test,
+    inspections: u32,
 }
 
 pub struct SendTo {
@@ -21,6 +22,7 @@ impl Monkey {
         self.items
             .drain(..)
             .map(|mut item| {
+                self.inspections += 1;
                 item.inspect(&self.op);
                 let idx = self.test.evaluate(&item);
                 SendTo { idx, item }
@@ -44,6 +46,7 @@ impl Monkey {
             items,
             op,
             test,
+            inspections: 0,
         })
     }
     fn parse_monkey(input: &str) -> usize {
@@ -117,6 +120,11 @@ impl Display for Monkey {
             .map(|i| i.worry)
             .map(|w| format!("{w}"))
             .collect::<Vec<String>>();
-        write!(f, "Monkey {idx}: {}", vals.join(","))
+        write!(
+            f,
+            "Monkey {idx} inspections:{} : {}",
+            self.inspections,
+            vals.join(",")
+        )
     }
 }
