@@ -4,10 +4,12 @@ use std::{
 };
 
 mod game;
+mod item;
 mod monkey;
 
 mod prelude {
     pub use crate::game::*;
+    pub use crate::item::*;
     pub use crate::monkey::*;
 }
 
