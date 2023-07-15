@@ -5,11 +5,13 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+mod crt;
 mod machine;
 mod op;
 mod registers;
 
 mod prelude {
+    pub use crate::crt::*;
     pub use crate::machine::*;
     pub use crate::op::*;
     pub use crate::registers::*;
