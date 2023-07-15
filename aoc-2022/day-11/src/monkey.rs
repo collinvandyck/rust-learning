@@ -39,7 +39,7 @@ impl Monkey {
         if let Some("Starting items") = iter.next() {
             if let Some(nums) = iter.next() {
                 return nums
-                    .split(",")
+                    .split(',')
                     .map(str::trim)
                     .map(str::parse::<i32>)
                     .map(result::Result::unwrap)
