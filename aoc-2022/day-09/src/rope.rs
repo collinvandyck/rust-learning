@@ -6,8 +6,6 @@ pub struct Rope {
     upper_left: Point,
     lower_right: Point,
     start: NamePoint,
-    head: NamePoint,
-    tail: NamePoint,
     knots: Vec<NamePoint>,
     tail_visits: HashSet<Point>,
 }
@@ -23,8 +21,6 @@ impl Rope {
         let origin = Point::zero();
         let mut res = Self {
             start: NamePoint::new("s"),
-            head: NamePoint::new("H"),
-            tail: NamePoint::new("T"),
             upper_left: origin,
             lower_right: origin,
             tail_visits: HashSet::new(),
@@ -37,36 +33,40 @@ impl Rope {
         for _ in 0..mov.amount {
             // new stuff
             self.move_knots(mov.direction);
+            self.register_bounds();
 
+            /*
             self.mov_head(mov.direction);
-            self.register_bounds(self.head.point);
+            self.register_bounds_for_point(self.head.point);
             //println!("Moved head {:?}\n{self}", mov.direction);
             self.mov_tail();
-            self.register_bounds(self.tail.point);
+            self.register_bounds_for_point(self.tail.point);
             self.register_tail();
             //println!("Move complete tails:{}\n{self}", self.tail_visits());
+            */
         }
     }
     // moves all of the knots, starting with the first knot at the end of the knots
     // vec ("H") and then processing each knot that exists before it.
     pub fn move_knots(&mut self, dir: Direction) {
-        // move each knot
-        self.knots
-            .iter_mut()
-            .rev()
-            .for_each(|k| println!("Processing knot {k:?}"))
+        // set idx to the last knot -- the H knot.
+        if let Some(knot) = self.knots.last_mut() {
+            println!("Moving knot {knot:?}");
+            knot.point = match dir {
+                Direction::Right => knot.point.combine(&Point(1, 0)),
+                Direction::Left => knot.point.combine(&Point(-1, 0)),
+                Direction::Up => knot.point.combine(&Point(0, 1)),
+                Direction::Down => knot.point.combine(&Point(0, -1)),
+            };
+
+            // if we moved the H knot, then for previous knot, we want to
+            // move that knot to the one we just moved.
+        }
     }
     pub fn tail_visits(&self) -> usize {
         self.tail_visits.len()
     }
-    fn mov_head(&mut self, direction: Direction) {
-        self.head.point = match direction {
-            Direction::Right => self.head.combine(&Point(1, 0)),
-            Direction::Left => self.head.combine(&Point(-1, 0)),
-            Direction::Up => self.head.combine(&Point(0, 1)),
-            Direction::Down => self.head.combine(&Point(0, -1)),
-        };
-    }
+    /*
     fn mov_tail(&mut self) {
         let difference = self.head.difference(&self.tail);
 
@@ -92,7 +92,21 @@ impl Rope {
             }
         };
     }
-    fn register_bounds(&mut self, point: Point) {
+    */
+    fn register_bounds(&mut self) {
+        self.knots.iter().for_each(|knot| {
+            let point = knot.point;
+            self.upper_left = Point(
+                i32::min(self.upper_left.0, point.0),
+                i32::min(self.upper_left.1, point.1),
+            );
+            self.lower_right = Point(
+                i32::max(self.lower_right.0, point.0),
+                i32::max(self.lower_right.1, point.1),
+            )
+        });
+    }
+    fn register_bounds_for_point(&mut self, point: Point) {
         self.upper_left = Point(
             i32::min(self.upper_left.0, point.0),
             i32::min(self.upper_left.1, point.1),
@@ -103,21 +117,19 @@ impl Rope {
         )
     }
     fn register_tail(&mut self) {
-        self.tail_visits.insert(self.tail.point);
-    }
-    fn points(&self) -> [NamePoint; 3] {
-        [self.head.clone(), self.tail.clone(), self.start.clone()]
+        self.knots.get(0).iter().for_each(|k| {
+            self.tail_visits.insert(k.point);
+        })
     }
 }
 
 impl Display for Rope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let points = self.points();
         let mut buf = String::new();
         for y in (self.upper_left.1..=self.lower_right.1).rev() {
             for x in self.upper_left.0..=self.lower_right.0 {
                 let point = Point::new(x, y);
-                if let Some(np) = points.iter().find(|p| p.point == point) {
+                if let Some(np) = self.knots.iter().find(|p| p.point == point) {
                     buf.push_str(&np.name);
                 } else {
                     buf.push_str(".");
