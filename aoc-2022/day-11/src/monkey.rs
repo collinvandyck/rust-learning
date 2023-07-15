@@ -12,6 +12,11 @@ pub struct Monkey {
 }
 
 impl Monkey {
+    pub fn inspect(&mut self) {}
+}
+
+// things to load monkey with
+impl Monkey {
     pub fn load(iter: &mut impl Iterator<Item = String>) -> Option<Self> {
         let idx = Self::parse_monkey(iter.next().unwrap().as_str());
         let items = Self::parse_items(iter.next().unwrap().as_str());

@@ -1,10 +1,10 @@
 #[derive(Debug)]
 pub struct Item {
-    score: i32,
+    worry: i32,
 }
 
 impl Item {
-    pub fn new(score: i32) -> Self {
-        Self { score }
+    pub fn new(worry: i32) -> Self {
+        Self { worry }
     }
 }

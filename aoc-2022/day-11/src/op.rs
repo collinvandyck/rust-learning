@@ -17,7 +17,6 @@ impl Op {
 #[derive(Debug)]
 enum Operand {
     Old,
-    New,
     Value(i32),
 }
 
@@ -25,7 +24,6 @@ impl Operand {
     fn parse(s: &str) -> Self {
         match s {
             "old" => Operand::Old,
-            "new" => Operand::New,
             s => Operand::Value(s.parse::<i32>().unwrap()),
         }
     }
