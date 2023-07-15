@@ -30,12 +30,12 @@ impl Op {
     pub fn apply(&self, registers: &mut Registers) {
         match self {
             Op::Noop => {
-                println!("noop exec");
+                println!("  noop exec");
             }
             Op::Addx(v) => {
                 let x = registers.x;
                 registers.x += v;
-                println!("addx ({v}) exec {x} -> {}", registers.x);
+                println!("  addx ({v}) exec {x} -> {}", registers.x);
             }
         }
     }

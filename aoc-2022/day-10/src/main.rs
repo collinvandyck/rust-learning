@@ -18,8 +18,8 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    run("example-1.txt");
-    //run("example-2.txt");
+    //run("example-1.txt");
+    run("example-2.txt");
 }
 
 fn run(filename: &str) {
