@@ -5,7 +5,6 @@ use crate::prelude::*;
 pub struct Rope {
     upper_left: Point,
     lower_right: Point,
-    start: NamePoint,
     knots: Vec<NamePoint>,
     tail_visits: HashSet<Point>,
 }
@@ -20,7 +19,6 @@ impl Rope {
         knots = dbg!(knots);
         let origin = Point::zero();
         let mut res = Self {
-            start: NamePoint::new("s"),
             upper_left: origin,
             lower_right: origin,
             tail_visits: HashSet::new(),
@@ -49,7 +47,7 @@ impl Rope {
     // moves all of the knots, starting with the first knot at the end of the knots
     // vec ("H") and then processing each knot that exists before it.
     pub fn move_knots(&mut self, dir: Direction) {
-        // set idx to the last knot -- the H knot.
+        // move the head knot according to direction.
         if let Some(knot) = self.knots.last_mut() {
             println!("Moving knot {knot:?}");
             knot.point = match dir {
@@ -58,13 +56,46 @@ impl Rope {
                 Direction::Up => knot.point.combine(&Point(0, 1)),
                 Direction::Down => knot.point.combine(&Point(0, -1)),
             };
-
-            // if we moved the H knot, then for previous knot, we want to
-            // move that knot to the one we just moved.
+        }
+        // move all of the following knots, one at a time.
+        let length = self.knots.len();
+        for hidx in (1..length).rev() {
+            for tidx in (0..length - 1).rev() {
+                let next = self.knots.get(hidx).unwrap().point;
+                let tail = self.knots.get(tidx).unwrap().point;
+                if let Some(next) = self.next_tail(&tail, &next) {
+                    self.knots.get_mut(tidx).unwrap().point = next;
+                }
+            }
         }
     }
     pub fn tail_visits(&self) -> usize {
         self.tail_visits.len()
+    }
+    fn next_tail(&self, tail: &Point, next: &Point) -> Option<Point> {
+        let difference = next.difference(tail);
+        // if the difference is 2 in either up/left/down/right, adjust tail
+        // by that amount
+        match difference.abs() {
+            Point(0, 2) => {
+                // y has changed
+                let adjust = &difference.combine(&Point(0, -1)).normalize();
+                Some(tail.combine(adjust))
+            }
+            Point(2, 0) => {
+                // x has changed
+                let adjust = &difference.combine(&Point(-1, 0)).normalize();
+                Some(tail.combine(adjust))
+            }
+            Point(0, 0) | Point(1, 0) | Point(0, 1) | Point(1, 1) => {
+                // not enough of a difference to matter
+                None
+            }
+            Point(_, _) => {
+                // we must move the tail diagonally
+                Some(tail.combine(&difference.normalize()))
+            }
+        }
     }
     /*
     fn mov_tail(&mut self) {
@@ -105,16 +136,6 @@ impl Rope {
                 i32::max(self.lower_right.1, point.1),
             )
         });
-    }
-    fn register_bounds_for_point(&mut self, point: Point) {
-        self.upper_left = Point(
-            i32::min(self.upper_left.0, point.0),
-            i32::min(self.upper_left.1, point.1),
-        );
-        self.lower_right = Point(
-            i32::max(self.lower_right.0, point.0),
-            i32::max(self.lower_right.1, point.1),
-        )
     }
     fn register_tail(&mut self) {
         self.knots.get(0).iter().for_each(|k| {
