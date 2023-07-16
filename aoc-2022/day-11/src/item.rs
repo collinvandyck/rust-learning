@@ -16,7 +16,8 @@ impl Item {
         self.worry = op.calculate(&self.worry);
 
         // divide by three b/c no items are damaged
-        self.worry = self.worry.divide(worry_divisor);
+        let (div_res, _) = self.worry.divide(worry_divisor);
+        self.worry = div_res
     }
 }
 

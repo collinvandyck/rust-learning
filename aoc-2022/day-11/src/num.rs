@@ -72,13 +72,14 @@ impl Num {
         });
         acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
-    pub fn divide(&self, val: u64) -> Self {
+    pub fn divide(&self, val: u64) -> (Self, u64) {
         if val == 1 {
-            return self.clone();
+            return (self.clone(), 0);
         }
         let asu64 = self.to_string().parse::<u64>().unwrap();
         let res = asu64 / val;
-        Self::from(res)
+        let remain = asu64 % val;
+        (Self::from(res), remain)
     }
     pub fn divisible_by(&self, val: u8) -> bool {
         if val == 1 {
