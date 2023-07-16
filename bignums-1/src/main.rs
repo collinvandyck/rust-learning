@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, vec};
 
 fn main() {
     let n = Num::from(42);
@@ -77,15 +77,17 @@ impl Num {
         if i2.0.len() > i1.0.len() {
             (i1, i2) = (i2, i1);
         }
-        let mut carry = 0_u8;
-        let mut res = Self::new();
 
         //   3938 // i1
         // x    2 // i2
         // ------
 
+        let acc: Vec<&Num> = vec![];
+        let mut res = Self::new();
+        let mut carry = 0_u8;
         for idx in (0..i2.0.len()).rev() {
-            println!("{idx}");
+            let digit = i2.0.get(idx).unwrap();
+            println!("idx:{idx} digit:{digit}");
         }
 
         res
