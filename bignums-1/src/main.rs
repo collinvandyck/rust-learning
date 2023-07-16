@@ -77,25 +77,29 @@ impl Num {
         if i2.0.len() > i1.0.len() {
             (i1, i2) = (i2, i1);
         }
-
-        //   3938 // i1
-        // x    2 // i2
-        // ------
-
         let mut acc: Vec<Num> = vec![];
-        let mut carry = 0_u8;
         for i2_idx in (0..i2.0.len()).rev() {
-            let mut res = Self::new();
+            let mut carry = 0_u8;
+            let mut tmp = Self::new();
             for i1_idx in (0..i1.0.len()).rev() {
                 let i1_dig = i1.0.get(i1_idx).unwrap();
                 let i2_dig = i2.0.get(i2_idx).unwrap();
-                let product = i1_dig * i2_dig;
+                let product = i1_dig * i2_dig + carry;
                 let remainder = product % 10;
+                tmp.0.insert(0, remainder);
                 carry = product / 10;
-                println!("i2_idx:{i2_idx} i2_dig:{i2_dig} i1_dig:{i1_dig}, product:{product}, remainder:{remainder} carry:{carry}");
+                //println!("i2_idx:{i2_idx} i2_dig:{i2_dig} i1_dig:{i1_dig}, product:{product}, remainder:{remainder} carry:{carry}");
             }
-            acc.push(res);
+            if carry > 0 {
+                tmp.0.insert(0, carry);
+            }
+            acc.push(tmp);
         }
+        acc.iter_mut().enumerate().for_each(|(idx, res)| {
+            for _ in 0..idx {
+                res.0.push_back(0);
+            }
+        });
         acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
 
@@ -117,7 +121,9 @@ impl Num {
 
 #[test]
 fn test_num_mul() {
-    assert_eq!(Num::from(42), Num::from(3938).multiply(&Num::from(2)))
+    assert_eq!(Num::from(86636), Num::from(3938).multiply(&Num::from(22)));
+    assert_eq!(Num::from(7876), Num::from(3938).multiply(&Num::from(2)));
+    assert_eq!(Num::from(0), Num::from(1).multiply(&Num::from(0)));
 }
 
 #[test]
