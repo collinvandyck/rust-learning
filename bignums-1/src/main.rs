@@ -28,19 +28,11 @@ impl Num {
     }
     #[allow(dead_code)]
     fn add(&self, other: &Num) -> Self {
-        // set up the two iterators. the v1 iterator will
-        // have at least as many digits as the v2 iterator.
-        let mut v1_iter = self.0.iter().rev();
-        let mut v2_iter = other.0.iter().rev();
-        if v2_iter.len() > v1_iter.len() {
-            let tmp = v1_iter;
-            v1_iter = v2_iter;
-            v2_iter = tmp;
-        }
+        let (i1, mut i2) = self.iters(other);
         let mut res = Self::new();
         let mut carry = 0_u8;
-        v1_iter.for_each(|num| {
-            let other = match v2_iter.next() {
+        i1.for_each(|num| {
+            let other = match i2.next() {
                 Some(other) => other,
                 None => &0,
             };
@@ -53,6 +45,54 @@ impl Num {
             res.0.insert(0, carry)
         }
         res
+    }
+
+    // how to multiply
+    //   3938
+    // x   22
+    // ------
+    //
+    // 2 * 8 = 16     => 6 carry 1
+    // 2 * 3 = 6 + c1 => 7
+    // 2 * 9 = 18     => 8 carry 1
+    // 2 * 3 = 6 + c1 => 7
+    // => [7,8,7,6]
+    //
+    // Now do it for the next number
+    //
+    // 2 * 8 = 16     => 6 carry 1
+    // 2 * 3 = 6 + c1 => 7
+    // 2 * 9 = 18     => 8 carry 1
+    // 2 * 3 = 6 + c1 => 7
+    // => [7,8,7,6]
+    // but multiply it by 10 (add a zero)
+    // => [7,8,7,6,0]
+    //
+    // Then we will add these numbers together
+    // 7876 + 78760 => 86,636
+    //
+    #[allow(dead_code)]
+    fn multiply(&self, other: &Num) -> Self {
+        let (i1, i2) = self.iters(other); // i1 is at least as big as i2
+        let (i1, i2) = (i2, i1); // i2 is at least as big as i1
+        let mut carry = 0_u8;
+        let mut res = Self::new();
+        res
+    }
+
+    // returns two reversed iterators. The first iterator is guaranteed
+    // to be at least as long as the second iterator.
+    fn iters<'a>(
+        &'a self,
+        other: &'a Num,
+    ) -> (impl Iterator<Item = &u8>, impl Iterator<Item = &u8>) {
+        let v1 = self.0.iter().rev();
+        let v2 = other.0.iter().rev();
+        if v2.len() > v1.len() {
+            (v2, v1)
+        } else {
+            (v1, v2)
+        }
     }
 }
 
