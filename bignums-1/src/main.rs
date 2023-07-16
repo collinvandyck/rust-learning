@@ -1,14 +1,16 @@
+use std::collections::VecDeque;
+
 fn main() {
     let n = Num::from(42);
     println!("{n:?}");
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Num(Vec<u8>);
+struct Num(VecDeque<u8>);
 
 impl Num {
     fn new() -> Self {
-        Self(vec![])
+        Self(VecDeque::new())
     }
     #[allow(dead_code)]
     fn from(mut v: u64) -> Self {
@@ -65,10 +67,10 @@ fn test_num_add() {
 
 #[test]
 fn test_num_from() {
-    assert_eq!(Num::from(0), Num(vec![0]));
-    assert_eq!(Num::from(643), Num(vec![6, 4, 3]));
+    assert_eq!(Num::from(0), Num(VecDeque::from([0])));
+    assert_eq!(Num::from(643), Num(VecDeque::from([6, 4, 3])));
     assert_eq!(
         Num::from(1234567890),
-        Num(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0])
+        Num(VecDeque::from([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]))
     );
 }
