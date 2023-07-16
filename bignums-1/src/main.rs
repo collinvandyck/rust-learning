@@ -58,6 +58,7 @@ fn test_num_add() {
     assert_eq!(Num::from(75), Num::from(64).add(&Num::from(11)));
     assert_eq!(Num::from(999), Num::from(0).add(&Num::from(999)));
     assert_eq!(Num::from(1000), Num::from(1).add(&Num::from(999)));
+    assert_eq!(Num::from(1500), Num::from(750).add(&Num::from(750)));
 }
 
 #[test]
