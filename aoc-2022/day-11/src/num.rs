@@ -72,6 +72,41 @@ impl Num {
         });
         acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
+    pub fn long_divide(&self, divisor: u64) -> (Self, u64) {
+        let digits = &self.0;
+        let mut scratch: VecDeque<u8> = VecDeque::new();
+        for i in 0..digits.len() {
+            let digit = digits.get(i).unwrap();
+            let digit = *digit;
+
+            // append the digit onto scratch
+            scratch.push_back(digit);
+
+            // get scratch as a u64
+            let scratchu64: u64 = scratch
+                .iter()
+                .rev()
+                .enumerate()
+                .map(|(idx, v)| {
+                    let base = 10_u64;
+                    let raised = base.pow(idx as u32);
+                    println!("idx: {idx} v: {v} 10^{idx}:{}", raised);
+                    ((*v) as u64) * raised
+                })
+                .sum();
+
+            println!("Scratch: {scratch:?}, asu64:{scratchu64}");
+
+            /*
+            let div = digit / divisor;
+            let mul = divisor * div;
+            let rem = digit - mul;
+            println!("Digit:{digit} divisor:{divisor} mul:{mul} rem:{rem}");
+            */
+        }
+        (self.clone(), 0)
+    }
+
     pub fn divide(&self, val: u64) -> (Self, u64) {
         if val == 1 {
             return (self.clone(), 0);
@@ -118,6 +153,15 @@ impl<'a> From<&'a Num> for String {
 fn test_num_string() {
     let s: String = (&Num::from(832)).into();
     assert_eq!(s, "832".to_string());
+}
+
+#[test]
+fn test_long_divide() {
+    let num = Num::from(957);
+    let divisor = 4;
+    let (result, rem) = num.long_divide(divisor);
+    assert_eq!(result, Num::from(239));
+    assert_eq!(rem, 1);
 }
 
 #[test]
