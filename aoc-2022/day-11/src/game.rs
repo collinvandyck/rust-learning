@@ -19,7 +19,8 @@ impl Game {
     }
 
     pub fn run(&mut self, rounds: usize) -> u32 {
-        for _ in 0..rounds {
+        for round in 0..rounds {
+            println!("Round: {round}");
             self.round();
         }
         self.monkey_business()

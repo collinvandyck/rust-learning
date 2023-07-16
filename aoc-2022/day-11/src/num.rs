@@ -72,9 +72,11 @@ impl Num {
         });
         acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
-    pub fn long_divide(&self, divisor: u64) -> (Self, u64) {
+    pub fn divide(&self, divisor: u64) -> (Self, u64) {
         let digits = &self.0;
         let mut scratch: VecDeque<u8> = VecDeque::new();
+        let mut res = vec![];
+        let mut rem = 0_u64;
         for i in 0..digits.len() {
             let digit = digits.get(i).unwrap();
             let digit = *digit;
@@ -83,38 +85,28 @@ impl Num {
             scratch.push_back(digit);
 
             // get scratch as a u64
-            let scratchu64: u64 = scratch
+            let scratch_v: u64 = scratch
                 .iter()
                 .rev()
+                .map(|x| (*x) as u64)
                 .enumerate()
-                .map(|(idx, v)| {
-                    let base = 10_u64;
-                    let raised = base.pow(idx as u32);
-                    println!("idx: {idx} v: {v} 10^{idx}:{}", raised);
-                    ((*v) as u64) * raised
-                })
+                .map(|(idx, v)| v * (10_u64).pow(idx as u32))
                 .sum();
 
-            println!("Scratch: {scratch:?}, asu64:{scratchu64}");
+            //println!("Scratch: {scratch:?}, asu64:{scratch_v}");
 
-            /*
-            let div = digit / divisor;
+            let div = scratch_v / divisor;
             let mul = divisor * div;
-            let rem = digit - mul;
-            println!("Digit:{digit} divisor:{divisor} mul:{mul} rem:{rem}");
-            */
-        }
-        (self.clone(), 0)
-    }
+            rem = scratch_v - mul;
+            res.push(div as u8);
 
-    pub fn divide(&self, val: u64) -> (Self, u64) {
-        if val == 1 {
-            return (self.clone(), 0);
+            // we need to push each digit of the remainder into scratch
+            let st = Self::from(rem);
+            scratch = st.0;
+            //println!("Digit:{digit} divisor:{divisor} mul:{mul} rem:{rem} res:{res:?}");
         }
-        let asu64 = self.to_string().parse::<u64>().unwrap();
-        let res = asu64 / val;
-        let remain = asu64 % val;
-        (Self::from(res), remain)
+        let vd = VecDeque::from(res);
+        (Self(vd), rem)
     }
     pub fn divisible_by(&self, val: u64) -> bool {
         let (_, remainder) = self.divide(val);
@@ -157,11 +149,23 @@ fn test_num_string() {
 
 #[test]
 fn test_long_divide() {
+    let num = Num::from(956);
+    let divisor = 4;
+    let (result, rem) = num.divide(divisor);
+    assert_eq!(result, Num::from(239));
+    assert_eq!(rem, 0);
+
     let num = Num::from(957);
     let divisor = 4;
-    let (result, rem) = num.long_divide(divisor);
+    let (result, rem) = num.divide(divisor);
     assert_eq!(result, Num::from(239));
     assert_eq!(rem, 1);
+
+    let num = Num::from(957);
+    let divisor = 1;
+    let (result, rem) = num.divide(divisor);
+    assert_eq!(result, Num::from(957));
+    assert_eq!(rem, 0);
 }
 
 #[test]
