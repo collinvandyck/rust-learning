@@ -46,7 +46,6 @@ impl Num {
         }
         res
     }
-
     #[allow(dead_code)]
     fn multiply(&self, other: &Num) -> Self {
         let (mut i1, mut i2) = (self, other);
@@ -77,6 +76,10 @@ impl Num {
         });
         acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
+    #[allow(dead_code)]
+    fn divisible_by(&self, other: u64) -> bool {
+        false
+    }
 
     // returns two reversed iterators. The first iterator is guaranteed
     // to be at least as long as the second iterator.
@@ -94,11 +97,24 @@ impl Num {
     }
 }
 
+impl<'a> From<&'a Num> for String {
+    fn from(value: &Num) -> Self {
+        value.0.iter().map(|f| format!("{f}")).collect::<String>()
+    }
+}
+
+#[test]
+fn test_num_string() {
+    let s: String = (&Num::from(832)).into();
+    assert_eq!(s, "832".to_string());
+}
+
 #[test]
 fn test_num_mul() {
     assert_eq!(Num::from(86636), Num::from(3938).multiply(&Num::from(22)));
     assert_eq!(Num::from(7876), Num::from(3938).multiply(&Num::from(2)));
     assert_eq!(Num::from(0), Num::from(1).multiply(&Num::from(0)));
+    assert_eq!(Num::from(0), Num::from(0).multiply(&Num::from(0)));
 }
 
 #[test]
