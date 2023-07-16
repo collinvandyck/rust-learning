@@ -25,30 +25,39 @@ impl Num {
     }
     #[allow(dead_code)]
     fn add(&self, other: &Num) -> Self {
-        let v1 = &self.0;
-        let v2 = &other.0;
-        let iter = std::iter::zip(v1.iter().rev(), v2.iter().rev());
+        // set up the two iterators. the v1 iterator will
+        // have at least as many digits as the v2 iterator.
+        let mut v1_iter = self.0.iter().rev();
+        let mut v2_iter = other.0.iter().rev();
+        if v2_iter.len() > v1_iter.len() {
+            let tmp = v1_iter;
+            v1_iter = v2_iter;
+            v2_iter = tmp;
+        }
         let mut res = Self::new();
         let mut carry = 0_u64;
-        iter.for_each(|(n1, n2)| {
-            let mut sum = n1 + n2 + carry;
-            if sum >= 10 {
-                carry = 1;
-                sum -= 10;
-            } else {
-                carry = 0;
-            }
+        v1_iter.for_each(|num| {
+            let other = match v2_iter.next() {
+                Some(other) => other,
+                None => &0,
+            };
+            let mut sum = *other + *num + carry;
+            carry = sum / 10;
+            sum %= 10;
             res.0.insert(0, sum)
         });
+        if carry > 0 {
+            res.0.insert(0, carry)
+        }
         res
     }
 }
 
 #[test]
 fn test_num_add() {
-    let n1 = Num::from(64);
-    let n2 = Num::from(11);
-    assert_eq!(Num::from(75), n1.add(&n2));
+    assert_eq!(Num::from(75), Num::from(64).add(&Num::from(11)));
+    assert_eq!(Num::from(999), Num::from(0).add(&Num::from(999)));
+    assert_eq!(Num::from(1000), Num::from(1).add(&Num::from(999)));
 }
 
 #[test]
