@@ -14,17 +14,17 @@ impl Op {
         let right = Operand::parse(right);
         Self { left, op, right }
     }
-    pub fn calculate(&self, old: &mut BigNum) -> BigNum {
+    pub fn calculate(&self, old: &mut BigNum) {
         match self.right {
             Operand::Old => match self.op {
                 Operator::Add => old.multiply_by(2),
-                Operator::Multiply => old.multiply(&old),
+                Operator::Multiply => old.multiply(&old.clone()),
             },
             Operand::Value(ref v) => match self.op {
-                Operator::Add => old.add(&BigNum::from(*v)),
-                Operator::Multiply => old.multiply(&BigNum::from(*v)),
+                Operator::Add => old.add_num(*v),
+                Operator::Multiply => old.multiply_by(*v),
             },
-        }
+        };
     }
 }
 

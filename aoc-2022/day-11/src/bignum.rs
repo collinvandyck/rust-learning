@@ -9,14 +9,17 @@ impl BigNum {
     pub fn from(v: u64) -> Self {
         BigNum(BigUint::from(v))
     }
-    pub fn add(&self, other: &BigNum) -> Self {
-        BigNum(self.0.clone() + other.0.clone())
+    pub fn add_num(&mut self, other: u64) {
+        self.0 += other;
     }
-    pub fn multiply_by(&mut self, other: u64) -> Self {
-        BigNum(self.0.clone() * other)
+    pub fn multiply_by(&mut self, other: u64) {
+        self.0 *= other;
     }
-    pub fn multiply(&self, other: &BigNum) -> Self {
-        BigNum(self.0.clone() * other.0.clone())
+    pub fn multiply(&mut self, other: &BigNum) {
+        self.0 *= &other.0;
+    }
+    pub fn divide_mut(&mut self, other: u64) {
+        self.0 /= other;
     }
     pub fn divide(&self, other: u64) -> (Self, u64) {
         let remainder = self.0.clone() % other;
