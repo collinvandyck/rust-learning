@@ -119,7 +119,7 @@ impl Display for Monkey {
         let vals = self
             .items
             .iter()
-            .map(|i| i.worry)
+            .map(|i| i.worry.clone())
             .map(|w| format!("{w}"))
             .collect::<Vec<String>>();
         write!(
