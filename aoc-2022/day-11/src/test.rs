@@ -16,7 +16,7 @@ impl Test {
         }
     }
     pub fn evaluate(&self, item: &Item) -> usize {
-        if item.worry % self.divisible_by == 0 {
+        if item.worry.divisible_by(self.divisible_by) {
             self.if_true
         } else {
             self.if_false

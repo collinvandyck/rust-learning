@@ -1,15 +1,15 @@
 use core::fmt::Display;
 use std::collections::VecDeque;
 
-#[derive(Debug, PartialEq, Eq)]
-struct Num(VecDeque<u8>);
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Num(VecDeque<u8>);
 
 impl Num {
     fn new() -> Self {
         Self(VecDeque::new())
     }
     #[allow(dead_code)]
-    fn from(mut v: u64) -> Self {
+    pub fn from(mut v: u64) -> Self {
         let mut res = Self::new();
         let divisor: u64 = 10;
         loop {
@@ -23,7 +23,7 @@ impl Num {
         res
     }
     #[allow(dead_code)]
-    fn add(&self, other: &Num) -> Self {
+    pub fn add(&self, other: &Num) -> Self {
         let (i1, mut i2) = self.iters(other);
         let mut res = Self::new();
         let mut carry = 0_u8;
@@ -43,7 +43,7 @@ impl Num {
         res
     }
     #[allow(dead_code)]
-    fn multiply(&self, other: &Num) -> Self {
+    pub fn multiply(&self, other: &Num) -> Self {
         let (mut i1, mut i2) = (self, other);
         if i2.0.len() > i1.0.len() {
             (i1, i2) = (i2, i1);
@@ -72,7 +72,15 @@ impl Num {
         });
         acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
-    fn divisible_by(&self, val: u64) -> bool {
+    pub fn divide(&self, val: u64) -> Self {
+        if val == 1 {
+            return self.clone();
+        }
+        let asu64 = self.to_string().parse::<u64>().unwrap();
+        let res = asu64 / val;
+        Self::from(res)
+    }
+    pub fn divisible_by(&self, val: u64) -> bool {
         if val == 1 {
             return true;
         }

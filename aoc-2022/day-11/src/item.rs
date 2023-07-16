@@ -2,19 +2,21 @@ use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct Item {
-    pub worry: u64,
+    pub worry: Num,
 }
 
 impl Item {
     pub fn new(worry: u64) -> Self {
-        Self { worry }
+        Self {
+            worry: Num::from(worry),
+        }
     }
     pub fn inspect(&mut self, op: &Op, worry_divisor: u64) {
         // first, mutate the worry value on inspection
-        self.worry = op.calculate(self.worry);
+        self.worry = op.calculate(&self.worry);
 
         // divide by three b/c no items are damaged
-        self.worry /= worry_divisor;
+        self.worry = self.worry.divide(worry_divisor);
     }
 }
 

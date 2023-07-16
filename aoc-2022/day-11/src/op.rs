@@ -1,3 +1,5 @@
+use crate::prelude::*;
+
 #[derive(Debug)]
 pub struct Op {
     left: Operand,
@@ -12,14 +14,14 @@ impl Op {
         let right = Operand::parse(right);
         Self { left, op, right }
     }
-    pub fn calculate(&self, old: u64) -> u64 {
+    pub fn calculate(&self, old: &Num) -> Num {
         let (left, right) = self.values(old);
         match self.op {
-            Operator::Add => left + right,
-            Operator::Multiply => left * right,
+            Operator::Add => left.add(right),
+            Operator::Multiply => left.multiply(right),
         }
     }
-    fn values(&self, old: u64) -> (u64, u64) {
+    fn values<'a>(&'a self, old: &'a Num) -> (&'a Num, &'a Num) {
         (self.left.value(old), self.right.value(old))
     }
 }
@@ -27,20 +29,23 @@ impl Op {
 #[derive(Debug)]
 enum Operand {
     Old,
-    Value(u64),
+    Value(Num),
 }
 
 impl Operand {
     fn parse(s: &str) -> Self {
         match s {
             "old" => Operand::Old,
-            s => Operand::Value(s.parse::<u64>().unwrap()),
+            s => {
+                let vu64 = s.parse::<u64>().unwrap();
+                Operand::Value(Num::from(vu64))
+            }
         }
     }
-    fn value(&self, old: u64) -> u64 {
+    fn value<'a>(&'a self, old: &'a Num) -> &'a Num {
         match self {
             Operand::Old => old,
-            Operand::Value(v) => *v,
+            Operand::Value(v) => v,
         }
     }
 }
