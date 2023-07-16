@@ -82,15 +82,21 @@ impl Num {
         // x    2 // i2
         // ------
 
-        let acc: Vec<&Num> = vec![];
-        let mut res = Self::new();
+        let mut acc: Vec<Num> = vec![];
         let mut carry = 0_u8;
-        for idx in (0..i2.0.len()).rev() {
-            let digit = i2.0.get(idx).unwrap();
-            println!("idx:{idx} digit:{digit}");
+        for i2_idx in (0..i2.0.len()).rev() {
+            let mut res = Self::new();
+            for i1_idx in (0..i1.0.len()).rev() {
+                let i1_dig = i1.0.get(i1_idx).unwrap();
+                let i2_dig = i2.0.get(i2_idx).unwrap();
+                let product = i1_dig * i2_dig;
+                let remainder = product % 10;
+                carry = product / 10;
+                println!("i2_idx:{i2_idx} i2_dig:{i2_dig} i1_dig:{i1_dig}, product:{product}, remainder:{remainder} carry:{carry}");
+            }
+            acc.push(res);
         }
-
-        res
+        acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
 
     // returns two reversed iterators. The first iterator is guaranteed
@@ -111,7 +117,7 @@ impl Num {
 
 #[test]
 fn test_num_mul() {
-    assert_eq!(Num::from(0), Num::from(3938).multiply(&Num::from(2)))
+    assert_eq!(Num::from(42), Num::from(3938).multiply(&Num::from(2)))
 }
 
 #[test]
