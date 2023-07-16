@@ -40,6 +40,7 @@ impl Num {
         if carry > 0 {
             res.0.insert(0, carry)
         }
+        res.trim();
         res
     }
     #[allow(dead_code)]
@@ -70,7 +71,21 @@ impl Num {
                 res.0.push_back(0);
             }
         });
-        acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
+        let mut res = acc.into_iter().reduce(|a, b| a.add(&b)).unwrap();
+        res.trim();
+        res
+    }
+    fn trim(&mut self) {
+        let mut non_zero_seen = false;
+        self.0.retain(|x| {
+            if non_zero_seen {
+                return true;
+            }
+            if *x != 0 {
+                non_zero_seen = true;
+            }
+            non_zero_seen
+        })
     }
     pub fn divide(&self, divisor: u64) -> (Self, u64) {
         let digits = &self.0;

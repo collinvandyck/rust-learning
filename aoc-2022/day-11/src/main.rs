@@ -25,7 +25,7 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    run_example(3, 20, "example.txt");
+    //run_example(3, 20, "example.txt");
     run_example(3, 20, "input.txt");
     //run_example(1, 100, "input.txt");
 }
