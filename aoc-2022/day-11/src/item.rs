@@ -13,7 +13,7 @@ impl Item {
     }
     pub fn inspect(&mut self, op: &Op, worry_divisor: u64) {
         // first, mutate the worry value on inspection
-        self.worry = op.calculate(&self.worry);
+        self.worry = op.calculate(&mut self.worry);
 
         // divide by three b/c no items are damaged
         let (div_res, _) = self.worry.divide(worry_divisor);

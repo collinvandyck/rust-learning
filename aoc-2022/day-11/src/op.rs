@@ -14,22 +14,24 @@ impl Op {
         let right = Operand::parse(right);
         Self { left, op, right }
     }
-    pub fn calculate(&self, old: &BigNum) -> BigNum {
-        let (left, right) = self.values(old);
-        match self.op {
-            Operator::Add => left.add(right),
-            Operator::Multiply => left.multiply(right),
+    pub fn calculate(&self, old: &mut BigNum) -> BigNum {
+        match self.right {
+            Operand::Old => match self.op {
+                Operator::Add => old.multiply_by(2),
+                Operator::Multiply => old.multiply(&old),
+            },
+            Operand::Value(ref v) => match self.op {
+                Operator::Add => old.add(&BigNum::from(*v)),
+                Operator::Multiply => old.multiply(&BigNum::from(*v)),
+            },
         }
-    }
-    fn values<'a>(&'a self, old: &'a BigNum) -> (&'a BigNum, &'a BigNum) {
-        (self.left.value(old), self.right.value(old))
     }
 }
 
 #[derive(Debug)]
 enum Operand {
     Old,
-    Value(BigNum),
+    Value(u64),
 }
 
 impl Operand {
@@ -38,14 +40,8 @@ impl Operand {
             "old" => Operand::Old,
             s => {
                 let vu64 = s.parse::<u64>().unwrap();
-                Operand::Value(BigNum::from(vu64))
+                Operand::Value(vu64)
             }
-        }
-    }
-    fn value<'a>(&'a self, old: &'a BigNum) -> &'a BigNum {
-        match self {
-            Operand::Old => old,
-            Operand::Value(v) => v,
         }
     }
 }

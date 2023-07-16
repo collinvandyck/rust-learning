@@ -12,6 +12,9 @@ impl BigNum {
     pub fn add(&self, other: &BigNum) -> Self {
         BigNum(self.0.clone() + other.0.clone())
     }
+    pub fn multiply_by(&mut self, other: u64) -> Self {
+        BigNum(self.0.clone() * other)
+    }
     pub fn multiply(&self, other: &BigNum) -> Self {
         BigNum(self.0.clone() * other.0.clone())
     }
