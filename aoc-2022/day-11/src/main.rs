@@ -26,8 +26,8 @@ use prelude::*;
 
 fn main() {
     //run_example(3, 20, "example.txt");
-    run_example(3, 20, "input.txt");
-    //run_example(1, 100, "input.txt");
+    //run_example(3, 20, "input.txt");
+    run_example(1, 1000, "input.txt");
 }
 
 fn run_example(worry_divisor: u64, rounds: usize, filename: &str) {
