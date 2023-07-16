@@ -2,13 +2,13 @@ use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct Test {
-    divisible_by: u64,
+    divisible_by: u8,
     if_true: usize,
     if_false: usize,
 }
 
 impl Test {
-    pub fn new(divisible_by: u64, if_true: usize, if_false: usize) -> Self {
+    pub fn new(divisible_by: u8, if_true: usize, if_false: usize) -> Self {
         Self {
             divisible_by,
             if_true,

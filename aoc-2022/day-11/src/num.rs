@@ -80,12 +80,12 @@ impl Num {
         let res = asu64 / val;
         Self::from(res)
     }
-    pub fn divisible_by(&self, val: u64) -> bool {
+    pub fn divisible_by(&self, val: u8) -> bool {
         if val == 1 {
             return true;
         }
         let asu64 = self.to_string().parse::<u64>().unwrap();
-        asu64 % val == 0
+        asu64 % (val as u64) == 0
     }
     // returns two reversed iterators. The first iterator is guaranteed
     // to be at least as long as the second iterator.
