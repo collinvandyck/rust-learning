@@ -47,30 +47,6 @@ impl Num {
         res
     }
 
-    // how to multiply
-    //   3938
-    // x   22
-    // ------
-    //
-    // 2 * 8 = 16     => 6 carry 1
-    // 2 * 3 = 6 + c1 => 7
-    // 2 * 9 = 18     => 8 carry 1
-    // 2 * 3 = 6 + c1 => 7
-    // => [7,8,7,6]
-    //
-    // Now do it for the next number
-    //
-    // 2 * 8 = 16     => 6 carry 1
-    // 2 * 3 = 6 + c1 => 7
-    // 2 * 9 = 18     => 8 carry 1
-    // 2 * 3 = 6 + c1 => 7
-    // => [7,8,7,6]
-    // but multiply it by 10 (add a zero)
-    // => [7,8,7,6,0]
-    //
-    // Then we will add these numbers together
-    // 7876 + 78760 => 86,636
-    //
     #[allow(dead_code)]
     fn multiply(&self, other: &Num) -> Self {
         let (mut i1, mut i2) = (self, other);
@@ -88,7 +64,6 @@ impl Num {
                 let remainder = product % 10;
                 tmp.0.insert(0, remainder);
                 carry = product / 10;
-                //println!("i2_idx:{i2_idx} i2_dig:{i2_dig} i1_dig:{i1_dig}, product:{product}, remainder:{remainder} carry:{carry}");
             }
             if carry > 0 {
                 tmp.0.insert(0, carry);
