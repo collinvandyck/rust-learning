@@ -6,6 +6,7 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+mod bignum;
 mod game;
 mod item;
 mod monkey;
@@ -14,6 +15,7 @@ mod op;
 mod test;
 
 mod prelude {
+    pub use crate::bignum::*;
     pub use crate::game::*;
     pub use crate::item::*;
     pub use crate::monkey::*;

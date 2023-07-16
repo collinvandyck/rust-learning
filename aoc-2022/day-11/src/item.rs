@@ -2,13 +2,13 @@ use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct Item {
-    pub worry: Num,
+    pub worry: BigNum,
 }
 
 impl Item {
     pub fn new(worry: u64) -> Self {
         Self {
-            worry: Num::from(worry),
+            worry: BigNum::from(worry),
         }
     }
     pub fn inspect(&mut self, op: &Op, worry_divisor: u64) {
