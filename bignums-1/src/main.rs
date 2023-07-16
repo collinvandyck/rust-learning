@@ -1,9 +1,10 @@
 fn main() {
-    println!("Hello, world!");
+    let n = Num::from(42);
+    println!("{n:?}");
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Num(Vec<u64>);
+struct Num(Vec<u8>);
 
 impl Num {
     fn new() -> Self {
@@ -15,7 +16,7 @@ impl Num {
         let divisor: u64 = 10;
         loop {
             let part = v % divisor;
-            res.0.insert(0, part);
+            res.0.insert(0, part as u8);
             v = v / divisor;
             if v == 0 {
                 break;
@@ -35,7 +36,7 @@ impl Num {
             v2_iter = tmp;
         }
         let mut res = Self::new();
-        let mut carry = 0_u64;
+        let mut carry = 0_u8;
         v1_iter.for_each(|num| {
             let other = match v2_iter.next() {
                 Some(other) => other,
