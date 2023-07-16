@@ -73,10 +73,21 @@ impl Num {
     //
     #[allow(dead_code)]
     fn multiply(&self, other: &Num) -> Self {
-        let (i1, i2) = self.iters(other); // i1 is at least as big as i2
-        let (i1, i2) = (i2, i1); // i2 is at least as big as i1
+        let (mut i1, mut i2) = (self, other);
+        if i2.0.len() > i1.0.len() {
+            (i1, i2) = (i2, i1);
+        }
         let mut carry = 0_u8;
         let mut res = Self::new();
+
+        //   3938 // i1
+        // x    2 // i2
+        // ------
+
+        for idx in (0..i2.0.len()).rev() {
+            println!("{idx}");
+        }
+
         res
     }
 
@@ -94,6 +105,11 @@ impl Num {
             (v1, v2)
         }
     }
+}
+
+#[test]
+fn test_num_mul() {
+    assert_eq!(Num::from(0), Num::from(3938).multiply(&Num::from(2)))
 }
 
 #[test]
