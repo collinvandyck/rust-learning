@@ -9,17 +9,17 @@ use std::{
 mod game;
 mod item;
 mod monkey;
+mod num;
 mod op;
 mod test;
-mod value;
 
 mod prelude {
     pub use crate::game::*;
     pub use crate::item::*;
     pub use crate::monkey::*;
+    pub use crate::num::*;
     pub use crate::op::*;
     pub use crate::test::*;
-    pub use crate::value::*;
 }
 
 use prelude::*;

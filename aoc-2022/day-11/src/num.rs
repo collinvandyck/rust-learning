@@ -1,9 +1,5 @@
-use std::{collections::VecDeque, fmt::Display, vec};
-
-fn main() {
-    let n = Num::from(42);
-    println!("{n}");
-}
+use core::fmt::Display;
+use std::collections::VecDeque;
 
 #[derive(Debug, PartialEq, Eq)]
 struct Num(VecDeque<u8>);
@@ -76,6 +72,13 @@ impl Num {
         });
         acc.into_iter().reduce(|a, b| a.add(&b)).unwrap()
     }
+    fn divisible_by(&self, val: u64) -> bool {
+        if val == 1 {
+            return true;
+        }
+        let asu64 = self.to_string().parse::<u64>().unwrap();
+        asu64 % val == 0
+    }
     // returns two reversed iterators. The first iterator is guaranteed
     // to be at least as long as the second iterator.
     fn iters<'a>(
@@ -109,6 +112,15 @@ impl<'a> From<&'a Num> for String {
 fn test_num_string() {
     let s: String = (&Num::from(832)).into();
     assert_eq!(s, "832".to_string());
+}
+
+#[test]
+fn test_divisible_by() {
+    assert!(Num::from(86636).divisible_by(1));
+    assert!(Num::from(86636).divisible_by(2));
+    assert!(!Num::from(86636).divisible_by(3));
+    assert!(Num::from(86636).divisible_by(4));
+    assert!(!Num::from(86636).divisible_by(5));
 }
 
 #[test]
