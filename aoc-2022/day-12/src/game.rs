@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display, sync::Arc};
+use std::{collections::HashSet, fmt::Display, slice::Iter, sync::Arc};
 
 use crate::prelude::*;
 
@@ -28,8 +28,17 @@ impl<'a> Solver<'a> {
     }
     fn solve(&mut self) {
         // row,col is where we currently are
-        let Point { row, col } = self.path.last().unwrap();
-        dbg!((row, col));
+        let cur: Point = self.path.last().unwrap().clone();
+        let map = &self.game.map;
+        for dir in Self::directions() {
+            let next = cur.next(dir, map);
+            dbg!(next);
+        }
+    }
+    fn directions() -> Iter<'static, Direction> {
+        use Direction::*;
+        static DIRECTIONS: [Direction; 4] = [Up, Down, Left, Right];
+        DIRECTIONS.iter()
     }
 }
 
