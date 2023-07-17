@@ -3,14 +3,12 @@
 mod game;
 mod map;
 mod point;
-mod solver;
 mod tile;
 
 mod prelude {
     pub use crate::game::*;
     pub use crate::map::*;
     pub use crate::point::*;
-    pub use crate::solver::*;
     pub use crate::tile::*;
 }
 

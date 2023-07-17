@@ -1,25 +1,49 @@
-use std::{fmt::Display, sync::Arc};
+use std::{collections::HashSet, fmt::Display, sync::Arc};
 
 use crate::prelude::*;
 
 #[derive(Clone)]
 pub struct Game {
-    map: Arc<Map>,
+    map: Map,
     start: Point,
     finish: Point,
 }
 
-impl Game {
-    pub fn solve(&self) {
-        let map = self.map.clone();
-        let start = self.start;
-        let finish = self.finish;
-        let mut solver = Solver::new(map, start, finish);
-        solver.solve();
+struct Solver<'a> {
+    game: Arc<&'a Game>,
+    visited: HashSet<Point>,
+    path: Vec<Point>,
+}
+
+impl<'a> Solver<'a> {
+    fn new(game: Arc<&'a Game>) -> Self {
+        let mut visited = HashSet::default();
+        let path = vec![game.start];
+        visited.insert(game.start);
+        Self {
+            game,
+            visited,
+            path,
+        }
+    }
+    fn solve(&mut self) {
+        // row,col is where we currently are
+        let Point { row, col } = self.path.last().unwrap();
+        dbg!((row, col));
     }
 }
 
 impl Game {
+    pub fn solve(&self) {
+        let mut s = Solver::new(Arc::new(self));
+        s.solve();
+    }
+}
+
+impl Game {
+    fn new(map: Map, start: Point, finish: Point) -> Self {
+        Self { map, start, finish }
+    }
     pub fn from_iter(iter: impl Iterator<Item = String>) -> Self {
         let mut tiles = vec![];
         let mut width = 0;
@@ -48,8 +72,7 @@ impl Game {
             tiles.append(&mut row);
         }
         let map = Map::new(tiles, width);
-        let map = Arc::new(map);
-        Self { map, start, finish }
+        Self::new(map, start, finish)
     }
 }
 

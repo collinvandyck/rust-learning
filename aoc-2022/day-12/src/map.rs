@@ -10,6 +10,13 @@ impl Map {
     pub fn new(tiles: Vec<Tile>, width: usize) -> Self {
         Self { tiles, width }
     }
+    pub fn tile<'a>(&'a self, point: &Point) -> Option<&'a Tile> {
+        let idx = self.idx(point);
+        self.tiles.get(idx)
+    }
+    fn idx(&self, point: &Point) -> usize {
+        point.row * self.cols() + point.col
+    }
     pub fn size(&self) -> usize {
         self.cols() * self.rows()
     }
