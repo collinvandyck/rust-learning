@@ -30,10 +30,12 @@ impl<'a> Solver<'a> {
         // row,col is where we currently are
         let cur: Point = self.path.last().unwrap().clone();
         let map = &self.game.map;
-        for dir in Self::directions() {
-            let next = cur.next(dir, map);
-            dbg!(next);
-        }
+        Self::directions()
+            .map(|d| cur.next(d, map))
+            .flatten()
+            .for_each(|next| {
+                dbg!(next);
+            });
     }
     fn directions() -> Iter<'static, Direction> {
         use Direction::*;
