@@ -64,8 +64,22 @@ impl Map {
 impl Display for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut buf = String::with_capacity(self.size() + self.rows());
-        self.row_iter().for_each(|row| {
-            buf.push_str(row.iter().map(|t| t.0).collect::<String>().as_str());
+        self.row_iter().enumerate().for_each(|(row_idx, row)| {
+            buf.push_str(
+                row.iter()
+                    .enumerate()
+                    .map(|(col_idx, t)| {
+                        if self.start == Point::new(row_idx, col_idx) {
+                            'S'
+                        } else if self.finish == Point::new(row_idx, col_idx) {
+                            'E'
+                        } else {
+                            t.0
+                        }
+                    })
+                    .collect::<String>()
+                    .as_str(),
+            );
             buf.push('\n');
         });
         write!(f, "{buf}")

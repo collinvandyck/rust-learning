@@ -1,3 +1,4 @@
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Point {
     pub row: usize,
     pub col: usize,
