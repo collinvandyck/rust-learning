@@ -10,7 +10,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn from_iter(mut iter: impl Iterator<Item = String>) -> Self {
+    pub fn from_iter(iter: impl Iterator<Item = String>) -> Self {
         let mut iter = iter.enumerate();
         let mut tiles = vec![];
         let mut width = 0;
