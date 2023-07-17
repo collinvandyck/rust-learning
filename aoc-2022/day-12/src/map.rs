@@ -1,5 +1,6 @@
 use crate::*;
 
+#[derive(Clone)]
 pub struct Map {
     tiles: Vec<Tile>,
     width: usize,

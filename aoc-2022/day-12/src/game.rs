@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::prelude::*;
 
+#[derive(Clone)]
 pub struct Game {
     map: Map,
     start: Point,
@@ -62,7 +63,9 @@ impl Display for Game {
                     .collect::<String>()
                     .as_str(),
             );
-            buf.push('\n');
+            if row_idx < self.map.rows() - 1 {
+                buf.push('\n');
+            }
         });
         write!(f, "{buf}")
     }
