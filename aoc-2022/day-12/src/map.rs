@@ -29,12 +29,15 @@ impl Map {
     fn rows(&self) -> usize {
         self.tiles.len() / self.width
     }
+    fn row_iter(&self) -> impl Iterator<Item = &[Tile]> {
+        self.tiles.chunks(self.cols())
+    }
 }
 
 impl Display for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut buf = String::with_capacity(self.size() + self.rows());
-        self.tiles.chunks(self.cols()).for_each(|row| {
+        self.row_iter().for_each(|row| {
             buf.push_str(row.iter().map(|t| t.0).collect::<String>().as_str());
             buf.push('\n');
         });
