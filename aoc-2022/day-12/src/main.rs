@@ -1,8 +1,12 @@
+#![warn(clippy::all, clippy::pedantic)]
+
+mod game;
 mod map;
 mod point;
 mod tile;
 
 mod prelude {
+    pub use crate::game::*;
     pub use crate::map::*;
     pub use crate::point::*;
     pub use crate::tile::*;
@@ -24,7 +28,7 @@ fn run(filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let iter = read.lines().map(result::Result::unwrap);
-    let map = Map::from_iter(iter);
-    println!("{map}");
-    map.solve();
+    let game = Game::from_iter(iter);
+    println!("{game}");
+    game.solve();
 }
