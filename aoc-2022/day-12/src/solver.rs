@@ -22,5 +22,5 @@ impl Solver {
             visited,
         }
     }
-    pub fn solve(&self) {}
+    pub fn solve(&mut self) {}
 }

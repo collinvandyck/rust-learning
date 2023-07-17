@@ -16,7 +16,7 @@ impl Game {
             let start = self.start;
             let finish = self.finish;
             let j = thread::spawn(move || {
-                let solver = Solver::new(map, start, finish);
+                let mut solver = Solver::new(map, start, finish);
                 solver.solve();
                 true
             });
