@@ -11,7 +11,9 @@ pub struct Game {
 
 impl Game {
     pub fn solve(&self) {}
+}
 
+impl Game {
     pub fn from_iter(iter: impl Iterator<Item = String>) -> Self {
         let mut tiles = vec![];
         let mut width = 0;
