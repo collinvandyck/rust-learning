@@ -1,4 +1,4 @@
-use std::{fmt::Display, sync::Arc, thread};
+use std::{fmt::Display, sync::Arc};
 
 use crate::prelude::*;
 
@@ -11,17 +11,11 @@ pub struct Game {
 
 impl Game {
     pub fn solve(&self) {
-        for _ in 0..10 {
-            let map = self.map.clone();
-            let start = self.start;
-            let finish = self.finish;
-            let j = thread::spawn(move || {
-                let mut solver = Solver::new(map, start, finish);
-                solver.solve();
-                true
-            });
-            j.join().unwrap();
-        }
+        let map = self.map.clone();
+        let start = self.start;
+        let finish = self.finish;
+        let mut solver = Solver::new(map, start, finish);
+        solver.solve();
     }
 }
 
