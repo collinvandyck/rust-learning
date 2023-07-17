@@ -33,8 +33,8 @@ where
 
 /* Into<Cow> implementation */
 
-impl<'a> From<Bar> for Cow<'a, Bar> {
-    fn from(f: Bar) -> Cow<'a, Bar> {
+impl From<Bar> for Cow<'_, Bar> {
+    fn from(f: Bar) -> Cow<'static, Bar> {
         Cow::Owned(f)
     }
 }
@@ -44,4 +44,3 @@ impl<'a> From<&'a Bar> for Cow<'a, Bar> {
         Cow::Borrowed(f)
     }
 }
-
