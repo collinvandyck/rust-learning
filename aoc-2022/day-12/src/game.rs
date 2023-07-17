@@ -1,16 +1,51 @@
-use std::fmt::Display;
+use std::{collections::HashSet, fmt::Display, sync::Arc, thread};
 
 use crate::prelude::*;
 
+struct Solver {
+    map: Arc<Map>,
+    start: Point,
+    finish: Point,
+    path: Vec<Point>,
+    visited: HashSet<Point>,
+}
+
+impl Solver {
+    pub fn new(map: Arc<Map>, start: Point, finish: Point) -> Self {
+        let path = vec![];
+        let visited = HashSet::new();
+        Self {
+            map,
+            start,
+            finish,
+            path,
+            visited,
+        }
+    }
+    pub fn solve(&self) {}
+}
+
 #[derive(Clone)]
 pub struct Game {
-    map: Map,
+    map: Arc<Map>,
     start: Point,
     finish: Point,
 }
 
 impl Game {
-    pub fn solve(&self) {}
+    pub fn solve(&self) {
+        for _ in 0..10 {
+            let map = self.map.clone();
+            let start = self.start;
+            let finish = self.finish;
+            let j = thread::spawn(move || {
+                let solver = Solver::new(map, start, finish);
+                solver.solve();
+                true
+            });
+            j.join().unwrap();
+        }
+    }
 }
 
 impl Game {
@@ -42,6 +77,7 @@ impl Game {
             tiles.append(&mut row);
         }
         let map = Map::new(tiles, width);
+        let map = Arc::new(map);
         Self { map, start, finish }
     }
 }
