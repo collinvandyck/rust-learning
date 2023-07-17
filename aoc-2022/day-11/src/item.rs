@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Item {
     pub worry: BigNum,
 }
@@ -15,8 +15,9 @@ impl Item {
         // first, mutate the worry value on inspection
         op.calculate(&mut self.worry);
 
-        // divide by three b/c no items are damaged
-        self.worry.divide_mut(worry_divisor);
+        if worry_divisor != 1 {
+            self.worry.divide_mut(worry_divisor);
+        }
     }
 }
 

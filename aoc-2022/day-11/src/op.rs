@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Op {
     left: Operand,
     op: Operator,
@@ -18,17 +18,17 @@ impl Op {
         match self.right {
             Operand::Old => match self.op {
                 Operator::Add => old.multiply_by(2),
-                Operator::Multiply => old.multiply(&old.clone()),
+                Operator::Multiply => old.square(),
             },
-            Operand::Value(ref v) => match self.op {
-                Operator::Add => old.add_num(*v),
-                Operator::Multiply => old.multiply_by(*v),
+            Operand::Value(v) => match self.op {
+                Operator::Add => old.add_num(v),
+                Operator::Multiply => old.multiply_by(v),
             },
         };
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Operand {
     Old,
     Value(u64),
@@ -46,7 +46,7 @@ impl Operand {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Operator {
     Add,
     Multiply,

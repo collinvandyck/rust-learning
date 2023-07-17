@@ -34,22 +34,17 @@ impl Game {
 
     fn round(&mut self) {
         for idx in 0..self.monkeys.len() {
-            self.run_monkey(idx).into_iter().for_each(|send| {
-                let dst = self.monkeys.get_mut(send.idx);
-                if dst.is_none() {
-                    panic!("Moneky does not exist at {}", send.idx);
-                }
-                dst.unwrap().add(send.item);
-            })
+            let moves = self.run_monkey(idx);
+            for mov in moves {
+                let dst = self.monkeys.get_mut(mov.idx).unwrap();
+                dst.add(mov.item);
+            }
         }
     }
 
     fn run_monkey(&mut self, idx: usize) -> Vec<SendTo> {
-        self.monkeys
-            .get_mut(idx)
-            .iter_mut()
-            .flat_map(|m| m.inspect())
-            .collect()
+        let m = self.monkeys.get_mut(idx).unwrap();
+        m.inspect()
     }
 }
 

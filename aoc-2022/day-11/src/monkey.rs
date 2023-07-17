@@ -20,14 +20,24 @@ pub struct SendTo {
 
 impl Monkey {
     pub fn inspect(&mut self) -> Vec<SendTo> {
-        self.items
-            .drain(..)
-            .map(|mut item| {
-                self.inspections += 1;
-                item.inspect(&self.op, self.worry_divisor);
-                let idx = self.test.evaluate(&item);
+        let items: Vec<Item> = self.items.drain(..).collect();
+        let mut handles = vec![];
+        self.inspections += items.len() as u32;
+        let op = self.op.clone();
+        let worry_divisor = self.worry_divisor.clone();
+        for mut item in items {
+            let op = op.clone();
+            let test = self.test.clone();
+            let handle = std::thread::spawn(move || {
+                item.inspect(&op, worry_divisor);
+                let idx = test.evaluate(&item);
                 SendTo { idx, item }
-            })
+            });
+            handles.push(handle);
+        }
+        handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
             .collect()
     }
     pub fn add(&mut self, item: Item) {
