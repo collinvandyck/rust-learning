@@ -1,8 +1,10 @@
 mod map;
+mod point;
 mod tile;
 
 mod prelude {
     pub use crate::map::*;
+    pub use crate::point::*;
     pub use crate::tile::*;
 }
 
