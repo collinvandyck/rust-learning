@@ -182,7 +182,6 @@ impl Map {
         println!("Path has {} entries", path.len());
         path.windows(2).for_each(|pair| {
             if let [p1, p2] = pair {
-                dbg!((p1, p2));
                 let ch = match p1.direction_to(p2) {
                     Direction::Up => '^',
                     Direction::Down => 'v',
