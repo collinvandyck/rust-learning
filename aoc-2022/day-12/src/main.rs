@@ -21,16 +21,24 @@ struct Solver<'a> {
     map: &'a Map,
     path: Path,
     visited: Visited,
+    cur: Point,
 }
 
 impl<'a> Solver<'a> {
-    fn solve(&'a self) -> &'a Path {
-        &self.path
-    }
     fn new(map: &'a Map) -> Self {
-        let path = Path(Vec::default());
-        let visited = Visited(HashSet::default());
-        Self { map, path, visited }
+        let cur = map.start.clone();
+        let path = Path(vec![cur]);
+        let visited = Visited(HashSet::from([cur]));
+        Self {
+            map,
+            path,
+            visited,
+            cur,
+        }
+    }
+    // solve attempts to find the shortest path from the start to the end.
+    fn solve(&'a mut self) -> &'a Path {
+        &self.path
     }
 }
 
@@ -45,7 +53,7 @@ struct Map {
 impl Map {
     fn solve(&self) {
         println!("Solve:\n{self}");
-        let solver = Solver::new(self);
+        let mut solver = Solver::new(self);
         let path = solver.solve();
         println!("Solution: {path:?}");
     }
