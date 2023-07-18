@@ -92,7 +92,7 @@ struct Map {
 
 impl Map {
     fn solve(&self) {
-        println!("Solve:\n{self}");
+        println!("Solve:\n{self}\n");
         let mut solver = Solver::new(self);
         match solver.solve() {
             None => eprintln!("No solution."),
@@ -151,7 +151,12 @@ impl Map {
         *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
     }
     fn render_path(&self, path: Vec<Point>) -> String {
-        String::from("test")
+        let tiles = self.tiles.clone();
+        tiles
+            .iter()
+            .map(|r| r.iter().collect::<String>())
+            .collect::<Vec<String>>()
+            .join("\n")
     }
     fn render(&self) -> String {
         self.tiles
