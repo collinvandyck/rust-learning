@@ -2,6 +2,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use std::{
+    collections::HashSet,
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
@@ -16,15 +17,23 @@ struct Point(usize, usize); // row,col
 
 struct Solver<'a> {
     map: &'a Map,
-    cur: Point,
 }
 
 impl<'a> Solver<'a> {
-    fn new(map: &'a Map, cur: Point) -> Self {
-        Self { map, cur }
+    fn new(map: &'a Map) -> Self {
+        Self { map }
     }
     // solve attempts to find the shortest path from the start to the end.
-    fn solve(&mut self) -> Option<bool> {
+    fn solve(&mut self) -> Option<Vec<Point>> {
+        let path = vec![self.map.start];
+        let visited = HashSet::new();
+        self.do_solve(path, visited)
+    }
+    fn do_solve(
+        &mut self,
+        mut path: Vec<Point>,
+        mut visited: HashSet<Point>,
+    ) -> Option<Vec<Point>> {
         None
     }
 }
@@ -40,7 +49,7 @@ struct Map {
 impl Map {
     fn solve(&self) {
         println!("Solve:\n{self}");
-        let mut solver = Solver::new(self, self.start);
+        let mut solver = Solver::new(self);
         let path = solver.solve();
         println!("Solution: {path:?}");
     }
