@@ -74,19 +74,31 @@ impl<'a> Solver<'a> {
         mut visited: HashSet<Point>,
     ) -> Option<Vec<Point>> {
         let current = path.last().unwrap();
-        //let current = dbg!(current);
+
+        // are we done?
         if current == &self.map.finish {
             return Some(path);
         }
+
+        // we are not done. mark the current node as being visited.
         visited.insert(*current);
-        let nexts = self.map.nexts(current);
+
+        // generate the next moves
+        let nexts = self.map.next_moves_from(current);
+
         let mut suffix: Option<Vec<Point>> = None;
         for next in nexts.into_iter().flatten() {
+            //
+            // if we have already seen the next node, don't bother.
             if visited.contains(&next) {
+                println!("We have already visited {next}");
                 continue;
             }
+
+            // clone path and push the next node onto it.
             let mut path = path.clone();
             path.push(next);
+
             let visited = visited.clone();
             let next_res = self.do_solve(path, visited);
             if let Some(next_res) = next_res {
@@ -134,7 +146,7 @@ impl Map {
     fn get(&self, p: &Point) -> char {
         *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
     }
-    fn nexts(&self, cur: &Point) -> [Option<Point>; 4] {
+    fn next_moves_from(&self, cur: &Point) -> [Option<Point>; 4] {
         [
             cur.adjust(-1, 0),
             cur.adjust(1, 0),
