@@ -12,9 +12,27 @@ fn main() {
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 struct Point(usize, usize); // row,col
 
+#[derive(Debug)]
 struct Path(Vec<Point>);
 
 struct Visited(HashSet<Point>);
+
+struct Solver<'a> {
+    map: &'a Map,
+    path: Path,
+    visited: Visited,
+}
+
+impl<'a> Solver<'a> {
+    fn solve(&'a self) -> &'a Path {
+        &self.path
+    }
+    fn new(map: &'a Map) -> Self {
+        let path = Path(Vec::default());
+        let visited = Visited(HashSet::default());
+        Self { map, path, visited }
+    }
+}
 
 struct Map {
     tiles: Vec<Vec<char>>,
@@ -27,12 +45,10 @@ struct Map {
 impl Map {
     fn solve(&self) {
         println!("Solve:\n{self}");
-        let cur = self.start;
-        let path = Path(Vec::default());
-        let visited = Visited(HashSet::default());
-        self.solve_it(cur, path, visited);
+        let solver = Solver::new(self);
+        let path = solver.solve();
+        println!("Solution: {path:?}");
     }
-    fn solve_it(&self, cur: Point, path: Path, visited: Visited) {}
     fn render(&self) -> String {
         self.tiles
             .iter()
