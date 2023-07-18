@@ -176,8 +176,11 @@ impl Map {
     }
     fn render_path(&self, path: Vec<Point>) -> String {
         let mut tiles = self.tiles.clone();
+        tiles
+            .iter_mut()
+            .for_each(|r| r.iter_mut().for_each(|c| *c = '.'));
         println!("Path has {} entries", path.len());
-        path.windows(2).map(|pair| {
+        path.windows(2).for_each(|pair| {
             if let [p1, p2] = pair {
                 dbg!((p1, p2));
                 let ch = match p1.direction_to(p2) {
@@ -188,7 +191,6 @@ impl Map {
                 };
                 *tiles.get_mut(p1.0).unwrap().get_mut(p1.1).unwrap() = ch;
             }
-            true
         });
         tiles
             .iter()
