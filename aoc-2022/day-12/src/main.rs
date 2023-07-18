@@ -17,11 +17,12 @@ struct Point(usize, usize); // row,col
 
 struct Solver<'a> {
     map: &'a Map,
+    cur: Point,
 }
 
 impl<'a> Solver<'a> {
-    fn new(map: &'a Map) -> Self {
-        Self { map }
+    fn new(map: &'a Map, cur: Point) -> Self {
+        Self { map, cur }
     }
     // solve attempts to find the shortest path from the start to the end.
     fn solve(&mut self) -> Option<bool> {
@@ -40,7 +41,7 @@ struct Map {
 impl Map {
     fn solve(&self) {
         println!("Solve:\n{self}");
-        let mut solver = Solver::new(self);
+        let mut solver = Solver::new(self, self.start);
         let path = solver.solve();
         println!("Solution: {path:?}");
     }
