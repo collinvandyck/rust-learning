@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::{
     collections::HashSet,
     fmt::Display,
@@ -21,19 +24,18 @@ struct Solver<'a> {
     map: &'a Map,
     path: Path,
     visited: Visited,
-    cur: Point,
+    cur: Option<Point>,
 }
 
 impl<'a> Solver<'a> {
     fn new(map: &'a Map) -> Self {
-        let cur = map.start.clone();
-        let path = Path(vec![cur]);
-        let visited = Visited(HashSet::from([cur]));
+        let path = Path(vec![]);
+        let visited = Visited(HashSet::new());
         Self {
             map,
             path,
             visited,
-            cur,
+            cur: None,
         }
     }
     // solve attempts to find the shortest path from the start to the end.
@@ -46,8 +48,8 @@ struct Map {
     tiles: Vec<Vec<char>>,
     start: Point,
     finish: Point,
-    _rows: usize,
-    _cols: usize,
+    rows: usize,
+    cols: usize,
 }
 
 impl Map {
@@ -86,8 +88,8 @@ impl Map {
             tiles,
             start,
             finish,
-            _rows: rows,
-            _cols: cols,
+            rows,
+            cols,
         }
     }
 }
