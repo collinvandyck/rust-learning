@@ -10,7 +10,7 @@ use std::{
 };
 
 fn main() {
-    run("example-small.txt");
+    run("example-nano.txt");
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
