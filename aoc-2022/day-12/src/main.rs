@@ -50,7 +50,7 @@ impl<'a> Solver<'a> {
         mut visited: HashSet<Point>,
     ) -> Option<Vec<Point>> {
         let current = path.last().unwrap();
-        let current = dbg!(current);
+        //let current = dbg!(current);
         if current == &self.map.finish {
             return Some(path);
         }
@@ -94,8 +94,13 @@ impl Map {
     fn solve(&self) {
         println!("Solve:\n{self}");
         let mut solver = Solver::new(self);
-        let path = solver.solve();
-        println!("Solution: {path:?}");
+        match solver.solve() {
+            None => eprintln!("No solution."),
+            Some(path) => {
+                let rendered = self.render_path(path);
+                println!("Solution:\n{rendered}");
+            }
+        }
     }
     fn distance(&self, from: &Point, to: &Point) -> i32 {
         let from = self.get(from) as i32;
@@ -144,6 +149,9 @@ impl Map {
     }
     fn get_char(&self, p: &Point) -> char {
         *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
+    }
+    fn render_path(&self, path: Vec<Point>) -> String {
+        String::from("test")
     }
     fn render(&self) -> String {
         self.tiles
