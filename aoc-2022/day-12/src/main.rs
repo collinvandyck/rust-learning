@@ -133,7 +133,14 @@ impl Map {
     fn can_move(&self, from: &Point, to: &Point) -> bool {
         let from = self.get_char(from) as u8;
         let to = self.get_char(to) as u8;
-        (to - from) <= 1
+        if to <= from {
+            return true;
+        }
+        // to is > from. we must make sure the difference is only 1
+        if to == from + 1 {
+            return true;
+        }
+        false
     }
     fn get_char(&self, p: &Point) -> char {
         *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
