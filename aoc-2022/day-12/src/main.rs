@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
@@ -8,8 +9,12 @@ fn main() {
     run("example.txt");
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 struct Point(usize, usize); // row,col
+
+struct Path(Vec<Point>);
+
+struct Visited(HashSet<Point>);
 
 struct Map {
     tiles: Vec<Vec<char>>,
@@ -20,9 +25,14 @@ struct Map {
 }
 
 impl Map {
-    fn solve(&mut self) {
+    fn solve(&self) {
         println!("Solve:\n{self}");
+        let cur = self.start;
+        let path = Path(Vec::default());
+        let visited = Visited(HashSet::default());
+        self.solve_it(cur, path, visited);
     }
+    fn solve_it(&self, cur: Point, path: Path, visited: Visited) {}
     fn render(&self) -> String {
         self.tiles
             .iter()
