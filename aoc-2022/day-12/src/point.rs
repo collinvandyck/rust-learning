@@ -26,10 +26,16 @@ impl Point {
                     })
                 }
             }
-            Direction::Down => Some(Point {
-                row: self.row + 1,
-                col: self.col,
-            }),
+            Direction::Down => {
+                if map.rows() == self.row + 1 {
+                    None
+                } else {
+                    Some(Point {
+                        row: self.row + 1,
+                        col: self.col,
+                    })
+                }
+            }
             Direction::Left => {
                 if self.col == 0 {
                     None
@@ -40,13 +46,22 @@ impl Point {
                     })
                 }
             }
-            Direction::Right => Some(Point {
-                row: self.row,
-                col: self.col + 1,
-            }),
+            Direction::Right => {
+                if map.cols() == self.col + 1 {
+                    None
+                } else {
+                    Some(Point {
+                        row: self.row,
+                        col: self.col + 1,
+                    })
+                }
+            }
         }
     }
     pub fn new(row: usize, col: usize) -> Self {
         Self { row, col }
+    }
+    pub fn matches(&self, row: usize, col: usize) -> bool {
+        self.row == row && self.col == col
     }
 }

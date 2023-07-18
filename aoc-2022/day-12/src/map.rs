@@ -11,14 +11,8 @@ impl Map {
         Self { tiles, width }
     }
     pub fn tile<'a>(&'a self, point: &Point) -> Option<&'a Tile> {
-        if point.row < 0 || point.row >= self.rows() {
-            None
-        } else if point.col < 0 || point.col >= self.cols() {
-            None
-        } else {
-            let idx = self.idx(point);
-            self.tiles.get(idx)
-        }
+        let idx = self.idx(point);
+        self.tiles.get(idx)
     }
     fn idx(&self, point: &Point) -> usize {
         point.row * self.cols() + point.col
