@@ -53,10 +53,12 @@ impl<'a> Solver<'a> {
         if current == &self.map.finish {
             return Some(path);
         }
+        visited.insert(*current);
         // we're not done yet. try to solve in possibly four directions.
         let nexts = self.map.nexts(current);
-        for next in nexts {}
-        dbg!(nexts);
+        for next in nexts.into_iter().flatten() {
+            dbg!(next);
+        }
         None
     }
 }
