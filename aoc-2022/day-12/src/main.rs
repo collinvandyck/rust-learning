@@ -75,12 +75,14 @@ impl<'a> Solver<'a> {
     ) -> Option<Vec<Point>> {
         let current = path.last().unwrap();
 
+        /*
         let pathdbg = path
             .iter()
             .map(Point::to_string)
             .collect::<Vec<String>>()
             .join(",");
         println!("cur:{current}: ch:{} path:{pathdbg}", self.map.get(current));
+        */
 
         // are we done?
         if current == &self.map.finish {
@@ -204,6 +206,16 @@ impl Map {
                 *tiles.get_mut(p1.0).unwrap().get_mut(p1.1).unwrap() = ch;
             }
         });
+        *tiles
+            .get_mut(self.start.0)
+            .unwrap()
+            .get_mut(self.start.1)
+            .unwrap() = 'S';
+        *tiles
+            .get_mut(self.finish.0)
+            .unwrap()
+            .get_mut(self.finish.1)
+            .unwrap() = 'E';
         tiles
             .iter()
             .map(|r| r.iter().collect::<String>())
