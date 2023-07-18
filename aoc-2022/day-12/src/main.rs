@@ -10,7 +10,7 @@ use std::{
 };
 
 fn main() {
-    run("example-nano.txt");
+    run("example-small.txt");
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
@@ -75,7 +75,12 @@ impl<'a> Solver<'a> {
     ) -> Option<Vec<Point>> {
         let current = path.last().unwrap();
 
-        println!("Current: {current}: {}", self.map.get(current));
+        let pathdbg = path
+            .iter()
+            .map(Point::to_string)
+            .collect::<Vec<String>>()
+            .join(",");
+        println!("cur:{current}: ch:{} path:{pathdbg}", self.map.get(current));
 
         // are we done?
         if current == &self.map.finish {
@@ -88,12 +93,11 @@ impl<'a> Solver<'a> {
         // generate the next moves
         let nexts = self.map.next_moves_from(current);
 
-        let mut suffix: Option<Vec<Point>> = None;
+        let mut res: Option<Vec<Point>> = None;
         for next in nexts.into_iter().flatten() {
             //
             // if we have already seen the next node, don't bother.
             if visited.contains(&next) {
-                println!("We have already visited {next}");
                 continue;
             }
 
@@ -104,19 +108,14 @@ impl<'a> Solver<'a> {
             let visited = visited.clone();
             let next_res = self.do_solve(path, visited);
             if let Some(next_res) = next_res {
-                suffix = match suffix {
+                res = match res {
                     None => Some(next_res),
                     Some(existing) if next_res.len() < existing.len() => Some(next_res),
-                    _ => suffix,
+                    _ => res,
                 }
             }
         }
-        if let Some(mut suffix) = suffix {
-            path.append(&mut suffix);
-            Some(path)
-        } else {
-            None
-        }
+        res
     }
 }
 
