@@ -6,6 +6,7 @@ use std::{
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
+    slice::SliceIndex,
 };
 
 fn main() {
@@ -109,7 +110,13 @@ impl Map {
         })
     }
     fn can_move(&self, from: &Point, to: &Point) -> bool {
-        true
+        let (from, to) = dbg!(from, to);
+        let from = dbg!(self.get_char(&from)) as u8;
+        let to = dbg!(self.get_char(&to)) as u8;
+        dbg!(to - from) <= 1
+    }
+    fn get_char(&self, p: &Point) -> char {
+        *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
     }
     fn render(&self) -> String {
         self.tiles
