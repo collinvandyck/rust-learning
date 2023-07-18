@@ -131,8 +131,8 @@ impl Map {
         })
     }
     fn can_move(&self, from: &Point, to: &Point) -> bool {
-        let from = self.get_char(&from) as u8;
-        let to = self.get_char(&to) as u8;
+        let from = self.get_char(from) as u8;
+        let to = self.get_char(to) as u8;
         (to - from) <= 1
     }
     fn get_char(&self, p: &Point) -> char {
