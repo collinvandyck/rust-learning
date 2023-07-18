@@ -9,7 +9,7 @@ use std::{
 };
 
 fn main() {
-    run("example.txt");
+    run("example-small.txt");
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
@@ -34,15 +34,22 @@ impl Path {
     fn append(&mut self, mut other: Path) {
         self.0.append(&mut other.0);
     }
+    fn contains(&self, p: &Point) -> bool {
+        self.0.contains(p)
+    }
 }
 
+#[derive(Debug)]
 struct Visited(HashSet<Point>);
 
 impl Visited {
     fn add(&mut self, point: Point) {
+        self.0.insert(point);
+        /*
         if !self.0.insert(point) {
             panic!("visited already contains {point:?}");
         }
+        */
     }
     fn contains(&self, point: &Point) -> bool {
         self.0.contains(point)
@@ -51,32 +58,26 @@ impl Visited {
 
 struct Solver<'a> {
     map: &'a Map,
-    visited: Visited,
 }
 
 impl<'a> Solver<'a> {
     fn new(map: &'a Map) -> Self {
-        let visited = Visited(HashSet::new());
-        Self { map, visited }
+        Self { map }
     }
     // solve attempts to find the shortest path from the start to the end.
     fn solve(&'a mut self) -> Option<Path> {
         self.do_solve(self.map.start)
     }
-    fn do_solve(&mut self, mut cur: Point) -> Option<Path> {
-        cur = dbg!(cur);
+    fn do_solve(&mut self, cur: Point) -> Option<Path> {
         let mut path = Path(vec![cur]);
 
         // check to see if solved
         if self.is_finished(cur) {
             return Some(path);
         }
-        // mark the cur point as being visited
-        self.visited.add(cur);
-
         // recurse into each direction
         let mut res: Option<Path> = None;
-        for next in self.next_points(&cur) {
+        for next in self.next_points(&path) {
             if let Some(next_path) = self.do_solve(next) {
                 res = match res {
                     None => Some(next_path),
@@ -94,37 +95,38 @@ impl<'a> Solver<'a> {
     fn is_finished(&self, point: Point) -> bool {
         point == self.map.finish
     }
-    fn next_points(&self, cur: &Point) -> impl Iterator<Item = Point> {
+    fn next_points(&self, path: &Path) -> impl Iterator<Item = Point> {
         let mut v = Vec::with_capacity(4);
-        let Point(row, col) = cur.clone();
+        let cur @ Point(row, col) = path.last().unwrap().clone();
         if row > 0 {
             let point = Point(row - 1, col);
-            if self.can_move(cur, &point) {
+            if self.can_move(&cur, &point, &path) {
                 v.push(point);
             }
         }
         if col > 0 {
             let point = Point(row, col - 1);
-            if self.can_move(cur, &point) {
+            if self.can_move(&cur, &point, &path) {
                 v.push(point);
             }
         }
         if row < self.map.rows - 1 {
             let point = Point(row + 1, col);
-            if self.can_move(cur, &point) {
+            if self.can_move(&cur, &point, &path) {
                 v.push(point);
             }
         }
         if col < self.map.cols - 1 {
             let point = Point(row, col + 1);
-            if self.can_move(cur, &point) {
+            if self.can_move(&cur, &point, &path) {
                 v.push(point);
             }
         }
         v.into_iter()
     }
-    fn can_move(&self, from: &Point, to: &Point) -> bool {
-        if self.visited.contains(to) {
+    fn can_move(&self, from: &Point, to: &Point, path: &Path) -> bool {
+        println!("Can move: {from:?} -> {to:?}");
+        if path.contains(to) {
             return false;
         }
         let distance = self.map.distance(from, to);
@@ -225,6 +227,6 @@ fn run(filename: &str) {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let lines = read.lines().flatten();
-    let mut map = read_map(lines);
+    let map = read_map(lines);
     map.solve();
 }
