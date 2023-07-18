@@ -54,33 +54,6 @@ enum Direction {
     Right,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_visited_cloning() {
-        let mut visited = HashSet::new();
-        let p1 = Point(1, 1);
-        let p2 = Point(2, 2);
-        let p3 = Point(3, 3);
-        visited.insert(p1);
-        assert!(visited.contains(&p1));
-        {
-            let mut visited = visited.clone();
-            assert!(visited.contains(&p1));
-            assert!(!visited.contains(&p2));
-            assert!(!visited.contains(&p3));
-            visited.insert(p2);
-            assert!(visited.contains(&p1));
-            assert!(visited.contains(&p2));
-            assert!(!visited.contains(&p3));
-        }
-        assert!(visited.contains(&p1));
-        assert!(!visited.contains(&p2));
-        assert!(!visited.contains(&p3));
-    }
-}
-
 struct Solver<'a> {
     map: &'a Map,
 }
@@ -308,4 +281,31 @@ fn run(filename: &str) {
     let lines = read.lines().flatten();
     let map = read_map(lines);
     map.solve();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_visited_cloning() {
+        let mut visited = HashSet::new();
+        let p1 = Point(1, 1);
+        let p2 = Point(2, 2);
+        let p3 = Point(3, 3);
+        visited.insert(p1);
+        assert!(visited.contains(&p1));
+        {
+            let mut visited = visited.clone();
+            assert!(visited.contains(&p1));
+            assert!(!visited.contains(&p2));
+            assert!(!visited.contains(&p3));
+            visited.insert(p2);
+            assert!(visited.contains(&p1));
+            assert!(visited.contains(&p2));
+            assert!(!visited.contains(&p3));
+        }
+        assert!(visited.contains(&p1));
+        assert!(!visited.contains(&p2));
+        assert!(!visited.contains(&p3));
+    }
 }
