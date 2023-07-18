@@ -54,6 +54,18 @@ enum Direction {
     Right,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_visited_cloning() {
+        let mut visited = HashSet::new();
+        let p1 = Point(1, 1);
+        visited.insert(p1);
+        assert!(visited.contains(&p1));
+    }
+}
+
 struct Solver<'a> {
     map: &'a Map,
 }
