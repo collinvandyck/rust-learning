@@ -75,6 +75,9 @@ mod tests {
             assert!(visited.contains(&p2));
             assert!(!visited.contains(&p3));
         }
+        assert!(visited.contains(&p1));
+        assert!(!visited.contains(&p2));
+        assert!(!visited.contains(&p3));
     }
 }
 
