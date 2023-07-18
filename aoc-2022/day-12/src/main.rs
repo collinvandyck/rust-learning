@@ -50,15 +50,35 @@ impl<'a> Solver<'a> {
         mut visited: HashSet<Point>,
     ) -> Option<Vec<Point>> {
         let current = path.last().unwrap();
+        let current = dbg!(current);
         if current == &self.map.finish {
             return Some(path);
         }
         visited.insert(*current);
         let nexts = self.map.nexts(current);
+        let mut suffix: Option<Vec<Point>> = None;
         for next in nexts.into_iter().flatten() {
-            dbg!(next);
+            if visited.contains(&next) {
+                continue;
+            }
+            let mut path = path.clone();
+            path.push(next);
+            let visited = visited.clone();
+            let next_res = self.do_solve(path, visited);
+            if let Some(next_res) = next_res {
+                suffix = match suffix {
+                    None => Some(next_res),
+                    Some(existing) if next_res.len() < existing.len() => Some(next_res),
+                    _ => suffix,
+                }
+            }
         }
-        None
+        if let Some(mut suffix) = suffix {
+            path.append(&mut suffix);
+            Some(path)
+        } else {
+            None
+        }
     }
 }
 
