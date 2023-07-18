@@ -16,6 +16,12 @@ fn main() {
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 struct Point(usize, usize); // row,col
 
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.0, self.1)
+    }
+}
+
 impl Point {
     fn adjust(&self, rows: i32, cols: i32) -> Option<Point> {
         if rows < 0 && self.0 == 0 {
@@ -28,6 +34,24 @@ impl Point {
             Some(Self(new_rows, new_cols))
         }
     }
+    fn direction_to(&self, other: &Point) -> Direction {
+        if other.0 > self.0 {
+            Direction::Down
+        } else if other.0 < self.0 {
+            Direction::Up
+        } else if other.1 > self.1 {
+            Direction::Right
+        } else {
+            Direction::Left
+        }
+    }
+}
+
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 struct Solver<'a> {
@@ -151,7 +175,21 @@ impl Map {
         *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
     }
     fn render_path(&self, path: Vec<Point>) -> String {
-        let tiles = self.tiles.clone();
+        let mut tiles = self.tiles.clone();
+        println!("Path has {} entries", path.len());
+        path.windows(2).map(|pair| {
+            if let [p1, p2] = pair {
+                dbg!((p1, p2));
+                let ch = match p1.direction_to(p2) {
+                    Direction::Up => '^',
+                    Direction::Down => 'v',
+                    Direction::Left => '<',
+                    Direction::Right => '>',
+                };
+                *tiles.get_mut(p1.0).unwrap().get_mut(p1.1).unwrap() = ch;
+            }
+            true
+        });
         tiles
             .iter()
             .map(|r| r.iter().collect::<String>())
