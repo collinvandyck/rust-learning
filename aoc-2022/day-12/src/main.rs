@@ -75,6 +75,8 @@ impl<'a> Solver<'a> {
     ) -> Option<Vec<Point>> {
         let current = path.last().unwrap();
 
+        println!("Current: {current}: {}", self.map.get(current));
+
         // are we done?
         if current == &self.map.finish {
             return Some(path);
