@@ -2,7 +2,6 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use std::{
-    collections::HashSet,
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
