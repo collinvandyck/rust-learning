@@ -15,47 +15,6 @@ fn main() {
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 struct Point(usize, usize); // row,col
 
-#[derive(Debug)]
-struct Path(Vec<Point>);
-
-impl Path {
-    fn last(&self) -> Option<&Point> {
-        self.0.last()
-    }
-    fn push(&mut self, point: Point) {
-        self.0.push(point);
-    }
-    fn pop(&mut self) {
-        self.0.pop();
-    }
-    fn len(&self) -> usize {
-        self.0.len()
-    }
-    fn append(&mut self, mut other: Path) {
-        self.0.append(&mut other.0);
-    }
-    fn contains(&self, p: &Point) -> bool {
-        self.0.contains(p)
-    }
-}
-
-#[derive(Debug)]
-struct Visited(HashSet<Point>);
-
-impl Visited {
-    fn add(&mut self, point: Point) {
-        self.0.insert(point);
-        /*
-        if !self.0.insert(point) {
-            panic!("visited already contains {point:?}");
-        }
-        */
-    }
-    fn contains(&self, point: &Point) -> bool {
-        self.0.contains(point)
-    }
-}
-
 struct Solver<'a> {
     map: &'a Map,
 }
@@ -65,72 +24,8 @@ impl<'a> Solver<'a> {
         Self { map }
     }
     // solve attempts to find the shortest path from the start to the end.
-    fn solve(&'a mut self) -> Option<Path> {
-        self.do_solve(self.map.start)
-    }
-    fn do_solve(&mut self, cur: Point) -> Option<Path> {
-        let mut path = Path(vec![cur]);
-
-        // check to see if solved
-        if self.is_finished(cur) {
-            return Some(path);
-        }
-        // recurse into each direction
-        let mut res: Option<Path> = None;
-        for next in self.next_points(&path) {
-            if let Some(next_path) = self.do_solve(next) {
-                res = match res {
-                    None => Some(next_path),
-                    Some(r) if r.len() < next_path.len() => Some(r),
-                    _ => Some(next_path),
-                }
-            }
-        }
-        // if there was a result, append it to our path
-        res.map(|r| {
-            path.append(r);
-            path
-        })
-    }
-    fn is_finished(&self, point: Point) -> bool {
-        point == self.map.finish
-    }
-    fn next_points(&self, path: &Path) -> impl Iterator<Item = Point> {
-        let mut v = Vec::with_capacity(4);
-        let cur @ Point(row, col) = path.last().unwrap().clone();
-        if row > 0 {
-            let point = Point(row - 1, col);
-            if self.can_move(&cur, &point, &path) {
-                v.push(point);
-            }
-        }
-        if col > 0 {
-            let point = Point(row, col - 1);
-            if self.can_move(&cur, &point, &path) {
-                v.push(point);
-            }
-        }
-        if row < self.map.rows - 1 {
-            let point = Point(row + 1, col);
-            if self.can_move(&cur, &point, &path) {
-                v.push(point);
-            }
-        }
-        if col < self.map.cols - 1 {
-            let point = Point(row, col + 1);
-            if self.can_move(&cur, &point, &path) {
-                v.push(point);
-            }
-        }
-        v.into_iter()
-    }
-    fn can_move(&self, from: &Point, to: &Point, path: &Path) -> bool {
-        println!("Can move: {from:?} -> {to:?}");
-        if path.contains(to) {
-            return false;
-        }
-        let distance = self.map.distance(from, to);
-        distance <= 1
+    fn solve(&mut self) -> Option<bool> {
+        None
     }
 }
 
