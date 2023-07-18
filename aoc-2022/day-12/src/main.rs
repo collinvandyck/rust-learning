@@ -22,8 +22,17 @@ impl Path {
     fn last(&self) -> Option<&Point> {
         self.0.last()
     }
-    fn add(&mut self, point: Point) {
+    fn push(&mut self, point: Point) {
         self.0.push(point);
+    }
+    fn pop(&mut self) {
+        self.0.pop();
+    }
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn append(&mut self, mut other: Path) {
+        self.0.append(&mut other.0);
     }
 }
 
@@ -42,55 +51,75 @@ impl Visited {
 
 struct Solver<'a> {
     map: &'a Map,
-    path: Path,
     visited: Visited,
 }
 
 impl<'a> Solver<'a> {
     fn new(map: &'a Map) -> Self {
-        let path = Path(vec![]);
         let visited = Visited(HashSet::new());
-        Self { map, path, visited }
+        Self { map, visited }
     }
     // solve attempts to find the shortest path from the start to the end.
-    fn solve(&'a mut self) -> &'a Path {
-        for next in self.next_points() {
-            dbg!(next);
-            self.path.add(next);
-            self.visited.add(next);
-        }
-        &self.path
+    fn solve(&'a mut self) -> Option<Path> {
+        self.do_solve(self.map.start)
     }
-    fn next_points(&self) -> impl Iterator<Item = Point> {
-        let mut v = Vec::with_capacity(4);
-        match self.path.last() {
-            Some(cur @ &Point(row, col)) => {
-                if row > 0 {
-                    let point = Point(row - 1, col);
-                    if self.can_move(cur, &point) {
-                        v.push(point);
-                    }
-                }
-                if col > 0 {
-                    let point = Point(row, col - 1);
-                    if self.can_move(cur, &point) {
-                        v.push(point);
-                    }
-                }
-                if row < self.map.rows - 1 {
-                    let point = Point(row + 1, col);
-                    if self.can_move(cur, &point) {
-                        v.push(point);
-                    }
-                }
-                if col < self.map.cols - 1 {
-                    let point = Point(row, col + 1);
-                    if self.can_move(cur, &point) {
-                        v.push(point);
-                    }
+    fn do_solve(&mut self, mut cur: Point) -> Option<Path> {
+        cur = dbg!(cur);
+        let mut path = Path(vec![cur]);
+
+        // check to see if solved
+        if self.is_finished(cur) {
+            return Some(path);
+        }
+        // mark the cur point as being visited
+        self.visited.add(cur);
+
+        // recurse into each direction
+        let mut res: Option<Path> = None;
+        for next in self.next_points(&cur) {
+            if let Some(next_path) = self.do_solve(next) {
+                res = match res {
+                    None => Some(next_path),
+                    Some(r) if r.len() < next_path.len() => Some(r),
+                    _ => Some(next_path),
                 }
             }
-            None => v.push(self.map.start),
+        }
+        // if there was a result, append it to our path
+        res.map(|r| {
+            path.append(r);
+            path
+        })
+    }
+    fn is_finished(&self, point: Point) -> bool {
+        point == self.map.finish
+    }
+    fn next_points(&self, cur: &Point) -> impl Iterator<Item = Point> {
+        let mut v = Vec::with_capacity(4);
+        let Point(row, col) = cur.clone();
+        if row > 0 {
+            let point = Point(row - 1, col);
+            if self.can_move(cur, &point) {
+                v.push(point);
+            }
+        }
+        if col > 0 {
+            let point = Point(row, col - 1);
+            if self.can_move(cur, &point) {
+                v.push(point);
+            }
+        }
+        if row < self.map.rows - 1 {
+            let point = Point(row + 1, col);
+            if self.can_move(cur, &point) {
+                v.push(point);
+            }
+        }
+        if col < self.map.cols - 1 {
+            let point = Point(row, col + 1);
+            if self.can_move(cur, &point) {
+                v.push(point);
+            }
         }
         v.into_iter()
     }
