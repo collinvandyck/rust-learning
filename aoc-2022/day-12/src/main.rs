@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    fs::{self, File},
+    fs::File,
     io::{BufRead, BufReader},
 };
 
@@ -15,8 +15,8 @@ struct Map {
     tiles: Vec<Vec<char>>,
     start: Point,
     finish: Point,
-    rows: usize,
-    cols: usize,
+    _rows: usize,
+    _cols: usize,
 }
 
 impl Map {
@@ -52,8 +52,8 @@ impl Map {
             tiles,
             start,
             finish,
-            rows,
-            cols,
+            _rows: rows,
+            _cols: cols,
         }
     }
 }
