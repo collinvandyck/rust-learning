@@ -54,7 +54,6 @@ impl<'a> Solver<'a> {
             return Some(path);
         }
         visited.insert(*current);
-        // we're not done yet. try to solve in possibly four directions.
         let nexts = self.map.nexts(current);
         for next in nexts.into_iter().flatten() {
             dbg!(next);
