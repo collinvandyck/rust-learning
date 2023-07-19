@@ -18,7 +18,6 @@ fn main() {
     part_two("example.txt");
     part_one("input.txt");
     part_two("input.txt");
-    // part_one("input.txt");
 }
 
 fn part_two(filename: &str) {
