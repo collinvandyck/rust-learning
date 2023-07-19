@@ -2,7 +2,7 @@ use std::{iter::Peekable, str::Chars};
 
 #[derive(Debug)]
 pub enum Packet {
-    Value(i32),
+    Value(u32),
     List(Vec<Packet>),
 }
 
@@ -25,7 +25,7 @@ fn parse_chars(chars: &mut Peekable<Chars>) -> Packet {
     }
 }
 
-fn consume_num(chars: &mut Peekable<Chars>) -> i32 {
+fn consume_num(chars: &mut Peekable<Chars>) -> u32 {
     let mut factor = 1;
     let mut res = 0;
     loop {
@@ -38,7 +38,7 @@ fn consume_num(chars: &mut Peekable<Chars>) -> i32 {
         }
         break;
     }
-    res.try_into().unwrap()
+    res
 }
 
 fn consume_list(chars: &mut Peekable<Chars>) -> Vec<Packet> {
