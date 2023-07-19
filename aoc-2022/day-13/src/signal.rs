@@ -25,7 +25,7 @@ impl Display for Packet {
 impl Packet {
     pub fn cmp(&self, other: &Packet) -> Ordering {
         let debug = false;
-        let res = self.do_cmp(&other, debug, 0);
+        let res = self.do_cmp(other, debug, 0);
         if debug {
             println!("{res:?}");
         }
@@ -57,7 +57,7 @@ impl Packet {
             (Value(left), right @ List(_)) => {
                 // convert left to a list
                 let left = Packet::List(vec![Packet::Value(*left)]);
-                left.do_cmp(&right, debug, depth + 1)
+                left.do_cmp(right, debug, depth + 1)
             }
         }
     }
@@ -110,7 +110,7 @@ fn parse_chars(chars: &mut Peekable<Chars>) -> Packet {
 fn consume_num(chars: &mut Peekable<Chars>) -> u32 {
     let mut buf = String::new();
     while let Some(ch) = chars.peek() {
-        if let Some(_) = ch.to_digit(10) {
+        if ch.is_ascii_digit() {
             buf.push(*ch);
             chars.next();
             continue;

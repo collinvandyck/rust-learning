@@ -23,8 +23,7 @@ fn main() {
 fn part_two(filename: &str) {
     let mut packets = read_pairs(filename)
         .into_iter()
-        .map(|p| vec![p.left, p.right])
-        .flatten()
+        .flat_map(|p| vec![p.left, p.right])
         .collect::<Vec<_>>();
     let d1 = parse_packet("[[2]]".to_string());
     let d2 = parse_packet("[[6]]".to_string());
