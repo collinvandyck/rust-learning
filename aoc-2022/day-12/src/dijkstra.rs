@@ -6,18 +6,30 @@ pub struct Dijkstra {
     map: Map,
     unvisited: HashMap<Point, Node>,
     visited: HashSet<Node>,
-    current: Point,
 }
 
 impl Solver for Dijkstra {
     fn solve(&mut self) -> Option<Vec<crate::Point>> {
         // get the current node
-        let current_distance = self.unvisited.get(&self.current).unwrap().distance;
+        let cur_point = match self.next_point() {
+            Some(point) => point,
+            None => {
+                eprintln!("Ran out of nodes!");
+                return None;
+            }
+        };
+        let current = self.unvisited.remove(&cur_point).unwrap();
+        dbg!(current);
+
+        if current.point == self.map.finish {
+            println!("We're done!");
+            return None;
+        }
 
         // get the next unvisited nodes from where we are
         let nexts = self
             .map
-            .next_moves_from(&self.current)
+            .next_moves_from(&cur_point)
             .into_iter()
             .flatten()
             .filter(|p| self.unvisited.contains_key(p))
@@ -25,25 +37,28 @@ impl Solver for Dijkstra {
 
         for next in nexts {
             let node: &mut Node = self.unvisited.get_mut(&next).unwrap();
-            let distance = current_distance + 1;
+            let distance = current.distance + 1;
             // set the new distance on the node if it's shorter
             if distance < node.distance {
                 node.distance = distance;
             }
             dbg!(node);
         }
-
-        let removed = self.unvisited.remove(&self.current).unwrap();
-        self.visited.insert(removed);
-        dbg!(removed);
-
         None
     }
 }
 
 impl Dijkstra {
+    // find the smallest distance node in the unvisited set
+    fn next_point(&self) -> Option<Point> {
+        self.unvisited
+            .iter()
+            .filter(|(point, node)| node.distance < i64::MAX)
+            .map(|(p1, n1)| n1)
+            .reduce(|n1, n2| if n1.distance < n2.distance { n1 } else { n2 })
+            .map(|n| n.point)
+    }
     pub fn new(map: Map) -> Self {
-        let current = map.start;
         let mut unvisited = HashMap::new();
         for row in 0..map.rows {
             for col in 0..map.cols {
@@ -60,7 +75,6 @@ impl Dijkstra {
         Self {
             map,
             unvisited,
-            current,
             visited,
         }
     }
