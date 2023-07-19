@@ -154,6 +154,7 @@ mod test {
                 false,
             ),
         ];
+        let ordered: Vec<(&str, &str, bool)> = vec![("[1,1,3,1,1]", "[1,1,5,1,1]", true)];
         for (one, two, ordered) in ordered {
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());

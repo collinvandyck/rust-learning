@@ -26,6 +26,11 @@ tasks:
     cmds:
       - $(fd -t x -d 1 . target/release) {{.CLI_ARGS}}
     silent: true
+  tt:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - cargo test -- --nocapture
+    silent: true
   test:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
