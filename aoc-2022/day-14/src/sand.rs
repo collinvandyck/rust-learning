@@ -1,3 +1,5 @@
+use std::vec;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Point(i32, i32);
 
@@ -29,7 +31,13 @@ impl Formation {
 }
 
 #[derive(Debug)]
+struct Tile {
+    point: Point,
+}
+
+#[derive(Debug)]
 pub struct Cave {
+    tiles: Vec<Vec<Tile>>,
     min: Point,
     max: Point,
 }
@@ -43,6 +51,17 @@ impl Cave {
             max.0 = i32::max(max.0, point.0);
             max.1 = i32::max(max.1, point.1);
         });
-        Cave { min, max }
+        let mut tiles = vec![];
+        for row_idx in min.1..=max.1 {
+            let mut row = vec![];
+            for col_idx in min.0..=max.0 {
+                let tile = Tile {
+                    point: Point(row_idx, col_idx),
+                };
+                row.push(tile);
+            }
+            tiles.push(row);
+        }
+        Cave { min, max, tiles }
     }
 }
