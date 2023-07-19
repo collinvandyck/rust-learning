@@ -288,19 +288,27 @@ fn run(args: &Args) {
     let read = BufReader::new(file);
     let lines = read.lines().flatten();
     let map = read_map(lines);
+    part_one(args, &map);
+}
+
+fn part_one(args: &Args, map: &Map) {
     let mut solver = get_solver(args, &map);
-    println!("{map}");
+    println!("{map}\n");
     let start = Instant::now();
     let res = solver.solve();
     match res {
         None => eprintln!("No solution."),
         Some(path) => {
             let rendered = map.render_path(&path);
-            println!("Solution:\n{rendered}");
+            println!("{rendered}");
         }
     }
     let duration = start.elapsed();
-    println!("Elapsed: {}.{}s", duration.as_secs(), duration.as_millis());
+    println!(
+        "p1: Elapsed: {}.{}s",
+        duration.as_secs(),
+        duration.as_millis()
+    );
 }
 
 pub trait Solver {
