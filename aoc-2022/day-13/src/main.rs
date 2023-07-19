@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::{
     fs::File,
     io::{BufRead, BufReader},
@@ -12,27 +13,17 @@ mod prelude {
 use prelude::*;
 
 fn main() {
-    part_one("example.txt");
-    part_one("input.txt");
+    //part_one("example.txt");
+    //part_one("input.txt");
+    test_part_one("example.txt");
 }
 
-fn test_part_one(filename: &str) {}
-
-fn read_pairs(filename: &str) -> Vec<Pair> {
-    let file = File::open(filename).unwrap();
-    let read = BufReader::new(file);
-    let mut iter = read.lines().flatten();
-    let mut pairs = vec![];
-    loop {
-        let one = iter.next().unwrap();
-        let two = iter.next().unwrap();
-        let pair = parse_pair(one, two);
-        pairs.push(pair);
-        if iter.next().is_none() {
-            break;
-        }
-    }
-    pairs
+fn test_part_one(filename: &str) {
+    read_pairs(filename).iter().take(1).for_each(|pair| {
+        println!("{pair}\n");
+        let ordered = pair.is_ordered();
+        println!("Testing: pair is ordered: {ordered}");
+    })
 }
 
 fn part_one(filename: &str) {
@@ -50,4 +41,21 @@ fn part_one(filename: &str) {
         .flatten()
         .sum();
     println!("{filename}: Sum of indices: {sum}");
+}
+
+fn read_pairs(filename: &str) -> Vec<Pair> {
+    let file = File::open(filename).unwrap();
+    let read = BufReader::new(file);
+    let mut iter = read.lines().flatten();
+    let mut pairs = vec![];
+    loop {
+        let one = iter.next().unwrap();
+        let two = iter.next().unwrap();
+        let pair = parse_pair(one, two);
+        pairs.push(pair);
+        if iter.next().is_none() {
+            break;
+        }
+    }
+    pairs
 }
