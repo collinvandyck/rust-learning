@@ -11,11 +11,11 @@ use std::{
 };
 
 pub struct Solver<'a> {
-    pub map: &'a Map,
-    pub iterations: u64,
-    pub visits: HashMap<Point, usize>, // point, depth
-    pub min_solve: Option<usize>,
-    pub short_circuits: u64,
+    map: &'a Map,
+    iterations: u64,
+    visits: HashMap<Point, usize>, // point, depth
+    min_solve: Option<usize>,
+    short_circuits: u64,
 }
 
 impl<'a> Solver<'a> {
@@ -36,7 +36,18 @@ impl<'a> Solver<'a> {
     pub fn solve(&mut self) -> Option<Vec<Point>> {
         let path = vec![self.map.start];
         let visited = HashSet::from([self.map.start]);
-        self.do_solve(0, path, visited)
+        let res = self.do_solve(0, path, visited);
+        println!("Short circuits: {}", self.short_circuit_percentage());
+        println!("Iterations: {}", self.iterations);
+        res
+    }
+    fn short_circuit_percentage(&self) -> String {
+        if self.short_circuits == 0 {
+            "none".to_string()
+        } else {
+            let short_circuits = self.short_circuits as f64 / self.iterations as f64 * 100.0;
+            format!("{:.2}%", short_circuits)
+        }
     }
     // registers the current point as having been visited, and returns
     // true if the traversal should continue. if the point has not been

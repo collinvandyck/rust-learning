@@ -111,16 +111,6 @@ impl Map {
         let start = Instant::now();
         let mut solver = Solver::new(self);
         let res = solver.solve();
-        let short_circuits = if solver.short_circuits == 0 {
-            "none".to_string()
-        } else {
-            let short_circuits = solver.short_circuits as f64 / solver.iterations as f64 * 100.0;
-            format!("{:.2}%", short_circuits)
-        };
-        println!(
-            "Iterations: {} Short circuits: {}",
-            solver.iterations, short_circuits
-        );
         match res {
             None => eprintln!("No solution."),
             Some(path) => {
