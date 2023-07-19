@@ -6,6 +6,7 @@ use std::{
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
+    process,
     slice::SliceIndex,
     str::FromStr,
     time::Instant,
@@ -14,9 +15,11 @@ use std::{
 use clap::Parser;
 
 mod custom;
+mod dijkstra;
 
 mod prelude {
     pub use crate::custom::*;
+    pub use crate::dijkstra::*;
 }
 
 use prelude::*;
@@ -33,6 +36,7 @@ struct Args {
 #[derive(Clone, Copy, Debug)]
 enum Algorithm {
     AStar,
+    Dijkstra,
     Custom,
 }
 
@@ -42,6 +46,7 @@ impl FromStr for Algorithm {
         match s {
             "astar" => Ok(Self::AStar),
             "custom" => Ok(Self::Custom),
+            "dijkstra" => Ok(Self::Dijkstra),
             _ => Err("welp".to_string()),
         }
     }
@@ -280,8 +285,16 @@ pub trait Solver {
 }
 
 fn get_solver(args: &Args, map: &Map) -> Box<dyn Solver> {
-    let mut solver = Custom::new(map.clone());
-    Box::new(solver)
+    match &args.algorithm {
+        Algorithm::Custom => {
+            let solver = Custom::new(map.clone());
+            Box::new(solver)
+        }
+        _ => {
+            eprintln!("Unsupported solver: {:?}", args.algorithm);
+            process::exit(1);
+        }
+    }
 }
 
 #[cfg(test)]
