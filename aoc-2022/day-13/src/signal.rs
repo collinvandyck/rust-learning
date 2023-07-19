@@ -24,12 +24,14 @@ impl Display for Packet {
 
 impl Packet {
     fn cmp(&self, other: &Packet) -> Ordering {
-        self.do_cmp(&other, 0)
+        let res = self.do_cmp(&other, 0);
+        println!("{res:?}");
+        res
     }
     fn do_cmp(&self, other: &Packet, depth: usize) -> Ordering {
         use Ordering::*;
         use Packet::*;
-        let indent = "..".repeat(depth);
+        let indent = "  ".repeat(depth);
         println!("{indent}{} {}", self, &other);
         match (self, other) {
             (List(left), List(right)) => left
@@ -141,6 +143,7 @@ mod test {
     #[test]
     fn test_pairs() {
         let ordered: Vec<(&str, &str, bool)> = vec![
+            ("[1]", "[1]", true),
             ("[1,1,3,1,1]", "[1,1,5,1,1]", true),
             ("[[1],[2,3,4]]", "[[1],4]", true),
             ("[9]", "[[8,7,6]]", false),
