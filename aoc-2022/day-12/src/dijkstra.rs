@@ -5,6 +5,7 @@ use crate::{Map, Point, Solver};
 pub struct Dijkstra {
     map: Map,
     unvisited: HashMap<Point, Node>,
+    visited: HashSet<Node>,
     current: Point,
 }
 
@@ -32,6 +33,10 @@ impl Solver for Dijkstra {
             dbg!(node);
         }
 
+        let removed = self.unvisited.remove(&self.current).unwrap();
+        self.visited.insert(removed);
+        dbg!(removed);
+
         None
     }
 }
@@ -51,10 +56,12 @@ impl Dijkstra {
                 unvisited.insert(point, node);
             }
         }
+        let visited = HashSet::new();
         Self {
             map,
             unvisited,
             current,
+            visited,
         }
     }
 }
