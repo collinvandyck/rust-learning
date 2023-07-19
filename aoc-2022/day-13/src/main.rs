@@ -29,14 +29,17 @@ fn part_one(filename: &str) {
             break;
         }
     }
-    pairs
+    let sum: usize = pairs
         .iter()
         .enumerate()
-        .map(|(idx, pair)| (idx + 1, pair))
-        .map(|(idx, pair)| (idx, pair, pair.is_ordered()))
-        .for_each(|(idx, pair, ordered)| {
-            println!("idx: {idx}");
-            println!("{pair}");
-            println!("ordered: {ordered}");
-        });
+        .map(|(idx, pair)| {
+            if pair.is_ordered() {
+                Some(idx + 1)
+            } else {
+                None
+            }
+        })
+        .flatten()
+        .sum();
+    println!("Sum of indices: {sum}");
 }
