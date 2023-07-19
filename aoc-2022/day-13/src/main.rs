@@ -3,6 +3,14 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+mod signal;
+
+mod prelude {
+    pub use crate::signal::*;
+}
+
+use prelude::*;
+
 fn main() {
     part_one("example.txt");
 }
@@ -15,6 +23,9 @@ fn part_one(filename: &str) {
         let one = iter.next().unwrap();
         let two = iter.next().unwrap();
         println!("{}\n{}", one.trim(), two.trim());
+        let one = parse_packet(one);
+        let two = parse_packet(two);
+        println!("{one:?}\n{two:?}");
         if iter.next().is_none() {
             break;
         }
