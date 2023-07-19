@@ -22,10 +22,10 @@ fn part_one(filename: &str) {
     loop {
         let one = iter.next().unwrap();
         let two = iter.next().unwrap();
-        println!("{}\n{}", one.trim(), two.trim());
-        let one = parse_packet(one);
-        let two = parse_packet(two);
-        println!("{one:?}\n{two:?}");
+        let pair = parse_pair(one, two);
+        println!("{pair:?}");
+        let ordered = pair.is_ordered();
+        println!("Ordered: {ordered}");
         if iter.next().is_none() {
             break;
         }

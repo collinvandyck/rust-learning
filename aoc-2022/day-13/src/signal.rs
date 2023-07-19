@@ -1,9 +1,31 @@
 use std::{iter::Peekable, str::Chars};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Packet {
     Value(u32),
     List(Vec<Packet>),
+}
+
+#[derive(Debug, Clone)]
+pub struct Pair {
+    left: Packet,
+    right: Packet,
+}
+
+impl Pair {
+    pub fn is_ordered(&self) -> bool {
+        Self::ordered(&self.left, &self.right)
+    }
+    fn ordered(left: &Packet, right: &Packet) -> bool {
+        true
+    }
+}
+
+pub fn parse_pair(left: String, right: String) -> Pair {
+    Pair {
+        left: parse_packet(left),
+        right: parse_packet(right),
+    }
 }
 
 pub fn parse_packet(line: String) -> Packet {
