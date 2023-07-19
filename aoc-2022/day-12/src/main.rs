@@ -7,12 +7,41 @@ use std::{
     fs::File,
     io::{BufRead, BufReader},
     slice::SliceIndex,
+    str::FromStr,
     time::Instant,
 };
 
+use clap::Parser;
+
+#[derive(Parser)]
+struct Args {
+    #[arg(value_enum, short, default_value = "custom")]
+    algorithm: Algorithm,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum Algorithm {
+    AStar,
+    Custom,
+}
+
+impl FromStr for Algorithm {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "astar" => Ok(Self::AStar),
+            "custom" => Ok(Self::Custom),
+            _ => Err("welp".to_string()),
+        }
+    }
+}
+
 fn main() {
-    run("example.txt");
-    run("input.txt");
+    let args = Args::parse();
+    println!("Algorithm: {:?}", args.algorithm);
+
+    //run("example.txt");
+    //run("input.txt");
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
