@@ -313,6 +313,7 @@ fn part_one(args: &Args, map: &Map) {
 }
 
 fn part_two(args: &Args, map: &Map) {
+    println!("Part 2 starting.");
     let mut starts = vec![];
     for row in 0..map.rows {
         for col in 0..map.cols {
@@ -322,7 +323,20 @@ fn part_two(args: &Args, map: &Map) {
             }
         }
     }
-    println!("Starts: {starts:?}");
+    println!("Checking {} starting points...", starts.len());
+    let mut res: Option<usize> = None;
+    for start in starts {
+        let mut solver = get_solver(args, &map);
+        if let Some(path) = solver.solve(start) {
+            res = match res {
+                Some(l) if path.len() < l => Some(path.len()),
+                Some(l) => Some(l),
+                None => Some(path.len()),
+            }
+        }
+    }
+    res = res.map(|f| f - 1);
+    println!("Fewest steps from any starting point: {res:?}");
 }
 pub trait Solver {
     fn solve(&mut self, start: Point) -> Option<Vec<Point>>;

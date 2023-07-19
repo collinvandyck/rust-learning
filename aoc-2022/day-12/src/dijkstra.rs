@@ -33,8 +33,6 @@ impl Solver for Dijkstra {
             }
             self.visited.insert(current.point, current);
             if current.point == self.map.finish {
-                println!("We're done!");
-                println!("Iterations: {iterations}");
                 return Some(self.return_path(start));
             }
         }
