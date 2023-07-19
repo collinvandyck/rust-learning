@@ -12,17 +12,26 @@ pub fn parse_packet(line: String) -> Packet {
 }
 
 fn parse_chars(chars: &mut Peekable<Chars>) -> Packet {
-    let ch = chars.next().unwrap();
+    let ch = chars.peek().unwrap();
     match ch {
         '[' => {
             let list = consume_list(chars);
             Packet::List(list)
         }
-        _ => Packet::Value(42),
+        _ => {
+            let num = consume_num(chars);
+            Packet::Value(num)
+        }
     }
 }
 
+fn consume_num(chars: &mut Peekable<Chars>) -> i32 {
+    let mul = 1;
+    42
+}
+
 fn consume_list(chars: &mut Peekable<Chars>) -> Vec<Packet> {
+    chars.next(); // consume the '['
     let mut res = vec![];
     if let Some(']') = chars.peek() {
         chars.next();
