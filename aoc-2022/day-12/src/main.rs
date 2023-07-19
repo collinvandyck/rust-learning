@@ -17,6 +17,9 @@ use clap::Parser;
 struct Args {
     #[arg(value_enum, short, default_value = "custom")]
     algorithm: Algorithm,
+
+    #[arg(short, default_value = "input.txt")]
+    filename: String,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -38,10 +41,11 @@ impl FromStr for Algorithm {
 
 fn main() {
     let args = Args::parse();
-    println!("Algorithm: {:?}", args.algorithm);
-
-    //run("example.txt");
-    //run("input.txt");
+    println!(
+        "Filename: {}, Algorithm: {:?}",
+        args.filename, args.algorithm
+    );
+    run(&args);
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
@@ -386,8 +390,8 @@ fn read_map(iter: impl Iterator<Item = String>) -> Map {
     Map::new(tiles, start, finish)
 }
 
-fn run(filename: &str) {
-    let file = File::open(filename).unwrap();
+fn run(args: &Args) {
+    let file = File::open(args.filename.as_str()).unwrap();
     let read = BufReader::new(file);
     let lines = read.lines().flatten();
     let map = read_map(lines);
