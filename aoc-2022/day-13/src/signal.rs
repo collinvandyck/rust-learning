@@ -1,6 +1,6 @@
-use std::{fmt::Display, iter::Peekable, str::Chars};
+use std::{cmp::Ordering, fmt::Display, iter::Peekable, str::Chars};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, PartialOrd)]
 pub enum Packet {
     Value(u32),
     List(Vec<Packet>),
@@ -17,6 +17,35 @@ impl Display for Packet {
                 buf.push_str(&parts.join(","));
                 buf.push(']');
                 write!(f, "{buf}")
+            }
+        }
+    }
+}
+
+impl Packet {
+    fn cmp(&self, other: &Packet) -> Ordering {
+        use Ordering::*;
+        use Packet::*;
+        match (self, other) {
+            (List(left), List(right)) => left
+                .iter()
+                .zip(right.iter())
+                .map(|(left, right)| left.cmp(right))
+                .find(|ord| ord != &Equal)
+                .unwrap_or_else(|| left.len().cmp(&right.len())),
+            (Value(left), Value(right)) => {
+                // compare values
+                left.cmp(right)
+            }
+            (left @ List(_), Value(right)) => {
+                // convert right to a list
+                let right = Packet::List(vec![Packet::Value(*right)]);
+                left.cmp(&right)
+            }
+            (Value(left), right @ List(_)) => {
+                // convert left to a list
+                let left = Packet::List(vec![Packet::Value(*left)]);
+                left.cmp(&right)
             }
         }
     }
@@ -39,17 +68,20 @@ impl Pair {
         Self::ordered(&self.left, &self.right)
     }
     fn ordered(left: &Packet, right: &Packet) -> bool {
+        left.cmp(&right) != Ordering::Greater
+    }
+    fn ordered_old(left: &Packet, right: &Packet) -> bool {
         println!("ordered {left} x {right}");
         match (left, right) {
             (Packet::List(left), Packet::List(right)) => {
                 let mut iter = left.iter().zip(right.iter());
-                let res = iter.all(|(left, right)| Self::ordered(left, right));
+                let ok = iter.all(|(left, right)| Self::ordered(left, right));
                 // all pairs are so far ordered. if the right
                 // list ran out of items first, the inputs are not
                 // in the right order.
-                if res {
+                if ok {
                     println!("--> zipped values are ordered");
-                    let lens_ok = left.len() >= right.len();
+                    let lens_ok = left.len() <= right.len();
                     println!("--> lens ok? {lens_ok}");
                     lens_ok
                 } else {
@@ -142,22 +174,27 @@ mod test {
 
     #[test]
     fn test_pairs() {
-        let ordered: Vec<(&str, &str)> = vec![
-            ("[]", "[]"),
-            ("[1]", "[1]"),
-            ("[1,1,3,1,1]", "[1,1,5,1,1]"),
-            ("[[1],[2,3,4]]", "[[1],4]"),
+        let ordered: Vec<(&str, &str, bool)> = vec![
+            ("[]", "[]", true),
+            ("[1]", "[1]", true),
+            ("[1,1,3,1,1]", "[1,1,5,1,1]", true),
+            ("[[1],[2,3,4]]", "[[1],4]", true),
+            ("[[4,4],4,4]", "[[4,4],4,4,4]", true),
+            ("[9]", "[[8,7,6]]", false),
         ];
-        let ordered: Vec<(&str, &str)> = vec![("[[1],[2,3,4]]", "[[1],4]")];
-        for (one, two) in ordered {
+        let ordered: Vec<(&str, &str, bool)> = vec![("[[1],[2,3,4]]", "[[1],4]", true)];
+        for (one, two, ordered) in ordered {
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());
             let pair = Pair {
                 left: one,
                 right: two,
             };
-            if !pair.is_ordered() {
+            if ordered && !pair.is_ordered() {
                 assert!(false, "Pair {} x {} was not ordered", pair.left, pair.right);
+            }
+            if !ordered && pair.is_ordered() {
+                assert!(false, "Pair {} x {} was ordered", pair.left, pair.right);
             }
         }
     }
