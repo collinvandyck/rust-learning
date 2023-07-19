@@ -66,6 +66,11 @@ impl Display for Point {
 }
 
 impl Point {
+    #[allow(
+        clippy::cast_sign_loss,
+        clippy::cast_possible_truncation,
+        clippy::cast_possible_wrap
+    )]
     fn adjust(&self, rows: i32, cols: i32) -> Option<Point> {
         if (rows < 0 && self.0 == 0) || (cols < 0 && self.1 == 0) {
             None
@@ -112,7 +117,7 @@ impl Map {
         match res {
             None => eprintln!("No solution."),
             Some(path) => {
-                let rendered = self.render_path(path);
+                let rendered = self.render_path(&path);
                 println!("Solution:\n{rendered}");
             }
         }
@@ -165,7 +170,7 @@ impl Map {
     fn get_char(&self, p: &Point) -> char {
         *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
     }
-    fn render_path(&self, path: Vec<Point>) -> String {
+    fn render_path(&self, path: &[Point]) -> String {
         let mut tiles = self.tiles.clone();
         tiles
             .iter_mut()
@@ -222,7 +227,7 @@ impl Map {
     }
     fn new(tiles: Vec<Vec<char>>, start: Point, finish: Point) -> Self {
         let rows = tiles.len();
-        let cols = tiles.get(0).map_or(0, |r| r.len());
+        let cols = tiles.get(0).map_or(0, Vec::len);
         Self {
             tiles,
             start,
