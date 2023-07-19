@@ -46,7 +46,7 @@ impl<'a> Solver<'a> {
             "none".to_string()
         } else {
             let short_circuits = self.short_circuits as f64 / self.iterations as f64 * 100.0;
-            format!("{:.2}%", short_circuits)
+            format!("{short_circuits:.2}%")
         }
     }
     // registers the current point as having been visited, and returns
