@@ -141,13 +141,11 @@ impl Map {
                 if p.0 > self.rows - 1 || p.1 > self.cols - 1 {
                     // out of bounds
                     None
+                } else if self.can_move(cur, &p) {
+                    Some(p)
                 } else {
-                    if self.can_move(cur, &p) {
-                        Some(p)
-                    } else {
-                        // can't move
-                        None
-                    }
+                    // can't move
+                    None
                 }
             }
             // out of bounds
