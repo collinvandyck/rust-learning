@@ -2,7 +2,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
@@ -58,12 +58,18 @@ enum Direction {
 struct Solver<'a> {
     map: &'a Map,
     iterations: u64,
+    visits: HashMap<Point, u64>,
 }
 
 impl<'a> Solver<'a> {
     fn new(map: &'a Map) -> Self {
         let iterations = 0;
-        Self { map, iterations }
+        let visits = HashMap::new();
+        Self {
+            map,
+            iterations,
+            visits,
+        }
     }
     // solve attempts to find the shortest path from the start to the end.
     fn solve(&mut self) -> Option<Vec<Point>> {
@@ -77,7 +83,6 @@ impl<'a> Solver<'a> {
         mut path: Vec<Point>,
         mut visited: HashSet<Point>,
     ) -> Option<Vec<Point>> {
-        println!("{depth}");
         self.iterations += 1;
         let current = path.last().unwrap();
 
