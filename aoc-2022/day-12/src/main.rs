@@ -26,7 +26,7 @@ use prelude::*;
 
 #[derive(Parser)]
 struct Args {
-    #[arg(value_enum, short, default_value = "custom")]
+    #[arg(value_enum, short, default_value = "dijkstra")]
     algorithm: Algorithm,
 
     #[arg(short, default_value = "input.txt")]
@@ -122,6 +122,29 @@ impl Map {
     }
     fn get(&self, p: &Point) -> char {
         *self.tiles.get(p.0).unwrap().get(p.1).unwrap()
+    }
+    fn next_moves_to(&self, to: &Point) -> [Option<Point>; 4] {
+        [
+            to.adjust(-1, 0),
+            to.adjust(1, 0),
+            to.adjust(0, -1),
+            to.adjust(0, 1),
+        ]
+        .map(|from| match from {
+            Some(from) => {
+                if from.0 > self.rows - 1 || from.1 > self.cols - 1 {
+                    // out of bounds
+                    None
+                } else if self.can_move(&from, to) {
+                    Some(from)
+                } else {
+                    // can't move
+                    None
+                }
+            }
+            // out of bounds
+            _ => None,
+        })
     }
     fn next_moves_from(&self, cur: &Point) -> [Option<Point>; 4] {
         [
