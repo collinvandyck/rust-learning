@@ -10,15 +10,15 @@ use std::{
     time::Instant,
 };
 
-pub struct Custom<'a> {
-    map: &'a Map,
+pub struct Custom {
+    map: Map,
     iterations: u64,
     visits: HashMap<Point, usize>, // point, depth
     min_solve: Option<usize>,
     short_circuits: u64,
 }
 
-impl<'a> Solver<'a> for Custom<'a> {
+impl Solver for Custom {
     fn solve(&mut self) -> Option<Vec<Point>> {
         let path = vec![self.map.start];
         let visited = HashSet::from([self.map.start]);
@@ -29,8 +29,8 @@ impl<'a> Solver<'a> for Custom<'a> {
     }
 }
 
-impl<'a> Custom<'a> {
-    pub fn new(map: &'a Map) -> Self {
+impl Custom {
+    pub fn new(map: Map) -> Self {
         let iterations = 0;
         let visits = HashMap::new();
         let min_solve = None;
@@ -42,15 +42,6 @@ impl<'a> Custom<'a> {
             min_solve,
             short_circuits,
         }
-    }
-    // solve attempts to find the shortest path from the start to the end.
-    pub fn solve(&mut self) -> Option<Vec<Point>> {
-        let path = vec![self.map.start];
-        let visited = HashSet::from([self.map.start]);
-        let res = self.do_solve(0, path, visited);
-        println!("Short circuits: {}", self.short_circuit_percentage());
-        println!("Iterations: {}", self.iterations);
-        res
     }
     #[allow(clippy::cast_precision_loss)]
     fn short_circuit_percentage(&self) -> String {
