@@ -1,3 +1,5 @@
+use std::{iter::Peekable, str::Chars};
+
 #[derive(Debug)]
 pub enum Packet {
     Value(i32),
@@ -5,11 +7,11 @@ pub enum Packet {
 }
 
 pub fn parse_packet(line: String) -> Packet {
-    let mut chars = line.chars();
+    let mut chars = line.chars().peekable();
     parse_chars(&mut chars)
 }
 
-fn parse_chars(chars: &mut impl Iterator<Item = char>) -> Packet {
+fn parse_chars(chars: &mut Peekable<Chars>) -> Packet {
     let ch = chars.next().unwrap();
     match ch {
         '[' => {
@@ -20,8 +22,12 @@ fn parse_chars(chars: &mut impl Iterator<Item = char>) -> Packet {
     }
 }
 
-fn consume_list(chars: &mut impl Iterator<Item = char>) -> Vec<Packet> {
+fn consume_list(chars: &mut Peekable<Chars>) -> Vec<Packet> {
     let mut res = vec![];
+    if let Some(']') = chars.peek() {
+        chars.next();
+        return res;
+    }
     loop {
         let packet = parse_chars(chars);
         res.push(packet);
