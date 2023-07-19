@@ -13,6 +13,7 @@ use prelude::*;
 
 fn main() {
     part_one("example.txt");
+    part_one("input.txt");
 }
 
 fn part_one(filename: &str) {
@@ -41,5 +42,5 @@ fn part_one(filename: &str) {
         })
         .flatten()
         .sum();
-    println!("Sum of indices: {sum}");
+    println!("{filename}: Sum of indices: {sum}");
 }
