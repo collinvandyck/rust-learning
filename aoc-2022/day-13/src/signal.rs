@@ -23,7 +23,7 @@ impl Display for Packet {
 }
 
 impl Packet {
-    fn cmp(&self, other: &Packet) -> Ordering {
+    pub fn cmp(&self, other: &Packet) -> Ordering {
         let debug = false;
         let res = self.do_cmp(&other, debug, 0);
         if debug {
@@ -65,8 +65,8 @@ impl Packet {
 
 #[derive(Debug, Clone)]
 pub struct Pair {
-    left: Packet,
-    right: Packet,
+    pub left: Packet,
+    pub right: Packet,
 }
 
 impl Display for Pair {

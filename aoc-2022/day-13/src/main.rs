@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 use std::{
+    cmp::Ordering,
     fs::File,
     io::{BufRead, BufReader},
 };
@@ -14,16 +15,33 @@ use prelude::*;
 
 fn main() {
     part_one("example.txt");
+    part_two("example.txt");
     // part_one("input.txt");
-    //test_part_one("input.txt");
 }
 
-fn test_part_one(filename: &str) {
-    read_pairs(filename).iter().take(1).for_each(|pair| {
-        println!("{pair}\n");
-        let ordered = pair.is_ordered();
-        println!("Testing: pair is ordered: {ordered}");
-    })
+fn part_two(filename: &str) {
+    let mut packets = read_pairs(filename)
+        .into_iter()
+        .map(|p| vec![p.left, p.right])
+        .flatten()
+        .collect::<Vec<_>>();
+    let d1 = parse_packet("[[2]]".to_string());
+    let d2 = parse_packet("[[6]]".to_string());
+    packets.push(d1.clone());
+    packets.push(d2.clone());
+    packets.sort_by(|a, b| a.cmp(&b));
+    let decoder_key = packets
+        .iter()
+        .enumerate()
+        .filter(|(_idx, pkt)| {
+            // they have to match a divider packet
+            pkt.cmp(&d1) == Ordering::Equal || pkt.cmp(&d2) == Ordering::Equal
+        })
+        .map(|(idx, _)| idx + 1)
+        .take(2)
+        .reduce(|one, two| one * two)
+        .unwrap();
+    println!("Decoder key: {decoder_key}");
 }
 
 fn part_one(filename: &str) {
