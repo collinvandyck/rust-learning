@@ -1,6 +1,8 @@
 #![allow(dead_code, unused)]
 #![warn(clippy::all, clippy::pedantic)]
 
+mod custom;
+
 use std::{
     collections::{hash_map::Entry, HashMap, HashSet},
     fmt::Display,
@@ -12,6 +14,11 @@ use std::{
 };
 
 use clap::Parser;
+
+mod prelude {
+    pub use super::*;
+    pub use crate::custom::*;
+}
 
 #[derive(Parser)]
 struct Args {
