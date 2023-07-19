@@ -110,8 +110,8 @@ pub struct Map {
     tiles: Vec<Vec<char>>,
     start: Point,
     finish: Point,
-    rows: usize,
-    cols: usize,
+    pub rows: usize,
+    pub cols: usize,
 }
 
 impl Map {
