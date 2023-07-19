@@ -67,9 +67,7 @@ impl Display for Point {
 
 impl Point {
     fn adjust(&self, rows: i32, cols: i32) -> Option<Point> {
-        if rows < 0 && self.0 == 0 {
-            None
-        } else if cols < 0 && self.1 == 0 {
+        if (rows < 0 && self.0 == 0) || (cols < 0 && self.1 == 0) {
             None
         } else {
             let new_rows = (self.0 as i32 + rows) as usize;
