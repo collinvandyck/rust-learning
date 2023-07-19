@@ -22,5 +22,5 @@ fn run(filename: &str) {
         .map(|l| Formation::parse(l.unwrap()))
         .collect::<Vec<_>>();
     let cave = Cave::new(formations);
-    dbg!(cave);
+    println!("{cave}");
 }

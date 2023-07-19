@@ -1,4 +1,4 @@
-use std::vec;
+use std::{fmt::Display, vec};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Point(i32, i32);
@@ -63,5 +63,16 @@ impl Cave {
             tiles.push(row);
         }
         Cave { min, max, tiles }
+    }
+    fn render(&self) -> String {
+        let buf = String::new();
+        buf
+    }
+}
+
+impl Display for Cave {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let rendered = self.render();
+        write!(f, "{rendered}")
     }
 }
