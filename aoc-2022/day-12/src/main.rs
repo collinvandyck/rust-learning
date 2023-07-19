@@ -289,13 +289,14 @@ fn run(args: &Args) {
     let lines = read.lines().flatten();
     let map = read_map(lines);
     part_one(args, &map);
+    part_two(args, &map);
 }
 
 fn part_one(args: &Args, map: &Map) {
     let mut solver = get_solver(args, &map);
     println!("{map}\n");
     let start = Instant::now();
-    let res = solver.solve();
+    let res = solver.solve(map.start);
     match res {
         None => eprintln!("No solution."),
         Some(path) => {
@@ -311,8 +312,20 @@ fn part_one(args: &Args, map: &Map) {
     );
 }
 
+fn part_two(args: &Args, map: &Map) {
+    let mut starts = vec![];
+    for row in 0..map.rows {
+        for col in 0..map.cols {
+            let point = Point(row, col);
+            if map.get(&point) == 'a' {
+                starts.push(point);
+            }
+        }
+    }
+    println!("Starts: {starts:?}");
+}
 pub trait Solver {
-    fn solve(&mut self) -> Option<Vec<Point>>;
+    fn solve(&mut self, start: Point) -> Option<Vec<Point>>;
 }
 
 fn get_solver(args: &Args, map: &Map) -> Box<dyn Solver> {

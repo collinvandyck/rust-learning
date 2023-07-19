@@ -9,8 +9,9 @@ pub struct Dijkstra {
 }
 
 impl Solver for Dijkstra {
-    fn solve(&mut self) -> Option<Vec<Point>> {
+    fn solve(&mut self, start: Point) -> Option<Vec<Point>> {
         let mut iterations = 0;
+        self.unvisited.get_mut(&start).unwrap().distance = 1;
         while let Some(cur_point) = self.next_point() {
             iterations += 1;
             let current = self.unvisited.remove(&cur_point).unwrap();
@@ -34,7 +35,7 @@ impl Solver for Dijkstra {
             if current.point == self.map.finish {
                 println!("We're done!");
                 println!("Iterations: {iterations}");
-                return Some(self.return_path());
+                return Some(self.return_path(start));
             }
         }
         None
@@ -43,11 +44,11 @@ impl Solver for Dijkstra {
 
 impl Dijkstra {
     // if successfully completed, return the shortest path from the start to finish
-    fn return_path(&self) -> Vec<Point> {
+    fn return_path(&self, start: Point) -> Vec<Point> {
         let mut res = VecDeque::new();
         let mut cur = self.map.finish;
         res.push_front(cur);
-        while cur != self.map.start {
+        while cur != start {
             cur = self
                 .map
                 .next_moves_to(&cur)
@@ -76,11 +77,7 @@ impl Dijkstra {
         for row in 0..map.rows {
             for col in 0..map.cols {
                 let point = Point(row, col);
-                let node = if point == map.start {
-                    Node::new(point, 1)
-                } else {
-                    Node::new(point, i64::MAX)
-                };
+                let node = Node::new(point, i64::MAX);
                 unvisited.insert(point, node);
             }
         }

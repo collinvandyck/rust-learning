@@ -19,9 +19,9 @@ pub struct Custom {
 }
 
 impl Solver for Custom {
-    fn solve(&mut self) -> Option<Vec<Point>> {
-        let path = vec![self.map.start];
-        let visited = HashSet::from([self.map.start]);
+    fn solve(&mut self, start: Point) -> Option<Vec<Point>> {
+        let path = vec![start];
+        let visited = HashSet::from([start]);
         let res = self.do_solve(0, path, visited);
         println!("Short circuits: {}", self.short_circuit_percentage());
         println!("Iterations: {}", self.iterations);
