@@ -16,7 +16,9 @@ fn main() {
     part_one("input.txt");
 }
 
-fn part_one(filename: &str) {
+fn test_part_one(filename: &str) {}
+
+fn read_pairs(filename: &str) -> Vec<Pair> {
     let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let mut iter = read.lines().flatten();
@@ -30,6 +32,11 @@ fn part_one(filename: &str) {
             break;
         }
     }
+    pairs
+}
+
+fn part_one(filename: &str) {
+    let pairs = read_pairs(filename);
     let sum: usize = pairs
         .iter()
         .enumerate()
