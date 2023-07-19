@@ -41,11 +41,14 @@ impl<'a> Solver<'a> {
         println!("Iterations: {}", self.iterations);
         res
     }
+    #[allow(clippy::cast_precision_loss)]
     fn short_circuit_percentage(&self) -> String {
         if self.short_circuits == 0 {
             "none".to_string()
         } else {
-            let short_circuits = self.short_circuits as f64 / self.iterations as f64 * 100.0;
+            let short_circuits = self.short_circuits as f64;
+            let iteration = self.iterations as f64;
+            let short_circuits = short_circuits / iteration * 100.0;
             format!("{short_circuits:.2}%")
         }
     }
