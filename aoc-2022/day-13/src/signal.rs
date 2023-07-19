@@ -29,7 +29,7 @@ impl Packet {
     fn do_cmp(&self, other: &Packet, depth: usize) -> Ordering {
         use Ordering::*;
         use Packet::*;
-        let indent = "   ".repeat(depth);
+        let indent = "..".repeat(depth);
         println!("{indent}{} {}", self, &other);
         match (self, other) {
             (List(left), List(right)) => left
@@ -155,6 +155,7 @@ mod test {
             ),
         ];
         for (one, two, ordered) in ordered {
+            println!();
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());
             let pair = Pair {
