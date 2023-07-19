@@ -5,22 +5,30 @@ use crate::{Map, Point, Solver};
 pub struct Dijkstra {
     map: Map,
     unvisited: HashMap<Point, Node>,
-    current: Node,
+    current: Point,
 }
 
 impl Solver for Dijkstra {
     fn solve(&mut self) -> Option<Vec<crate::Point>> {
+        // get the current node
+        let current_distance = self.unvisited.get(&self.current).unwrap().distance;
+
         // get the next unvisited nodes from where we are
         let nexts = self
             .map
-            .next_moves_from(&self.current.point)
+            .next_moves_from(&self.current)
             .into_iter()
             .flatten()
             .filter(|p| self.unvisited.contains_key(p))
             .collect::<Vec<_>>();
 
         for next in nexts {
-            let node = self.unvisited.get_mut(&next).unwrap();
+            let node: &mut Node = self.unvisited.get_mut(&next).unwrap();
+            let distance = current_distance + 1;
+            // set the new distance on the node if it's shorter
+            if distance < node.distance {
+                node.distance = distance;
+            }
             dbg!(node);
         }
 
@@ -30,15 +38,17 @@ impl Solver for Dijkstra {
 
 impl Dijkstra {
     pub fn new(map: Map) -> Self {
-        let current = Node::new(map.start, 0);
+        let current = map.start;
         let mut unvisited = HashMap::new();
         for row in 0..map.rows {
             for col in 0..map.cols {
                 let point = Point(row, col);
-                if point != map.start {
-                    let node = Node::new(point, i64::MAX);
-                    unvisited.insert(point, node);
-                }
+                let node = if point == map.start {
+                    Node::new(point, 1)
+                } else {
+                    Node::new(point, i64::MAX)
+                };
+                unvisited.insert(point, node);
             }
         }
         Self {
