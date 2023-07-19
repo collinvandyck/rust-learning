@@ -2,6 +2,9 @@
 pub struct Point(i32, i32);
 
 impl Point {
+    fn new(row: i32, col: i32) -> Self {
+        Self(row, col)
+    }
     fn default() -> Self {
         Point(0, 0)
     }
@@ -33,23 +36,13 @@ pub struct Cave {
 
 impl Cave {
     pub fn new(formations: Vec<Formation>) -> Cave {
-        let mut min = Point::default();
-        let mut max = Point::default();
-        formations
-            .iter()
-            .flat_map(|f| &f.0)
-            .enumerate()
-            .for_each(|(idx, point)| {
-                if idx == 0 {
-                    min = *point;
-                    max = *point;
-                } else {
-                    min.0 = i32::min(min.0, point.0);
-                    min.1 = i32::min(min.1, point.1);
-                    max.0 = i32::max(max.0, point.0);
-                    max.1 = i32::max(max.1, point.1);
-                }
-            });
+        let mut min = Point::new(i32::MAX, 0);
+        let mut max = Point::new(i32::MIN, i32::MIN);
+        formations.iter().flat_map(|f| &f.0).for_each(|point| {
+            min.0 = i32::min(min.0, point.0);
+            max.0 = i32::max(max.0, point.0);
+            max.1 = i32::max(max.1, point.1);
+        });
         Cave { min, max }
     }
 }
