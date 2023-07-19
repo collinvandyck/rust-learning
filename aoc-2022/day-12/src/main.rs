@@ -109,21 +109,6 @@ pub struct Map {
 }
 
 impl Map {
-    fn solve(&self) {
-        println!("Solve:\n{self}\n");
-        let start = Instant::now();
-        let mut solver = Solver::new(self);
-        let res = solver.solve();
-        match res {
-            None => eprintln!("No solution."),
-            Some(path) => {
-                let rendered = self.render_path(&path);
-                println!("Solution:\n{rendered}");
-            }
-        }
-        let duration = start.elapsed();
-        println!("Elapsed: {}.{}s", duration.as_secs(), duration.as_millis());
-    }
     fn distance(&self, from: &Point, to: &Point) -> i32 {
         let from = self.get(from) as i32;
         let to = self.get(to) as i32;
@@ -274,7 +259,18 @@ fn run(args: &Args) {
     let read = BufReader::new(file);
     let lines = read.lines().flatten();
     let map = read_map(lines);
-    map.solve();
+    let mut solver = Solver::new(&map);
+    let start = Instant::now();
+    let res = solver.solve();
+    match res {
+        None => eprintln!("No solution."),
+        Some(path) => {
+            let rendered = map.render_path(&path);
+            println!("Solution:\n{rendered}");
+        }
+    }
+    let duration = start.elapsed();
+    println!("Elapsed: {}.{}s", duration.as_secs(), duration.as_millis());
 }
 
 #[cfg(test)]
