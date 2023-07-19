@@ -324,19 +324,25 @@ fn part_two(args: &Args, map: &Map) {
         }
     }
     println!("Checking {} starting points...", starts.len());
-    let mut res: Option<usize> = None;
+    let mut res: Option<Vec<Point>> = None;
     for start in starts {
         let mut solver = get_solver(args, &map);
         if let Some(path) = solver.solve(start) {
             res = match res {
-                Some(l) if path.len() < l => Some(path.len()),
+                Some(l) if path.len() < l.len() => Some(path),
                 Some(l) => Some(l),
-                None => Some(path.len()),
+                None => Some(path),
             }
         }
     }
-    res = res.map(|f| f - 1);
-    println!("Fewest steps from any starting point: {res:?}");
+    match res {
+        None => println!("No path could be found"),
+        Some(path) => {
+            let rendered = map.render_path(&path);
+            println!("{rendered}");
+            println!("Fewest steps from any starting point: {}", path.len() - 1);
+        }
+    }
 }
 pub trait Solver {
     fn solve(&mut self, start: Point) -> Option<Vec<Point>>;
