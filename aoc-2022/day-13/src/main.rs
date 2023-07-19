@@ -14,8 +14,8 @@ use prelude::*;
 
 fn main() {
     //part_one("example.txt");
-    //part_one("input.txt");
-    test_part_one("input.txt");
+    part_one("input.txt");
+    //test_part_one("input.txt");
 }
 
 fn test_part_one(filename: &str) {

@@ -30,7 +30,7 @@ impl Packet {
         use Ordering::*;
         use Packet::*;
         let indent = "   ".repeat(depth);
-        println!("O: {indent}{} {}", self, &other);
+        println!("{indent}{} {}", self, &other);
         match (self, other) {
             (List(left), List(right)) => left
                 .iter()
@@ -141,14 +141,12 @@ mod test {
     #[test]
     fn test_pairs() {
         let ordered: Vec<(&str, &str, bool)> = vec![
-            ("[]", "[]", true),
-            ("[1]", "[1]", true),
-            ("[]", "[3]", true),
             ("[1,1,3,1,1]", "[1,1,5,1,1]", true),
             ("[[1],[2,3,4]]", "[[1],4]", true),
-            ("[[4,4],4,4]", "[[4,4],4,4,4]", true),
             ("[9]", "[[8,7,6]]", false),
+            ("[[4,4],4,4]", "[[4,4],4,4,4]", true),
             ("[7,7,7,7]", "[7,7,7]", false),
+            ("[]", "[3]", true),
             ("[[[]]]", "[[]]", false),
             (
                 "[1,[2,[3,[4,[5,6,7]]]],8,9]",
@@ -156,7 +154,6 @@ mod test {
                 false,
             ),
         ];
-        let ordered: Vec<(&str, &str, bool)> = vec![("[1,1,3,1,1]", "[1,1,5,1,1]", true)];
         for (one, two, ordered) in ordered {
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());
