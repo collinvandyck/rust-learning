@@ -127,7 +127,8 @@ mod test {
 
     #[test]
     fn test_pairs() {
-        let ordered: Vec<(&str, &str)> = vec![("[]", "[]"), ("[1]", "[1]")];
+        let ordered: Vec<(&str, &str)> =
+            vec![("[]", "[]"), ("[1]", "[1]"), ("[1,1,3,1,1]", "[1,1,5,1,1]")];
         for (one, two) in ordered {
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());
