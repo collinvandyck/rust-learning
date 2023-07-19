@@ -59,16 +59,22 @@ struct Solver<'a> {
     map: &'a Map,
     iterations: u64,
     visits: HashMap<Point, usize>, // point, depth
+    min_solve: Option<usize>,
+    short_circuits: u64,
 }
 
 impl<'a> Solver<'a> {
     fn new(map: &'a Map) -> Self {
         let iterations = 0;
         let visits = HashMap::new();
+        let min_solve = None;
+        let short_circuits = 0;
         Self {
             map,
             iterations,
             visits,
+            min_solve,
+            short_circuits,
         }
     }
     // solve attempts to find the shortest path from the start to the end.
@@ -102,6 +108,13 @@ impl<'a> Solver<'a> {
             }
         }
     }
+    fn register_min_solve(&mut self, size: usize) {
+        match self.min_solve {
+            None => self.min_solve = Some(size),
+            Some(existing) if size < existing => self.min_solve = Some(size),
+            _ => {}
+        }
+    }
     fn do_solve(
         &mut self,
         depth: usize,
@@ -113,7 +126,17 @@ impl<'a> Solver<'a> {
 
         // are we done?
         if current == &self.map.finish {
+            self.register_min_solve(depth);
             return Some(path);
+        }
+        // short circuit if we are too deep
+        if let Some(min_solve) = self.min_solve {
+            //println!("depth: {}, min_solve: {}", depth, min_solve);
+            if depth >= min_solve {
+                //println!("short circuit");
+                self.short_circuits += 1;
+                return None;
+            }
         }
 
         // we are not done. mark the current node as being visited.
@@ -165,7 +188,16 @@ impl Map {
         println!("Solve:\n{self}\n");
         let mut solver = Solver::new(self);
         let res = solver.solve();
-        println!("Iterations: {}", solver.iterations);
+        let short_circuits = if solver.short_circuits == 0 {
+            "none".to_string()
+        } else {
+            let short_circuits = solver.short_circuits as f64 / solver.iterations as f64 * 100.0;
+            format!("{:.2}%", short_circuits)
+        };
+        println!(
+            "Iterations: {} Short circuits: {}",
+            solver.iterations, short_circuits
+        );
         match res {
             None => eprintln!("No solution."),
             Some(path) => {
