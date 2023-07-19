@@ -2,7 +2,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{hash_map::Entry, HashMap, HashSet},
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
@@ -58,7 +58,7 @@ enum Direction {
 struct Solver<'a> {
     map: &'a Map,
     iterations: u64,
-    visits: HashMap<Point, u64>,
+    visits: HashMap<Point, usize>, // point, depth
 }
 
 impl<'a> Solver<'a> {
@@ -77,6 +77,31 @@ impl<'a> Solver<'a> {
         let visited = HashSet::from([self.map.start]);
         self.do_solve(0, path, visited)
     }
+    // registers the current point as having been visited, and returns
+    // true if the traversal should continue. if the point has not been
+    // seen before true is returned. if the point has been visited before
+    // but at a greater depth, true is returned so that we can find a more
+    // optimal path. otherwise false is returned.
+    //
+    // In the case where we have seen the point before, but at the same
+    // depth, there is no point in retracing the same steps so we return false.
+    fn register_visit(&mut self, p: &Point, depth: usize) -> bool {
+        match self.visits.entry(*p) {
+            Entry::Occupied(mut e) => {
+                let existing = e.get_mut();
+                if *existing > depth {
+                    *existing = depth;
+                    true
+                } else {
+                    false
+                }
+            }
+            Entry::Vacant(e) => {
+                e.insert(depth);
+                true
+            }
+        }
+    }
     fn do_solve(
         &mut self,
         depth: usize,
@@ -92,7 +117,11 @@ impl<'a> Solver<'a> {
         }
 
         // we are not done. mark the current node as being visited.
-        visited.insert(*current);
+        if !self.register_visit(current, depth) {
+            // we have already visited this node at this depth or greater. there
+            // is no point in continuing.
+            return None;
+        }
 
         // generate the next moves
         let nexts = self.map.next_moves_from(current);
