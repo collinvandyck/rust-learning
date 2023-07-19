@@ -39,6 +39,7 @@ impl Pair {
         Self::ordered(&self.left, &self.right)
     }
     fn ordered(left: &Packet, right: &Packet) -> bool {
+        println!("ordered {left} x {right}");
         match (left, right) {
             (Packet::List(left), Packet::List(right)) => {
                 let mut iter = left.iter().zip(right.iter());
@@ -46,15 +47,29 @@ impl Pair {
                 // all pairs are so far ordered. if the right
                 // list ran out of items first, the inputs are not
                 // in the right order.
-                res && (left.len() <= right.len())
+                if res {
+                    println!("--> zipped values are ordered");
+                    let lens_ok = left.len() >= right.len();
+                    println!("--> lens ok? {lens_ok}");
+                    lens_ok
+                } else {
+                    println!("--> zipped values are not ordered");
+                    false
+                }
             }
-            (Packet::Value(left), Packet::Value(right)) => left <= right,
+            (Packet::Value(left), Packet::Value(right)) => {
+                let res = left <= right;
+                println!("--> compare values: {res}");
+                res
+            }
             (left @ Packet::List(_), Packet::Value(right)) => {
                 let right = Packet::List(vec![Packet::Value(*right)]);
+                println!("--> right to list");
                 Self::ordered(left, &right)
             }
             (Packet::Value(left), right @ Packet::List(_)) => {
                 let left = Packet::List(vec![Packet::Value(*left)]);
+                println!("--> left to list");
                 Self::ordered(&left, right)
             }
         }
@@ -133,6 +148,7 @@ mod test {
             ("[1,1,3,1,1]", "[1,1,5,1,1]"),
             ("[[1],[2,3,4]]", "[[1],4]"),
         ];
+        let ordered: Vec<(&str, &str)> = vec![("[[1],[2,3,4]]", "[[1],4]")];
         for (one, two) in ordered {
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());
