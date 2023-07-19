@@ -198,7 +198,7 @@ impl Map {
         tiles
             .iter_mut()
             .for_each(|r| r.iter_mut().for_each(|c| *c = '.'));
-        println!("Path has {} entries", path.len());
+        println!("Path has {} entries", path.len() - 1);
         path.windows(2).for_each(|pair| {
             if let [p1, p2] = pair {
                 let ch = match p1.direction_to(p2) {
