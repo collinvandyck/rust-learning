@@ -26,8 +26,19 @@ fn parse_chars(chars: &mut Peekable<Chars>) -> Packet {
 }
 
 fn consume_num(chars: &mut Peekable<Chars>) -> i32 {
-    let mul = 1;
-    42
+    let mut factor = 1;
+    let mut res = 0;
+    loop {
+        let ch = chars.peek().unwrap();
+        if let Some(digit) = ch.to_digit(10) {
+            chars.next();
+            res += digit * factor;
+            factor += 1;
+            continue;
+        }
+        break;
+    }
+    res.try_into().unwrap()
 }
 
 fn consume_list(chars: &mut Peekable<Chars>) -> Vec<Packet> {
