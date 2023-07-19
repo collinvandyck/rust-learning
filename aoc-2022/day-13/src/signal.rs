@@ -70,42 +70,6 @@ impl Pair {
     fn ordered(left: &Packet, right: &Packet) -> bool {
         left.cmp(&right) != Ordering::Greater
     }
-    fn ordered_old(left: &Packet, right: &Packet) -> bool {
-        println!("ordered {left} x {right}");
-        match (left, right) {
-            (Packet::List(left), Packet::List(right)) => {
-                let mut iter = left.iter().zip(right.iter());
-                let ok = iter.all(|(left, right)| Self::ordered(left, right));
-                // all pairs are so far ordered. if the right
-                // list ran out of items first, the inputs are not
-                // in the right order.
-                if ok {
-                    println!("--> zipped values are ordered");
-                    let lens_ok = left.len() <= right.len();
-                    println!("--> lens ok? {lens_ok}");
-                    lens_ok
-                } else {
-                    println!("--> zipped values are not ordered");
-                    false
-                }
-            }
-            (Packet::Value(left), Packet::Value(right)) => {
-                let res = left <= right;
-                println!("--> compare values: {res}");
-                res
-            }
-            (left @ Packet::List(_), Packet::Value(right)) => {
-                let right = Packet::List(vec![Packet::Value(*right)]);
-                println!("--> right to list");
-                Self::ordered(left, &right)
-            }
-            (Packet::Value(left), right @ Packet::List(_)) => {
-                let left = Packet::List(vec![Packet::Value(*left)]);
-                println!("--> left to list");
-                Self::ordered(&left, right)
-            }
-        }
-    }
 }
 
 pub fn parse_pair(left: String, right: String) -> Pair {
@@ -182,7 +146,6 @@ mod test {
             ("[[4,4],4,4]", "[[4,4],4,4,4]", true),
             ("[9]", "[[8,7,6]]", false),
         ];
-        let ordered: Vec<(&str, &str, bool)> = vec![("[[1],[2,3,4]]", "[[1],4]", true)];
         for (one, two, ordered) in ordered {
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());
