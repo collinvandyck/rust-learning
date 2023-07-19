@@ -1,4 +1,4 @@
-use crate::{prelude::*, Map, Point};
+use crate::{prelude::*, Map, Point, Solver};
 
 use std::{
     collections::{hash_map::Entry, HashMap, HashSet},
@@ -10,7 +10,7 @@ use std::{
     time::Instant,
 };
 
-pub struct Solver<'a> {
+pub struct Custom<'a> {
     map: &'a Map,
     iterations: u64,
     visits: HashMap<Point, usize>, // point, depth
@@ -18,7 +18,18 @@ pub struct Solver<'a> {
     short_circuits: u64,
 }
 
-impl<'a> Solver<'a> {
+impl<'a> Solver<'a> for Custom<'a> {
+    fn solve(&mut self) -> Option<Vec<Point>> {
+        let path = vec![self.map.start];
+        let visited = HashSet::from([self.map.start]);
+        let res = self.do_solve(0, path, visited);
+        println!("Short circuits: {}", self.short_circuit_percentage());
+        println!("Iterations: {}", self.iterations);
+        res
+    }
+}
+
+impl<'a> Custom<'a> {
     pub fn new(map: &'a Map) -> Self {
         let iterations = 0;
         let visits = HashMap::new();

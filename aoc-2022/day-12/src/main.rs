@@ -259,7 +259,7 @@ fn run(args: &Args) {
     let read = BufReader::new(file);
     let lines = read.lines().flatten();
     let map = read_map(lines);
-    let mut solver = Solver::new(&map);
+    let mut solver = get_solver(&args, &map);
     let start = Instant::now();
     let res = solver.solve();
     match res {
@@ -271,6 +271,15 @@ fn run(args: &Args) {
     }
     let duration = start.elapsed();
     println!("Elapsed: {}.{}s", duration.as_secs(), duration.as_millis());
+}
+
+pub trait Solver<'a> {
+    fn solve(&mut self) -> Option<Vec<Point>>;
+}
+
+fn get_solver<'a>(args: &Args, map: &'a Map) -> Box<dyn Solver<'a> + 'a> {
+    let mut solver = Custom::new(&map);
+    Box::new(solver)
 }
 
 #[cfg(test)]
