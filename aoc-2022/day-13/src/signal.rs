@@ -24,20 +24,25 @@ impl Display for Packet {
 
 impl Packet {
     fn cmp(&self, other: &Packet) -> Ordering {
-        let res = self.do_cmp(&other, 0);
-        println!("{res:?}");
+        let debug = false;
+        let res = self.do_cmp(&other, debug, 0);
+        if debug {
+            println!("{res:?}");
+        }
         res
     }
-    fn do_cmp(&self, other: &Packet, depth: usize) -> Ordering {
+    fn do_cmp(&self, other: &Packet, debug: bool, depth: usize) -> Ordering {
         use Ordering::*;
         use Packet::*;
-        let indent = "  ".repeat(depth);
-        println!("{indent}{} {}", self, &other);
+        if debug {
+            let indent = "  ".repeat(depth);
+            println!("{indent}{} {}", self, &other);
+        }
         match (self, other) {
             (List(left), List(right)) => left
                 .iter()
                 .zip(right.iter())
-                .map(|(left, right)| left.do_cmp(right, depth + 1))
+                .map(|(left, right)| left.do_cmp(right, debug, depth + 1))
                 .find(|ord| ord != &Equal)
                 .unwrap_or_else(|| left.len().cmp(&right.len())),
             (Value(left), Value(right)) => {
@@ -47,12 +52,12 @@ impl Packet {
             (left @ List(_), Value(right)) => {
                 // convert right to a list
                 let right = Packet::List(vec![Packet::Value(*right)]);
-                left.do_cmp(&right, depth + 1)
+                left.do_cmp(&right, debug, depth + 1)
             }
             (Value(left), right @ List(_)) => {
                 // convert left to a list
                 let left = Packet::List(vec![Packet::Value(*left)]);
-                left.do_cmp(&right, depth + 1)
+                left.do_cmp(&right, debug, depth + 1)
             }
         }
     }
