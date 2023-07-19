@@ -103,19 +103,28 @@ fn parse_chars(chars: &mut Peekable<Chars>) -> Packet {
 }
 
 fn consume_num(chars: &mut Peekable<Chars>) -> u32 {
-    let mut factor = 1;
-    let mut res = 0;
-    loop {
-        let ch = chars.peek().unwrap();
-        if let Some(digit) = ch.to_digit(10) {
+    let mut buf = String::new();
+    while let Some(ch) = chars.peek() {
+        if let Some(_) = ch.to_digit(10) {
+            buf.push(*ch);
             chars.next();
-            res += digit * factor;
-            factor += 1;
             continue;
         }
         break;
     }
-    res
+    buf.parse::<u32>().unwrap()
+}
+
+#[test]
+fn test_consume_num() {
+    let mut s = "5323".chars().peekable();
+    assert_eq!(5323, consume_num(&mut s));
+    let mut s = "10".chars().peekable();
+    assert_eq!(10, consume_num(&mut s));
+    let mut s = "7".chars().peekable();
+    assert_eq!(7, consume_num(&mut s));
+    let mut s = "0".chars().peekable();
+    assert_eq!(0, consume_num(&mut s));
 }
 
 fn consume_list(chars: &mut Peekable<Chars>) -> Vec<Packet> {
@@ -151,6 +160,7 @@ mod test {
             ("[7,7,7,7]", "[7,7,7]", false),
             ("[]", "[3]", true),
             ("[[[]]]", "[[]]", false),
+            ("[10]", "[9]", false),
             (
                 "[1,[2,[3,[4,[5,6,7]]]],8,9]",
                 "[1,[2,[3,[4,[5,6,0]]]],8,9]",
