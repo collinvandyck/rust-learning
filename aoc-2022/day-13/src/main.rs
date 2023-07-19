@@ -29,7 +29,7 @@ fn part_two(filename: &str) {
     let d2 = parse_packet("[[6]]".to_string());
     packets.push(d1.clone());
     packets.push(d2.clone());
-    packets.sort_by(|a, b| a.cmp(&b));
+    packets.sort_by(|a, b| a.cmp(b));
     let decoder_key = packets
         .iter()
         .enumerate()
@@ -49,14 +49,13 @@ fn part_one(filename: &str) {
     let sum: usize = pairs
         .iter()
         .enumerate()
-        .map(|(idx, pair)| {
+        .filter_map(|(idx, pair)| {
             if pair.is_ordered() {
                 Some(idx + 1)
             } else {
                 None
             }
         })
-        .flatten()
         .sum();
     println!("{filename}: Sum of indices: {sum}");
 }
