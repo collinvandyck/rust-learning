@@ -11,7 +11,7 @@ use std::{
 
 fn main() {
     run("example.txt");
-    run("input.txt");
+    //run("input.txt");
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
@@ -135,7 +135,9 @@ impl Map {
     fn solve(&self) {
         println!("Solve:\n{self}\n");
         let mut solver = Solver::new(self);
-        match solver.solve() {
+        let res = solver.solve();
+        println!("Iterations: {}", solver.iterations);
+        match res {
             None => eprintln!("No solution."),
             Some(path) => {
                 let rendered = self.render_path(path);
