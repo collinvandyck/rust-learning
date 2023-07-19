@@ -36,7 +36,7 @@ fn part_one(filename: &str) {
         .map(|(idx, pair)| (idx, pair, pair.is_ordered()))
         .for_each(|(idx, pair, ordered)| {
             println!("idx: {idx}");
-            println!("pair: {pair:?}");
+            println!("{pair}");
             println!("ordered: {ordered}");
         });
 }
