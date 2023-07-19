@@ -11,7 +11,7 @@ impl Solver for Dijkstra {
 }
 
 impl Dijkstra {
-    fn new(map: Map) -> Self {
+    pub fn new(map: Map) -> Self {
         Self { map }
     }
 }

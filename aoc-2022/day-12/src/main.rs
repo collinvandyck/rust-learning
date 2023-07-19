@@ -290,6 +290,10 @@ fn get_solver(args: &Args, map: &Map) -> Box<dyn Solver> {
             let solver = Custom::new(map.clone());
             Box::new(solver)
         }
+        Algorithm::Dijkstra => {
+            let solver = Dijkstra::new(map.clone());
+            Box::new(solver)
+        }
         _ => {
             eprintln!("Unsupported solver: {:?}", args.algorithm);
             process::exit(1);
