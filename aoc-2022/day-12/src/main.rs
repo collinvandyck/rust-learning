@@ -260,6 +260,7 @@ fn run(args: &Args) {
     let read = BufReader::new(file);
     let lines = read.lines().flatten();
     let map = read_map(lines);
+    println!("{}", map);
     let mut solver = get_solver(args, &map);
     let start = Instant::now();
     let res = solver.solve();
