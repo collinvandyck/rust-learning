@@ -77,9 +77,6 @@ impl<'a> Solver<'a> {
         mut visited: HashSet<Point>,
     ) -> Option<Vec<Point>> {
         self.iterations += 1;
-        if self.iterations % 1000 == 0 {
-            println!("{}", self.iterations);
-        }
         let current = path.last().unwrap();
 
         // are we done?
