@@ -69,13 +69,15 @@ impl<'a> Solver<'a> {
     fn solve(&mut self) -> Option<Vec<Point>> {
         let path = vec![self.map.start];
         let visited = HashSet::from([self.map.start]);
-        self.do_solve(path, visited)
+        self.do_solve(0, path, visited)
     }
     fn do_solve(
         &mut self,
+        depth: usize,
         mut path: Vec<Point>,
         mut visited: HashSet<Point>,
     ) -> Option<Vec<Point>> {
+        println!("{depth}");
         self.iterations += 1;
         let current = path.last().unwrap();
 
@@ -103,7 +105,7 @@ impl<'a> Solver<'a> {
             path.push(next);
 
             let visited = visited.clone();
-            let next_res = self.do_solve(path, visited);
+            let next_res = self.do_solve(depth + 1, path, visited);
             if let Some(next_res) = next_res {
                 res = match res {
                     None => Some(next_res),
