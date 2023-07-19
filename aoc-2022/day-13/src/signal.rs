@@ -29,6 +29,8 @@ impl Packet {
     fn do_cmp(&self, other: &Packet, depth: usize) -> Ordering {
         use Ordering::*;
         use Packet::*;
+        let indent = "   ".repeat(depth);
+        println!("O: {indent}{} {}", self, &other);
         match (self, other) {
             (List(left), List(right)) => left
                 .iter()
