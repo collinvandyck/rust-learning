@@ -57,11 +57,13 @@ enum Direction {
 
 struct Solver<'a> {
     map: &'a Map,
+    iterations: u64,
 }
 
 impl<'a> Solver<'a> {
     fn new(map: &'a Map) -> Self {
-        Self { map }
+        let iterations = 0;
+        Self { map, iterations }
     }
     // solve attempts to find the shortest path from the start to the end.
     fn solve(&mut self) -> Option<Vec<Point>> {
@@ -74,16 +76,11 @@ impl<'a> Solver<'a> {
         mut path: Vec<Point>,
         mut visited: HashSet<Point>,
     ) -> Option<Vec<Point>> {
+        self.iterations += 1;
+        if self.iterations % 1000 == 0 {
+            println!("{}", self.iterations);
+        }
         let current = path.last().unwrap();
-
-        /*
-        let pathdbg = path
-            .iter()
-            .map(Point::to_string)
-            .collect::<Vec<String>>()
-            .join(",");
-        println!("cur:{current}: ch:{} path:{pathdbg}", self.map.get(current));
-        */
 
         // are we done?
         if current == &self.map.finish {
