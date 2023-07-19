@@ -127,8 +127,12 @@ mod test {
 
     #[test]
     fn test_pairs() {
-        let ordered: Vec<(&str, &str)> =
-            vec![("[]", "[]"), ("[1]", "[1]"), ("[1,1,3,1,1]", "[1,1,5,1,1]")];
+        let ordered: Vec<(&str, &str)> = vec![
+            ("[]", "[]"),
+            ("[1]", "[1]"),
+            ("[1,1,3,1,1]", "[1,1,5,1,1]"),
+            ("[[1],[2,3,4]]", "[[1],4]"),
+        ];
         for (one, two) in ordered {
             let one = parse_packet(one.to_string());
             let two = parse_packet(two.to_string());
@@ -137,7 +141,7 @@ mod test {
                 right: two,
             };
             if !pair.is_ordered() {
-                assert!(false, "Pair {pair} was not ordered");
+                assert!(false, "Pair {} x {} was not ordered", pair.left, pair.right);
             }
         }
     }
