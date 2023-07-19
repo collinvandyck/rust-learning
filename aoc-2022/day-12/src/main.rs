@@ -11,7 +11,7 @@ use std::{
 
 fn main() {
     run("example.txt");
-    //run("input.txt");
+    run("input.txt");
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
