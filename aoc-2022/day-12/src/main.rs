@@ -7,6 +7,7 @@ use std::{
     fs::File,
     io::{BufRead, BufReader},
     slice::SliceIndex,
+    time::Instant,
 };
 
 fn main() {
@@ -186,6 +187,7 @@ struct Map {
 impl Map {
     fn solve(&self) {
         println!("Solve:\n{self}\n");
+        let start = Instant::now();
         let mut solver = Solver::new(self);
         let res = solver.solve();
         let short_circuits = if solver.short_circuits == 0 {
@@ -205,6 +207,8 @@ impl Map {
                 println!("Solution:\n{rendered}");
             }
         }
+        let duration = start.elapsed();
+        println!("Elapsed: {}.{}s", duration.as_secs(), duration.as_millis());
     }
     fn distance(&self, from: &Point, to: &Point) -> i32 {
         let from = self.get(from) as i32;
