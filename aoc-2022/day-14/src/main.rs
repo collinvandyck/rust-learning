@@ -34,10 +34,9 @@ fn part_one(args: &Args) {
             println!("Ticks: {tick}");
             break;
         }
-        if tick % 100 == 0 {
-            println!("{cave}");
-        }
+        if tick % 100 == 0 {}
     }
+    println!("{cave}");
     println!("Grains: {}", cave.grains);
 }
 
