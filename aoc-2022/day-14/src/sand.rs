@@ -122,7 +122,7 @@ impl Cave {
             sand = match sand {
                 Sand::Falling(point) => {
                     // todo: figure out if we can short circuit from the result of self.gravity
-                    match self.gravity_new(point) {
+                    match self.gravity(point) {
                         falling @ Sand::Falling(_) => return falling,
                         d => d,
                     }
@@ -149,38 +149,7 @@ impl Cave {
             }
         }
     }
-    fn gravity(&mut self, point: Point) -> Sand {
-        let down = Point(point.0, point.1 + 1);
-        match self.get(down) {
-            // move down if there's nothing under us
-            Some(Tile {
-                entity: Entity::Nothing,
-                ..
-            }) => {
-                if point != self.source {
-                    self.set(point, Entity::Nothing);
-                }
-                self.set(down, Entity::Sand);
-                Sand::Falling(down)
-            }
-            // if there's something under us, stop.
-            Some(Tile {
-                entity: Entity::Sand | Entity::Rock,
-                ..
-            }) => Sand::Waiting,
-            // if there is nothing, then we have fallen off
-            None => {
-                self.in_the_abyss = true;
-                return Sand::Abyss;
-            }
-            // PANIC: this should never happen.
-            Some(Tile {
-                entity: Entity::Source,
-                ..
-            }) => panic!("should not fall onto the source"),
-        }
-    }
-    fn gravity_new(&mut self, prev: Point) -> Sand {
+    fn gravity(&mut self, prev: Point) -> Sand {
         let down = Point(prev.0, prev.1 + 1);
         match self.get(down) {
             Some(tile) => match tile.entity {
