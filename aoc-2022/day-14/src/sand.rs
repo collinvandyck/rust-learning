@@ -59,7 +59,7 @@ impl Formation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Tile {
     point: Point,
     entity: Entity,
@@ -70,6 +70,7 @@ enum Entity {
     Nothing,
     Source,
     Rock,
+    Sand,
 }
 
 impl Entity {
@@ -78,6 +79,7 @@ impl Entity {
             Entity::Nothing => '.',
             Entity::Source => '+',
             Entity::Rock => '#',
+            Entity::Sand => 'o',
         }
     }
 }
@@ -89,6 +91,14 @@ impl Display for Entity {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+enum Sand {
+    Waiting,        // time to start a new drip
+    Falling(Point), // we are falling at this point
+    AtRest(Point),  // where we landed
+    Abyss,          // we've fallen off.
+}
+
 #[derive(Debug)]
 pub struct Cave {
     tiles: Vec<Vec<Tile>>,
@@ -96,17 +106,49 @@ pub struct Cave {
     max: Point,
     source: Point,
     sand: Sand,
-}
-
-#[derive(Debug)]
-enum Sand {
-    Drip,            // time to start a new drip
-    Dripping(Point), // we are falling at this point
-    Abyss,           // we've fallen off.
+    grains: i32,
 }
 
 impl Cave {
-    pub fn tick(&mut self) {}
+    pub fn tick(&mut self) {
+        self.sand = self.advance();
+    }
+    fn advance(&mut self) -> Sand {
+        let mut sand = self.sand;
+        loop {
+            sand = match sand {
+                Sand::Waiting => {
+                    self.grains += 1;
+                    Sand::Falling(Point::new(self.source.0, self.source.1 + 1))
+                }
+                Sand::Falling(point) => return self.gravity(point),
+                Sand::AtRest(point) => Sand::Waiting,
+                Sand::Abyss => Sand::Waiting,
+            }
+        }
+    }
+    fn gravity(&mut self, point: Point) -> Sand {
+        let down = Point(point.0, point.1 + 1);
+        match self.get(down) {
+            Some(Tile {
+                entity: Entity::Nothing,
+                ..
+            }) => {
+                self.set(point, Entity::Nothing);
+                self.set(down, Entity::Sand);
+                Sand::Falling(down)
+            }
+            Some(Tile {
+                entity: Entity::Sand | Entity::Rock,
+                ..
+            }) => Sand::Waiting,
+            Some(Tile {
+                entity: Entity::Source,
+                ..
+            }) => panic!("should not fall onto the source"),
+            None => return Sand::Abyss, //we have fallen off
+        }
+    }
     pub fn new(formations: &[Formation]) -> Cave {
         let mut min = Point::new(i32::MAX, 0);
         let mut max = Point::new(i32::MIN, i32::MIN);
@@ -128,13 +170,15 @@ impl Cave {
             tiles.push(row);
         }
         let source = Point::new(500, 0);
-        let sand = Sand::Drip;
+        let sand = Sand::Waiting;
+        let grains = 0;
         let mut res = Cave {
             tiles,
             min,
             max,
             source,
             sand,
+            grains,
         };
         res.set(res.source, Entity::Source);
         formations
@@ -142,6 +186,10 @@ impl Cave {
             .flat_map(|f| f.hydrate())
             .for_each(|f| res.set(f, Entity::Rock));
         res
+    }
+    fn get(&self, point: Point) -> Option<Tile> {
+        let (row, col) = self.to_world(point);
+        self.tiles.get(row).and_then(|r| r.get(col)).map(|t| *t)
     }
     fn set(&mut self, point: Point, e: Entity) {
         let (row, col) = self.to_world(point);
@@ -151,6 +199,7 @@ impl Cave {
             .iter_mut()
             .for_each(|r| r.entity = e);
     }
+    // converts from "camera" to world coords
     #[allow(clippy::cast_sign_loss)]
     fn to_world(&self, point: Point) -> (usize, usize) {
         let row = point.1 - self.min.1;
