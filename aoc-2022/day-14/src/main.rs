@@ -16,7 +16,7 @@ use std::{
 use prelude::*;
 
 fn main() {
-    run("example.txt");
+    run("input.txt");
 }
 
 fn run(filename: &str) {
@@ -28,12 +28,12 @@ fn run(filename: &str) {
         .collect::<Vec<_>>();
     let mut cave = Cave::new(&formations);
     println!("{cave}");
-    for x in 0..500 {
+    for tick in 1.. {
         if cave.tick() == Sand::Done {
             break;
         }
-        println!("{cave}");
-        if x < 60 - 1 {
+        if tick % 100 == 0 {
+            println!("{cave}");
             println!();
             thread::sleep(Duration::from_millis(50));
         }

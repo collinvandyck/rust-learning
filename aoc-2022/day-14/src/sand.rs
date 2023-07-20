@@ -248,7 +248,7 @@ impl Cave {
         let r3 = format!("{}", self.max.0).chars().collect::<Vec<_>>();
 
         for idx in 0..3 {
-            let pad = " ".repeat(row_pd + 1);
+            let pad = "\t";
             buf.push_str(&pad);
             buf.push(*r1.get(idx).unwrap());
             #[allow(clippy::cast_sign_loss)]
@@ -268,8 +268,7 @@ impl Cave {
             .iter()
             .enumerate()
             .map(|(ri, row)| {
-                let row_pd = row_pd - (ri / 10);
-                let pad = " ".repeat(row_pd);
+                let pad = "\t";
                 let mut res = format!("{ri}{pad}");
                 let row = row.iter().map(|t| t.entity.char()).collect::<String>();
                 res.push_str(row.as_str());
