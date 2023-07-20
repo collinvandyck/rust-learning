@@ -33,7 +33,7 @@ fn run(filename: &str) {
         println!("{cave}");
         if x < 60 - 1 {
             println!();
-            thread::sleep(Duration::from_millis(100));
+            thread::sleep(Duration::from_millis(500));
         }
     }
 }

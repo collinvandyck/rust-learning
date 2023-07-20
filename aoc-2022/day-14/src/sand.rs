@@ -108,6 +108,7 @@ pub struct Cave {
     source: Point,
     sand: Sand,
     grains: i32,
+    in_the_abyss: bool,
 }
 
 impl Cave {
@@ -117,22 +118,32 @@ impl Cave {
     fn advance(&mut self) -> Sand {
         let mut sand = self.sand;
         loop {
-            sand = match sand {
+            sand = match dbg!(sand) {
+                Sand::Falling(point) => return self.gravity(point),
                 Sand::Waiting => {
-                    //
+                    if self.in_the_abyss {
+                        eprintln!("Short circuiting advance. In the abyss.");
+                        return Sand::Done;
+                    }
                     self.grains += 1;
                     Sand::Falling(self.source)
                 }
-                Sand::Falling(point) => return self.gravity(point),
                 Sand::Done => return Sand::Done,
-                Sand::AtRest(point) => Sand::Waiting,
-                Sand::Abyss => Sand::Waiting,
+                Sand::AtRest(_point) => {
+                    println!("at rest");
+                    Sand::Waiting
+                }
+                Sand::Abyss => {
+                    println!("abyss");
+                    Sand::Waiting
+                }
             }
         }
     }
     fn gravity(&mut self, point: Point) -> Sand {
         let down = Point(point.0, point.1 + 1);
         match self.get(down) {
+            // move down if there's nothing under us
             Some(Tile {
                 entity: Entity::Nothing,
                 ..
@@ -143,15 +154,21 @@ impl Cave {
                 self.set(down, Entity::Sand);
                 Sand::Falling(down)
             }
+            // if there's something under us, stop.
             Some(Tile {
                 entity: Entity::Sand | Entity::Rock,
                 ..
             }) => Sand::Waiting,
+            // if there is nothing, then we have fallen off
+            None => {
+                self.in_the_abyss = true;
+                return Sand::Abyss;
+            }
+            // PANIC: this should never happen.
             Some(Tile {
                 entity: Entity::Source,
                 ..
             }) => panic!("should not fall onto the source"),
-            None => return Sand::Abyss, //we have fallen off
         }
     }
     pub fn new(formations: &[Formation]) -> Cave {
@@ -177,6 +194,7 @@ impl Cave {
         let source = Point::new(500, 0);
         let sand = Sand::Waiting;
         let grains = 0;
+        let in_the_abyss = false;
         let mut res = Cave {
             tiles,
             min,
@@ -184,6 +202,7 @@ impl Cave {
             source,
             sand,
             grains,
+            in_the_abyss,
         };
         res.set(res.source, Entity::Source);
         formations
