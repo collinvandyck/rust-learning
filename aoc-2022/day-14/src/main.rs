@@ -22,7 +22,6 @@ fn main() {
         Some(2) => todo!(),
         _ => part_one(&args),
     }
-    part_one(&args);
 }
 
 fn part_one(args: &Args) {
