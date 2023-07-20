@@ -102,7 +102,6 @@ pub enum Sand {
 
 #[derive(Debug)]
 pub struct Cave {
-    tiles_vec: Vec<VecDeque<Tile>>,
     tiles: HashMap<Point, Tile>,
     min: Point,
     max: Point,
@@ -184,25 +183,12 @@ impl Cave {
             max.0 = i32::max(max.0, point.0);
             max.1 = i32::max(max.1, point.1);
         });
-        let mut tiles_vec = vec![];
-        for row_idx in min.1..=max.1 {
-            let mut row = VecDeque::new();
-            for col_idx in min.0..=max.0 {
-                let tile = Tile {
-                    point: Point(row_idx, col_idx),
-                    entity: Entity::Nothing,
-                };
-                row.push_back(tile);
-            }
-            tiles_vec.push(row);
-        }
         let source = Point::new(500, 0);
         let sand = Sand::Waiting;
         let grains = 0;
         let in_the_abyss = false;
         let tiles = HashMap::new();
         let mut res = Cave {
-            tiles_vec,
             tiles,
             min,
             max,
@@ -238,10 +224,10 @@ impl Cave {
         (row as usize, col as usize)
     }
     fn rows(&self) -> usize {
-        self.tiles_vec.len()
+        (self.max.1 - self.min.1 + 1).try_into().unwrap()
     }
     fn cols(&self) -> usize {
-        self.tiles_vec.first().map_or(0, VecDeque::len)
+        (self.max.0 - self.min.0 + 1).try_into().unwrap()
     }
     fn render(&self) -> String {
         let mut buf = String::new();
