@@ -1,9 +1,10 @@
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::HashMap,
     fmt::{Debug, Display},
     vec,
 };
 
+// (row, col)
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Point(i32, i32);
 
@@ -215,6 +216,16 @@ impl Cave {
             .and_then(|r| r.get_mut(col))
             .iter_mut()
             .for_each(|r| r.entity = e);
+    }
+    fn in_bounds(&self, point: Point) -> bool {
+        let Point(row, col) = point;
+        if row < self.min.0 || row > self.max.0 {
+            return false;
+        }
+        if col < self.min.1 || col > self.max.1 {
+            return false;
+        }
+        true
     }
     // converts from "camera" to world coords
     #[allow(clippy::cast_sign_loss)]
