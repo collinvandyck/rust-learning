@@ -266,11 +266,11 @@ impl Cave {
         }
 
         // draw the grid of the map with numbered rows.
-        for row in self.min.0..=self.max.0 {
+        for y in self.min.1..=self.max.1 {
             let pad = "\t";
-            let mut res = format!("{}{pad}", row - self.min.0);
-            for col in self.min.1..=self.max.1 {
-                let point = Point(row, col);
+            let mut res = format!("{}{pad}", y - self.min.0);
+            for x in self.min.0..=self.max.0 {
+                let point = Point(x, y);
                 let tile = self.get(point).unwrap();
                 res.push(tile.entity.char());
             }
