@@ -94,9 +94,11 @@ pub struct Cave {
     tiles: Vec<Vec<Tile>>,
     min: Point,
     max: Point,
+    source: Point,
 }
 
 impl Cave {
+    pub fn tick(&mut self) {}
     pub fn new(formations: &[Formation]) -> Cave {
         let mut min = Point::new(i32::MAX, 0);
         let mut max = Point::new(i32::MIN, i32::MIN);
@@ -117,8 +119,14 @@ impl Cave {
             }
             tiles.push(row);
         }
-        let mut res = Cave { tiles, min, max };
-        res.set(Point::new(500, 0), Entity::Source);
+        let source = Point::new(500, 0);
+        let mut res = Cave {
+            tiles,
+            min,
+            max,
+            source,
+        };
+        res.set(res.source, Entity::Source);
         formations
             .iter()
             .flat_map(|f| f.hydrate())
@@ -150,7 +158,7 @@ impl Cave {
         let row_pd = self.tiles.len() / 10;
 
         let r1 = format!("{}", self.min.0).chars().collect::<Vec<_>>();
-        let r2 = format!("{}", 500).chars().collect::<Vec<_>>();
+        let r2 = format!("{}", self.source.0).chars().collect::<Vec<_>>();
         let r3 = format!("{}", self.max.0).chars().collect::<Vec<_>>();
 
         for idx in 0..3 {

@@ -9,6 +9,8 @@ mod prelude {
 use std::{
     fs::File,
     io::{BufRead, BufReader},
+    thread,
+    time::Duration,
 };
 
 use prelude::*;
@@ -24,6 +26,13 @@ fn run(filename: &str) {
         .lines()
         .map(|l| Formation::parse(&l.unwrap()))
         .collect::<Vec<_>>();
-    let cave = Cave::new(&formations);
+    let mut cave = Cave::new(&formations);
     println!("{cave}");
+    for x in 0..60 {
+        cave.tick();
+        println!("{cave}");
+        if x < 60 - 1 {
+            thread::sleep(Duration::from_millis(500));
+        }
+    }
 }
