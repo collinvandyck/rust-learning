@@ -203,11 +203,7 @@ impl Cave {
         formations
             .iter()
             .flat_map(|f| f.hydrate())
-            .take(3) // TODO: REMOVE
-            .for_each(|p| {
-                println!("Rock at {:?}", p);
-                res.set(p, Entity::Rock)
-            });
+            .for_each(|p| res.set(p, Entity::Rock));
         res
     }
     fn get(&self, point: Point) -> Option<Tile> {
@@ -268,7 +264,7 @@ impl Cave {
         // draw the grid of the map with numbered rows.
         for y in self.min.1..=self.max.1 {
             let pad = "\t";
-            let mut res = format!("{}{pad}", y - self.min.0);
+            let mut res = format!("{}{pad}", y);
             for x in self.min.0..=self.max.0 {
                 let point = Point(x, y);
                 let tile = self.get(point).unwrap();
