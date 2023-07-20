@@ -116,6 +116,7 @@ impl Cave {
         self.tiles.first().map_or(0, |r| r.len())
     }
     fn render(&self) -> String {
+        // draw the grid of the map with numbered rows.
         let row_pd = self.tiles.len() / 10;
         self.tiles
             .iter()
