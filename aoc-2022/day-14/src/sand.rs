@@ -183,10 +183,10 @@ impl Cave {
     pub fn new(formations: &[Formation]) -> Cave {
         let mut min = Point::new(i32::MAX, 0);
         let mut max = Point::new(i32::MIN, i32::MIN);
-        formations.iter().flat_map(|f| &f.0).for_each(|point| {
-            min.0 = i32::min(min.0, point.0);
-            max.0 = i32::max(max.0, point.0);
-            max.1 = i32::max(max.1, point.1);
+        formations.iter().flat_map(|f| f.hydrate()).for_each(|p| {
+            min.0 = i32::min(min.0, p.0);
+            max.0 = i32::max(max.0, p.0);
+            max.1 = i32::max(max.1, p.1);
         });
         let source = Point::new(500, 0);
         let sand = Sand::Waiting;
@@ -204,31 +204,26 @@ impl Cave {
             in_the_abyss,
             use_floor,
         };
-        res.set(res.source, Entity::Source);
         formations
             .iter()
             .flat_map(|f| f.hydrate())
             .for_each(|p| res.set(p, Entity::Rock));
+        res.set(res.source, Entity::Source);
         res
     }
     fn get(&self, point: Point) -> Option<Tile> {
-        if self.in_bounds(point) {
-            match self.tiles.get(&point) {
-                Some(tile) => return Some(*tile),
-                None => Some(Tile {
-                    point,
-                    entity: Entity::Nothing,
-                }),
-            }
-        } else {
-            None
+        match self.tiles.get(&point) {
+            Some(tile) => return Some(*tile),
+            None => Some(Tile {
+                point,
+                entity: Entity::Nothing,
+            }),
         }
     }
     fn remove(&mut self, point: Point) {
         self.tiles.remove(&point);
     }
     fn set(&mut self, point: Point, e: Entity) {
-        assert!(self.in_bounds(point));
         self.tiles.insert(point, Tile { point, entity: e });
     }
     fn in_bounds(&self, point: Point) -> bool {
@@ -270,7 +265,11 @@ impl Cave {
         }
 
         // draw the grid of the map with numbered rows.
-        for y in self.min.1..=self.max.1 {
+        let mut y_max = self.max.1;
+        if self.use_floor {
+            y_max += 2;
+        }
+        for y in self.min.1..=y_max {
             let pad = "\t";
             let mut res = format!("{}{pad}", y);
             for x in self.min.0..=self.max.0 {
