@@ -4,13 +4,13 @@ use std::{
     vec,
 };
 
-// (row, col)
+/// (x, y)
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Point(i32, i32);
 
 impl Point {
-    fn new(row: i32, col: i32) -> Self {
-        Self(row, col)
+    fn new(x: i32, y: i32) -> Self {
+        Self(x, y)
     }
     fn default() -> Self {
         Point(0, 0)
@@ -20,6 +20,7 @@ impl Point {
 #[derive(Debug)]
 pub struct Formation(Vec<Point>);
 
+// points are in X,Y form
 impl Formation {
     pub fn parse(line: &str) -> Self {
         let points = line
@@ -227,21 +228,14 @@ impl Cave {
         self.tiles.insert(point, Tile { point, entity: e });
     }
     fn in_bounds(&self, point: Point) -> bool {
-        let Point(row, col) = point;
-        if row < self.min.0 || row > self.max.0 {
+        let Point(x, y) = point;
+        if x < self.min.0 || x > self.max.0 {
             return false;
         }
-        if col < self.min.1 || col > self.max.1 {
+        if y < self.min.1 || y > self.max.1 {
             return false;
         }
         true
-    }
-    // converts from "camera" to world coords
-    #[allow(clippy::cast_sign_loss)]
-    fn to_world(&self, point: Point) -> (usize, usize) {
-        let row = point.1 - self.min.1;
-        let col = point.0 - self.min.0;
-        (row as usize, col as usize)
     }
     fn rows(&self) -> usize {
         (self.max.1 - self.min.1 + 1).try_into().unwrap()
