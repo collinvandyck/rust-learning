@@ -95,6 +95,14 @@ pub struct Cave {
     min: Point,
     max: Point,
     source: Point,
+    sand: Sand,
+}
+
+#[derive(Debug)]
+enum Sand {
+    Drip,            // time to start a new drip
+    Dripping(Point), // we are falling at this point
+    Abyss,           // we've fallen off.
 }
 
 impl Cave {
@@ -120,11 +128,13 @@ impl Cave {
             tiles.push(row);
         }
         let source = Point::new(500, 0);
+        let sand = Sand::Drip;
         let mut res = Cave {
             tiles,
             min,
             max,
             source,
+            sand,
         };
         res.set(res.source, Entity::Source);
         formations
