@@ -37,6 +37,16 @@ impl Formation {
     }
 }
 
+#[test]
+fn test_formation_iter() {
+    let f = Formation(vec![Point::new(0, 0), Point::new(0, 2)]);
+    let r = f.hydrate().collect::<Vec<_>>();
+    assert_eq!(
+        r,
+        vec![Point::new(0, 0), Point::new(0, 1), Point::new(0, 2)]
+    );
+}
+
 struct FormationIter<'a> {
     iter: slice::Iter<'a, Point>,
     cur: Option<Point>,
@@ -57,11 +67,10 @@ impl<'a> Iterator for FormationIter<'a> {
         if self.buf.is_empty() {
             // ensure that self.cur is up to date.
             let cur = self.cur.take().or_else(|| self.iter.next().copied());
-            self.cur = dbg!(self.cur);
-            if let Some(Point(x1, y1)) = cur {
-                if let Some(Point(x2, y2)) = self.iter.next().copied() {
-                    dbg!(((x1, y1), (x2, y2)));
+            if let Some(p1 @ Point(x1, y1)) = cur {
+                if let Some(p2 @ Point(x2, y2)) = self.iter.next().copied() {
                     assert!(x1 == x2 || y1 == y2);
+                    dbg!((p1, p2));
                     if x1 == x2 {
                         for x in i32::min(x1, x2)..=i32::max(x1, x2) {
                             self.buf.push_back(Point::new(x, y1));
