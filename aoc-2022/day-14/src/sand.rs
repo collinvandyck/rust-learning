@@ -206,16 +206,21 @@ impl Cave {
         res
     }
     fn get(&self, point: Point) -> Option<Tile> {
-        let (row, col) = self.to_world(point);
-        self.tiles_vec.get(row).and_then(|r| r.get(col)).map(|t| *t)
+        if self.in_bounds(point) {
+            match self.tiles.get(&point) {
+                Some(tile) => return Some(*tile),
+                None => Some(Tile {
+                    point,
+                    entity: Entity::Nothing,
+                }),
+            }
+        } else {
+            None
+        }
     }
     fn set(&mut self, point: Point, e: Entity) {
-        let (row, col) = self.to_world(point);
-        self.tiles_vec
-            .get_mut(row)
-            .and_then(|r| r.get_mut(col))
-            .iter_mut()
-            .for_each(|r| r.entity = e);
+        assert!(self.in_bounds(point));
+        self.tiles.insert(point, Tile { point, entity: e });
     }
     fn in_bounds(&self, point: Point) -> bool {
         let Point(row, col) = point;
