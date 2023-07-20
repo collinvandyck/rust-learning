@@ -1,5 +1,7 @@
+use std::fmt::Display;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Point(i32, i32);
+pub struct Point(pub i32, pub i32);
 
 impl Point {
     fn x(&self) -> i32 {
@@ -12,6 +14,12 @@ impl Point {
         let x = (self.x() - rhs.x()).abs();
         let y = (self.y() - rhs.y()).abs();
         x + y
+    }
+}
+
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.0, self.1)
     }
 }
 
