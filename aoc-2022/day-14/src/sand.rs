@@ -151,22 +151,30 @@ impl Cave {
     }
     fn gravity(&mut self, prev: Point) -> Sand {
         let down = Point(prev.0, prev.1 + 1);
-        match self.get(down) {
+        let down_left = Point(prev.0 - 1, prev.1 + 1);
+        let down_right = Point(prev.0 + 1, prev.1 + 1);
+        for to in [down, down_left, down_right] {
+            if let Some(s) = self.try_move(prev, to) {
+                return s;
+            }
+        }
+        Sand::Waiting
+    }
+    // returns Some if the sand could be moved
+    fn try_move(&mut self, prev: Point, to: Point) -> Option<Sand> {
+        match self.get(to) {
             Some(tile) => match tile.entity {
                 Entity::Nothing => {
                     if prev != self.source {
                         self.set(prev, Entity::Nothing);
                     }
-                    self.set(down, Entity::Sand);
-                    Sand::Falling(down)
+                    self.set(to, Entity::Sand);
+                    Some(Sand::Falling(to))
                 }
-                Entity::Rock | Entity::Sand => Sand::Waiting,
-                Entity::Source => panic!("should not fall onto the source"),
+                Entity::Rock | Entity::Sand => None,
+                Entity::Source => None,
             },
-            None => {
-                self.in_the_abyss = true;
-                Sand::Abyss
-            }
+            None => Some(Sand::Abyss),
         }
     }
     pub fn new(formations: &[Formation]) -> Cave {
