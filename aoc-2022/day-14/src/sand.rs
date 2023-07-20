@@ -32,58 +32,31 @@ impl Formation {
             .collect::<Vec<_>>();
         Self(points)
     }
-    fn hydrate<'a>(&'a self) -> impl Iterator<Item = Point> + 'a {
-        FormationIter::new(self.0.iter())
-    }
-}
-
-#[test]
-fn test_formation_iter() {
-    let f = Formation(vec![Point::new(0, 0), Point::new(0, 2)]);
-    let r = f.hydrate().collect::<Vec<_>>();
-    assert_eq!(
-        r,
-        vec![Point::new(0, 0), Point::new(0, 1), Point::new(0, 2)]
-    );
-}
-
-struct FormationIter<'a> {
-    iter: slice::Iter<'a, Point>,
-    cur: Option<Point>,
-    buf: VecDeque<Point>,
-}
-
-impl<'a> FormationIter<'a> {
-    fn new(iter: slice::Iter<'a, Point>) -> Self {
-        let cur = None;
-        let buf = VecDeque::default();
-        Self { iter, cur, buf }
-    }
-}
-
-impl<'a> Iterator for FormationIter<'a> {
-    type Item = Point;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.buf.is_empty() {
-            // ensure that self.cur is up to date.
-            let cur = self.cur.take().or_else(|| self.iter.next().copied());
-            if let Some(p1 @ Point(x1, y1)) = cur {
-                if let Some(p2 @ Point(x2, y2)) = self.iter.next().copied() {
-                    assert!(x1 == x2 || y1 == y2);
-                    dbg!((p1, p2));
-                    if x1 == x2 {
-                        for x in i32::min(x1, x2)..=i32::max(x1, x2) {
-                            self.buf.push_back(Point::new(x, y1));
+    fn hydrate(&self) -> Vec<Point> {
+        self.0
+            .windows(2)
+            .enumerate()
+            .flat_map(|(idx, pts)| {
+                let (Point(x1, y1), Point(x2, y2)) = (pts[0], pts[1]);
+                assert!(x1 == x2 || y1 == y2);
+                let mut v = vec![];
+                let inclusive = idx < self.0.len() - 1;
+                if x1 != x2 {
+                    for x in i32::min(x1, x2)..=i32::max(x1, x2) {
+                        if x != i32::max(x1, x2) || inclusive {
+                            v.push(Point::new(x, y1));
                         }
-                    } else {
-                        for y in i32::min(y1, y2)..=i32::max(y1, y2) {
-                            self.buf.push_back(Point::new(x1, y));
+                    }
+                } else {
+                    for y in i32::min(y1, y2)..=i32::max(y1, y2) {
+                        if y != i32::max(y1, y2) || inclusive {
+                            v.push(Point::new(x1, y));
                         }
                     }
                 }
-            }
-        }
-        self.buf.pop_front()
+                v
+            })
+            .collect()
     }
 }
 
