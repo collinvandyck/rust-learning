@@ -1,9 +1,11 @@
 #![allow(dead_code)]
 #![warn(clippy::all, clippy::pedantic)]
 
+mod args;
 mod sand;
 
 mod prelude {
+    pub use crate::args::*;
     pub use crate::sand::*;
 }
 use std::{
@@ -11,14 +13,16 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+use clap::Parser;
 use prelude::*;
 
 fn main() {
-    run("input.txt");
+    let args = Args::parse();
+    run(&args);
 }
 
-fn run(filename: &str) {
-    let file = File::open(filename).unwrap();
+fn run(args: &Args) {
+    let file = File::open(&args.filename).unwrap();
     let read = BufReader::new(file);
     let formations = read
         .lines()
