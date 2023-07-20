@@ -29,11 +29,13 @@ fn run(filename: &str) {
     let mut cave = Cave::new(&formations);
     println!("{cave}");
     for x in 0..60 {
-        cave.tick();
+        if cave.tick() == Sand::Done {
+            break;
+        }
         println!("{cave}");
         if x < 60 - 1 {
             println!();
-            thread::sleep(Duration::from_millis(500));
+            thread::sleep(Duration::from_millis(100));
         }
     }
 }

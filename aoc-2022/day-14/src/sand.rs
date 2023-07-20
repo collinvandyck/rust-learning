@@ -65,7 +65,7 @@ struct Tile {
     entity: Entity,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Entity {
     Nothing,
     Source,
@@ -91,8 +91,8 @@ impl Display for Entity {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-enum Sand {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Sand {
     Waiting,        // time to start a new drip
     Falling(Point), // we are falling at this point
     AtRest(Point),  // where we landed
@@ -112,20 +112,32 @@ pub struct Cave {
 }
 
 impl Cave {
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> Sand {
         self.sand = self.advance();
+        self.sand
     }
     fn advance(&mut self) -> Sand {
         let mut sand = self.sand;
         loop {
-            sand = match dbg!(sand) {
-                Sand::Falling(point) => return self.gravity(point),
-                Sand::Waiting => {
-                    if self.in_the_abyss {
-                        eprintln!("Short circuiting advance. In the abyss.");
-                        return Sand::Done;
+            if self.in_the_abyss {
+                eprintln!("Short circuiting advance. In the abyss.");
+                return Sand::Done;
+            }
+            sand = match sand {
+                Sand::Falling(point) => {
+                    // todo: figure out if we can short circuit from the result of self.gravity
+                    match self.gravity(point) {
+                        falling @ Sand::Falling(_) => return falling,
+                        d => d,
                     }
-                    self.grains += 1;
+                }
+                Sand::Waiting => {
+                    let down = Point(self.source.0, self.source.1 + 1);
+                    if let Some(tile) = self.get(down) {
+                        if tile.entity != Entity::Nothing {
+                            return Sand::Done;
+                        }
+                    }
                     Sand::Falling(self.source)
                 }
                 Sand::Done => return Sand::Done,
