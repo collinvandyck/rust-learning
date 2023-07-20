@@ -211,30 +211,39 @@ impl Cave {
         res.set(res.source, Entity::Source);
         res
     }
+    fn abyss_y(&self) -> i32 {
+        if self.use_floor {
+            self.max.1 + 3
+        } else {
+            self.max.1 + 1
+        }
+    }
     fn get(&self, point: Point) -> Option<Tile> {
         match self.tiles.get(&point) {
             Some(tile) => return Some(*tile),
-            None => Some(Tile {
-                point,
-                entity: Entity::Nothing,
-            }),
+            None => {
+                if point.1 >= self.abyss_y() {
+                    // we have fallen off the map
+                    None
+                } else if self.use_floor && point.1 == self.max.1 + 2 {
+                    Some(Tile {
+                        point,
+                        entity: Entity::Rock,
+                    })
+                } else {
+                    Some(Tile {
+                        point,
+                        entity: Entity::Nothing,
+                    })
+                }
+            }
         }
     }
     fn remove(&mut self, point: Point) {
         self.tiles.remove(&point);
     }
-    fn set(&mut self, point: Point, e: Entity) {
-        self.tiles.insert(point, Tile { point, entity: e });
-    }
-    fn in_bounds(&self, point: Point) -> bool {
-        let Point(x, y) = point;
-        if x < self.min.0 || x > self.max.0 {
-            return false;
-        }
-        if y < self.min.1 || y > self.max.1 {
-            return false;
-        }
-        true
+    fn set(&mut self, point: Point, entity: Entity) {
+        self.tiles.insert(point, Tile { point, entity });
     }
     fn rows(&self) -> usize {
         (self.max.1 - self.min.1 + 1).try_into().unwrap()
