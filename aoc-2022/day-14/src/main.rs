@@ -28,14 +28,15 @@ fn run(filename: &str) {
         .collect::<Vec<_>>();
     let mut cave = Cave::new(&formations);
     println!("{cave}");
-    for x in 0..60 {
+    for x in 0..500 {
         if cave.tick() == Sand::Done {
+            println!("DONE early");
             break;
         }
         println!("{cave}");
         if x < 60 - 1 {
             println!();
-            thread::sleep(Duration::from_millis(100));
+            thread::sleep(Duration::from_millis(50));
         }
     }
 }
