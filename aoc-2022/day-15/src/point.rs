@@ -1,5 +1,3 @@
-use std::ops::Sub;
-
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Point(i32, i32);
 
