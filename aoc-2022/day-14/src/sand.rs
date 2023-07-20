@@ -202,7 +202,11 @@ impl Cave {
         formations
             .iter()
             .flat_map(|f| f.hydrate())
-            .for_each(|f| res.set(f, Entity::Rock));
+            .take(3) // TODO: REMOVE
+            .for_each(|p| {
+                println!("Rock at {:?}", p);
+                res.set(p, Entity::Rock)
+            });
         res
     }
     fn get(&self, point: Point) -> Option<Tile> {
