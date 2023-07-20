@@ -28,11 +28,12 @@ fn run(filename: &str) {
         .collect::<Vec<_>>();
     let mut cave = Cave::new(&formations);
     println!("{cave}");
-    for x in 0..60 {
+    for x in 0..5 {
         cave.tick();
         println!("{cave}");
         if x < 60 - 1 {
-            thread::sleep(Duration::from_millis(500));
+            println!();
+            thread::sleep(Duration::from_millis(10));
         }
     }
 }
