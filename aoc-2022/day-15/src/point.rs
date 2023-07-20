@@ -26,5 +26,6 @@ mod test {
         assert_eq!(42, Point(0, 0).distance(Point(42, 0)));
         assert_eq!(42, Point(0, 0).distance(Point(0, 42)));
         assert_eq!(42, Point(2, 20).distance(Point(4, -20)));
+        assert_eq!(15, Point(-5, -10).distance(Point(-10, -20)));
     }
 }
