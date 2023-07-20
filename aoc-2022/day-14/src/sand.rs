@@ -1,4 +1,5 @@
 use std::{
+    collections::VecDeque,
     fmt::{Debug, Display},
     vec,
 };
@@ -101,7 +102,7 @@ pub enum Sand {
 
 #[derive(Debug)]
 pub struct Cave {
-    tiles: Vec<Vec<Tile>>,
+    tiles: Vec<VecDeque<Tile>>,
     min: Point,
     max: Point,
     source: Point,
@@ -184,13 +185,13 @@ impl Cave {
         });
         let mut tiles = vec![];
         for row_idx in min.1..=max.1 {
-            let mut row = vec![];
+            let mut row = VecDeque::new();
             for col_idx in min.0..=max.0 {
                 let tile = Tile {
                     point: Point(row_idx, col_idx),
                     entity: Entity::Nothing,
                 };
-                row.push(tile);
+                row.push_back(tile);
             }
             tiles.push(row);
         }
@@ -237,11 +238,10 @@ impl Cave {
         self.tiles.len()
     }
     fn cols(&self) -> usize {
-        self.tiles.first().map_or(0, Vec::len)
+        self.tiles.first().map_or(0, VecDeque::len)
     }
     fn render(&self) -> String {
         let mut buf = String::new();
-        let row_pd = self.tiles.len() / 10;
 
         let r1 = format!("{}", self.min.0).chars().collect::<Vec<_>>();
         let r2 = format!("{}", self.source.0).chars().collect::<Vec<_>>();
