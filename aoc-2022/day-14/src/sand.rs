@@ -102,7 +102,7 @@ pub enum Sand {
 
 #[derive(Debug)]
 pub struct Cave {
-    tiles: Vec<VecDeque<Tile>>,
+    tiles_vec: Vec<VecDeque<Tile>>,
     min: Point,
     max: Point,
     source: Point,
@@ -183,7 +183,7 @@ impl Cave {
             max.0 = i32::max(max.0, point.0);
             max.1 = i32::max(max.1, point.1);
         });
-        let mut tiles = vec![];
+        let mut tiles_vec = vec![];
         for row_idx in min.1..=max.1 {
             let mut row = VecDeque::new();
             for col_idx in min.0..=max.0 {
@@ -193,14 +193,14 @@ impl Cave {
                 };
                 row.push_back(tile);
             }
-            tiles.push(row);
+            tiles_vec.push(row);
         }
         let source = Point::new(500, 0);
         let sand = Sand::Waiting;
         let grains = 0;
         let in_the_abyss = false;
         let mut res = Cave {
-            tiles,
+            tiles_vec,
             min,
             max,
             source,
@@ -217,11 +217,11 @@ impl Cave {
     }
     fn get(&self, point: Point) -> Option<Tile> {
         let (row, col) = self.to_world(point);
-        self.tiles.get(row).and_then(|r| r.get(col)).map(|t| *t)
+        self.tiles_vec.get(row).and_then(|r| r.get(col)).map(|t| *t)
     }
     fn set(&mut self, point: Point, e: Entity) {
         let (row, col) = self.to_world(point);
-        self.tiles
+        self.tiles_vec
             .get_mut(row)
             .and_then(|r| r.get_mut(col))
             .iter_mut()
@@ -235,10 +235,10 @@ impl Cave {
         (row as usize, col as usize)
     }
     fn rows(&self) -> usize {
-        self.tiles.len()
+        self.tiles_vec.len()
     }
     fn cols(&self) -> usize {
-        self.tiles.first().map_or(0, VecDeque::len)
+        self.tiles_vec.first().map_or(0, VecDeque::len)
     }
     fn render(&self) -> String {
         let mut buf = String::new();
@@ -264,7 +264,7 @@ impl Cave {
 
         // draw the grid of the map with numbered rows.
         let board = self
-            .tiles
+            .tiles_vec
             .iter()
             .enumerate()
             .map(|(ri, row)| {
