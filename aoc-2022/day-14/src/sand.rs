@@ -141,7 +141,6 @@ impl Cave {
                 }
                 Sand::Done => return Sand::Done,
                 Sand::Abyss => {
-                    eprintln!("Short circuiting advance. In the abyss.");
                     self.grains -= 1; // don't count that grain
                     self.in_the_abyss = true;
                     Sand::Done
