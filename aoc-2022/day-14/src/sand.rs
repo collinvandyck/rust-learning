@@ -119,14 +119,10 @@ impl Cave {
     fn advance(&mut self) -> Sand {
         let mut sand = self.sand;
         loop {
-            if self.in_the_abyss {
-                eprintln!("Short circuiting advance. In the abyss.");
-                return Sand::Done;
-            }
             sand = match sand {
                 Sand::Falling(point) => {
                     // todo: figure out if we can short circuit from the result of self.gravity
-                    match self.gravity(point) {
+                    match self.gravity_new(point) {
                         falling @ Sand::Falling(_) => return falling,
                         d => d,
                     }
@@ -146,8 +142,9 @@ impl Cave {
                     Sand::Waiting
                 }
                 Sand::Abyss => {
-                    println!("abyss");
-                    Sand::Waiting
+                    eprintln!("Short circuiting advance. In the abyss.");
+                    self.in_the_abyss = true;
+                    Sand::Done
                 }
             }
         }
@@ -181,6 +178,26 @@ impl Cave {
                 entity: Entity::Source,
                 ..
             }) => panic!("should not fall onto the source"),
+        }
+    }
+    fn gravity_new(&mut self, prev: Point) -> Sand {
+        let down = Point(prev.0, prev.1 + 1);
+        match self.get(down) {
+            Some(tile) => match tile.entity {
+                Entity::Nothing => {
+                    if prev != self.source {
+                        self.set(prev, Entity::Nothing);
+                    }
+                    self.set(down, Entity::Sand);
+                    Sand::Falling(down)
+                }
+                Entity::Rock | Entity::Sand => Sand::Waiting,
+                Entity::Source => panic!("should not fall onto the source"),
+            },
+            None => {
+                self.in_the_abyss = true;
+                Sand::Abyss
+            }
         }
     }
     pub fn new(formations: &[Formation]) -> Cave {
