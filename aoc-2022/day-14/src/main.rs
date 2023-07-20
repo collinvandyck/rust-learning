@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#![warn(clippy::all, clippy::pedantic)]
+
 mod sand;
 
 mod prelude {
@@ -20,8 +22,8 @@ fn run(filename: &str) {
     let read = BufReader::new(file);
     let formations = read
         .lines()
-        .map(|l| Formation::parse(l.unwrap()))
+        .map(|l| Formation::parse(&l.unwrap()))
         .collect::<Vec<_>>();
-    let cave = Cave::new(formations);
+    let cave = Cave::new(&formations);
     println!("{cave}");
 }

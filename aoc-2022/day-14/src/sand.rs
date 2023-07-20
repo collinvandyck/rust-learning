@@ -19,7 +19,7 @@ impl Point {
 pub struct Formation(Vec<Point>);
 
 impl Formation {
-    pub fn parse(line: String) -> Self {
+    pub fn parse(line: &str) -> Self {
         let points = line
             .split(" -> ")
             .map(|s| {
@@ -47,12 +47,11 @@ enum Entity {
 }
 
 impl Entity {
-    fn char(&self) -> char {
-        use Entity::*;
+    fn char(self) -> char {
         match self {
-            Nothing => '.',
-            Source => '+',
-            Rock => '#',
+            Entity::Nothing => '.',
+            Entity::Source => '+',
+            Entity::Rock => '#',
         }
     }
 }
@@ -72,7 +71,7 @@ pub struct Cave {
 }
 
 impl Cave {
-    pub fn new(formations: Vec<Formation>) -> Cave {
+    pub fn new(formations: &[Formation]) -> Cave {
         let mut min = Point::new(i32::MAX, 0);
         let mut max = Point::new(i32::MIN, i32::MIN);
         formations.iter().flat_map(|f| &f.0).for_each(|point| {
@@ -92,19 +91,20 @@ impl Cave {
             }
             tiles.push(row);
         }
-        let mut res = Cave { min, max, tiles };
+        let mut res = Cave { tiles, min, max };
         res.set(Point::new(500, 0), Entity::Source);
         res
     }
     fn set(&mut self, point: Point, e: Entity) {
-        let (row, col) = self.to_world(&point);
+        let (row, col) = self.to_world(point);
         self.tiles
             .get_mut(row)
             .and_then(|r| r.get_mut(col))
             .iter_mut()
             .for_each(|r| r.entity = e);
     }
-    fn to_world(&self, point: &Point) -> (usize, usize) {
+    #[allow(clippy::cast_sign_loss)]
+    fn to_world(&self, point: Point) -> (usize, usize) {
         let row = point.1 - self.min.1;
         let col = point.0 - self.min.0;
         (row as usize, col as usize)
@@ -113,7 +113,7 @@ impl Cave {
         self.tiles.len()
     }
     fn cols(&self) -> usize {
-        self.tiles.first().map_or(0, |r| r.len())
+        self.tiles.first().map_or(0, Vec::len)
     }
     fn render(&self) -> String {
         // draw the grid of the map with numbered rows.
