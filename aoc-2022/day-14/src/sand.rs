@@ -134,12 +134,12 @@ impl Cave {
                     }
                 }
                 Sand::Waiting => {
-                    let down = Point(self.source.0, self.source.1 + 1);
-                    if let Some(tile) = self.get(down) {
+                    if let Some(tile) = self.get(self.source) {
                         if tile.entity != Entity::Nothing {
                             return Sand::Done;
                         }
                     }
+                    self.set(self.source, Entity::Sand);
                     self.grains += 1;
                     Sand::Falling(self.source)
                 }
@@ -168,9 +168,7 @@ impl Cave {
         match self.get(to) {
             Some(tile) => match tile.entity {
                 Entity::Nothing => {
-                    if prev != self.source {
-                        self.remove(prev);
-                    }
+                    self.remove(prev);
                     self.set(to, Entity::Sand);
                     Some(Sand::Falling(to))
                 }
@@ -208,7 +206,6 @@ impl Cave {
             .iter()
             .flat_map(|f| f.hydrate())
             .for_each(|p| res.set(p, Entity::Rock));
-        res.set(res.source, Entity::Source);
         res
     }
     fn abyss_y(&self) -> i32 {
@@ -244,6 +241,9 @@ impl Cave {
     }
     fn set(&mut self, point: Point, entity: Entity) {
         self.tiles.insert(point, Tile { point, entity });
+        // update the min/max x bounds
+        self.min.0 = self.min.0.min(point.0);
+        self.max.0 = self.max.0.max(point.0);
     }
     fn rows(&self) -> usize {
         (self.max.1 - self.min.1 + 1).try_into().unwrap()
@@ -284,7 +284,11 @@ impl Cave {
             for x in self.min.0..=self.max.0 {
                 let point = Point(x, y);
                 let tile = self.get(point).unwrap();
-                res.push(tile.entity.char());
+                if tile.entity == Entity::Nothing && tile.point == self.source {
+                    res.push('+');
+                } else {
+                    res.push(tile.entity.char());
+                }
             }
             buf.push_str(&res);
             buf.push('\n');
