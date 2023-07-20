@@ -11,6 +11,8 @@ mod prelude {
 use std::{
     fs::File,
     io::{BufRead, BufReader},
+    thread,
+    time::Duration,
 };
 
 use clap::Parser;
@@ -34,8 +36,9 @@ fn part_one(args: &Args) {
             println!("Ticks: {tick}");
             break;
         }
-        if tick % 100 == 0 {
+        if tick % 1 == 0 {
             println!("{cave}");
+            thread::sleep(Duration::from_millis(10));
         }
     }
     println!("Grains: {}", cave.grains);
