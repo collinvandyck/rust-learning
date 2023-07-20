@@ -18,10 +18,14 @@ use prelude::*;
 
 fn main() {
     let args = Args::parse();
-    run(&args);
+    match &args.part {
+        Some(2) => todo!(),
+        _ => part_one(&args),
+    }
+    part_one(&args);
 }
 
-fn run(args: &Args) {
+fn part_one(args: &Args) {
     let formations = load_formations(args);
     let mut cave = Cave::new(&formations);
     println!("{cave}");
