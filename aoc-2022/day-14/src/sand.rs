@@ -169,7 +169,7 @@ impl Cave {
             Some(tile) => match tile.entity {
                 Entity::Nothing => {
                     if prev != self.source {
-                        self.set(prev, Entity::Nothing);
+                        self.remove(prev);
                     }
                     self.set(to, Entity::Sand);
                     Some(Sand::Falling(to))
@@ -223,6 +223,9 @@ impl Cave {
         } else {
             None
         }
+    }
+    fn remove(&mut self, point: Point) {
+        self.tiles.remove(&point);
     }
     fn set(&mut self, point: Point, e: Entity) {
         assert!(self.in_bounds(point));
