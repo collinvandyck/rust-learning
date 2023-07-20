@@ -1,4 +1,7 @@
-use std::{fmt::Display, vec};
+use std::{
+    fmt::{Debug, Display},
+    vec,
+};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Point(i32, i32);
@@ -33,6 +36,32 @@ impl Formation {
 #[derive(Debug)]
 struct Tile {
     point: Point,
+    entity: Entity,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Entity {
+    Nothing,
+    Source,
+    Rock,
+}
+
+impl Entity {
+    fn char(&self) -> char {
+        use Entity::*;
+        match self {
+            Nothing => '.',
+            Source => '+',
+            Rock => '#',
+        }
+    }
+}
+
+impl Display for Entity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let ch = self.char();
+        write!(f, "{ch}")
+    }
 }
 
 #[derive(Debug)]
@@ -57,16 +86,50 @@ impl Cave {
             for col_idx in min.0..=max.0 {
                 let tile = Tile {
                     point: Point(row_idx, col_idx),
+                    entity: Entity::Nothing,
                 };
                 row.push(tile);
             }
             tiles.push(row);
         }
-        Cave { min, max, tiles }
+        let mut res = Cave { min, max, tiles };
+        res.set(Point::new(500, 0), Entity::Source);
+        res
+    }
+    fn set(&mut self, point: Point, e: Entity) {
+        let (row, col) = self.to_world(&point);
+        self.tiles
+            .get_mut(row)
+            .and_then(|r| r.get_mut(col))
+            .iter_mut()
+            .for_each(|r| r.entity = e);
+    }
+    fn to_world(&self, point: &Point) -> (usize, usize) {
+        let row = point.1 - self.min.1;
+        let col = point.0 - self.min.0;
+        (row as usize, col as usize)
+    }
+    fn rows(&self) -> usize {
+        self.tiles.len()
+    }
+    fn cols(&self) -> usize {
+        self.tiles.first().map_or(0, |r| r.len())
     }
     fn render(&self) -> String {
-        let buf = String::new();
-        buf
+        let row_pd = self.tiles.len() / 10;
+        self.tiles
+            .iter()
+            .enumerate()
+            .map(|(ri, row)| {
+                let row_pd = row_pd - (ri / 10);
+                let pad = " ".repeat(row_pd);
+                let mut res = format!("{ri}{pad}");
+                let row = row.iter().map(|t| t.entity.char()).collect::<String>();
+                res.push_str(row.as_str());
+                res
+            })
+            .collect::<Vec<String>>()
+            .join("\n")
     }
 }
 
