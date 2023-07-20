@@ -19,8 +19,9 @@ use prelude::*;
 fn main() {
     let args = Args::parse();
     match &args.part {
+        Some(1) | None => part_one(&args),
         Some(2) => part_two(&args),
-        _ => part_one(&args),
+        Some(p) => panic!("Unknown part: {}", p),
     }
 }
 
