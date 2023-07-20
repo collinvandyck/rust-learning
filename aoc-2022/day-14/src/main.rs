@@ -28,9 +28,6 @@ fn part_one(args: &Args) {
     let formations = load_formations(args);
     let mut cave = Cave::new(&formations);
     println!("{cave}");
-    if true {
-        return;
-    }
     for tick in 1.. {
         if cave.tick() == Sand::Done {
             println!("{cave}");
