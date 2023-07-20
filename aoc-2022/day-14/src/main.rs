@@ -28,6 +28,7 @@ fn main() {
 fn part_two(args: &Args) {
     let formations = load_formations(args);
     let mut cave = Cave::new(&formations);
+    cave.use_floor(true);
     println!("{cave}");
     for tick in 1.. {
         if cave.tick() == Sand::Done {

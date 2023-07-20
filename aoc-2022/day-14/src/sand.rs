@@ -111,12 +111,16 @@ pub struct Cave {
     sand: Sand,
     pub grains: i32,
     in_the_abyss: bool,
+    use_floor: bool,
 }
 
 impl Cave {
     pub fn tick(&mut self) -> Sand {
         self.sand = self.advance();
         self.sand
+    }
+    pub fn use_floor(&mut self, v: bool) {
+        self.use_floor = v;
     }
     fn advance(&mut self) -> Sand {
         let mut sand = self.sand;
@@ -189,6 +193,7 @@ impl Cave {
         let grains = 0;
         let in_the_abyss = false;
         let tiles = HashMap::new();
+        let use_floor = false;
         let mut res = Cave {
             tiles,
             min,
@@ -197,6 +202,7 @@ impl Cave {
             sand,
             grains,
             in_the_abyss,
+            use_floor,
         };
         res.set(res.source, Entity::Source);
         formations
