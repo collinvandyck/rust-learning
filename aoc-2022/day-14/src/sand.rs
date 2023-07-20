@@ -1,5 +1,5 @@
 use std::{
-    collections::VecDeque,
+    collections::{HashMap, VecDeque},
     fmt::{Debug, Display},
     vec,
 };
@@ -103,6 +103,7 @@ pub enum Sand {
 #[derive(Debug)]
 pub struct Cave {
     tiles_vec: Vec<VecDeque<Tile>>,
+    tiles: HashMap<Point, Tile>,
     min: Point,
     max: Point,
     source: Point,
@@ -199,8 +200,10 @@ impl Cave {
         let sand = Sand::Waiting;
         let grains = 0;
         let in_the_abyss = false;
+        let tiles = HashMap::new();
         let mut res = Cave {
             tiles_vec,
+            tiles,
             min,
             max,
             source,
