@@ -22,12 +22,7 @@ fn main() {
 }
 
 fn run(args: &Args) {
-    let file = File::open(&args.filename).unwrap();
-    let read = BufReader::new(file);
-    let formations = read
-        .lines()
-        .map(|l| Formation::parse(&l.unwrap()))
-        .collect::<Vec<_>>();
+    let formations = load_formations(args);
     let mut cave = Cave::new(&formations);
     println!("{cave}");
     for tick in 1.. {
@@ -42,4 +37,12 @@ fn run(args: &Args) {
         }
     }
     println!("Grains: {}", cave.grains);
+}
+
+fn load_formations(args: &Args) -> Vec<Formation> {
+    let file = File::open(&args.filename).unwrap();
+    let read = BufReader::new(file);
+    read.lines()
+        .map(|l| Formation::parse(&l.unwrap()))
+        .collect::<Vec<_>>()
 }
