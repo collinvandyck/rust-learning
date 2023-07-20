@@ -268,20 +268,17 @@ impl Cave {
         }
 
         // draw the grid of the map with numbered rows.
-        let board = self
-            .tiles_vec
-            .iter()
-            .enumerate()
-            .map(|(ri, row)| {
-                let pad = "\t";
-                let mut res = format!("{ri}{pad}");
-                let row = row.iter().map(|t| t.entity.char()).collect::<String>();
-                res.push_str(row.as_str());
-                res
-            })
-            .collect::<Vec<String>>()
-            .join("\n");
-        buf.push_str(&board);
+        for row in self.min.0..=self.max.0 {
+            let pad = "\t";
+            let mut res = format!("{}{pad}", row - self.min.0);
+            for col in self.min.1..=self.max.1 {
+                let point = Point(row, col);
+                let tile = self.get(point).unwrap();
+                res.push(tile.entity.char());
+            }
+            buf.push_str(&res);
+            buf.push('\n');
+        }
         buf
     }
 }
