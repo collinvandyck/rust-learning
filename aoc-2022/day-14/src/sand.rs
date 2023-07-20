@@ -1,6 +1,7 @@
 use std::{
+    collections::VecDeque,
     fmt::{Debug, Display},
-    vec,
+    slice, vec,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
@@ -30,6 +31,50 @@ impl Formation {
             })
             .collect::<Vec<_>>();
         Self(points)
+    }
+    fn hydrate<'a>(&'a self) -> impl Iterator<Item = Point> + 'a {
+        FormationIter::new(self.0.iter())
+    }
+}
+
+struct FormationIter<'a> {
+    iter: slice::Iter<'a, Point>,
+    cur: Option<Point>,
+    buf: VecDeque<Point>,
+}
+
+impl<'a> FormationIter<'a> {
+    fn new(iter: slice::Iter<'a, Point>) -> Self {
+        let cur = None;
+        let buf = VecDeque::default();
+        Self { iter, cur, buf }
+    }
+}
+
+impl<'a> Iterator for FormationIter<'a> {
+    type Item = Point;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.buf.is_empty() {
+            // ensure that self.cur is up to date.
+            let cur = self.cur.take().or_else(|| self.iter.next().copied());
+            self.cur = dbg!(self.cur);
+            if let Some(Point(x1, y1)) = cur {
+                if let Some(Point(x2, y2)) = self.iter.next().copied() {
+                    dbg!(((x1, y1), (x2, y2)));
+                    assert!(x1 == x2 || y1 == y2);
+                    if x1 == x2 {
+                        for x in i32::min(x1, x2)..=i32::max(x1, x2) {
+                            self.buf.push_back(Point::new(x, y1));
+                        }
+                    } else {
+                        for y in i32::min(y1, y2)..=i32::max(y1, y2) {
+                            self.buf.push_back(Point::new(x1, y));
+                        }
+                    }
+                }
+            }
+        }
+        self.buf.pop_front()
     }
 }
 
@@ -93,6 +138,10 @@ impl Cave {
         }
         let mut res = Cave { tiles, min, max };
         res.set(Point::new(500, 0), Entity::Source);
+        formations
+            .iter()
+            .flat_map(|f| f.hydrate())
+            .for_each(|f| res.set(f, Entity::Rock));
         res
     }
     fn set(&mut self, point: Point, e: Entity) {
