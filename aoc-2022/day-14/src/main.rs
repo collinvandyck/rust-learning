@@ -30,7 +30,6 @@ fn run(filename: &str) {
     println!("{cave}");
     for x in 0..500 {
         if cave.tick() == Sand::Done {
-            println!("DONE early");
             break;
         }
         println!("{cave}");
@@ -39,4 +38,5 @@ fn run(filename: &str) {
             thread::sleep(Duration::from_millis(50));
         }
     }
+    println!("Grains: {}", cave.grains);
 }

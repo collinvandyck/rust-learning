@@ -95,7 +95,6 @@ impl Display for Entity {
 pub enum Sand {
     Waiting,        // time to start a new drip
     Falling(Point), // we are falling at this point
-    AtRest(Point),  // where we landed
     Abyss,          // we've fallen off.
     Done,           // nothing else to be done
 }
@@ -107,7 +106,7 @@ pub struct Cave {
     max: Point,
     source: Point,
     sand: Sand,
-    grains: i32,
+    pub grains: i32,
     in_the_abyss: bool,
 }
 
@@ -134,15 +133,13 @@ impl Cave {
                             return Sand::Done;
                         }
                     }
+                    self.grains += 1;
                     Sand::Falling(self.source)
                 }
                 Sand::Done => return Sand::Done,
-                Sand::AtRest(_point) => {
-                    println!("at rest");
-                    Sand::Waiting
-                }
                 Sand::Abyss => {
                     eprintln!("Short circuiting advance. In the abyss.");
+                    self.grains -= 1; // don't count that grain
                     self.in_the_abyss = true;
                     Sand::Done
                 }
