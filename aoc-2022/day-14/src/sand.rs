@@ -97,6 +97,7 @@ enum Sand {
     Falling(Point), // we are falling at this point
     AtRest(Point),  // where we landed
     Abyss,          // we've fallen off.
+    Done,           // nothing else to be done
 }
 
 #[derive(Debug)]
@@ -118,10 +119,12 @@ impl Cave {
         loop {
             sand = match sand {
                 Sand::Waiting => {
+                    //
                     self.grains += 1;
-                    Sand::Falling(Point::new(self.source.0, self.source.1 + 1))
+                    Sand::Falling(self.source)
                 }
                 Sand::Falling(point) => return self.gravity(point),
+                Sand::Done => return Sand::Done,
                 Sand::AtRest(point) => Sand::Waiting,
                 Sand::Abyss => Sand::Waiting,
             }
@@ -134,7 +137,9 @@ impl Cave {
                 entity: Entity::Nothing,
                 ..
             }) => {
-                self.set(point, Entity::Nothing);
+                if point != self.source {
+                    self.set(point, Entity::Nothing);
+                }
                 self.set(down, Entity::Sand);
                 Sand::Falling(down)
             }
