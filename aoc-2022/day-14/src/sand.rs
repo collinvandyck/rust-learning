@@ -116,9 +116,31 @@ impl Cave {
         self.tiles.first().map_or(0, Vec::len)
     }
     fn render(&self) -> String {
-        // draw the grid of the map with numbered rows.
+        let mut buf = String::new();
         let row_pd = self.tiles.len() / 10;
-        self.tiles
+
+        let r1 = format!("{}", self.min.0).chars().collect::<Vec<_>>();
+        let r2 = format!("{}", 500).chars().collect::<Vec<_>>();
+        let r3 = format!("{}", self.max.0).chars().collect::<Vec<_>>();
+
+        for idx in 0..3 {
+            let pad = " ".repeat(row_pd + 1);
+            buf.push_str(&pad);
+            buf.push(*r1.get(idx).unwrap());
+            #[allow(clippy::cast_sign_loss)]
+            let pad = " ".repeat((500 - self.min.0 - 1) as usize);
+            buf.push_str(&pad);
+            buf.push(*r2.get(idx).unwrap());
+            #[allow(clippy::cast_sign_loss)]
+            let pad = " ".repeat((self.max.0 - 500 - 1) as usize);
+            buf.push_str(&pad);
+            buf.push(*r3.get(idx).unwrap());
+            buf.push('\n');
+        }
+
+        // draw the grid of the map with numbered rows.
+        let board = self
+            .tiles
             .iter()
             .enumerate()
             .map(|(ri, row)| {
@@ -130,7 +152,9 @@ impl Cave {
                 res
             })
             .collect::<Vec<String>>()
-            .join("\n")
+            .join("\n");
+        buf.push_str(&board);
+        buf
     }
 }
 
