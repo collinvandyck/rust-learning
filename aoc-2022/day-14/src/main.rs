@@ -9,8 +9,6 @@ mod prelude {
 use std::{
     fs::File,
     io::{BufRead, BufReader},
-    thread,
-    time::Duration,
 };
 
 use prelude::*;
@@ -30,12 +28,13 @@ fn run(filename: &str) {
     println!("{cave}");
     for tick in 1.. {
         if cave.tick() == Sand::Done {
+            println!("{cave}");
+            println!("Ticks: {tick}");
             break;
         }
         if tick % 100 == 0 {
             println!("{cave}");
             println!();
-            thread::sleep(Duration::from_millis(50));
         }
     }
     println!("Grains: {}", cave.grains);
