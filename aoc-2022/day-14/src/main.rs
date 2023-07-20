@@ -19,9 +19,24 @@ use prelude::*;
 fn main() {
     let args = Args::parse();
     match &args.part {
-        Some(2) => todo!(),
+        Some(2) => part_two(&args),
         _ => part_one(&args),
     }
+}
+
+fn part_two(args: &Args) {
+    let formations = load_formations(args);
+    let mut cave = Cave::new(&formations);
+    println!("{cave}");
+    for tick in 1.. {
+        if cave.tick() == Sand::Done {
+            println!("{cave}");
+            println!("Ticks: {tick}");
+            break;
+        }
+        if tick % 100 == 0 {}
+    }
+    println!("Grains: {}", cave.grains);
 }
 
 fn part_one(args: &Args) {
