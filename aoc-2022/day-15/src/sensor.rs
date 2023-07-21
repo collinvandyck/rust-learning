@@ -35,6 +35,19 @@ impl Bounds {
     }
 }
 
+#[cfg(test)]
+mod bounds_tests {
+    use super::*;
+    #[test]
+    fn test_bounds() {
+        let origin = Point(0, 0);
+        let beacon = Point(3, 0); // three to the right
+        let sensor = Sensor::new(origin, beacon);
+        let bounds = sensor.bounds;
+        assert_eq!(bounds.range_y(0), Some(Range { start: -3, end: 4 }))
+    }
+}
+
 impl IntoIterator for Bounds {
     type Item = Point;
     type IntoIter = std::vec::IntoIter<Self::Item>;
