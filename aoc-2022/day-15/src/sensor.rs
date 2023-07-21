@@ -19,7 +19,19 @@ pub struct Bounds {
 
 impl Bounds {
     pub fn range_y(&self, y: i32) -> Option<Range<i32>> {
-        None
+        if y < self.top.1 || y > self.bottom.1 {
+            return None;
+        }
+        // where our center point is
+        let (origin_x, origin_y) = (self.top.0, self.left.1);
+        // distance from origin vertically
+        let distance = i32::abs(y - origin_y);
+        let height = self.top.1 - origin_y;
+        let adjustment = height - distance;
+        Some(Range {
+            start: origin_x - adjustment,
+            end: origin_x + adjustment + 1,
+        })
     }
 }
 

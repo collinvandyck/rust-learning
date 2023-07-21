@@ -40,8 +40,8 @@ impl Map {
 
         let mut count = 0;
         for y in min..=max {
-            let b: Vec<Range<i32>> = bounds.iter().map(|b| b.range_y(y)).flatten().collect();
-            count += b.len();
+            let ranges: Vec<Range<i32>> = bounds.iter().map(|b| b.range_y(y)).flatten().collect();
+            count += ranges.len();
         }
         println!("Performed {count} checks.");
         None
