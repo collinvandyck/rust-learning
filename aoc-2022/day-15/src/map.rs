@@ -39,6 +39,9 @@ impl Map {
                     // it cannot be the one we're looking for
                     continue;
                 }
+                if !self.sensors.iter().any(|s| s.can_reach(point)) {
+                    return Some(point);
+                }
             }
         }
         None
