@@ -44,6 +44,8 @@ impl Solver {
             scores.push(s.do_solve(depth + 1));
         }
 
+        // if there are any more valves that are closed, keep going.
+
         // then try moving through each tunnel.
         self.current.tunnels.iter().for_each(|name| {
             let mut s = self.clone();
@@ -56,19 +58,24 @@ impl Solver {
         res
     }
 
+    fn all_valves_open(&self) -> bool {
+        !self.any_valves_closed()
+    }
+    fn any_valves_closed(&self) -> bool {
+        self.closed.is_empty()
+    }
     fn move_to(&mut self, name: &str) {
         self.current = self.map.get(name);
     }
-
     fn open_valve(&mut self) {
-        self.open.insert(self.current.clone());
-        self.closed.remove(&self.current);
+        let is_new = self.open.insert(self.current.clone());
+        assert!(is_new);
+        let existed = self.closed.remove(&self.current);
+        assert!(existed);
     }
-
     fn can_open_valve(&self) -> bool {
         !self.open.contains(&self.current)
     }
-
     pub fn new(args: &Args, map: Map) -> Self {
         let map = Rc::new(map);
         let moves = args.minutes;
