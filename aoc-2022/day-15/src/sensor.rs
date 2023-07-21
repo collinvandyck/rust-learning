@@ -69,10 +69,7 @@ mod tests {
     #[test]
     fn test_reachable() {
         let map_point = Point(25, 22);
-        let sensor = Sensor {
-            point: Point(2, 18),
-            beacon: Point(-2, 15),
-        };
+        let sensor = Sensor::new(Point(2, 18), Point(-2, 15));
         assert_eq!(sensor.distance(), 7);
         println!("Sensor distance: {}", sensor.point.distance(map_point));
         println!("Beacon distance: {}", sensor.beacon.distance(map_point));
