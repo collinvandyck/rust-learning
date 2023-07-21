@@ -26,7 +26,7 @@ impl Map {
     }
     fn render_point(&self, point: Point) -> char {
         let reach = self.sensors.iter().any(|s| {
-            let res = s.reachable(point);
+            let res = s.can_reach(point);
             if res {
                 println!(
                     "{point} is reachable from {s} (this dist: {})",

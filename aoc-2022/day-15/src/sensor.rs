@@ -21,7 +21,7 @@ impl Sensor {
     }
     // p is reachable from the sensor if its distance from the sensor
     // is less than or equal to the distance from the sensor to the beacon.
-    pub fn reachable(&self, p: Point) -> bool {
+    pub fn can_reach(&self, p: Point) -> bool {
         let p_dist = self.point.distance(p);
         let b_dist = self.beacon.distance(p);
         p_dist <= b_dist
@@ -37,5 +37,19 @@ impl Display for Sensor {
             self.beacon,
             self.distance()
         )
+    }
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_reachable() {
+        let map_point = Point(25, 22);
+        let sensor = Sensor {
+            point: Point(2, 18),
+            beacon: Point(-2, 15),
+        };
+        assert!(!sensor.can_reach(map_point))
     }
 }
