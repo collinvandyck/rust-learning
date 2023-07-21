@@ -12,13 +12,6 @@ impl Sensor {
     fn distance(&self) -> i32 {
         self.point.distance(self.beacon)
     }
-    // B . . . .
-    // x . S . .
-    // . . . . .
-    // . . . . .
-    // . . . . .
-    //
-    // distance from S -> B is 3
     // p is reachable from the sensor if its distance from the sensor
     // is less than or equal to the distance from the sensor to the beacon.
     fn reachable(&self, p: Point) -> bool {
