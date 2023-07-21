@@ -12,7 +12,6 @@ mod prelude {
 use std::{
     fs::File,
     io::{BufRead, BufReader},
-    rc::Rc,
 };
 
 use prelude::*;
@@ -32,19 +31,15 @@ fn load(args: &Args) -> Map {
     let file = File::open(&args.filename).unwrap();
     let read = BufReader::new(file);
     let re = Regex::new(r#"Valve (\w+).*rate=(\d+);.*to valves?(.*)"#).unwrap();
-    let parsed: Vec<Parsed> = read
-        .lines()
-        .map(|l| l.unwrap())
-        .map(|l| parse_line(l, &re))
-        .collect::<Vec<_>>();
-    let valves: Vec<Valve> = parsed
-        .iter()
-        .map(|p| {
-            let tunnels = p.tunnels.clone();
-            Valve::new(p.name.to_string(), p.rate, tunnels)
-        })
-        .collect::<Vec<_>>();
-    Map::new(valves)
+    Map::new(
+        read.lines()
+            .map(|l| l.unwrap())
+            .map(|l| parse_line(l, &re))
+            .map(|p| {
+                let tunnels = p.tunnels.clone();
+                Valve::new(p.name.to_string(), p.rate, tunnels)
+            }),
+    )
 }
 
 // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB

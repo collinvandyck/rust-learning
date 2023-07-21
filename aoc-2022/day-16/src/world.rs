@@ -7,7 +7,10 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new(valves: Vec<Valve>) -> Self {
+    pub fn new<I>(valves: I) -> Self
+    where
+        I: IntoIterator<Item = Valve>,
+    {
         let valves = valves.into_iter().map(|v| Rc::new(v)).collect::<Vec<_>>();
         let lookup = valves.iter().map(|v| (v.name.clone(), v.clone())).collect();
         Self { valves, lookup }
