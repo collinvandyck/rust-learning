@@ -23,20 +23,34 @@ fn main() {
 }
 
 fn run(args: &Args) {
-    let state = load(args);
-    for parsed in state {
-        println!("{parsed:?}");
+    let valves = load(args);
+    for valve in valves {
+        println!("{valve:?}");
     }
 }
 
-fn load(args: &Args) -> Vec<Parsed> {
+fn load(args: &Args) -> Vec<Valve> {
     let file = File::open(&args.filename).unwrap();
     let read = BufReader::new(file);
     let re = Regex::new(r#"Valve (\w+).*rate=(\d+);.*to valves?(.*)"#).unwrap();
-    read.lines()
+    let parsed = read
+        .lines()
         .map(|l| l.unwrap())
         .map(|l| parse_line(l, &re))
-        .collect()
+        .collect::<Vec<_>>();
+    let valves = parsed
+        .iter()
+        .map(|p| Valve::new(p.name.to_string(), p.rate))
+        .collect::<Vec<_>>();
+    parsed.iter().for_each(|parsed| {
+        // do stuff
+        let source = &parsed.name;
+        parsed.tunnels.iter().for_each(|dest| {
+            println!("Adding valve path {source} -> {dest}");
+            // add this
+        })
+    });
+    valves
 }
 
 // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
@@ -53,7 +67,7 @@ fn parse_line(line: String, re: &Regex) -> Parsed {
         .map(|p| p.trim().to_string())
         .collect::<Vec<_>>();
     Parsed {
-        valve: valve.to_string(),
+        name: valve.to_string(),
         rate,
         tunnels,
     }
@@ -61,7 +75,7 @@ fn parse_line(line: String, re: &Regex) -> Parsed {
 
 #[derive(Debug)]
 struct Parsed {
-    valve: String,
+    name: String,
     rate: i32,
     tunnels: Vec<String>,
 }
