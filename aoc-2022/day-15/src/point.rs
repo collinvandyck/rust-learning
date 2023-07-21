@@ -15,7 +15,7 @@ impl Point {
         let y = (self.y() - rhs.y()).abs();
         x + y
     }
-    pub fn min_max<'a, P>(points: P) -> Option<(Point, Point)>
+    pub fn min_max<P>(points: P) -> Option<(Point, Point)>
     where
         P: IntoIterator<Item = Point>,
     {
