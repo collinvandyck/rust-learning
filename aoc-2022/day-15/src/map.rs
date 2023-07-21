@@ -40,10 +40,12 @@ impl Map {
 
         let mut count = 0;
         for y in min..=max {
+            println!("y={y}");
             let mut ranges: Vec<Range<i32>> =
                 bounds.iter().map(|b| b.range_y(y)).flatten().collect();
             ranges.sort_by_key(|r| r.start);
-            if let Some(x) = Self::x_gap(&ranges, min, max) {
+            println!("Ranges: {ranges:?}");
+            if let Some(x) = Self::x_gap(&ranges) {
                 return Some(Point(x, y));
             }
             count += ranges.len();
@@ -52,7 +54,7 @@ impl Map {
         None
     }
     // ranges are sorted by start
-    fn x_gap(ranges: &[Range<i32>], min_x: i32, max_x: i32) -> Option<i32> {
+    fn x_gap(ranges: &[Range<i32>]) -> Option<i32> {
         let mut acc: Option<Range<i32>> = None;
         for range in ranges {
             acc = match acc {
@@ -60,8 +62,8 @@ impl Map {
                     // if the ranges overlap then combine them.
                     if range.start <= end {
                         Some(Range {
-                            start: start,
-                            end: range.end,
+                            start,
+                            end: i32::max(range.end, end),
                         })
                     } else {
                         // the ranges do not overlap.
