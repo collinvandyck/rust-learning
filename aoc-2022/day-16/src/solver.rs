@@ -102,6 +102,8 @@ mod tests {
         let mut hs: HashSet<Rc<Valve>> = HashSet::new();
         let v1 = Rc::new(Valve::new("AA", 5, vec![]));
         let v2 = Rc::new(Valve::new("BB", 5, vec![]));
+
+        // insertions
         assert!(!hs.contains(&v1));
         hs.insert(v1.clone());
         assert!(hs.contains(&v1));
@@ -115,9 +117,14 @@ mod tests {
         assert!(hs.contains(&v2));
         assert_eq!(2, hs.len());
 
+        // deletions
         hs.remove(&v2);
         assert!(hs.contains(&v1));
         assert!(!hs.contains(&v2));
         assert_eq!(1, hs.len());
+        hs.remove(&v1);
+        assert!(!hs.contains(&v1));
+        assert!(!hs.contains(&v2));
+        assert_eq!(0, hs.len());
     }
 }
