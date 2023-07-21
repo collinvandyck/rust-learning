@@ -18,6 +18,9 @@ impl Map {
     pub fn get(&self, name: &str) -> Rc<Valve> {
         self.lookup.get(name).cloned().unwrap()
     }
+    pub fn valves(&self) -> Vec<Rc<Valve>> {
+        self.valves.clone()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

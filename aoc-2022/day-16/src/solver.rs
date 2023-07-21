@@ -8,29 +8,11 @@ use crate::prelude::*;
 #[derive(Clone)]
 pub struct Solver {
     map: Rc<Map>,
-    open: HashMap<String, i32>,
     moves: usize,
     score: i64,
     current: Rc<Valve>,
-}
-
-#[test]
-fn test_hashset_with_rc() {
-    let mut hs: HashSet<Rc<Valve>> = HashSet::new();
-    let v1 = Rc::new(Valve::new("AA", 5, vec![]));
-    let v2 = Rc::new(Valve::new("BB", 5, vec![]));
-    assert!(!hs.contains(&v1));
-    hs.insert(v1.clone());
-    assert!(hs.contains(&v1));
-    assert!(!hs.contains(&v2));
-    hs.insert(v1.clone());
-    assert!(hs.contains(&v1));
-    assert!(!hs.contains(&v2));
-    assert_eq!(1, hs.len());
-    hs.insert(v2.clone());
-    assert!(hs.contains(&v1));
-    assert!(hs.contains(&v2));
-    assert_eq!(2, hs.len());
+    open: HashSet<Rc<Valve>>,
+    closed: HashSet<Rc<Valve>>,
 }
 
 impl Solver {
@@ -47,7 +29,7 @@ impl Solver {
         self.do_solve(0)
     }
     fn do_solve(&mut self, depth: usize) -> i64 {
-        self.score += self.open.values().sum::<i32>() as i64;
+        self.score += self.open.iter().map(|v| v.rate).sum::<i32>() as i64;
 
         // if we have no more moves, we are done
         if self.moves == 0 {
@@ -82,26 +64,57 @@ impl Solver {
     }
 
     fn open_valve(&mut self) {
-        let name = self.current.name.to_string();
-        self.open.insert(name, self.current.rate);
+        self.open.insert(self.current.clone());
     }
 
     fn can_open_valve(&self) -> bool {
-        !self.open.contains_key(&self.current.name)
+        !self.open.contains(&self.current)
     }
 
     pub fn new(args: &Args, map: Map) -> Self {
         let map = Rc::new(map);
-        let open = HashMap::new();
         let moves = args.minutes;
         let score = 0;
         let current = map.get("AA");
+        let mut open = HashSet::new();
+        let mut closed = HashSet::new();
+        for valve in map.valves() {
+            if valve.rate == 0 {
+                open.insert(valve);
+            } else {
+                closed.insert(valve);
+            }
+        }
         Self {
             map,
-            open,
             moves,
             score,
             current,
+            open,
+            closed,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_hashset_with_rc() {
+        let mut hs: HashSet<Rc<Valve>> = HashSet::new();
+        let v1 = Rc::new(Valve::new("AA", 5, vec![]));
+        let v2 = Rc::new(Valve::new("BB", 5, vec![]));
+        assert!(!hs.contains(&v1));
+        hs.insert(v1.clone());
+        assert!(hs.contains(&v1));
+        assert!(!hs.contains(&v2));
+        hs.insert(v1.clone());
+        assert!(hs.contains(&v1));
+        assert!(!hs.contains(&v2));
+        assert_eq!(1, hs.len());
+        hs.insert(v2.clone());
+        assert!(hs.contains(&v1));
+        assert!(hs.contains(&v2));
+        assert_eq!(2, hs.len());
     }
 }
