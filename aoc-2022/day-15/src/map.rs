@@ -9,6 +9,7 @@ pub struct Map {
     max: Point,
 }
 
+#[derive(PartialEq, Eq)]
 enum Entity {
     Sensor,
     Beacon,
@@ -28,7 +29,26 @@ impl Map {
         }
     }
     // for the specified row (y), how many points are impossible for a beacon to be present?
-    pub fn not_possible_for_y(&self, y: i32) -> i32 {}
+    pub fn beacon_not_possible(&self, y: i32) -> i32 {
+        let mut res = 0;
+        // iterate over each column
+        for x in self.min.0..=self.max.0 {
+            let point = Point(x, y);
+            // see if there's something literally in the way
+            if let Some(e) = self.lookup.get(&point) {
+                if *e == Entity::Sensor {
+                    res += 1;
+                }
+                continue;
+            }
+            // see if any beacon is able to cover this spot
+            let can_reach = self.sensors.iter().any(|s| s.can_reach(point));
+            if can_reach {
+                res += 1
+            }
+        }
+        res
+    }
     fn render(&self) -> String {
         let mut lines = vec![];
         for y in self.min.1..=self.max.1 {
