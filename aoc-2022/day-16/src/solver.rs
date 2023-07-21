@@ -134,18 +134,26 @@ mod tests {
         let v2 = Rc::new(Valve::new("BB", 5, vec![]));
         let v3 = Rc::new(Valve::new("CC", 5, vec![]));
 
-        let open: HashSet<Rc<Valve>> = [v1, v2].into_iter().map(|s| s.clone()).collect();
-        let closed: HashSet<Rc<Valve>> = [v3].into_iter().map(|s| s.clone()).collect();
+        let open: HashSet<Rc<Valve>> = [&v1, &v2].into_iter().map(|s| s.clone()).collect();
+        let closed: HashSet<Rc<Valve>> = [&v3].into_iter().map(|s| s.clone()).collect();
         let mut s1 = State { open, closed };
 
-        let v1 = Rc::new(Valve::new("AA", 5, vec!["CC".to_string()]));
-        let v2 = Rc::new(Valve::new("BB", 5, vec![]));
-        let v3 = Rc::new(Valve::new("CC", 5, vec![]));
-
-        let open: HashSet<Rc<Valve>> = [v1, v2].into_iter().map(|s| s.clone()).collect();
-        let closed: HashSet<Rc<Valve>> = [v3].into_iter().map(|s| s.clone()).collect();
+        let open: HashSet<Rc<Valve>> = [&v1, &v2].into_iter().map(|s| s.clone()).collect();
+        let closed: HashSet<Rc<Valve>> = [&v3].into_iter().map(|s| s.clone()).collect();
         let mut s2 = State { open, closed };
 
+        assert_eq!(s1, s2);
+
+        s1.open.insert(v3.clone());
+        assert_ne!(s1, s2);
+        s2.open.insert(v3.clone());
+        assert_eq!(s1, s2);
+        assert_eq!(s1, s2);
+
+        s1.closed.clear();
+        s1.open.clear();
+        s2.closed.clear();
+        s2.open.clear();
         assert_eq!(s1, s2);
     }
 
