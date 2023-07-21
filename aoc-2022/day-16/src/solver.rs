@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    rc::Rc,
-};
+use std::{collections::HashSet, rc::Rc};
 
 use crate::prelude::*;
 
@@ -65,6 +62,7 @@ impl Solver {
 
     fn open_valve(&mut self) {
         self.open.insert(self.current.clone());
+        self.closed.remove(&self.current);
     }
 
     fn can_open_valve(&self) -> bool {
@@ -116,5 +114,10 @@ mod tests {
         assert!(hs.contains(&v1));
         assert!(hs.contains(&v2));
         assert_eq!(2, hs.len());
+
+        hs.remove(&v2);
+        assert!(hs.contains(&v1));
+        assert!(!hs.contains(&v2));
+        assert_eq!(1, hs.len());
     }
 }
