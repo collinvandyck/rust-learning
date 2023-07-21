@@ -59,8 +59,8 @@ mod test {
             Some((Point(0, 0), Point(1, 0))),
         );
         assert_eq!(
-            sorted(vec![Point(0, 0), Point(3, 3), Point(-3, -3)]),
-            vec![Point(-3, -3), Point(0, 0), Point(3, 3)],
+            Point::min_max(&vec![Point(0, 0), Point(3, 3), Point(-3, -3)]),
+            Some((Point(-3, -3), Point(3, 3))),
         );
         assert_eq!(
             sorted(vec![Point(3, 3), Point(-3, -3), Point(0, 0)]),
