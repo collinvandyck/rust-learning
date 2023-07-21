@@ -66,6 +66,10 @@ mod test {
             Point::min_max(&vec![Point(3, 3), Point(-3, -3), Point(0, 0)]),
             Some((Point(-3, -3), Point(3, 3))),
         );
+        assert_eq!(
+            Point::min_max(&vec![Point(3, 8), Point(-8, -3), Point(0, -5)]),
+            Some((Point(-8, -5), Point(3, 8))),
+        );
     }
 
     #[test]
