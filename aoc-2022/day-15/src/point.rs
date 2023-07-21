@@ -29,12 +29,21 @@ mod test {
 
     use super::*;
 
+    fn sorted(mut v: Vec<Point>) -> Vec<Point> {
+        v.sort();
+        v
+    }
+
     #[test]
     fn test_points_ordering() {
-        let v1 = vec![Point(0, 0), Point(1, 0)];
-        let mut v2 = v1.clone();
-        v2.sort();
-        assert_eq!(vec![Point(0, 0), Point(1, 0)], v2)
+        assert_eq!(
+            sorted(vec![Point(0, 0), Point(1, 0)]),
+            vec![Point(0, 0), Point(1, 0)],
+        );
+        assert_eq!(
+            sorted(vec![Point(1, 0), Point(0, 0)]),
+            vec![Point(0, 0), Point(1, 0)],
+        );
     }
 
     #[test]
