@@ -119,6 +119,36 @@ impl Solver {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[derive(PartialEq, Eq, Debug)]
+    struct State {
+        open: HashSet<Rc<Valve>>,
+        closed: HashSet<Rc<Valve>>,
+    }
+
+    impl State {}
+
+    #[test]
+    fn test_saved_state_super_struct() {
+        let v1 = Rc::new(Valve::new("AA", 5, vec!["CC".to_string()]));
+        let v2 = Rc::new(Valve::new("BB", 5, vec![]));
+        let v3 = Rc::new(Valve::new("CC", 5, vec![]));
+
+        let open: HashSet<Rc<Valve>> = [v1, v2].into_iter().map(|s| s.clone()).collect();
+        let closed: HashSet<Rc<Valve>> = [v3].into_iter().map(|s| s.clone()).collect();
+        let mut s1 = State { open, closed };
+
+        let v1 = Rc::new(Valve::new("AA", 5, vec!["CC".to_string()]));
+        let v2 = Rc::new(Valve::new("BB", 5, vec![]));
+        let v3 = Rc::new(Valve::new("CC", 5, vec![]));
+
+        let open: HashSet<Rc<Valve>> = [v1, v2].into_iter().map(|s| s.clone()).collect();
+        let closed: HashSet<Rc<Valve>> = [v3].into_iter().map(|s| s.clone()).collect();
+        let mut s2 = State { open, closed };
+
+        assert_eq!(s1, s2);
+    }
+
     #[test]
     fn test_hashset_with_rc() {
         let mut hs: HashSet<Rc<Valve>> = HashSet::new();
