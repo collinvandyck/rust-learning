@@ -28,12 +28,7 @@ fn main() {
 
 fn part_1(args: &Args) {
     println!("Part 1...");
-    let sensors = load_sensors(args);
-    let (min, max) = Point::min_max(sensors.iter().flat_map(Sensor::bounds)).unwrap();
-    let map = Map::new(sensors, min, max);
-    if args.print_map {
-        println!("{map}");
-    }
+    let map = load_map(args);
     println!("Searching for beacon placements.");
     let val = map.beacon_not_possible(args.y);
     println!("At y={} the beacon cannot be in {} places.", args.y, val);
@@ -41,15 +36,20 @@ fn part_1(args: &Args) {
 
 fn part_2(args: &Args) {
     println!("Part 2...");
-    let sensors = load_sensors(args);
-    let (min, max) = Point::min_max(sensors.iter().flat_map(Sensor::bounds)).unwrap();
-    let map = Map::new(sensors, min, max);
-    if args.print_map {
-        println!("{map}");
-    }
+    let map = load_map(args);
     println!("Searching for beacon placements.");
     let val = map.beacon_not_possible(args.y);
     println!("At y={} the beacon cannot be in {} places.", args.y, val);
+}
+
+fn load_map(args: &Args) -> Map {
+    let sensors = load_sensors(args);
+    let (min, max) = Point::min_max(sensors.iter().flat_map(Sensor::bounds)).unwrap();
+    let res = Map::new(sensors, min, max);
+    if args.print_map {
+        println!("{res}");
+    }
+    res
 }
 
 fn load_sensors(args: &Args) -> Vec<Sensor> {
@@ -68,7 +68,7 @@ fn load_sensors(args: &Args) -> Vec<Sensor> {
             .map(|s| s.as_str().parse::<i32>().unwrap());
         let point = Point(caps.next().unwrap(), caps.next().unwrap());
         let beacon = Point(caps.next().unwrap(), caps.next().unwrap());
-        res.push(Sensor { point, beacon })
+        res.push(Sensor { point, beacon });
     }
     res
 }
