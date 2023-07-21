@@ -1,4 +1,5 @@
-#![allow(dead_code)]
+#![warn(clippy::all, clippy::pedantic)]
+
 mod args;
 mod map;
 mod point;
@@ -28,7 +29,7 @@ fn main() {
 fn part_1(args: &Args) {
     println!("Part 1...");
     let sensors = load_sensors(args);
-    let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
+    let (min, max) = Point::min_max(sensors.iter().flat_map(Sensor::bounds)).unwrap();
     let map = Map::new(sensors, min, max);
     if args.print_map {
         println!("{map}");
@@ -41,7 +42,7 @@ fn part_1(args: &Args) {
 fn part_2(args: &Args) {
     println!("Part 2...");
     let sensors = load_sensors(args);
-    let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
+    let (min, max) = Point::min_max(sensors.iter().flat_map(Sensor::bounds)).unwrap();
     let map = Map::new(sensors, min, max);
     if args.print_map {
         println!("{map}");
