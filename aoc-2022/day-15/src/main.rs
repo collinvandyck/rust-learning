@@ -15,6 +15,7 @@ mod prelude {
 use std::{
     fs::File,
     io::{BufRead, BufReader},
+    process,
 };
 
 use prelude::*;
@@ -36,10 +37,19 @@ fn part_1(args: &Args) {
 
 fn part_2(args: &Args) {
     println!("Part 2...");
-    let map = load_map(args);
-    println!("Searching for beacon placements.");
-    let val = map.beacon_not_possible(args.y);
-    println!("At y={} the beacon cannot be in {} places.", args.y, val);
+    let (min, max) = part_2_bounds(args);
+    println!("Min: {min} Max: {max}");
+}
+
+fn part_2_bounds(args: &Args) -> (i32, i32) {
+    match args.filename.as_str() {
+        "example.txt" => (0, 20),
+        "input.txt" => (0, 4000000),
+        filename => {
+            eprintln!("Unexpected filename: {filename}");
+            process::exit(1);
+        }
+    }
 }
 
 fn load_map(args: &Args) -> Map {
