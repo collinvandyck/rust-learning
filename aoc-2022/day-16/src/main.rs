@@ -24,7 +24,7 @@ fn main() {
 
 fn run(args: &Args) {
     let map = load(args);
-    println!("{:#?}", map);
+    println!("{map:#?}");
 }
 
 fn load(args: &Args) -> Map {
@@ -33,8 +33,8 @@ fn load(args: &Args) -> Map {
     let re = Regex::new(r#"Valve (\w+).*rate=(\d+);.*to valves?(.*)"#).unwrap();
     Map::new(
         read.lines()
-            .map(|l| l.unwrap())
-            .map(|l| parse_line(l, &re))
+            .map(Result::unwrap)
+            .map(|l| parse_line(&l, &re))
             .map(|p| {
                 let tunnels = p.tunnels.clone();
                 Valve::new(p.name.to_string(), p.rate, tunnels)
@@ -43,9 +43,9 @@ fn load(args: &Args) -> Map {
 }
 
 // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
-fn parse_line(line: String, re: &Regex) -> Parsed {
-    let caps = re.captures(&line).unwrap();
-    let valve = caps.get(1).unwrap().as_str();
+fn parse_line(line: &str, re: &Regex) -> Parsed {
+    let caps = re.captures(line).unwrap();
+    let name = caps.get(1).unwrap().as_str().to_string();
     let rate = caps.get(2).unwrap().as_str().parse::<i32>().unwrap();
     let tunnels = caps
         .get(3)
@@ -56,7 +56,7 @@ fn parse_line(line: String, re: &Regex) -> Parsed {
         .map(|p| p.trim().to_string())
         .collect::<Vec<_>>();
     Parsed {
-        name: valve.to_string(),
+        name,
         rate,
         tunnels,
     }
