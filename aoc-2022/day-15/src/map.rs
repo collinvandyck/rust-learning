@@ -1,16 +1,31 @@
-use std::fmt::{Display, Write};
+use std::{collections::HashMap, fmt::Display};
 
 use crate::prelude::*;
 
 pub struct Map {
     sensors: Vec<Sensor>,
+    lookup: HashMap<Point, Entity>,
     min: Point,
     max: Point,
 }
 
+enum Entity {
+    Sensor,
+    Beacon,
+}
+
 impl Map {
     pub fn new(sensors: Vec<Sensor>, min: Point, max: Point) -> Self {
-        Self { sensors, min, max }
+        let lookup = sensors
+            .iter()
+            .flat_map(|s| vec![(s.point, Entity::Sensor), (s.beacon, Entity::Beacon)])
+            .collect();
+        Self {
+            sensors,
+            min,
+            max,
+            lookup,
+        }
     }
     fn render(&self) -> String {
         let mut lines = vec![];
@@ -26,11 +41,18 @@ impl Map {
         lines.join("\n")
     }
     fn render_point(&self, point: Point) -> char {
-        let reach = self.sensors.iter().any(|s| s.can_reach(point));
-        if reach {
-            '#'
+        if let Some(e) = self.lookup.get(&point) {
+            match e {
+                Entity::Sensor => 'S',
+                Entity::Beacon => 'B',
+            }
         } else {
-            '.'
+            let reach = self.sensors.iter().any(|s| s.can_reach(point));
+            if reach {
+                '#'
+            } else {
+                '.'
+            }
         }
     }
 }
