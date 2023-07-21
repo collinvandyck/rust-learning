@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_hashset_with_rc() {
         let mut hs: HashSet<Rc<Valve>> = HashSet::new();
-        let v1 = Rc::new(Valve::new("AA", 5, vec![]));
+        let v1 = Rc::new(Valve::new("AA", 5, vec!["CC".to_string()]));
         let v2 = Rc::new(Valve::new("BB", 5, vec![]));
 
         // insertions
