@@ -43,14 +43,13 @@ fn load(args: &Args) -> Map {
 }
 
 // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+// let (full, [title, year]) = re.captures(hay).unwrap().extract();
 fn parse_line(line: &str, re: &Regex) -> Parsed {
     let caps = re.captures(line).unwrap();
-    let name = caps.get(1).unwrap().as_str().to_string();
-    let rate = caps.get(2).unwrap().as_str().parse::<i32>().unwrap();
-    let tunnels = caps
-        .get(3)
-        .unwrap()
-        .as_str()
+    let (_, [name, rate, tunnels]) = caps.extract();
+    let name = name.to_string();
+    let rate = rate.parse::<i32>().unwrap();
+    let tunnels = tunnels
         .trim()
         .split(',')
         .map(|p| p.trim().to_string())
