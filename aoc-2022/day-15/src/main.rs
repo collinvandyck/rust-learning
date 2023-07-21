@@ -25,6 +25,8 @@ fn main() {
 fn part_1(args: &Args) {
     let sensors = load_sensors(args);
     sensors.iter().for_each(|s| println!("{s}"));
+    let (min, max) = Point::min_max(sensors.iter().flat_map(|s| [&s.point, &s.beacon])).unwrap();
+    println!("Min:{min} Max:{max}");
 }
 
 fn load_sensors(args: &Args) -> Vec<Sensor> {
