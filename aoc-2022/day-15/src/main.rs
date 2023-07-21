@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 mod args;
+mod map;
 mod point;
 mod sensor;
 
 mod prelude {
     pub use crate::args::*;
+    pub use crate::map::*;
     pub use crate::point::*;
     pub use crate::sensor::*;
     pub use clap::Parser;
@@ -24,9 +26,10 @@ fn main() {
 
 fn part_1(args: &Args) {
     let sensors = load_sensors(args);
-    sensors.iter().for_each(|s| println!("{s}"));
-    let (min, max) = Point::min_max(sensors.iter().flat_map(|s| [&s.point, &s.beacon])).unwrap();
-    println!("Min:{min} Max:{max}");
+    let points = sensors.iter().flat_map(|s| [&s.point, &s.beacon]);
+    let (min, max) = Point::min_max(points).unwrap();
+    let map = Map::new(sensors, min, max);
+    println!("{map}");
 }
 
 fn load_sensors(args: &Args) -> Vec<Sensor> {
