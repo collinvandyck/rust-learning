@@ -45,7 +45,7 @@ fn part_2(args: &Args) {
         process::exit(1);
     };
     println!("Beacon found at {beacon}");
-    let tuning_frequency = beacon.0 * 4_000_000 + beacon.1;
+    let tuning_frequency = (beacon.0 as i64) * 4_000_000 + (beacon.1 as i64);
     println!("Tuning frequency: {tuning_frequency}");
 }
 
