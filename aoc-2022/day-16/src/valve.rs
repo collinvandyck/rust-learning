@@ -1,4 +1,11 @@
-use std::hash::Hash;
+use std::{collections::HashSet, hash::Hash, rc::Rc};
+
+#[derive(PartialEq, Eq, Debug)]
+struct Valves {
+    current: Rc<Valve>,
+    open: HashSet<Rc<Valve>>,
+    closed: HashSet<Rc<Valve>>,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Valve {
