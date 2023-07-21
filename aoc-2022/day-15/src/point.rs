@@ -44,6 +44,10 @@ mod test {
             sorted(vec![Point(1, 0), Point(0, 0)]),
             vec![Point(0, 0), Point(1, 0)],
         );
+        assert_eq!(
+            sorted(vec![Point(0, 0), Point(3, 3), Point(-3, -3)]),
+            vec![Point(-3, -3), Point(0, 0), Point(3, 3)],
+        );
     }
 
     #[test]
