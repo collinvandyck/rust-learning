@@ -40,22 +40,19 @@ fn part_2(args: &Args) {
     let map = load_map(args);
     let (min, max) = part_2_bounds(args);
     println!("Min: {min} Max: {max}");
-    let beacon = match map.find_beacon(min, max) {
-        Some(beacon) => beacon,
-        None => {
-            eprintln!("No beacon could be found!");
-            process::exit(1);
-        }
+    let Some(beacon) = map.find_beacon(min,max) else {
+        eprintln!("No beacon could be found!");
+        process::exit(1);
     };
     println!("Beacon found at {beacon}");
-    let tuning_frequency = beacon.0 * 4000000 + beacon.1;
+    let tuning_frequency = beacon.0 * 4_000_000 + beacon.1;
     println!("Tuning frequency: {tuning_frequency}");
 }
 
 fn part_2_bounds(args: &Args) -> (i32, i32) {
     match args.filename.as_str() {
         "example.txt" => (0, 20),
-        "input.txt" => (0, 4000000),
+        "input.txt" => (0, 4_000_000),
         filename => {
             eprintln!("Unexpected filename: {filename}");
             process::exit(1);
