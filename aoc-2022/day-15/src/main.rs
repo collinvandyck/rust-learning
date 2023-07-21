@@ -34,7 +34,6 @@ fn load_sensors(args: &Args) -> Vec<Sensor> {
     let mut res = vec![];
     for line in read.lines() {
         let line = line.unwrap();
-        println!("{line}");
         let caps = re.captures(&line).unwrap();
         let mut caps = caps
             .iter()
