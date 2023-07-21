@@ -37,10 +37,10 @@ fn part_1(args: &Args) {
 
 fn part_2(args: &Args) {
     println!("Part 2...");
-    let map = load_map(args);
+    let m = load_map(args);
     let (min, max) = part_2_bounds(args);
     println!("Min: {min} Max: {max}");
-    let Some(beacon) = map.find_beacon(min,max) else {
+    let Some(beacon) = m.find_beacon(min,max) else {
         eprintln!("No beacon could be found!");
         process::exit(1);
     };
