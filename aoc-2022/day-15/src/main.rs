@@ -22,9 +22,23 @@ use regex::Regex;
 fn main() {
     let args = Args::parse();
     part_1(&args);
+    part_2(&args);
 }
 
 fn part_1(args: &Args) {
+    println!("Loading data");
+    let sensors = load_sensors(args);
+    let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
+    let map = Map::new(sensors, min, max);
+    if args.print_map {
+        println!("{map}");
+    }
+    println!("Searching for beacon placements.");
+    let val = map.beacon_not_possible(args.y);
+    println!("At y={} the beacon cannot be in {} places.", args.y, val);
+}
+
+fn part_2(args: &Args) {
     println!("Loading data");
     let sensors = load_sensors(args);
     let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
