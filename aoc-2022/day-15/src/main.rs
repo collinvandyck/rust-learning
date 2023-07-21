@@ -40,7 +40,13 @@ fn part_2(args: &Args) {
     let map = load_map(args);
     let (min, max) = part_2_bounds(args);
     println!("Min: {min} Max: {max}");
-    let beacon = map.find_beacon(min, max);
+    let beacon = match map.find_beacon(min, max) {
+        Some(beacon) => beacon,
+        None => {
+            eprintln!("No beacon could be found!");
+            process::exit(1);
+        }
+    };
     println!("Beacon found at {beacon}");
     let tuning_frequency = beacon.0 * 4000000 + beacon.1;
     println!("Tuning frequency: {tuning_frequency}");

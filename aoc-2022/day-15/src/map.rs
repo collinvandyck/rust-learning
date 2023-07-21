@@ -28,8 +28,20 @@ impl Map {
             max,
         }
     }
-    pub fn find_beacon(&self, min: i32, max: i32) -> Point {
-        Point(0, 0)
+    // finds the beacon in a constrained search space. Valid coordinates to search are those
+    // with a dimension not less than min and not greater than max.
+    pub fn find_beacon(&self, min: i32, max: i32) -> Option<Point> {
+        // brute force approach
+        for x in min..=max {
+            for y in min..=max {
+                let point = Point(x, y);
+                if self.lookup.get(&point).is_some() {
+                    // it cannot be the one we're looking for
+                    continue;
+                }
+            }
+        }
+        None
     }
     // for the specified row (y), how many points are impossible for a beacon to be present?
     pub fn beacon_not_possible(&self, y: i32) -> i32 {
