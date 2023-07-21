@@ -13,23 +13,23 @@ pub struct Solver {
 }
 
 impl Solver {
-    // solve returns the highest score
-    //
-    // Each move taken:
-    //
-    // First adds to the score any currently open valves.
-    // Then one may choose to do one of the following:
-    // - open the valve you are at
-    // - move to another valve
-    //
     pub fn solve(&mut self) -> i64 {
         self.do_solve(0)
     }
-    fn open_valve_rate_sum(&self) -> i64 {
-        self.open.iter().map(|v| v.rate).sum::<i32>() as i64
-    }
+    // TODO:
+    //  - There should be a way of assigning a score to a particular room.
+    //    The score would let other recursions to exit early if they visited
+    //    a room where the valve state was the same but the score was higher.
+    //
+    //    So this means we'd probably need a way to represent valve state.
+    //    We already have the open/closed hashsets. If we could compare them
+    //    along with the score, that might be enough to avoid doing work.
     fn do_solve(&mut self, depth: usize) -> i64 {
-        println!("do_solve {depth}");
+        println!(
+            "do_solve {depth} open:{} closed:{}",
+            self.open.len(),
+            self.closed.len()
+        );
         // start the turn, and update the score
         self.score += self.open_valve_rate_sum();
 
@@ -69,6 +69,9 @@ impl Solver {
         // return the max score
         let res = *scores.iter().max().unwrap();
         res
+    }
+    fn open_valve_rate_sum(&self) -> i64 {
+        self.open.iter().map(|v| v.rate).sum::<i32>() as i64
     }
     fn all_valves_open(&self) -> bool {
         self.closed.is_empty()
