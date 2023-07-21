@@ -25,10 +25,12 @@ fn main() {
 }
 
 fn part_1(args: &Args) {
+    println!("Loading data");
     let sensors = load_sensors(args);
     let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
     let map = Map::new(sensors, min, max);
     //println!("{map}");
+    println!("Searching for beacon placements.");
     let val = map.beacon_not_possible(args.y);
     println!("At y={} the beacon cannot be in {} places.", args.y, val);
 }
