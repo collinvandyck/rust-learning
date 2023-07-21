@@ -44,7 +44,7 @@ impl Map {
             // see if any beacon is able to cover this spot
             let can_reach = self.sensors.iter().any(|s| s.can_reach(point));
             if can_reach {
-                res += 1
+                res += 1;
             }
         }
         res
