@@ -40,7 +40,9 @@ impl Map {
 
         let mut count = 0;
         for y in min..=max {
-            let ranges: Vec<Range<i32>> = bounds.iter().map(|b| b.range_y(y)).flatten().collect();
+            let mut ranges: Vec<Range<i32>> =
+                bounds.iter().map(|b| b.range_y(y)).flatten().collect();
+            ranges.sort_by_key(|r| r.start);
             if let Some(x) = Self::x_gap(&ranges) {
                 return Some(Point(x, y));
             }
