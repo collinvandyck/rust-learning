@@ -63,8 +63,8 @@ mod test {
             Some((Point(-3, -3), Point(3, 3))),
         );
         assert_eq!(
-            sorted(vec![Point(3, 3), Point(-3, -3), Point(0, 0)]),
-            vec![Point(-3, -3), Point(0, 0), Point(3, 3)],
+            Point::min_max(&vec![Point(3, 3), Point(-3, -3), Point(0, 0)]),
+            Some((Point(-3, -3), Point(3, 3))),
         );
     }
 
