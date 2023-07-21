@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub struct Point(pub i32, pub i32);
 
 impl Point {
@@ -25,7 +25,18 @@ impl Display for Point {
 
 #[cfg(test)]
 mod test {
+    use std::vec;
+
     use super::*;
+
+    #[test]
+    fn test_points_ordering() {
+        let v1 = vec![Point(0, 0), Point(1, 0)];
+        let mut v2 = v1.clone();
+        v2.sort();
+        assert_eq!(vec![Point(0, 0), Point(1, 0)], v2)
+    }
+
     #[test]
     fn test_sub() {
         assert_eq!(0, Point(0, 0).distance(Point(0, 0)));

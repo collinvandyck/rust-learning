@@ -19,10 +19,10 @@ use regex::Regex;
 
 fn main() {
     let args = Args::parse();
-    run(&args);
+    part_1(&args);
 }
 
-fn run(args: &Args) {
+fn part_1(args: &Args) {
     let sensors = load_sensors(args);
     sensors.iter().for_each(|s| println!("{s}"));
 }
