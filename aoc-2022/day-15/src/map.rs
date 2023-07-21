@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, fmt::Display, ops::Range};
 
 use crate::prelude::*;
 
@@ -30,10 +30,20 @@ impl Map {
     }
     // finds the beacon in a constrained search space. Valid coordinates to search are those
     // with a dimension not less than min and not greater than max.
-    pub fn find_beacon(&self, _min: i32, _max: i32) -> Option<Point> {
+    pub fn find_beacon(&self, min: i32, max: i32) -> Option<Point> {
         // first we need to get the bounds for each beacon.
         // and then sort them by min y covered.
 
+        // get the bounds covered by each beacon
+        let bounds = self.sensors.iter().map(|s| s.bounds).collect::<Vec<_>>();
+        println!("Got {} bounds", bounds.len());
+
+        let mut count = 0;
+        for y in min..=max {
+            let b: Vec<Range<i32>> = bounds.iter().map(|b| b.range_y(y)).flatten().collect();
+            count += b.len();
+        }
+        println!("Performed {count} checks.");
         None
     }
     // for the specified row (y), how many points are impossible for a beacon to be present?

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::Range};
 
 use crate::prelude::*;
 
@@ -15,6 +15,12 @@ pub struct Bounds {
     left: Point,
     right: Point,
     bottom: Point,
+}
+
+impl Bounds {
+    pub fn range_y(&self, y: i32) -> Option<Range<i32>> {
+        None
+    }
 }
 
 impl IntoIterator for Bounds {
