@@ -41,9 +41,15 @@ impl Map {
         let mut count = 0;
         for y in min..=max {
             let ranges: Vec<Range<i32>> = bounds.iter().map(|b| b.range_y(y)).flatten().collect();
+            if let Some(x) = Self::x_gap(&ranges) {
+                return Some(Point(x, y));
+            }
             count += ranges.len();
         }
         println!("Performed {count} checks.");
+        None
+    }
+    fn x_gap(ranges: &[Range<i32>]) -> Option<i32> {
         None
     }
     // for the specified row (y), how many points are impossible for a beacon to be present?
