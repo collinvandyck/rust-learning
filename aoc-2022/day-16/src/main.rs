@@ -2,10 +2,12 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 mod args;
+mod solver;
 mod world;
 
 mod prelude {
     pub use crate::args::*;
+    pub use crate::solver::*;
     pub use crate::world::*;
     pub use clap::Parser;
 }
@@ -24,7 +26,9 @@ fn main() {
 
 fn run(args: &Args) {
     let map = load(args);
-    println!("{map:#?}");
+    let mut solver = Solver::new(map);
+    let score = solver.solve();
+    println!("Score: {score}");
 }
 
 fn load(args: &Args) -> Map {

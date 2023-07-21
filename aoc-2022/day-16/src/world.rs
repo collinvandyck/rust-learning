@@ -1,6 +1,6 @@
 use std::{collections::HashMap, rc::Rc};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Map {
     valves: Vec<Rc<Valve>>,
     lookup: HashMap<String, Rc<Valve>>,
@@ -15,13 +15,16 @@ impl Map {
         let lookup = valves.iter().map(|v| (v.name.clone(), v.clone())).collect();
         Self { valves, lookup }
     }
+    pub fn get(&self, name: &str) -> Rc<Valve> {
+        self.lookup.get(name).cloned().unwrap()
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct Valve {
     pub name: String,
     pub rate: i32,
-    tunnels: Vec<String>,
+    pub tunnels: Vec<String>,
 }
 
 impl Valve {
