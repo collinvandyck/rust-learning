@@ -15,6 +15,20 @@ impl Point {
         let y = (self.y() - rhs.y()).abs();
         x + y
     }
+    pub fn min_max<'a, P>(points: P) -> Option<(Point, Point)>
+    where
+        P: IntoIterator<Item = &'a Point>,
+    {
+        let start: Option<(Point, Point)> = None;
+        points.into_iter().fold(start, |mut acc, point| {
+            let (mut min, mut max) = acc.get_or_insert((*point, *point));
+            min.0 = min.0.min(point.0);
+            min.1 = min.1.min(point.1);
+            max.0 = max.0.max(point.0);
+            max.1 = max.1.max(point.1);
+            Some((min, max))
+        })
+    }
 }
 
 impl Display for Point {
@@ -32,6 +46,26 @@ mod test {
     fn sorted(mut v: Vec<Point>) -> Vec<Point> {
         v.sort();
         v
+    }
+
+    #[test]
+    fn test_min_max() {
+        assert_eq!(
+            Point::min_max(&vec![Point(0, 0), Point(1, 0)]),
+            Some((Point(0, 0), Point(1, 0))),
+        );
+        assert_eq!(
+            Point::min_max(&vec![Point(1, 0), Point(0, 0)]),
+            Some((Point(0, 0), Point(1, 0))),
+        );
+        assert_eq!(
+            sorted(vec![Point(0, 0), Point(3, 3), Point(-3, -3)]),
+            vec![Point(-3, -3), Point(0, 0), Point(3, 3)],
+        );
+        assert_eq!(
+            sorted(vec![Point(3, 3), Point(-3, -3), Point(0, 0)]),
+            vec![Point(-3, -3), Point(0, 0), Point(3, 3)],
+        );
     }
 
     #[test]
