@@ -4,10 +4,10 @@ use std::fmt::Display;
 pub struct Point(pub i32, pub i32);
 
 impl Point {
-    fn x(&self) -> i32 {
+    fn x(self) -> i32 {
         self.0
     }
-    fn y(&self) -> i32 {
+    fn y(self) -> i32 {
         self.1
     }
     pub fn distance(self, rhs: Self) -> i32 {
