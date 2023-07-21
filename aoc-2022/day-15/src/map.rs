@@ -43,7 +43,7 @@ impl Map {
             let mut ranges: Vec<Range<i32>> =
                 bounds.iter().map(|b| b.range_y(y)).flatten().collect();
             ranges.sort_by_key(|r| r.start);
-            if let Some(x) = Self::x_gap(&ranges) {
+            if let Some(x) = Self::x_gap(&ranges, min, max) {
                 return Some(Point(x, y));
             }
             count += ranges.len();
@@ -51,7 +51,26 @@ impl Map {
         println!("Performed {count} checks.");
         None
     }
-    fn x_gap(ranges: &[Range<i32>]) -> Option<i32> {
+    // ranges are sorted by start
+    fn x_gap(ranges: &[Range<i32>], min_x: i32, max_x: i32) -> Option<i32> {
+        let mut acc: Option<Range<i32>> = None;
+        for range in ranges {
+            acc = match acc {
+                Some(Range { start, end }) => {
+                    // if the ranges overlap then combine them.
+                    if range.start <= end {
+                        Some(Range {
+                            start: start,
+                            end: range.end,
+                        })
+                    } else {
+                        // the ranges do not overlap.
+                        return Some(range.start - 1);
+                    }
+                }
+                None => Some(range.clone()),
+            }
+        }
         None
     }
     // for the specified row (y), how many points are impossible for a beacon to be present?
