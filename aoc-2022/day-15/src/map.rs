@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use crate::prelude::*;
 
@@ -16,6 +16,7 @@ impl Map {
         let mut lines = vec![];
         for y in self.min.1..=self.max.1 {
             let mut buf = String::new();
+            buf.push_str(format!("{y}\t").as_str());
             for x in self.min.0..=self.max.0 {
                 let point = Point(x, y);
                 buf.push(self.render_point(point));
@@ -25,21 +26,7 @@ impl Map {
         lines.join("\n")
     }
     fn render_point(&self, point: Point) -> char {
-        let reach = self.sensors.iter().any(|s| {
-            let res = s.can_reach(point);
-            if res {
-                println!(
-                    "{point} is reachable from {s} (this dist: {})",
-                    s.distance_to(point)
-                );
-            } else {
-                println!(
-                    "{point} is NOT reachable from {s} (this dist: {})",
-                    s.distance_to(point)
-                );
-            }
-            res
-        });
+        let reach = self.sensors.iter().any(|s| s.can_reach(point));
         if reach {
             '#'
         } else {
