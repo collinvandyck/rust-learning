@@ -28,6 +28,9 @@ impl Map {
             max,
         }
     }
+    pub fn find_beacon(&self, min: i32, max: i32) -> Point {
+        Point(0, 0)
+    }
     // for the specified row (y), how many points are impossible for a beacon to be present?
     pub fn beacon_not_possible(&self, y: i32) -> i32 {
         let mut res = 0;

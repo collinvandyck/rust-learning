@@ -37,8 +37,13 @@ fn part_1(args: &Args) {
 
 fn part_2(args: &Args) {
     println!("Part 2...");
+    let map = load_map(args);
     let (min, max) = part_2_bounds(args);
     println!("Min: {min} Max: {max}");
+    let beacon = map.find_beacon(min, max);
+    println!("Beacon found at {beacon}");
+    let tuning_frequency = beacon.0 * 4000000 + beacon.1;
+    println!("Tuning frequency: {tuning_frequency}");
 }
 
 fn part_2_bounds(args: &Args) -> (i32, i32) {
