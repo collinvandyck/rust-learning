@@ -14,14 +14,32 @@ impl Map {
     }
     fn render(&self) -> String {
         let mut lines = vec![];
-        for row in self.min.1..=self.max.1 {
+        for y in self.min.1..=self.max.1 {
             let mut buf = String::new();
-            for col in self.min.0..=self.max.0 {
-                buf.push('.');
+            for x in self.min.0..=self.max.0 {
+                let point = Point(x, y);
+                buf.push(self.render_point(point));
             }
             lines.push(buf);
         }
         lines.join("\n")
+    }
+    fn render_point(&self, point: Point) -> char {
+        let reach = self.sensors.iter().any(|s| {
+            let res = s.reachable(point);
+            if res {
+                println!(
+                    "{point} is reachable from {s} (this dist: {})",
+                    s.distance_to(point)
+                );
+            }
+            res
+        });
+        if reach {
+            '#'
+        } else {
+            '.'
+        }
     }
 }
 
