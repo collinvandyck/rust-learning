@@ -12,6 +12,13 @@ pub struct Solver {
     closed: HashSet<Rc<Valve>>,
 }
 
+#[derive(PartialEq, Eq, Debug)]
+struct Valves {
+    current: Rc<Valve>,
+    open: HashSet<Rc<Valve>>,
+    closed: HashSet<Rc<Valve>>,
+}
+
 impl Solver {
     pub fn solve(&mut self) -> i64 {
         self.do_solve(0)

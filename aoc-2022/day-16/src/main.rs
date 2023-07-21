@@ -3,11 +3,13 @@
 
 mod args;
 mod solver;
+mod valve;
 mod world;
 
 mod prelude {
     pub use crate::args::*;
     pub use crate::solver::*;
+    pub use crate::valve::*;
     pub use crate::world::*;
     pub use clap::Parser;
 }
