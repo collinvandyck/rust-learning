@@ -18,7 +18,7 @@ impl Display for Sensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Sensor(point:{}, beacon:{}, distance:{})",
+            "Sensor(point:{}\tbeacon:{}\tdistance:{})",
             self.point,
             self.beacon,
             self.distance()
