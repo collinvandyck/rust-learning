@@ -51,23 +51,23 @@ mod test {
     #[test]
     fn test_min_max() {
         assert_eq!(
-            Point::min_max(&vec![Point(0, 0), Point(1, 0)]),
+            Point::min_max(&[Point(0, 0), Point(1, 0)]),
             Some((Point(0, 0), Point(1, 0))),
         );
         assert_eq!(
-            Point::min_max(&vec![Point(1, 0), Point(0, 0)]),
+            Point::min_max(&[Point(1, 0), Point(0, 0)]),
             Some((Point(0, 0), Point(1, 0))),
         );
         assert_eq!(
-            Point::min_max(&vec![Point(0, 0), Point(3, 3), Point(-3, -3)]),
+            Point::min_max(&[Point(0, 0), Point(3, 3), Point(-3, -3)]),
             Some((Point(-3, -3), Point(3, 3))),
         );
         assert_eq!(
-            Point::min_max(&vec![Point(3, 3), Point(-3, -3), Point(0, 0)]),
+            Point::min_max(&[Point(3, 3), Point(-3, -3), Point(0, 0)]),
             Some((Point(-3, -3), Point(3, 3))),
         );
         assert_eq!(
-            Point::min_max(&vec![Point(3, 8), Point(-8, -3), Point(0, -5)]),
+            Point::min_max(&[Point(3, 8), Point(-8, -3), Point(0, -5)]),
             Some((Point(-8, -5), Point(3, 8))),
         );
     }
