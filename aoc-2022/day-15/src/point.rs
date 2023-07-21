@@ -10,7 +10,7 @@ impl Point {
     fn y(&self) -> i32 {
         self.1
     }
-    fn distance(self, rhs: Self) -> i32 {
+    pub fn distance(self, rhs: Self) -> i32 {
         let x = (self.x() - rhs.x()).abs();
         let y = (self.y() - rhs.y()).abs();
         x + y

@@ -8,8 +8,20 @@ pub struct Sensor {
     pub beacon: Point,
 }
 
+impl Sensor {
+    fn distance(&self) -> i32 {
+        self.point.distance(self.beacon)
+    }
+}
+
 impl Display for Sensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Sensor(point:{}, beacon:{})", self.point, self.beacon)
+        write!(
+            f,
+            "Sensor(point:{}, beacon:{}, distance:{})",
+            self.point,
+            self.beacon,
+            self.distance()
+        )
     }
 }
