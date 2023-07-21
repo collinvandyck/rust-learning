@@ -23,9 +23,9 @@ impl Map {
             .collect();
         Self {
             sensors,
+            lookup,
             min,
             max,
-            lookup,
         }
     }
     // for the specified row (y), how many points are impossible for a beacon to be present?
