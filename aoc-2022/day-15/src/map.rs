@@ -33,7 +33,7 @@ impl Map {
     pub fn find_beacon(&self, min: i32, max: i32) -> Option<Point> {
         // brute force approach
         for y in min..=max {
-            println!("Looking at row {y}");
+            continue;
             for x in min..=max {
                 let point = Point(x, y);
                 if self.lookup.get(&point).is_some() {
