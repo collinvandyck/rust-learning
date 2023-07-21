@@ -123,7 +123,7 @@ mod tests {
     #[derive(PartialEq, Eq, Debug)]
     struct State {
         open: HashSet<Rc<Valve>>,
-        closed: HashSet<Rc<Valve>>,
+        clos: HashSet<Rc<Valve>>,
     }
 
     impl State {}
@@ -136,11 +136,11 @@ mod tests {
 
         let open: HashSet<Rc<Valve>> = [&v1, &v2].into_iter().map(|s| s.clone()).collect();
         let closed: HashSet<Rc<Valve>> = [&v3].into_iter().map(|s| s.clone()).collect();
-        let mut s1 = State { open, closed };
+        let mut s1 = State { open, clos: closed };
 
         let open: HashSet<Rc<Valve>> = [&v1, &v2].into_iter().map(|s| s.clone()).collect();
         let closed: HashSet<Rc<Valve>> = [&v3].into_iter().map(|s| s.clone()).collect();
-        let mut s2 = State { open, closed };
+        let mut s2 = State { open, clos: closed };
 
         assert_eq!(s1, s2);
 
@@ -150,10 +150,18 @@ mod tests {
         assert_eq!(s1, s2);
         assert_eq!(s1, s2);
 
-        s1.closed.clear();
+        s1.clos.clear();
         s1.open.clear();
-        s2.closed.clear();
+        s2.clos.clear();
         s2.open.clear();
+        assert_eq!(s1, s2);
+
+        s1.open.insert(v1.clone());
+        s2.clos.insert(v1.clone());
+        assert_ne!(s1, s2);
+        s1.clos.insert(v1.clone());
+        assert_ne!(s1, s2);
+        s2.open.insert(v1.clone());
         assert_eq!(s1, s2);
     }
 
