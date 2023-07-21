@@ -26,8 +26,10 @@ impl Bounds {
         let (origin_x, origin_y) = (self.top.0, self.left.1);
         // distance from origin vertically
         let distance = i32::abs(y - origin_y);
-        let height = self.top.1 - origin_y;
+        let height = origin_y - self.top.1;
+        println!("Height: {height}");
         let adjustment = height - distance;
+        println!("Adjustment: {adjustment}");
         Some(Range {
             start: origin_x - adjustment,
             end: origin_x + adjustment + 1,
@@ -44,7 +46,17 @@ mod bounds_tests {
         let beacon = Point(3, 0); // three to the right
         let sensor = Sensor::new(origin, beacon);
         let bounds = sensor.bounds;
-        assert_eq!(bounds.range_y(0), Some(Range { start: -3, end: 4 }))
+        assert_eq!(bounds.range_y(0), Some(Range { start: -3, end: 4 }));
+        assert_eq!(bounds.range_y(-1), Some(Range { start: -2, end: 3 }));
+        assert_eq!(bounds.range_y(-2), Some(Range { start: -1, end: 2 }));
+        assert_eq!(bounds.range_y(-3), Some(Range { start: 0, end: 1 }));
+        assert_eq!(bounds.range_y(-4), None);
+
+        let origin = Point(-3, -3);
+        let beacon = Point(0, 0);
+        let sensor = Sensor::new(origin, beacon);
+        let bounds = sensor.bounds;
+        assert_eq!(bounds.range_y(-3), Some(Range { start: -9, end: 4 }));
     }
 }
 
