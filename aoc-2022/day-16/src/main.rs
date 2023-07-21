@@ -26,7 +26,7 @@ fn main() {
 
 fn run(args: &Args) {
     let map = load(args);
-    let mut solver = Solver::new(map);
+    let mut solver = Solver::new(args, map);
     let score = solver.solve();
     println!("Score: {score}");
 }

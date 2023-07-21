@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub struct Solver {
     map: Rc<Map>,
     open: HashMap<String, i32>,
-    moves: i32,
+    moves: usize,
     score: i64,
     current: Rc<Valve>,
 }
@@ -25,25 +25,19 @@ impl Solver {
         self.do_solve(0)
     }
     fn do_solve(&mut self, depth: usize) -> i64 {
-        // update the score
         self.score += self.open.values().sum::<i32>() as i64;
 
         // if we have no more moves, we are done
         if self.moves == 0 {
-            println!("Score: {} Depth: {}", self.score, depth);
             return self.score;
         }
 
         // decrement the move counter
         self.moves -= 1;
-
-        println!("Moves: {}", self.moves);
-
-        // we will accumulate scores here
         let mut scores = vec![];
 
         // if we can turn the valve open, do that.
-        if !self.valve_open() {
+        if self.can_open_valve() {
             let mut s = self.clone();
             s.open_valve();
             scores.push(s.do_solve(depth + 1));
@@ -57,7 +51,8 @@ impl Solver {
         });
 
         // return the max score
-        *scores.iter().max().unwrap()
+        let res = *scores.iter().max().unwrap();
+        res
     }
 
     fn move_to(&mut self, name: &str) {
@@ -69,15 +64,14 @@ impl Solver {
         self.open.insert(name, self.current.rate);
     }
 
-    // returns true if the current valve is open
-    fn valve_open(&self) -> bool {
-        self.open.contains_key(&self.current.name)
+    fn can_open_valve(&self) -> bool {
+        !self.open.contains_key(&self.current.name)
     }
 
-    pub fn new(map: Map) -> Self {
+    pub fn new(args: &Args, map: Map) -> Self {
         let map = Rc::new(map);
         let open = HashMap::new();
-        let moves = 30;
+        let moves = args.minutes;
         let score = 0;
         let current = map.get("AA");
         Self {
