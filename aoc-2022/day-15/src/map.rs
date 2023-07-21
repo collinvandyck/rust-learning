@@ -31,7 +31,9 @@ impl Map {
     // finds the beacon in a constrained search space. Valid coordinates to search are those
     // with a dimension not less than min and not greater than max.
     pub fn find_beacon(&self, min: i32, max: i32) -> Option<Point> {
-        // brute force approach
+        // first we need to get the bounds for each beacon.
+        // and then sort them by min y covered.
+
         for y in min..=max {
             continue;
             for x in min..=max {

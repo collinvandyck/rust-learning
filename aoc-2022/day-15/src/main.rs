@@ -89,7 +89,7 @@ fn load_sensors(args: &Args) -> Vec<Sensor> {
             .map(|s| s.as_str().parse::<i32>().unwrap());
         let point = Point(caps.next().unwrap(), caps.next().unwrap());
         let beacon = Point(caps.next().unwrap(), caps.next().unwrap());
-        res.push(Sensor { point, beacon });
+        res.push(Sensor::new(point, beacon));
     }
     res
 }

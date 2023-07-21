@@ -6,16 +6,24 @@ use crate::prelude::*;
 pub struct Sensor {
     pub point: Point,
     pub beacon: Point,
+    bounds: Bounds,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct Bounds {
+    top: Point,
+    left: Point,
+    right: Point,
+    bottom: Point,
 }
 
 impl Sensor {
     pub fn bounds(&self) -> [Point; 4] {
-        let dist = self.distance();
         [
-            Point(self.point.0 + dist, self.point.1),
-            Point(self.point.0 - dist, self.point.1),
-            Point(self.point.0, self.point.1 + dist),
-            Point(self.point.0, self.point.1 - dist),
+            self.bounds.top,
+            self.bounds.left,
+            self.bounds.right,
+            self.bounds.bottom,
         ]
     }
     pub fn distance(&self) -> i32 {
@@ -26,6 +34,20 @@ impl Sensor {
     pub fn can_reach(&self, p: Point) -> bool {
         let p_dist = self.point.distance(p);
         p_dist <= self.distance()
+    }
+    pub fn new(point: Point, beacon: Point) -> Self {
+        let distance = point.distance(beacon);
+        let bounds = Bounds {
+            top: Point(point.0, point.1 - distance),
+            left: Point(point.0 - distance, point.1),
+            right: Point(point.0 + distance, point.1),
+            bottom: Point(point.0, point.1 + distance),
+        };
+        Self {
+            point,
+            beacon,
+            bounds,
+        }
     }
 }
 
