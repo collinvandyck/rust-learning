@@ -13,7 +13,16 @@ pub struct Beacon {
 }
 
 impl Sensor {
-    fn distance(&self) -> i32 {
+    pub fn bounds(&self) -> [Point; 4] {
+        let dist = self.distance();
+        [
+            Point(self.point.0 + dist, self.point.1),
+            Point(self.point.0 - dist, self.point.1),
+            Point(self.point.0, self.point.1 + dist),
+            Point(self.point.0, self.point.1 - dist),
+        ]
+    }
+    pub fn distance(&self) -> i32 {
         self.point.distance(self.beacon)
     }
     pub fn distance_to(&self, p: Point) -> i32 {

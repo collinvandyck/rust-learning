@@ -26,8 +26,7 @@ fn main() {
 
 fn part_1(args: &Args) {
     let sensors = load_sensors(args);
-    let points = sensors.iter().flat_map(|s| [&s.point, &s.beacon]);
-    let (min, max) = Point::min_max(points).unwrap();
+    let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
     let map = Map::new(sensors, min, max);
     println!("{map}");
 }
