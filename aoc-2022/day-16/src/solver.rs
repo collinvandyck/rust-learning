@@ -1,4 +1,7 @@
-use std::{collections::HashMap, rc::Rc};
+use std::{
+    collections::{HashMap, HashSet},
+    rc::Rc,
+};
 
 use crate::prelude::*;
 
@@ -9,6 +12,25 @@ pub struct Solver {
     moves: usize,
     score: i64,
     current: Rc<Valve>,
+}
+
+#[test]
+fn test_hashset_with_rc() {
+    let mut hs: HashSet<Rc<Valve>> = HashSet::new();
+    let v1 = Rc::new(Valve::new("AA", 5, vec![]));
+    let v2 = Rc::new(Valve::new("BB", 5, vec![]));
+    assert!(!hs.contains(&v1));
+    hs.insert(v1.clone());
+    assert!(hs.contains(&v1));
+    assert!(!hs.contains(&v2));
+    hs.insert(v1.clone());
+    assert!(hs.contains(&v1));
+    assert!(!hs.contains(&v2));
+    assert_eq!(1, hs.len());
+    hs.insert(v2.clone());
+    assert!(hs.contains(&v1));
+    assert!(hs.contains(&v2));
+    assert_eq!(2, hs.len());
 }
 
 impl Solver {
