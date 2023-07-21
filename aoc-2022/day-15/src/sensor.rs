@@ -48,9 +48,9 @@ impl Display for Sensor {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn test_reachable() {
         let map_point = Point(25, 22);

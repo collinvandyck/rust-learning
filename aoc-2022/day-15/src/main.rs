@@ -26,7 +26,7 @@ fn main() {
 }
 
 fn part_1(args: &Args) {
-    println!("Loading data");
+    println!("Part 1...");
     let sensors = load_sensors(args);
     let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
     let map = Map::new(sensors, min, max);
@@ -39,7 +39,7 @@ fn part_1(args: &Args) {
 }
 
 fn part_2(args: &Args) {
-    println!("Loading data");
+    println!("Part 2...");
     let sensors = load_sensors(args);
     let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
     let map = Map::new(sensors, min, max);
