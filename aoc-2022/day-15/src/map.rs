@@ -30,23 +30,10 @@ impl Map {
     }
     // finds the beacon in a constrained search space. Valid coordinates to search are those
     // with a dimension not less than min and not greater than max.
-    pub fn find_beacon(&self, min: i32, max: i32) -> Option<Point> {
+    pub fn find_beacon(&self, _min: i32, _max: i32) -> Option<Point> {
         // first we need to get the bounds for each beacon.
         // and then sort them by min y covered.
 
-        for y in min..=max {
-            continue;
-            for x in min..=max {
-                let point = Point(x, y);
-                if self.lookup.get(&point).is_some() {
-                    // it cannot be the one we're looking for
-                    continue;
-                }
-                if !self.sensors.iter().any(|s| s.can_reach(point)) {
-                    return Some(point);
-                }
-            }
-        }
         None
     }
     // for the specified row (y), how many points are impossible for a beacon to be present?

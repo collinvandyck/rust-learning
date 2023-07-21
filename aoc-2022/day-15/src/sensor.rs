@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub struct Sensor {
     pub point: Point,
     pub beacon: Point,
-    bounds: Bounds,
+    pub bounds: Bounds,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -17,15 +17,15 @@ pub struct Bounds {
     bottom: Point,
 }
 
-impl Sensor {
-    pub fn bounds(&self) -> [Point; 4] {
-        [
-            self.bounds.top,
-            self.bounds.left,
-            self.bounds.right,
-            self.bounds.bottom,
-        ]
+impl IntoIterator for Bounds {
+    type Item = Point;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+    fn into_iter(self) -> Self::IntoIter {
+        vec![self.top, self.left, self.right, self.bottom].into_iter()
     }
+}
+
+impl Sensor {
     pub fn distance(&self) -> i32 {
         self.point.distance(self.beacon)
     }

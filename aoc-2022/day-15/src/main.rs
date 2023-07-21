@@ -65,7 +65,7 @@ fn part_2_bounds(args: &Args) -> (i32, i32) {
 
 fn load_map(args: &Args) -> Map {
     let sensors = load_sensors(args);
-    let (min, max) = Point::min_max(sensors.iter().flat_map(Sensor::bounds)).unwrap();
+    let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds)).unwrap();
     let res = Map::new(sensors, min, max);
     if args.print_map {
         println!("{res}");
