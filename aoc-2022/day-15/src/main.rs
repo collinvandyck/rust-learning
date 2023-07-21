@@ -29,6 +29,8 @@ fn part_1(args: &Args) {
     let (min, max) = Point::min_max(sensors.iter().flat_map(|s| s.bounds())).unwrap();
     let map = Map::new(sensors, min, max);
     println!("{map}");
+    let val = map.not_possible_for_y(10);
+    println!("At y={} the beacon cannot be in {} places.", 10, val);
 }
 
 fn load_sensors(args: &Args) -> Vec<Sensor> {

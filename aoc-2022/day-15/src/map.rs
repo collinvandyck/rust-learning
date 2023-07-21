@@ -27,6 +27,8 @@ impl Map {
             lookup,
         }
     }
+    // for the specified row (y), how many points are impossible for a beacon to be present?
+    pub fn not_possible_for_y(&self, y: i32) -> i32 {}
     fn render(&self) -> String {
         let mut lines = vec![];
         for y in self.min.1..=self.max.1 {
