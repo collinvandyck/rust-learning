@@ -25,16 +25,32 @@ impl Solver {
     pub fn solve(&mut self) -> i64 {
         self.do_solve(0)
     }
+    fn open_valve_rate_sum(&self) -> i64 {
+        self.open.iter().map(|v| v.rate).sum::<i32>() as i64
+    }
     fn do_solve(&mut self, depth: usize) -> i64 {
-        self.score += self.open.iter().map(|v| v.rate).sum::<i32>() as i64;
+        println!("do_solve {depth}");
+        // start the turn, and update the score
+        self.score += self.open_valve_rate_sum();
 
         // if we have no more moves, we are done
         if self.moves == 0 {
             return self.score;
         }
+        // if all of the valves are open, then we can just simulate
+        // the passage of time and return the modified score.
+        if self.all_valves_open() {
+            println!("All valves open");
+            let multiple: i64 = self.moves.try_into().unwrap();
+            println!("Multiple: {multiple}");
+            self.score += self.open_valve_rate_sum() * multiple;
+            return self.score;
+        }
 
-        // decrement the move counter
+        // decrement the move counter b/c we're going to be moving.
         self.moves -= 1;
+
+        // gather scores into this vec
         let mut scores = vec![];
 
         // if we can turn the valve open, do that.
@@ -43,9 +59,6 @@ impl Solver {
             s.open_valve();
             scores.push(s.do_solve(depth + 1));
         }
-
-        // if there are any more valves that are closed, keep going.
-
         // then try moving through each tunnel.
         self.current.tunnels.iter().for_each(|name| {
             let mut s = self.clone();
@@ -57,12 +70,11 @@ impl Solver {
         let res = *scores.iter().max().unwrap();
         res
     }
-
     fn all_valves_open(&self) -> bool {
-        !self.any_valves_closed()
+        self.closed.is_empty()
     }
     fn any_valves_closed(&self) -> bool {
-        self.closed.is_empty()
+        !self.closed.is_empty()
     }
     fn move_to(&mut self, name: &str) {
         self.current = self.map.get(name);
