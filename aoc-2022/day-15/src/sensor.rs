@@ -27,9 +27,7 @@ impl Bounds {
         // distance from origin vertically
         let distance = i32::abs(y - origin_y);
         let height = origin_y - self.top.1;
-        println!("Height: {height}");
         let adjustment = height - distance;
-        println!("Adjustment: {adjustment}");
         Some(Range {
             start: origin_x - adjustment,
             end: origin_x + adjustment + 1,
