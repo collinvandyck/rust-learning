@@ -32,6 +32,11 @@ impl Map {
                     "{point} is reachable from {s} (this dist: {})",
                     s.distance_to(point)
                 );
+            } else {
+                println!(
+                    "{point} is NOT reachable from {s} (this dist: {})",
+                    s.distance_to(point)
+                );
             }
             res
         });

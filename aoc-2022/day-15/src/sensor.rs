@@ -23,8 +23,7 @@ impl Sensor {
     // is less than or equal to the distance from the sensor to the beacon.
     pub fn can_reach(&self, p: Point) -> bool {
         let p_dist = self.point.distance(p);
-        let b_dist = self.beacon.distance(p);
-        p_dist <= b_dist
+        p_dist <= self.distance()
     }
 }
 
@@ -50,6 +49,9 @@ mod tests {
             point: Point(2, 18),
             beacon: Point(-2, 15),
         };
+        assert_eq!(sensor.distance(), 7);
+        println!("Sensor distance: {}", sensor.point.distance(map_point));
+        println!("Beacon distance: {}", sensor.beacon.distance(map_point));
         assert!(!sensor.can_reach(map_point))
     }
 }
