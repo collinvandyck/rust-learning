@@ -8,10 +8,6 @@ pub struct Sensor {
     pub beacon: Point,
 }
 
-pub struct Beacon {
-    sensor: Sensor,
-}
-
 impl Sensor {
     pub fn bounds(&self) -> [Point; 4] {
         let dist = self.distance();
@@ -24,9 +20,6 @@ impl Sensor {
     }
     pub fn distance(&self) -> i32 {
         self.point.distance(self.beacon)
-    }
-    pub fn distance_to(&self, p: Point) -> i32 {
-        self.point.distance(p)
     }
     // p is reachable from the sensor if its distance from the sensor
     // is less than or equal to the distance from the sensor to the beacon.
