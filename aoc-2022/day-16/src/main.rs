@@ -14,6 +14,7 @@ mod prelude {
 use std::{
     fs::File,
     io::{BufRead, BufReader},
+    time::Instant,
 };
 
 use prelude::*;
@@ -27,8 +28,14 @@ fn main() {
 fn run(args: &Args) {
     let map = load(args);
     let mut solver = Solver::new(args, map);
+    let now = Instant::now();
     let score = solver.solve();
-    println!("Score: {score}");
+    let elapsed = now.elapsed();
+    println!(
+        "Score: {score} Dur: {}.{}s",
+        elapsed.as_secs(),
+        elapsed.as_millis()
+    );
 }
 
 fn load(args: &Args) -> Map {
