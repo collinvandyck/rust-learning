@@ -1,5 +1,8 @@
 use crate::prelude::*;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{
+    collections::{hash_map::Entry, HashMap, HashSet, VecDeque},
+    fmt::Display,
+};
 
 #[cfg(test)]
 mod tests {
@@ -7,9 +10,95 @@ mod tests {
     #[test]
     fn test_network_conns() {
         let valves = Parser::read_file("example.txt");
-        let net = Network::new(valves.into_iter());
+        let net = Network::new(valves.clone().into_iter());
         let conns = net.connections("AA");
-        assert_eq!(conns[&"DD".into()], vec![("AA".into(), "DD".into())])
+        assert_eq!(conns[&"DD".into()], vec![("AA".into(), "DD".into())]);
+        assert_eq!(
+            conns[&"CC".into()],
+            vec![("AA".into(), "BB".into()), ("BB".into(), "CC".into())]
+        );
+        assert_eq!(conns.len(), valves.len() - 1);
+    }
+}
+
+pub struct State<'a> {
+    net: &'a Network,
+    position: Name,
+    max_turns: u64,
+    turn: u64,
+    pressure: u64,
+    open_valves: HashSet<Name>,
+}
+
+impl<'a> State<'a> {
+    pub fn new(net: &'a Network, position: Name) -> Self {
+        Self {
+            net,
+            position,
+            max_turns: 30,
+            turn: 0,
+            pressure: 0,
+            open_valves: HashSet::default(),
+        }
+    }
+    fn turns_left(&self) -> u64 {
+        self.max_turns - self.turn
+    }
+    pub fn moves(&self) -> Vec<Move> {
+        let mut res = vec![];
+        let conns: HashMap<Name, Path> = self.net.connections(self.position);
+        for (target, path) in conns {
+            if self.open_valves.contains(&target) {
+                continue;
+            }
+            let flow = self.net.valves[&target].rate;
+            if flow == 0 {
+                continue;
+            }
+            let turns_to_travel = path.len() as u64;
+            let turns_to_open = 1_u64;
+            let turns_total = turns_to_travel + turns_to_open;
+            // the amount of time the valve will be on is the total number
+            // of turns left subtracted by the time required to open it.
+            let Some(turns) = self.turns_left().checked_sub(turns_total) else {
+                continue;
+            };
+            let reward = turns * flow;
+            let mov = Move {
+                reward,
+                target,
+                path,
+            };
+            res.push(mov);
+        }
+        res
+    }
+}
+
+pub struct Move {
+    reward: u64,
+    target: Name,
+    path: Path,
+}
+
+impl Move {
+    fn cost(&self) -> u64 {
+        let cost_to_move = self.path.len() as u64;
+        let cost_to_open = 1_u64;
+        cost_to_move + cost_to_open
+    }
+}
+
+impl Display for Move {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}: {:?} cost:{} reward:{}",
+            self.target,
+            self.path,
+            self.cost(),
+            self.reward
+        )
     }
 }
 
@@ -27,6 +116,35 @@ impl Network {
             valves.insert(valve.name, valve);
         }
         Self { valves }
+    }
+
+    // from fasterthanlime's impl
+    pub fn connections_lime<N>(&self, from: N) -> HashMap<Name, Path>
+    where
+        N: Into<Name>,
+    {
+        let from = from.into();
+        let mut current: HashMap<Name, Path> = HashMap::default();
+        current.insert(from, vec![]);
+        let mut res = current.clone();
+        while !current.is_empty() {
+            let mut next: HashMap<Name, Path> = HashMap::default();
+            for (name, path) in current {
+                for link in self.valves[&name].links.iter().copied() {
+                    if let Entry::Vacant(e) = res.entry(link) {
+                        let conn_path: Path = path
+                            .iter()
+                            .copied()
+                            .chain(std::iter::once((name, link)))
+                            .collect();
+                        e.insert(conn_path.clone());
+                        next.insert(link, conn_path);
+                    }
+                }
+            }
+            current = next;
+        }
+        res
     }
 
     /// Given a valve name, return a list of valves we can travel to, along

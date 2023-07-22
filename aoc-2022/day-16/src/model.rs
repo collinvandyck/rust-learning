@@ -33,7 +33,7 @@ impl Display for Name {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Valve {
     pub name: Name,
     pub rate: u64,

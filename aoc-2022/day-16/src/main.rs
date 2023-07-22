@@ -18,7 +18,10 @@ use prelude::*;
 
 fn main() {
     let network = load_network("example.txt");
-    dbg!(network);
+    let state = State::new(&network, "AA".into());
+    for mov in state.moves() {
+        println!("AA: {}", mov);
+    }
 }
 
 fn load_network(filename: &str) -> Network {
