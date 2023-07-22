@@ -13,8 +13,8 @@ pub struct Valves {
 
 impl Valves {
     pub fn new(current: Rc<Valve>, valves: Vec<Rc<Valve>>) -> Self {
-        let open = HashSet::new();
-        let clos = HashSet::new();
+        let mut open = HashSet::new();
+        let mut clos = HashSet::new();
         for valve in valves {
             if valve.rate == 0 {
                 open.insert(valve);
@@ -27,6 +27,13 @@ impl Valves {
             open,
             clos,
         }
+    }
+    pub fn open_current(&mut self) {
+        assert!(self.open.insert(self.current.clone()));
+        assert!(self.clos.remove(&self.current));
+    }
+    pub fn can_open_current(&self) -> bool {
+        self.clos.contains(&self.current)
     }
     pub fn tunnels(&self) -> impl Iterator<Item = &String> {
         self.current.tunnels.iter()

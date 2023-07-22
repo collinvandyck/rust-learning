@@ -52,9 +52,9 @@ impl Solver {
         let mut scores = vec![];
 
         // if we can turn the valve open, do that.
-        if self.can_open_valve() {
+        if self.valves.can_open_current() {
             let mut s = self.clone();
-            s.open_valve();
+            s.valves.open_current();
             scores.push(s.do_solve(depth + 1));
         }
         // then try moving through each tunnel.
@@ -80,15 +80,6 @@ impl Solver {
     fn move_to(&mut self, name: &str) {
         self.valves.current = self.map.get(name);
     }
-    fn open_valve(&mut self) {
-        let is_new = self.open.insert(self.current.clone());
-        assert!(is_new);
-        let existed = self.closed.remove(&self.current);
-        assert!(existed);
-    }
-    fn can_open_valve(&self) -> bool {
-        !self.open.contains(&self.current)
-    }
     pub fn new(args: &Args, map: Map) -> Self {
         let map = Rc::new(map);
         let moves = args.minutes;
@@ -99,7 +90,6 @@ impl Solver {
             map,
             moves,
             score,
-            current,
             valves,
         }
     }
