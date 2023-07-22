@@ -65,12 +65,11 @@ struct Mapper {
 
 impl Mapper {
     fn map(&mut self) {
+        println!("Mapping node {}", self.start.name);
         self.do_map(self.start.clone(), vec![]);
     }
 
-    fn do_map(&mut self, cur: Rc<Valve>, buf: Vec<Rc<Valve>>) {
-        dbg!(&self.start);
-    }
+    fn do_map(&mut self, cur: Rc<Valve>, buf: Vec<Rc<Valve>>) {}
 
     fn visited() {}
 
