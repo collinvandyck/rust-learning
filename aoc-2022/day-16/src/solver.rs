@@ -78,7 +78,7 @@ impl Solver {
         !self.all_valves_open()
     }
     fn move_to(&mut self, name: &str) {
-        self.valves.current = self.map.get(name);
+        self.valves.move_to(self.map.get(name));
     }
     pub fn new(args: &Args, map: Map) -> Self {
         let map = Rc::new(map);

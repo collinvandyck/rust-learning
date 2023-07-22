@@ -2,7 +2,7 @@ use std::{collections::HashSet, hash::Hash, rc::Rc};
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Valves {
-    pub current: Rc<Valve>,
+    current: Rc<Valve>,
     open: HashSet<Rc<Valve>>,
     clos: HashSet<Rc<Valve>>,
 }
@@ -23,6 +23,9 @@ impl Valves {
             open,
             clos,
         }
+    }
+    pub fn move_to(&mut self, valve: Rc<Valve>) {
+        self.current = valve;
     }
     pub fn open_current(&mut self) {
         assert!(self.open.insert(self.current.clone()));
