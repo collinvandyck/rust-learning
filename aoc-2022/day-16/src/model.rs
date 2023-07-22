@@ -25,9 +25,9 @@ impl Display for Name {
 
 #[derive(Debug)]
 pub struct Valve {
-    name: Name,
-    rate: u64,
-    links: Vec<Name>,
+    pub name: Name,
+    pub rate: u64,
+    pub links: Vec<Name>,
 }
 
 impl Valve {
