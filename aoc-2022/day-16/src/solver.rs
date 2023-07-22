@@ -69,7 +69,7 @@ impl Solver {
         res
     }
     fn open_valve_rate_sum(&self) -> i64 {
-        self.valves.open().map(|v| v.rate).sum::<i32>() as i64
+        i64::from(self.valves.open().map(|v| v.rate).sum::<i32>())
     }
     fn all_valves_open(&self) -> bool {
         self.valves.clos().len() == 0
