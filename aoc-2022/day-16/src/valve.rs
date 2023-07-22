@@ -51,7 +51,7 @@ pub struct Valve {
 
 impl Hash for Valve {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        state.write(self.name.as_bytes())
+        state.write(self.name.as_bytes());
     }
 }
 
