@@ -1,4 +1,4 @@
-use std::{collections::HashSet, hash::Hash, rc::Rc};
+use std::{collections::HashSet, fmt::Display, hash::Hash, rc::Rc};
 
 /// Valves represents the current state of all valves. Which
 /// valves are open and which are closed, and which valve is
@@ -31,6 +31,9 @@ impl Valves {
             clos,
         }
     }
+    pub fn sum_open_rates(&self) -> i64 {
+        self.open.iter().map(|v| v.rate as i64).sum()
+    }
     pub fn move_to(&mut self, valve: Rc<Valve>) {
         self.current = valve;
     }
@@ -49,6 +52,18 @@ impl Valves {
     }
     pub fn clos(&self) -> impl Iterator<Item = &Rc<Valve>> + ExactSizeIterator {
         self.clos.iter()
+    }
+}
+
+impl Display for Valves {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "(open:{} closed:{} cur:{})",
+            self.open.len(),
+            self.clos.len(),
+            self.current.name
+        )
     }
 }
 

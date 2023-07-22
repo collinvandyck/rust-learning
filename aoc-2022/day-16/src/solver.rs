@@ -23,13 +23,9 @@ impl Solver {
     //    We already have the open/closed hashsets. If we could compare them
     //    along with the score, that might be enough to avoid doing work.
     fn do_solve(&mut self, depth: usize) -> i64 {
-        println!(
-            "do_solve {depth} open:{} closed:{}",
-            self.valves.open().len(),
-            self.valves.clos().len()
-        );
+        println!("do_solve {depth} {}", self.valves);
         // start the turn, and update the score
-        self.score += self.open_valve_rate_sum();
+        self.score += self.valves.sum_open_rates();
 
         // if we have no more moves, we are done
         if self.moves == 0 {
@@ -41,7 +37,7 @@ impl Solver {
             println!("All valves open");
             let multiple: i64 = self.moves.try_into().unwrap();
             println!("Multiple: {multiple}");
-            self.score += self.open_valve_rate_sum() * multiple;
+            self.score += self.valves.sum_open_rates() * multiple;
             return self.score;
         }
 
@@ -67,9 +63,6 @@ impl Solver {
         // return the max score
         let res = *scores.iter().max().unwrap();
         res
-    }
-    fn open_valve_rate_sum(&self) -> i64 {
-        i64::from(self.valves.open().map(|v| v.rate).sum::<i32>())
     }
     fn all_valves_open(&self) -> bool {
         self.valves.clos().len() == 0
