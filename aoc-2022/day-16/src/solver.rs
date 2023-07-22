@@ -8,6 +8,7 @@ pub struct Solver {
     moves: usize,
     score: i64,
     valves: Valves,
+    parent: Option<Rc<Solver>>,
 }
 
 impl Solver {
@@ -23,21 +24,15 @@ impl Solver {
     //    We already have the open/closed hashsets. If we could compare them
     //    along with the score, that might be enough to avoid doing work.
     fn do_solve(&mut self, depth: usize) -> i64 {
-        println!("do_solve {depth} {}", self.valves);
-        // start the turn, and update the score
-        self.score += self.valves.sum_open_rates();
+        //println!("do_solve {depth} {}", self.valves);
 
-        // if we have no more moves, we are done
-        if self.moves == 0 {
-            return self.score;
-        }
-        // if all of the valves are open, then we can just simulate
-        // the passage of time and return the modified score.
-        if self.valves.all_open() {
-            println!("All valves open");
+        if self.moves == 0 || self.valves.all_open() {
             let multiple: i64 = self.moves.try_into().unwrap();
-            println!("Multiple: {multiple}");
-            self.score += self.valves.sum_open_rates() * multiple;
+            self.score += self.valves.sum_open_rates() * (multiple + 1);
+            println!(
+                "Finished. score:{} moves:{}, depth:{}",
+                self.score, self.moves, depth
+            );
             return self.score;
         }
 
@@ -73,11 +68,13 @@ impl Solver {
         let score = 0;
         let current = map.get("AA");
         let valves = Valves::new(current, map.valves());
+        let parent = None;
         Self {
             map,
             moves,
             score,
             valves,
+            parent,
         }
     }
 }
