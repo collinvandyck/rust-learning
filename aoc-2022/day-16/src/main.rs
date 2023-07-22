@@ -2,12 +2,14 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 mod args;
+mod graph;
 mod solver;
 mod valve;
 mod world;
 
 mod prelude {
     pub use crate::args::*;
+    pub use crate::graph::*;
     pub use crate::solver::*;
     pub use crate::valve::*;
     pub use crate::world::*;
@@ -41,7 +43,11 @@ fn run(args: &Args) {
 }
 
 fn load(args: &Args) -> Map {
-    let file = File::open(&args.filename).unwrap();
+    load_map(&args.filename)
+}
+
+pub fn load_map(filename: &str) -> Map {
+    let file = File::open(filename).unwrap();
     let read = BufReader::new(file);
     let re = Regex::new(r#"Valve (\w+).*rate=(\d+);.*to valves?(.*)"#).unwrap();
     Map::new(
