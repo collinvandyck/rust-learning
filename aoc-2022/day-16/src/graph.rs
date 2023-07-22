@@ -1,6 +1,18 @@
 use crate::prelude::*;
 use std::collections::{HashMap, HashSet, VecDeque};
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_network_conns() {
+        let valves = Parser::read_file("example.txt");
+        let net = Network::new(valves.into_iter());
+        let conns = net.connections("AA");
+        assert_eq!(conns[&"DD".into()], vec![("AA".into(), "DD".into())])
+    }
+}
+
 #[derive(Debug)]
 pub struct Network {
     valves: HashMap<Name, Valve>,
@@ -21,9 +33,12 @@ impl Network {
     /// with the path to get there.
     ///
     /// Only the shortest paths are considered, so the search ends.
-    pub fn connections(&self, from: Name) -> HashMap<Name, Path> {
+    pub fn connections<N>(&self, from: N) -> HashMap<Name, Path>
+    where
+        N: Into<Name>,
+    {
+        let from = from.into();
         let mut res = HashMap::new();
-
         let mut queue: VecDeque<(Name, Path)> = VecDeque::new();
         queue.push_back((from, vec![]));
 

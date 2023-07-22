@@ -1,4 +1,8 @@
-use std::fmt::{Debug, Display};
+use std::{
+    fmt::{Debug, Display},
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 use regex::Regex;
 
@@ -8,6 +12,12 @@ pub struct Name([u8; 2]);
 impl From<&[u8]> for Name {
     fn from(value: &[u8]) -> Self {
         Self([value[0], value[1]])
+    }
+}
+
+impl From<&str> for Name {
+    fn from(value: &str) -> Self {
+        Name::from(value.as_bytes())
     }
 }
 
@@ -52,6 +62,15 @@ impl Parser {
             //Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
             re: Regex::new(r#"Valve (.*).*rate=(.*);.*leads? to valves?(.*)"#).unwrap(),
         }
+    }
+    pub fn read_file(filename: &str) -> Vec<Valve> {
+        let parser = Self::new();
+        let file = File::open(filename).unwrap();
+        let read = BufReader::new(file);
+        read.lines()
+            .map(Result::unwrap)
+            .map(|l| parser.valve(&l))
+            .collect::<Vec<_>>()
     }
     pub fn valve(&self, s: &str) -> Valve {
         let caps = self.re.captures(s).unwrap();
