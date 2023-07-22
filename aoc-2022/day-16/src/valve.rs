@@ -1,5 +1,12 @@
 use std::{collections::HashSet, hash::Hash, rc::Rc};
 
+/// Valves represents the current state of all valves. Which
+/// valves are open and which are closed, and which valve is
+/// the current valve.
+///
+/// It is meant to be quickly compared to other valve states
+/// to avoid duplication of work that cannot result in a
+/// higher score.
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Valves {
     current: Rc<Valve>,
