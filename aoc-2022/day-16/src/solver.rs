@@ -7,9 +7,7 @@ pub struct Solver {
     map: Rc<Map>,
     moves: usize,
     score: i64,
-    current: Rc<Valve>,
-    open: HashSet<Rc<Valve>>,
-    closed: HashSet<Rc<Valve>>,
+    valves: Valves,
 }
 
 impl Solver {
@@ -27,8 +25,8 @@ impl Solver {
     fn do_solve(&mut self, depth: usize) -> i64 {
         println!(
             "do_solve {depth} open:{} closed:{}",
-            self.open.len(),
-            self.closed.len()
+            self.valves.open().len(),
+            self.valves.clos().len()
         );
         // start the turn, and update the score
         self.score += self.open_valve_rate_sum();
@@ -60,7 +58,7 @@ impl Solver {
             scores.push(s.do_solve(depth + 1));
         }
         // then try moving through each tunnel.
-        self.current.tunnels.iter().for_each(|name| {
+        self.valves.tunnels().for_each(|name| {
             let mut s = self.clone();
             s.move_to(name);
             scores.push(s.do_solve(depth + 1));
@@ -96,22 +94,13 @@ impl Solver {
         let moves = args.minutes;
         let score = 0;
         let current = map.get("AA");
-        let mut open = HashSet::new();
-        let mut closed = HashSet::new();
-        for valve in map.valves() {
-            if valve.rate == 0 {
-                open.insert(valve);
-            } else {
-                closed.insert(valve);
-            }
-        }
+        let valves = Valves::new(current, map.valves());
         Self {
             map,
             moves,
             score,
             current,
-            open,
-            closed,
+            valves,
         }
     }
 }

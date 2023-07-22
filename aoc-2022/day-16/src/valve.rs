@@ -1,11 +1,42 @@
-use crate::prelude::*;
-use std::{collections::HashSet, hash::Hash, rc::Rc};
+use std::{
+    collections::{hash_set, HashSet},
+    hash::{self, Hash},
+    rc::Rc,
+};
 
-#[derive(PartialEq, Eq, Debug)]
-struct Valves {
+#[derive(PartialEq, Eq, Debug, Clone)]
+pub struct Valves {
     current: Rc<Valve>,
     open: HashSet<Rc<Valve>>,
-    closed: HashSet<Rc<Valve>>,
+    clos: HashSet<Rc<Valve>>,
+}
+
+impl Valves {
+    pub fn new(current: Rc<Valve>, valves: Vec<Rc<Valve>>) -> Self {
+        let open = HashSet::new();
+        let clos = HashSet::new();
+        for valve in valves {
+            if valve.rate == 0 {
+                open.insert(valve);
+            } else {
+                clos.insert(valve);
+            }
+        }
+        Self {
+            current,
+            open,
+            clos,
+        }
+    }
+    pub fn tunnels(&self) -> impl Iterator<Item = &String> {
+        self.current.tunnels.iter()
+    }
+    pub fn open<'a>(&'a self) -> hash_set::Iter<'a, Rc<Valve>> {
+        self.open.iter()
+    }
+    pub fn clos<'a>(&'a self) -> hash_set::Iter<'a, Rc<Valve>> {
+        self.clos.iter()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
