@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 mod model;
 
 mod prelude {
@@ -17,7 +19,6 @@ fn main() {
     let input = BufReader::new(input.as_slice());
     for line in input.lines() {
         let line = line.unwrap();
-        println!("{line}");
         let valve = parser.valve(&line);
         println!("{valve}");
     }
