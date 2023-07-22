@@ -38,7 +38,7 @@ impl Valve {
 
 impl Display for Valve {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} rate:{} links:{:?}", self.name, self.rate, self.links)
+        write!(f, "{} [{:2}] -> {:?}", self.name, self.rate, self.links)
     }
 }
 
