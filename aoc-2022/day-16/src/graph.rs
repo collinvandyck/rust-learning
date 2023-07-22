@@ -7,12 +7,13 @@ use crate::prelude::*;
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::load_map;
 
     #[test]
     fn test_graph_nano() {
         let m = load_map("nano.txt");
-        println!("ok");
+        let g = Graph::new(Rc::new(m));
     }
 }
 
