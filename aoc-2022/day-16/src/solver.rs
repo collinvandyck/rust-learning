@@ -69,16 +69,16 @@ impl Solver {
         res
     }
     fn open_valve_rate_sum(&self) -> i64 {
-        self.open.iter().map(|v| v.rate).sum::<i32>() as i64
+        self.valves.open().map(|v| v.rate).sum::<i32>() as i64
     }
     fn all_valves_open(&self) -> bool {
-        self.closed.is_empty()
+        self.valves.clos().len() == 0
     }
     fn any_valves_closed(&self) -> bool {
-        !self.closed.is_empty()
+        !self.all_valves_open()
     }
     fn move_to(&mut self, name: &str) {
-        self.current = self.map.get(name);
+        self.valves.current = self.map.get(name);
     }
     fn open_valve(&mut self) {
         let is_new = self.open.insert(self.current.clone());

@@ -6,7 +6,7 @@ use std::{
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Valves {
-    current: Rc<Valve>,
+    pub current: Rc<Valve>,
     open: HashSet<Rc<Valve>>,
     clos: HashSet<Rc<Valve>>,
 }
@@ -31,10 +31,10 @@ impl Valves {
     pub fn tunnels(&self) -> impl Iterator<Item = &String> {
         self.current.tunnels.iter()
     }
-    pub fn open<'a>(&'a self) -> hash_set::Iter<'a, Rc<Valve>> {
+    pub fn open(&self) -> impl Iterator<Item = &Rc<Valve>> + ExactSizeIterator {
         self.open.iter()
     }
-    pub fn clos<'a>(&'a self) -> hash_set::Iter<'a, Rc<Valve>> {
+    pub fn clos(&self) -> impl Iterator<Item = &Rc<Valve>> + ExactSizeIterator {
         self.clos.iter()
     }
 }
