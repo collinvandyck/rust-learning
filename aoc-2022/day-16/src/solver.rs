@@ -33,7 +33,7 @@ impl Solver {
         }
         // if all of the valves are open, then we can just simulate
         // the passage of time and return the modified score.
-        if self.all_valves_open() {
+        if self.valves.all_open() {
             println!("All valves open");
             let multiple: i64 = self.moves.try_into().unwrap();
             println!("Multiple: {multiple}");
@@ -63,12 +63,6 @@ impl Solver {
         // return the max score
         let res = *scores.iter().max().unwrap();
         res
-    }
-    fn all_valves_open(&self) -> bool {
-        self.valves.clos().len() == 0
-    }
-    fn any_valves_closed(&self) -> bool {
-        !self.all_valves_open()
     }
     fn move_to(&mut self, name: &str) {
         self.valves.move_to(self.map.get(name));

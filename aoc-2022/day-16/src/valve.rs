@@ -20,6 +20,8 @@ impl Valves {
         let mut clos = HashSet::new();
         for valve in valves {
             if valve.rate == 0 {
+                // we set valves to open that have a rate of
+                // 0 so we won't try to open them later.
                 open.insert(valve);
             } else {
                 clos.insert(valve);
@@ -30,6 +32,9 @@ impl Valves {
             open,
             clos,
         }
+    }
+    pub fn all_open(&self) -> bool {
+        self.clos.is_empty()
     }
     pub fn sum_open_rates(&self) -> i64 {
         self.open.iter().map(|v| v.rate as i64).sum()
@@ -46,12 +51,6 @@ impl Valves {
     }
     pub fn tunnels(&self) -> impl Iterator<Item = &String> {
         self.current.tunnels.iter()
-    }
-    pub fn open(&self) -> impl Iterator<Item = &Rc<Valve>> + ExactSizeIterator {
-        self.open.iter()
-    }
-    pub fn clos(&self) -> impl Iterator<Item = &Rc<Valve>> + ExactSizeIterator {
-        self.clos.iter()
     }
 }
 
