@@ -48,9 +48,10 @@ impl<'a> State<'a> {
         self.max_turns - self.turn
     }
     pub fn solve(&mut self) -> u64 {
-        //self.solve_recursive()
-        self.faster_than_lime_solution()
+        self.solve_recursive()
+        //self.faster_than_lime_solution()
     }
+    /*
     fn faster_than_lime_solution(&self) -> u64 {
         let (state, moves) = self.best_moves();
         for mov in &moves {
@@ -62,16 +63,17 @@ impl<'a> State<'a> {
         let mut best_moves = VecDeque::new();
         let mut best_state = self.clone();
         for mov in self.moves() {
-            let next = self.apply(&mov);
+            let next = self.apply(&mov).clone();
             let (next, mut next_moves) = next.best_moves(); // recurse
             next_moves.push_front(mov);
             if next.pressure > best_state.pressure {
-                best_moves = next_moves;
-                best_state = next;
+                best_moves = next_moves.clone();
+                best_state = next.clone();
             }
         }
-        (best_state, best_moves)
+        (best_state.clone(), best_moves.clone())
     }
+    */
     fn solve_recursive(&mut self) -> u64 {
         self.moves()
             .map(|mov| {
@@ -91,6 +93,34 @@ impl<'a> State<'a> {
         cloned
     }
     fn moves(&self) -> impl Iterator<Item = Move> + '_ {
+        let (_valve, conns) = &self.net.valves[&self.position];
+        conns.into_iter().flat_map(|(target, (path, flow))| {
+            if self.open_valves.contains(target) {
+                return None;
+            }
+            if flow.0 == 0 {
+                return None;
+            }
+            let turns_to_travel = path.len() as u64;
+            let turns_to_open = 1_u64;
+            let turns_total = turns_to_travel + turns_to_open;
+            // the amount of time the valve will be on is the total number
+            // of turns left subtracted by the time required to open it.
+            let Some(turns) = self.turns_left().checked_sub(turns_total) else {
+                    // we do not have the ability to make this move.
+                    return None;
+                };
+            let reward = turns * flow.0;
+            let mov = Move {
+                reward,
+                target: *target,
+                path,
+            };
+            Some(mov)
+        })
+    }
+    /*
+    fn moves(&self) -> impl Iterator<Item = Move> + '_ {
         self.net
             .connections(self.position)
             .into_iter()
@@ -108,9 +138,9 @@ impl<'a> State<'a> {
                 // the amount of time the valve will be on is the total number
                 // of turns left subtracted by the time required to open it.
                 let Some(turns) = self.turns_left().checked_sub(turns_total) else {
-                // we do not have the ability to make this move.
-                return None;
-            };
+                    // we do not have the ability to make this move.
+                    return None;
+                };
                 let reward = turns * flow;
                 let mov = Move {
                     reward,
@@ -120,9 +150,10 @@ impl<'a> State<'a> {
                 Some(mov)
             })
     }
+    */
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Move<'a> {
     reward: u64, // the accumulative reward for making this move.
     target: Name,
@@ -137,7 +168,7 @@ impl Move<'_> {
     }
 }
 
-impl Display for Move {
+impl Display for Move<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -152,7 +183,7 @@ impl Display for Move {
 
 // clearer semantics when used in tuples.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Flow(u64);
+pub struct Flow(u64);
 
 type Connections = HashMap<Name, (Path, Flow)>;
 
@@ -233,7 +264,7 @@ impl Network {
                 if visited.contains(next) {
                     continue;
                 }
-                let next_valve = self.valves.get(&next).unwrap().0;
+                let next_valve = &self.valves.get(&next).unwrap().0;
                 let next_flow = next_valve.rate;
                 let mut next_path = path.clone();
                 next_path.push((name, *next));
