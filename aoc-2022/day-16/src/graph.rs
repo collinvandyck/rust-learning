@@ -50,18 +50,17 @@ impl<'a> State<'a> {
     pub fn solve(&mut self) -> u64 {
         self.moves()
             .into_iter()
-            .map(|m| self.solve_move(m))
+            .map(|mov| {
+                let mut cloned = self.clone();
+                cloned.depth += 1;
+                cloned.pressure += mov.reward;
+                cloned.turn += mov.cost();
+                cloned.open_valves.insert(mov.target);
+                cloned.position = mov.target;
+                cloned.solve()
+            })
             .max()
             .unwrap_or(self.pressure)
-    }
-    fn solve_move(&mut self, mov: Move) -> u64 {
-        let mut cloned = self.clone();
-        cloned.depth += 1;
-        cloned.pressure += mov.reward;
-        cloned.turn += mov.cost();
-        cloned.open_valves.insert(mov.target);
-        cloned.position = mov.target;
-        cloned.solve()
     }
     // returns possible moves from the current postition
     pub fn moves(&self) -> Vec<Move> {
