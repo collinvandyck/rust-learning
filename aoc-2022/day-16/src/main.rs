@@ -17,20 +17,10 @@ use std::{
 use prelude::*;
 
 fn main() {
-    let network = load_network("example.txt");
+    let network = load_network("nano.txt");
     let mut state = State::new(&network, "AA".into());
-    loop {
-        let mut quit = true;
-        for mov in state.moves() {
-            println!("{}", mov);
-            state.make_move(mov);
-            quit = false;
-            break;
-        }
-        if quit {
-            break;
-        }
-    }
+    let score = state.solve();
+    println!("Score: {score}");
 }
 
 fn load_network(filename: &str) -> Network {

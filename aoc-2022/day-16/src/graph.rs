@@ -21,6 +21,7 @@ mod tests {
     }
 }
 
+#[derive(Clone)]
 pub struct State<'a> {
     net: &'a Network,
     position: Name,
@@ -28,6 +29,7 @@ pub struct State<'a> {
     turn: u64,
     pressure: u64,
     open_valves: HashSet<Name>,
+    depth: usize,
 }
 
 impl<'a> State<'a> {
@@ -38,14 +40,29 @@ impl<'a> State<'a> {
             max_turns: 30,
             turn: 0,
             pressure: 0,
+            depth: 0,
             open_valves: HashSet::default(),
         }
     }
     fn turns_left(&self) -> u64 {
         self.max_turns - self.turn
     }
-    fn solve(&mut self) -> u64 {
-        0
+    pub fn solve(&mut self) -> u64 {
+        let indent = "  ".repeat(self.depth);
+        println!("{indent}{}", self.position);
+        let moves = self.moves();
+        let mut max = 0_u64;
+        for mov in moves {
+            // clone and make the move and recurse.
+            println!("{indent}{mov}");
+            let mut cloned = self.clone();
+            cloned.depth += 1;
+            cloned.make_move(mov);
+            let score = cloned.solve();
+            max = u64::max(max, score);
+        }
+        self.pressure += max;
+        self.pressure
     }
     pub fn make_move(&mut self, mov: Move) {
         self.pressure += mov.reward;
