@@ -48,11 +48,14 @@ impl<'a> State<'a> {
         self.max_turns - self.turn
     }
     pub fn solve(&mut self) -> u64 {
+        self.solve_recursive()
+    }
+    fn solve_recursive(&mut self) -> u64 {
         self.moves()
             .into_iter()
             .map(|mov| {
                 let mut next = self.apply(&mov);
-                next.solve()
+                next.solve_recursive()
             })
             .max()
             .unwrap_or(self.pressure)
