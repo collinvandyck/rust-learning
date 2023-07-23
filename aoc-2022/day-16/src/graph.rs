@@ -53,7 +53,9 @@ impl<'a> State<'a> {
     }
     fn faster_than_lime_solution(&self) -> u64 {
         let (state, moves) = self.best_moves();
-        println!("Moves: {moves:?}");
+        for mov in &moves {
+            println!("{mov}");
+        }
         state.pressure
     }
     fn best_moves(&self) -> (Self, Vec<Move>) {
