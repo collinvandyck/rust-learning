@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 regex = "1.9.1"
+
+[profile.dev]
+opt-level = 1
