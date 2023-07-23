@@ -48,8 +48,11 @@ impl<'a> State<'a> {
         self.max_turns - self.turn
     }
     pub fn solve(&mut self) -> u64 {
-        let best = self.moves().into_iter().map(|m| self.solve_move(m)).max();
-        best.unwrap_or(self.pressure)
+        self.moves()
+            .into_iter()
+            .map(|m| self.solve_move(m))
+            .max()
+            .unwrap_or(self.pressure)
     }
     fn solve_move(&mut self, mov: Move) -> u64 {
         let mut cloned = self.clone();
