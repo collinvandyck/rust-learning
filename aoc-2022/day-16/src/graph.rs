@@ -150,6 +150,10 @@ impl Display for Move {
     }
 }
 
+// clearer semantics when used in tuples.
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Flow(u64);
+
 #[derive(Debug)]
 pub struct Network {
     valves: HashMap<Name, Valve>,
