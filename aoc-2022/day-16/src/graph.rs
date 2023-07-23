@@ -48,7 +48,30 @@ impl<'a> State<'a> {
         self.max_turns - self.turn
     }
     pub fn solve(&mut self) -> u64 {
-        self.solve_recursive()
+        // self.solve_recursive()
+        let (state, moves) = self.best_moves();
+        state.pressure
+    }
+    fn best_moves(&self) -> (Self, Vec<Move>) {
+        let mut best_moves = vec![];
+        let mut best_state = self.clone();
+        let mut best_pressure = 0;
+
+        let mut moves = self.moves();
+        moves.sort_by_key(|m| m.reward);
+        moves.reverse();
+
+        for mov in moves {
+            let next = self.apply(&mov);
+            let (next, mut next_moves) = next.best_moves();
+            next_moves.push(mov);
+            if next.pressure > best_pressure {
+                best_pressure = next.pressure;
+                best_moves = next_moves;
+                best_state = next;
+            }
+        }
+        (best_state, best_moves)
     }
     fn solve_recursive(&mut self) -> u64 {
         self.moves()
@@ -60,7 +83,7 @@ impl<'a> State<'a> {
             .max()
             .unwrap_or(self.pressure)
     }
-    fn apply(&mut self, mov: &Move) -> Self {
+    fn apply(&self, mov: &Move) -> Self {
         let mut cloned = self.clone();
         cloned.depth += 1;
         cloned.pressure += mov.reward;
