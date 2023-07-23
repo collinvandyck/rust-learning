@@ -51,16 +51,20 @@ impl<'a> State<'a> {
         self.moves()
             .into_iter()
             .map(|mov| {
-                let mut cloned = self.clone();
-                cloned.depth += 1;
-                cloned.pressure += mov.reward;
-                cloned.turn += mov.cost();
-                cloned.open_valves.insert(mov.target);
-                cloned.position = mov.target;
-                cloned.solve()
+                let mut next = self.apply(&mov);
+                next.solve()
             })
             .max()
             .unwrap_or(self.pressure)
+    }
+    fn apply(&mut self, mov: &Move) -> Self {
+        let mut cloned = self.clone();
+        cloned.depth += 1;
+        cloned.pressure += mov.reward;
+        cloned.turn += mov.cost();
+        cloned.open_valves.insert(mov.target);
+        cloned.position = mov.target;
+        cloned
     }
     // returns possible moves from the current postition
     pub fn moves(&self) -> Vec<Move> {
