@@ -48,25 +48,17 @@ impl<'a> State<'a> {
         self.max_turns - self.turn
     }
     pub fn solve(&mut self) -> u64 {
-        let indent = "  ".repeat(self.depth);
-        let moves = self.moves();
-        for mov in moves {
-            // clone and make the move and recurse.
-            println!("{indent}{}->{mov}", self.position);
-            let mut cloned = self.clone();
-            cloned.depth += 1;
-            cloned.make_move(mov);
-            let score = cloned.solve();
-            self.pressure = u64::max(self.pressure, score);
-        }
-        println!("{indent}Result: {}", self.pressure);
-        self.pressure
+        let best = self.moves().into_iter().map(|m| self.solve_move(m)).max();
+        best.unwrap_or(self.pressure)
     }
-    pub fn make_move(&mut self, mov: Move) {
-        self.pressure += mov.reward;
-        self.turn += mov.cost();
-        self.open_valves.insert(mov.target);
-        self.position = mov.target;
+    fn solve_move(&mut self, mov: Move) -> u64 {
+        let mut cloned = self.clone();
+        cloned.depth += 1;
+        cloned.pressure += mov.reward;
+        cloned.turn += mov.cost();
+        cloned.open_valves.insert(mov.target);
+        cloned.position = mov.target;
+        cloned.solve()
     }
     // returns possible moves from the current postition
     pub fn moves(&self) -> Vec<Move> {
