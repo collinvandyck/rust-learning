@@ -12,9 +12,9 @@ mod tests {
         let valves = Parser::read_file("example.txt");
         let net = Network::new(valves.clone().into_iter());
         let conns = net.connections("AA");
-        assert_eq!(conns[&"DD".into()], vec![("AA".into(), "DD".into())]);
+        assert_eq!(conns[&"DD".into()].0, vec![("AA".into(), "DD".into())]);
         assert_eq!(
-            conns[&"CC".into()],
+            conns[&"CC".into()].0,
             vec![("AA".into(), "BB".into()), ("BB".into(), "CC".into())]
         );
         assert_eq!(conns.len(), valves.len() - 1);
@@ -174,7 +174,7 @@ impl Network {
         for key in keys {
             // type Connections = HashMap<Name, (Path, Flow)>;
             let conns = net.connections(key);
-            net.valves.get_mut(key).unwrap().1 = conns;
+            net.valves.get_mut(&key).unwrap().1 = conns;
         }
         net
     }
