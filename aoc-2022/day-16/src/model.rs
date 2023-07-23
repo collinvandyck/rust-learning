@@ -2,6 +2,7 @@ use std::{
     fmt::{Debug, Display},
     fs::File,
     io::{BufRead, BufReader},
+    str::FromStr,
 };
 
 use regex::Regex;

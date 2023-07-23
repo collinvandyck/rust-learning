@@ -151,12 +151,14 @@ impl Display for Move {
 }
 
 // clearer semantics when used in tuples.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Flow(u64);
+
+type Connections = HashMap<Name, (Path, Flow)>;
 
 #[derive(Debug)]
 pub struct Network {
-    valves: HashMap<Name, Valve>,
+    valves: HashMap<Name, (Valve, Connections)>,
 }
 
 pub type Path = Vec<(Name, Name)>;
@@ -165,12 +167,20 @@ impl Network {
     pub fn new(iter: impl Iterator<Item = Valve>) -> Self {
         let mut valves = HashMap::new();
         for valve in iter {
-            valves.insert(valve.name, valve);
+            valves.insert(valve.name, (valve, Connections::default()));
         }
-        Self { valves }
+        let mut net = Self { valves };
+        let keys = net.valves.keys().copied().collect::<Vec<_>>();
+        for key in keys {
+            // type Connections = HashMap<Name, (Path, Flow)>;
+            let conns = net.connections(key);
+            net.valves.get_mut(key).unwrap().1 = conns;
+        }
+        net
     }
 
     // from fasterthanlime's impl
+    /*
     pub fn connections_lime<N>(&self, from: N) -> HashMap<Name, Path>
     where
         N: Into<Name>,
@@ -198,17 +208,19 @@ impl Network {
         }
         res
     }
+    */
 
     /// Given a valve name, return a list of valves we can travel to, along
     /// with the path to get there.
     ///
     /// Only the shortest paths are considered, so the search ends.
-    pub fn connections<N>(&self, from: N) -> HashMap<Name, Path>
+    // type Connections = HashMap<Name, (Path, Flow)>;
+    pub fn connections<N>(&self, from: N) -> HashMap<Name, (Path, Flow)>
     where
         N: Into<Name>,
     {
         let from = from.into();
-        let mut res = HashMap::new();
+        let mut res: HashMap<Name, (Path, Flow)> = HashMap::new();
         let mut queue: VecDeque<(Name, Path)> = VecDeque::new();
         queue.push_back((from, vec![]));
 
@@ -216,15 +228,17 @@ impl Network {
 
         while let Some((name, path)) = queue.pop_front() {
             visited.insert(name);
-            let valve: &Valve = self.valves.get(&name).unwrap();
+            let valve: &Valve = &self.valves.get(&name).unwrap().0;
             for next in valve.links.iter() {
                 if visited.contains(next) {
                     continue;
                 }
-                // need to build the new path
+                let next_valve = self.valves.get(&next).unwrap().0;
+                let next_flow = next_valve.rate;
                 let mut next_path = path.clone();
                 next_path.push((name, *next));
-                res.insert(*next, next_path.clone());
+                let next_item = (next_path.clone(), Flow(next_flow));
+                res.insert(*next, next_item);
                 queue.push_back((*next, next_path));
             }
         }
