@@ -60,7 +60,6 @@ impl<'a> State<'a> {
         let mut best_moves = vec![];
         let mut best_state = self.clone();
         let mut best_pressure = 0;
-
         for mov in self.moves() {
             let next = self.apply(&mov);
             let (next, mut next_moves) = next.best_moves();
@@ -92,63 +91,34 @@ impl<'a> State<'a> {
         cloned
     }
     fn moves(&self) -> impl Iterator<Item = Move> + '_ {
-        let conns: HashMap<Name, Path> = self.net.connections(self.position);
-        conns.into_iter().flat_map(|(target, path)| {
-            if self.open_valves.contains(&target) {
-                return None;
-            }
-            let flow = self.net.valves[&target].rate;
-            if flow == 0 {
-                return None;
-            }
-            let turns_to_travel = path.len() as u64;
-            let turns_to_open = 1_u64;
-            let turns_total = turns_to_travel + turns_to_open;
-            // the amount of time the valve will be on is the total number
-            // of turns left subtracted by the time required to open it.
-            let Some(turns) = self.turns_left().checked_sub(turns_total) else {
+        self.net
+            .connections(self.position)
+            .into_iter()
+            .flat_map(|(target, path)| {
+                if self.open_valves.contains(&target) {
+                    return None;
+                }
+                let flow = self.net.valves[&target].rate;
+                if flow == 0 {
+                    return None;
+                }
+                let turns_to_travel = path.len() as u64;
+                let turns_to_open = 1_u64;
+                let turns_total = turns_to_travel + turns_to_open;
+                // the amount of time the valve will be on is the total number
+                // of turns left subtracted by the time required to open it.
+                let Some(turns) = self.turns_left().checked_sub(turns_total) else {
                 // we do not have the ability to make this move.
                 return None;
             };
-            let reward = turns * flow;
-            let mov = Move {
-                reward,
-                target,
-                path,
-            };
-            Some(mov)
-        })
-    }
-    // returns possible moves from the current postition
-    pub fn moves_vec(&self) -> Vec<Move> {
-        let mut res = vec![];
-        let conns: HashMap<Name, Path> = self.net.connections(self.position);
-        for (target, path) in conns {
-            if self.open_valves.contains(&target) {
-                continue;
-            }
-            let flow = self.net.valves[&target].rate;
-            if flow == 0 {
-                continue;
-            }
-            let turns_to_travel = path.len() as u64;
-            let turns_to_open = 1_u64;
-            let turns_total = turns_to_travel + turns_to_open;
-            // the amount of time the valve will be on is the total number
-            // of turns left subtracted by the time required to open it.
-            let Some(turns) = self.turns_left().checked_sub(turns_total) else {
-                // we do not have the ability to make this move.
-                continue;
-            };
-            let reward = turns * flow;
-            let mov = Move {
-                reward,
-                target,
-                path,
-            };
-            res.push(mov);
-        }
-        res
+                let reward = turns * flow;
+                let mov = Move {
+                    reward,
+                    target,
+                    path,
+                };
+                Some(mov)
+            })
     }
 }
 
