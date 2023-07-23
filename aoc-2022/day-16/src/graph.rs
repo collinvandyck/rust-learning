@@ -58,13 +58,13 @@ impl<'a> State<'a> {
         }
         state.pressure
     }
-    fn best_moves(&self) -> (Self, Vec<Move>) {
-        let mut best_moves = vec![];
+    fn best_moves(&self) -> (Self, VecDeque<Move>) {
+        let mut best_moves = VecDeque::new();
         let mut best_state = self.clone();
         for mov in self.moves() {
             let next = self.apply(&mov);
-            let (next, mut next_moves) = next.best_moves();
-            next_moves.push(mov);
+            let (next, mut next_moves) = next.best_moves(); // recurse
+            next_moves.push_front(mov);
             if next.pressure > best_state.pressure {
                 best_moves = next_moves;
                 best_state = next;
