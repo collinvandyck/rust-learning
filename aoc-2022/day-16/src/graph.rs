@@ -48,10 +48,12 @@ impl<'a> State<'a> {
         self.max_turns - self.turn
     }
     pub fn solve(&mut self) -> u64 {
-        self.solve_recursive()
+        //self.solve_recursive()
+        self.faster_than_lime_solution()
     }
     fn faster_than_lime_solution(&self) -> u64 {
         let (state, moves) = self.best_moves();
+        println!("Moves: {moves:?}");
         state.pressure
     }
     fn best_moves(&self) -> (Self, Vec<Move>) {
@@ -59,11 +61,9 @@ impl<'a> State<'a> {
         let mut best_state = self.clone();
         let mut best_pressure = 0;
 
-        let mut next_moves = self.moves();
-        next_moves.sort_by_key(|m| m.reward);
-        next_moves.reverse();
+        let moves = self.moves();
 
-        for mov in next_moves {
+        for mov in moves {
             let next = self.apply(&mov);
             let (next, mut next_moves) = next.best_moves();
             next_moves.push(mov);
@@ -93,6 +93,9 @@ impl<'a> State<'a> {
         cloned.open_valves.insert(mov.target);
         cloned.position = mov.target;
         cloned
+    }
+    fn moves_iter(&self) -> impl Iterator<Item = Move> {
+        std::iter::empty()
     }
     // returns possible moves from the current postition
     pub fn moves(&self) -> Vec<Move> {
@@ -127,6 +130,7 @@ impl<'a> State<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct Move {
     reward: u64, // the accumulative reward for making this move.
     target: Name,
