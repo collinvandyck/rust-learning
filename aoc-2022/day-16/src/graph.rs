@@ -44,6 +44,20 @@ impl<'a> State<'a> {
     fn turns_left(&self) -> u64 {
         self.max_turns - self.turn
     }
+
+    fn solve(&mut self) -> u64 {
+        0
+    }
+
+    fn make_move(&mut self, mov: Move) {
+        self.pressure += mov.reward;
+        self.max_turns = self
+            .max_turns
+            .checked_sub(mov.cost())
+            .unwrap_or_else(|| panic!("invalid move"));
+    }
+
+    // returns possible moves from the current postition
     pub fn moves(&self) -> Vec<Move> {
         let mut res = vec![];
         let conns: HashMap<Name, Path> = self.net.connections(self.position);
@@ -61,6 +75,7 @@ impl<'a> State<'a> {
             // the amount of time the valve will be on is the total number
             // of turns left subtracted by the time required to open it.
             let Some(turns) = self.turns_left().checked_sub(turns_total) else {
+                // we do not have the ability to make this move.
                 continue;
             };
             let reward = turns * flow;
@@ -76,7 +91,7 @@ impl<'a> State<'a> {
 }
 
 pub struct Move {
-    reward: u64,
+    reward: u64, // the accumulative reward for making this move.
     target: Name,
     path: Path,
 }
