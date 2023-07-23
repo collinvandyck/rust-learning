@@ -18,9 +18,18 @@ use prelude::*;
 
 fn main() {
     let network = load_network("example.txt");
-    let state = State::new(&network, "AA".into());
-    for mov in state.moves() {
-        println!("AA: {}", mov);
+    let mut state = State::new(&network, "AA".into());
+    loop {
+        let mut quit = true;
+        for mov in state.moves() {
+            println!("{}", mov);
+            state.make_move(mov);
+            quit = false;
+            break;
+        }
+        if quit {
+            break;
+        }
     }
 }
 

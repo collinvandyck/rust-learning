@@ -44,19 +44,15 @@ impl<'a> State<'a> {
     fn turns_left(&self) -> u64 {
         self.max_turns - self.turn
     }
-
     fn solve(&mut self) -> u64 {
         0
     }
-
-    fn make_move(&mut self, mov: Move) {
+    pub fn make_move(&mut self, mov: Move) {
         self.pressure += mov.reward;
-        self.max_turns = self
-            .max_turns
-            .checked_sub(mov.cost())
-            .unwrap_or_else(|| panic!("invalid move"));
+        self.turn += mov.cost();
+        self.open_valves.insert(mov.target);
+        self.position = mov.target;
     }
-
     // returns possible moves from the current postition
     pub fn moves(&self) -> Vec<Move> {
         let mut res = vec![];
