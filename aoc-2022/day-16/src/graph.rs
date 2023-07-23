@@ -123,13 +123,13 @@ impl<'a> State<'a> {
 }
 
 #[derive(Debug)]
-pub struct Move {
+pub struct Move<'a> {
     reward: u64, // the accumulative reward for making this move.
     target: Name,
-    path: Path,
+    path: &'a Path,
 }
 
-impl Move {
+impl Move<'_> {
     fn cost(&self) -> u64 {
         let cost_to_move = self.path.len() as u64;
         let cost_to_open = 1_u64;
