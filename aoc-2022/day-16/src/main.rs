@@ -17,7 +17,7 @@ use std::{
 use prelude::*;
 
 fn main() {
-    let network = load_network("nano.txt");
+    let network = load_network("example.txt");
     let mut state = State::new(&network, "AA".into());
     let score = state.solve();
     println!("Score: {score}");
