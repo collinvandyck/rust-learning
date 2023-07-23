@@ -48,7 +48,9 @@ impl<'a> State<'a> {
         self.max_turns - self.turn
     }
     pub fn solve(&mut self) -> u64 {
-        // self.solve_recursive()
+        self.solve_recursive()
+    }
+    fn faster_than_lime_solution(&self) -> u64 {
         let (state, moves) = self.best_moves();
         state.pressure
     }
@@ -57,11 +59,11 @@ impl<'a> State<'a> {
         let mut best_state = self.clone();
         let mut best_pressure = 0;
 
-        let mut moves = self.moves();
-        moves.sort_by_key(|m| m.reward);
-        moves.reverse();
+        let mut next_moves = self.moves();
+        next_moves.sort_by_key(|m| m.reward);
+        next_moves.reverse();
 
-        for mov in moves {
+        for mov in next_moves {
             let next = self.apply(&mov);
             let (next, mut next_moves) = next.best_moves();
             next_moves.push(mov);
