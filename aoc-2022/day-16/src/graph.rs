@@ -49,12 +49,11 @@ impl<'a> State<'a> {
     }
     pub fn solve(&mut self) -> u64 {
         let indent = "  ".repeat(self.depth);
-        println!("{indent}{}", self.position);
         let moves = self.moves();
         let mut max = 0_u64;
         for mov in moves {
             // clone and make the move and recurse.
-            println!("{indent}{mov}");
+            println!("{indent}{}->{mov}", self.position);
             let mut cloned = self.clone();
             cloned.depth += 1;
             cloned.make_move(mov);
