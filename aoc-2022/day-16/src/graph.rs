@@ -50,7 +50,6 @@ impl<'a> State<'a> {
     pub fn solve(&mut self) -> u64 {
         let indent = "  ".repeat(self.depth);
         let moves = self.moves();
-        let mut max = 0_u64;
         for mov in moves {
             // clone and make the move and recurse.
             println!("{indent}{}->{mov}", self.position);
@@ -58,9 +57,9 @@ impl<'a> State<'a> {
             cloned.depth += 1;
             cloned.make_move(mov);
             let score = cloned.solve();
-            max = u64::max(max, score);
+            self.pressure = u64::max(self.pressure, score);
         }
-        self.pressure += max;
+        println!("{indent}Result: {}", self.pressure);
         self.pressure
     }
     pub fn make_move(&mut self, mov: Move) {
