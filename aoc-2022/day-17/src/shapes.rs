@@ -6,9 +6,8 @@ struct ShapeIter {
 impl Iterator for ShapeIter {
     type Item = Shape;
     fn next(&mut self) -> Option<Self::Item> {
-        let idx = self.idx;
-        let shape = self.shapes[idx];
-        self.idx = idx % self.shapes.len();
+        let shape = self.shapes[self.idx];
+        self.idx = (self.idx + 1) % self.shapes.len();
         Some(shape)
     }
 }
@@ -26,21 +25,36 @@ impl IntoIterator for Shapes {
 
 struct Shapes([Shape; 5]);
 
-fn shapes() -> [Shape; 5] {
-    [
+fn shapes() -> Shapes {
+    Shapes([
         Shape::Slab,
         Shape::Cross,
         Shape::L,
         Shape::Pipe,
         Shape::Square,
-    ]
+    ])
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Shape {
     Slab,
     Cross,
     L,
     Pipe,
     Square,
+}
+
+#[test]
+fn test_shapes_iter() {
+    let mut iter = shapes().into_iter();
+    assert_eq!(iter.next(), Some(Shape::Slab));
+    assert_eq!(iter.next(), Some(Shape::Cross));
+    assert_eq!(iter.next(), Some(Shape::L));
+    assert_eq!(iter.next(), Some(Shape::Pipe));
+    assert_eq!(iter.next(), Some(Shape::Square));
+    assert_eq!(iter.next(), Some(Shape::Slab));
+    assert_eq!(iter.next(), Some(Shape::Cross));
+    assert_eq!(iter.next(), Some(Shape::L));
+    assert_eq!(iter.next(), Some(Shape::Pipe));
+    assert_eq!(iter.next(), Some(Shape::Square));
 }
