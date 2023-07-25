@@ -123,10 +123,11 @@ mod tests {
         // +-------+
         b.add_shape(Shape::Pipe);
         b = dbg!(b);
+        println!("{b}");
         assert_eq!(b.highest_rock_y(), 7);
         assert_eq!(
             b.sorted_points(),
-            vec![Point(2, 7), Point(2, 6), Point(2, 5), Point(2, 4)]
+            vec![Point(3, 7), Point(3, 6), Point(3, 5), Point(3, 4)]
         );
     }
 
@@ -146,7 +147,7 @@ mod tests {
         assert_eq!(b.highest_rock_y(), 5);
         assert_eq!(
             b.sorted_points(),
-            vec![Point(2, 5), Point(3, 5), Point(2, 4), Point(3, 4)]
+            vec![Point(3, 5), Point(4, 5), Point(3, 4), Point(4, 4)]
         );
 
         // |..#....| 12
@@ -162,7 +163,6 @@ mod tests {
         // |.......|
         // |.......| 1
         // +-------+
-        // TODO: I don't think this is right.
         assert_eq!(b.highest_rock_y(), 5);
         let shape = Shape::Pipe;
         b.add_shape(shape);
@@ -170,14 +170,14 @@ mod tests {
         assert_eq!(
             b.sorted_points(),
             vec![
-                Point(2, 12),
-                Point(2, 11),
-                Point(2, 10),
-                Point(2, 9),
-                Point(2, 5),
+                Point(3, 12),
+                Point(3, 11),
+                Point(3, 10),
+                Point(3, 9),
                 Point(3, 5),
-                Point(2, 4),
-                Point(3, 4)
+                Point(4, 5),
+                Point(3, 4),
+                Point(4, 4)
             ]
         );
     }
