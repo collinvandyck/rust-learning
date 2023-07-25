@@ -37,8 +37,8 @@ fn part_1(args: &Args) {
     let gusts = Box::new(gusts);
     let shapes = shapes().into_iter();
     let shapes = Box::new(shapes);
-    let mut board = Board::new();
-    board.run(shapes, gusts);
+    let mut board = Board::new(shapes, gusts);
+    board.run();
 }
 
 fn load_gusts(args: &Args) -> Gusts {

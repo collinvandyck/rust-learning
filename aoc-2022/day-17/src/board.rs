@@ -6,19 +6,19 @@ use std::{
 use crate::prelude::*;
 
 impl Board {
-    pub fn new() -> Self {
+    pub fn new(shapes: Shapes, gusts: Gusts) -> Self {
         let width = 7;
         let entities = vec![];
-        let falling = None;
         Self {
             width,
             entities,
-            falling,
+            shapes,
+            gusts,
         }
     }
 
-    pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
-        let shape = shapes.next().unwrap();
+    pub fn run(&mut self) {
+        let shape = self.shapes.next().unwrap();
         let entity = self.shape_to_entity(shape); // figure out where to put the entity
         self.drop(entity);
         println!("{self}");
@@ -67,11 +67,6 @@ impl Board {
             .flat_map(|e| e.points.iter())
             .copied()
             .collect::<Vec<_>>();
-        if let Some(entity) = &self.falling {
-            entity.points.0.iter().for_each(|p| {
-                points.push(p.clone());
-            })
-        }
         points.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         points
     }
@@ -95,11 +90,11 @@ impl Display for Board {
 
 // the floor is at level y = 0. positions above
 // the board are at y > 0.
-#[derive(Debug)]
 pub struct Board {
     width: i32, // always 7
     entities: Vec<Entity>,
-    falling: Option<Entity>,
+    shapes: Shapes,
+    gusts: Gusts,
 }
 
 type Shapes = Box<dyn Iterator<Item = Shape>>;
