@@ -30,8 +30,11 @@ fn main() {
 
 fn run(args: &Args) {
     let board = Board::new();
-    let gusts: Gusts = load_gusts(args);
-    let shapes: Shapes = shapes();
+    let gusts = load_gusts(args).into_iter();
+    let shapes = shapes().into_iter();
+
+    shapes.take(10).for_each(|s| println!("{s:?}"));
+    gusts.take(10).for_each(|g| println!("{g:?}"));
 }
 
 fn load_gusts(args: &Args) -> Gusts {
