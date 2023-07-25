@@ -29,12 +29,12 @@ fn main() {
 }
 
 fn run(args: &Args) {
-    let board = Board::new();
     let gusts = load_gusts(args).into_iter();
+    let gusts = Box::new(gusts);
     let shapes = shapes().into_iter();
-
-    shapes.take(10).for_each(|s| println!("{s:?}"));
-    gusts.take(10).for_each(|g| println!("{g:?}"));
+    let shapes = Box::new(shapes);
+    let mut board = Board::new(shapes, gusts);
+    board.run();
 }
 
 fn load_gusts(args: &Args) -> Gusts {
