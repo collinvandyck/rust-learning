@@ -53,12 +53,13 @@ impl Board {
     /// the left wall and its bottom edge is three units above the highest
     /// rock in the room (or the floor, if there isn't one).
     fn add_shape(&mut self, shape: Shape) {
+        let height = shape.height();
         let highest_y = dbg!(self.highest_rock_y());
         let mut points = Points(shape.starting_coords());
         points = dbg!(points);
         points.iter_mut().for_each(|p| {
             p.0 += 3;
-            p.1 += highest_y + 4;
+            p.1 = (height - p.1) + highest_y + 3;
         });
         let entity = Entity { shape, points };
         self.entities.push(entity);
@@ -98,11 +99,11 @@ mod tests {
         assert_eq!(
             b.sorted_points(),
             vec![
+                Point(5, 6),
+                Point(5, 5),
                 Point(3, 4),
                 Point(4, 4),
                 Point(5, 4),
-                Point(5, 5),
-                Point(5, 6)
             ]
         );
     }
