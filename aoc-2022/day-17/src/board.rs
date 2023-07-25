@@ -30,12 +30,12 @@ impl Board {
     /// the left wall and its bottom edge is three units above the highest
     /// rock in the room (or the floor, if there isn't one).
     fn add_shape(&mut self, shape: Shape) {
-        let highest_y = dbg!(self.highest_rock_y());
-        let shape_height = dbg!(shape.height());
+        let highest_y = self.highest_rock_y();
+        let shape_height = shape.height();
         let mut points = Points(shape.starting_coords());
         points.iter_mut().for_each(|p| {
             p.0 += 2;
-            p.1 += dbg!(highest_y + 3 + shape_height - 1);
+            p.1 += highest_y + 3 + shape_height - 1;
         });
         let entity = Entity { shape, points };
         self.entities.push(entity);
@@ -68,7 +68,6 @@ mod tests {
         // +-------+
         let shape = Shape::Square;
         b.add_shape(shape);
-        b = dbg!(b);
         assert_eq!(b.highest_rock_y(), 5);
 
         // |..#....| 12
@@ -87,7 +86,6 @@ mod tests {
         assert_eq!(b.highest_rock_y(), 5);
         let shape = Shape::Pipe;
         b.add_shape(shape);
-        b = dbg!(b);
         assert_eq!(b.highest_rock_y(), 14);
     }
 }
