@@ -1,4 +1,7 @@
-use std::fmt::{Display, Write};
+use std::{
+    fmt::{Display, Write},
+    ops::{AddAssign, Deref, DerefMut},
+};
 
 use crate::prelude::*;
 
@@ -33,7 +36,10 @@ impl Board {
     /// Each rock appears so that its left edge is two units away from
     /// the left wall and its bottom edge is three units above the highest
     /// rock in the room (or the floor, if there isn't one).
-    fn adjust_points_for_insert(&mut self, points: &mut Points) {}
+    fn adjust_points_for_insert(&mut self, points: &mut Points) {
+        let adjust = Point(2, 3 + self.highest_rock_y());
+        points.iter_mut().for_each(|p| *p += adjust);
+    }
 
     /// returns the highest rock y position. The floor is represented at y=0.
     fn highest_rock_y(&self) -> i32 {
@@ -54,9 +60,15 @@ mod tests {
         let mut b = Board::new();
         assert_eq!(b.highest_rock_y(), 0);
 
+        // |..##...|
+        // |..##...|
+        // |.......|
+        // |.......|
+        // |.......|
+        // +-------+
         let shape = Shape::Square;
         b.add_shape(shape);
-        assert_eq!(b.highest_rock_y(), 1);
+        assert_eq!(b.highest_rock_y(), 5);
 
         let shape = Shape::Pipe;
         b.add_shape(shape);
@@ -88,5 +100,25 @@ struct Entity {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Point(pub i32, pub i32);
 
+impl AddAssign for Point {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+        self.1 += rhs.1;
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Points(Vec<Point>);
+
+impl Deref for Points {
+    type Target = Vec<Point>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Points {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
