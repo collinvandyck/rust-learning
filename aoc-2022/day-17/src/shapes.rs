@@ -1,3 +1,5 @@
+use crate::prelude::*;
+
 pub struct Iter {
     shapes: [Shape; 5],
     idx: usize,
@@ -42,6 +44,32 @@ pub enum Shape {
     L,
     Pipe,
     Square,
+}
+
+impl Shape {
+    // returns the positions of the rocks in the shape relative
+    // to a grid starting at (0,0).
+    pub fn starting_coords(&self) -> Vec<Point> {
+        match self {
+            Shape::Slab => vec![Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0)],
+            Shape::Cross => vec![
+                Point(1, 0),
+                Point(0, 1),
+                Point(1, 1),
+                Point(2, 1),
+                Point(1, 2),
+            ],
+            Shape::L => vec![
+                Point(2, 0),
+                Point(2, 1),
+                Point(0, 2),
+                Point(1, 2),
+                Point(2, 2),
+            ],
+            Shape::Pipe => vec![Point(0, 0), Point(0, 1), Point(0, 2), Point(0, 3)],
+            Shape::Square => vec![Point(0, 0), Point(1, 0), Point(0, 1), Point(1, 1)],
+        }
+    }
 }
 
 #[test]

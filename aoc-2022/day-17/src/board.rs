@@ -1,9 +1,26 @@
+use std::fmt::{Display, Write};
+
 use crate::prelude::*;
 
 impl Board {
     pub fn run(&mut self) {
-        let shape = self.shapes.next();
-        println!("Running... {shape:?}");
+        println!("{self}");
+        let shape = self.shapes.next().unwrap();
+        self.add_shape(shape);
+    }
+    fn render(&self) -> String {
+        let mut buf = String::new();
+        // TODO: print the shapes
+        // print the base.
+        let _ = write!(buf, "+{}+", "-".repeat(self.width)).unwrap();
+        buf
+    }
+    fn add_shape(&mut self, shape: Shape) {}
+}
+
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.render())
     }
 }
 
@@ -32,15 +49,9 @@ impl Board {
     }
 }
 
-// The point is the coordinate of the upper left part of the shape.
-struct Entity(Shape, Point);
-
-enum Tile {
-    Empty,
-    Rock,
+struct Entity {
+    shape: Shape,
 }
 
-struct Point {
-    x: usize,
-    y: usize,
-}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Point(pub i32, pub i32);
