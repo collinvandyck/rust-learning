@@ -3,9 +3,14 @@ use std::fmt::{Display, Write};
 use crate::prelude::*;
 
 impl Board {
-    pub fn run(&mut self) {
+    pub fn new() -> Self {
+        let width = 7;
+        let entities = vec![];
+        Self { width, entities }
+    }
+    pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
         println!("{self}");
-        let shape = self.shapes.next().unwrap();
+        let shape = shapes.next().unwrap();
         self.add_shape(shape);
     }
     fn render(&self) -> String {
@@ -25,6 +30,25 @@ impl Board {
     /// the left wall and its bottom edge is three units above the highest
     /// rock in the room (or the floor, if there isn't one).
     fn adjust_points_for_insert(&mut self, points: &mut Points) {}
+
+    /// returns the highest rock y position. The floor is represented at y=0.
+    fn highest_rock_y(&self) -> i32 {
+        self.entities
+            .iter()
+            .flat_map(|e| e.points.0.iter())
+            .map(|p| p.1)
+            .max()
+            .unwrap_or(0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_board_highest_rock_y() {
+        let b = Board::new();
+    }
 }
 
 impl Display for Board {
@@ -38,25 +62,10 @@ impl Display for Board {
 pub struct Board {
     width: usize, // always 7
     entities: Vec<Entity>,
-    shapes: Shapes,
-    gusts: Gusts,
 }
 
 type Shapes = Box<dyn Iterator<Item = Shape>>;
 type Gusts = Box<dyn Iterator<Item = Gust>>;
-
-impl Board {
-    pub fn new(shapes: Shapes, gusts: Gusts) -> Self {
-        let width = 7;
-        let entities = vec![];
-        Self {
-            width,
-            entities,
-            shapes,
-            gusts,
-        }
-    }
-}
 
 struct Entity {
     shape: Shape,
