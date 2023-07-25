@@ -23,11 +23,11 @@ struct Args {
 
 fn main() {
     let args = &Args::parse();
-    run(&args);
+    run(args);
 }
 
 fn run(args: &Args) {
-    let gusts = load_gusts(&args);
+    let gusts = load_gusts(args);
     dbg!(gusts);
 }
 
@@ -35,8 +35,5 @@ fn load_gusts(args: &Args) -> Vec<Gust> {
     let file = File::open(&args.filename).unwrap();
     let read = BufReader::new(file);
     let line = read.lines().next().unwrap().unwrap();
-    line.chars()
-        .into_iter()
-        .map(|c| c.into())
-        .collect::<Vec<_>>()
+    line.chars().map(Into::into).collect::<Vec<_>>()
 }

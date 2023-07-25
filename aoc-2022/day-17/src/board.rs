@@ -18,12 +18,12 @@ pub enum Gust {
     Right,
 }
 
-impl Into<Gust> for char {
-    fn into(self) -> Gust {
-        match self {
+impl From<char> for Gust {
+    fn from(value: char) -> Self {
+        match value {
             '<' => Gust::Left,
             '>' => Gust::Right,
-            _ => panic!("Invalid gust: {self}"),
+            _ => panic!("Invalid char: {value}"),
         }
     }
 }
