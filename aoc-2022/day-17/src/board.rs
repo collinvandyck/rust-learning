@@ -45,12 +45,13 @@ impl Board {
     /// the left wall and its bottom edge is three units above the highest
     /// rock in the room (or the floor, if there isn't one).
     fn add_shape(&mut self, shape: Shape) {
-        let highest_y = self.highest_rock_y();
-        let shape_height = shape.height();
+        let highest_y = dbg!(self.highest_rock_y());
+        let shape_height = dbg!(shape.height());
         let mut points = Points(shape.starting_coords());
+        points = dbg!(points);
         points.iter_mut().for_each(|p| {
             p.0 += 2;
-            p.1 += highest_y + 3 + shape_height - 1;
+            p.1 += highest_y + 3 + 1;
         });
         let entity = Entity { shape, points };
         self.entities.push(entity);
@@ -70,6 +71,28 @@ impl Board {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn test_board_add_shape_pipe() {
+        let mut b = Board::new();
+        assert_eq!(b.highest_rock_y(), 0);
+
+        // |..#....| 7
+        // |..#....| 6
+        // |..#....| 5
+        // |..#....| 4
+        // |.......| 3
+        // |.......| 2
+        // |.......| 1
+        // +-------+
+        b.add_shape(Shape::Pipe);
+        b = dbg!(b);
+        assert_eq!(b.highest_rock_y(), 7);
+        assert_eq!(
+            b.sorted_points(),
+            vec![Point(2, 7), Point(2, 6), Point(2, 5), Point(2, 4)]
+        );
+    }
+
     #[test]
     fn test_board_add_shape() {
         let mut b = Board::new();
@@ -102,10 +125,24 @@ mod tests {
         // |.......|
         // |.......| 1
         // +-------+
+        // TODO: I don't think this is right.
         assert_eq!(b.highest_rock_y(), 5);
         let shape = Shape::Pipe;
         b.add_shape(shape);
-        assert_eq!(b.highest_rock_y(), 14);
+        assert_eq!(b.highest_rock_y(), 12);
+        assert_eq!(
+            b.sorted_points(),
+            vec![
+                Point(2, 12),
+                Point(2, 11),
+                Point(2, 10),
+                Point(2, 9),
+                Point(2, 5),
+                Point(3, 5),
+                Point(2, 4),
+                Point(3, 4)
+            ]
+        );
     }
 }
 
