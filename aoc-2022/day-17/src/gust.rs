@@ -4,6 +4,7 @@ pub enum Gust {
     Right,
 }
 
+#[derive(Debug)]
 pub struct Gusts(Vec<Gust>);
 
 impl From<Vec<Gust>> for Gusts {

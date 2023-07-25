@@ -29,15 +29,15 @@ fn main() {
 }
 
 fn run(args: &Args) {
-    let gusts = load_gusts(args);
     let board = Board::new();
-    let shapes = shapes();
-    dbg!(gusts);
+    let gusts: Gusts = load_gusts(args);
+    let shapes: Shapes = shapes();
 }
 
-fn load_gusts(args: &Args) -> Vec<Gust> {
+fn load_gusts(args: &Args) -> Gusts {
     let file = File::open(&args.filename).unwrap();
     let read = BufReader::new(file);
     let line = read.lines().next().unwrap().unwrap();
-    line.chars().map(Into::into).collect::<Vec<_>>()
+    let gs = line.chars().map(Into::into).collect::<Vec<_>>();
+    gs.into()
 }
