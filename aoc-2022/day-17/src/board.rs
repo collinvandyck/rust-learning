@@ -15,7 +15,12 @@ impl Board {
         let _ = write!(buf, "+{}+", "-".repeat(self.width)).unwrap();
         buf
     }
-    fn add_shape(&mut self, shape: Shape) {}
+    fn add_shape(&mut self, shape: Shape) {
+        let points = Points(shape.starting_coords());
+        let entity = Entity { shape, points };
+        // todo: adjust points to accommodate starting position
+        self.entities.push(entity);
+    }
 }
 
 impl Display for Board {
@@ -51,7 +56,11 @@ impl Board {
 
 struct Entity {
     shape: Shape,
+    points: Points,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Point(pub i32, pub i32);
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Points(Vec<Point>);
