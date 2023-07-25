@@ -20,14 +20,22 @@ impl Board {
     }
 
     fn render(&self) -> String {
-        let mut buf = String::new();
+        let mut points = self.sorted_points().into_iter().peekable();
+        let mut lines = vec![];
         for y in (1..=self.highest_rock_y()).rev() {
-            for x in 1..=7 {}
+            let mut line = String::new();
+            for x in 1..=7 {
+                if points.peek().filter(|p| p.0 == x && p.1 == y).is_some() {
+                    line.push('#');
+                    points.next();
+                } else {
+                    line.push('.');
+                }
+            }
+            lines.push(line);
         }
-        // TODO: print the shapes
-        // print the base.
-        let _ = write!(buf, "+{}+", "-".repeat(self.width)).unwrap();
-        buf
+        lines.push(format!("+{}+", "-".repeat(self.width)));
+        lines.join("\n")
     }
 
     fn sorted_points(&self) -> Vec<Point> {
@@ -46,7 +54,6 @@ impl Board {
     /// rock in the room (or the floor, if there isn't one).
     fn add_shape(&mut self, shape: Shape) {
         let highest_y = dbg!(self.highest_rock_y());
-        let shape_height = dbg!(shape.height());
         let mut points = Points(shape.starting_coords());
         points = dbg!(points);
         points.iter_mut().for_each(|p| {
@@ -71,6 +78,36 @@ impl Board {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_board_add_shape_l() {
+        let mut b = Board::new();
+        assert_eq!(b.highest_rock_y(), 0);
+
+        // |.......| 7
+        // |....#..| 6
+        // |....#..| 5
+        // |..###..| 4
+        // |.......| 3
+        // |.......| 2
+        // |.......| 1
+        // +-------+
+        b.add_shape(Shape::L);
+        println!("{b}");
+        b = dbg!(b);
+        assert_eq!(b.highest_rock_y(), 6);
+        assert_eq!(
+            b.sorted_points(),
+            vec![
+                Point(3, 4),
+                Point(4, 4),
+                Point(5, 4),
+                Point(5, 5),
+                Point(5, 6)
+            ]
+        );
+    }
+
     #[test]
     fn test_board_add_shape_pipe() {
         let mut b = Board::new();
