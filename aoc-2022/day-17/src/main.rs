@@ -29,12 +29,20 @@ fn main() {
 }
 
 fn run(args: &Args) {
+    part_1(args);
+}
+
+fn part_1(args: &Args) {
+    let mut board = load_board(args);
+    board.run();
+}
+
+fn load_board(args: &Args) -> Board {
     let gusts = load_gusts(args).into_iter();
     let gusts = Box::new(gusts);
     let shapes = shapes().into_iter();
     let shapes = Box::new(shapes);
-    let mut board = Board::new(shapes, gusts);
-    board.run();
+    Board::new(shapes, gusts)
 }
 
 fn load_gusts(args: &Args) -> Gusts {
