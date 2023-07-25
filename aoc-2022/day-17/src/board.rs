@@ -12,22 +12,6 @@ impl Board {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Gust {
-    Left,
-    Right,
-}
-
-impl From<char> for Gust {
-    fn from(value: char) -> Self {
-        match value {
-            '<' => Gust::Left,
-            '>' => Gust::Right,
-            _ => panic!("Invalid char: {value}"),
-        }
-    }
-}
-
 enum Tile {
     Empty,
     Rock,

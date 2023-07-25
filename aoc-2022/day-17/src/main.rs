@@ -2,9 +2,11 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 mod board;
+mod gust;
 mod shapes;
 mod prelude {
     pub use crate::board::*;
+    pub use crate::gust::*;
     pub use crate::shapes::*;
     pub use clap::Parser;
 }
@@ -28,6 +30,8 @@ fn main() {
 
 fn run(args: &Args) {
     let gusts = load_gusts(args);
+    let board = Board::new();
+    let shapes = shapes();
     dbg!(gusts);
 }
 

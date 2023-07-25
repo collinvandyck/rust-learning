@@ -1,4 +1,4 @@
-struct ShapeIter {
+pub struct ShapeIter {
     shapes: [Shape; 5],
     idx: usize,
 }
@@ -23,9 +23,9 @@ impl IntoIterator for Shapes {
     }
 }
 
-struct Shapes([Shape; 5]);
+pub struct Shapes([Shape; 5]);
 
-fn shapes() -> Shapes {
+pub fn shapes() -> Shapes {
     Shapes([
         Shape::Slab,
         Shape::Cross,
@@ -36,7 +36,7 @@ fn shapes() -> Shapes {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Shape {
+pub enum Shape {
     Slab,
     Cross,
     L,
