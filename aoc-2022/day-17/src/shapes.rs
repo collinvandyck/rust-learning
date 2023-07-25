@@ -1,9 +1,9 @@
-pub struct ShapeIter {
+pub struct Iter {
     shapes: [Shape; 5],
     idx: usize,
 }
 
-impl Iterator for ShapeIter {
+impl Iterator for Iter {
     type Item = Shape;
     fn next(&mut self) -> Option<Self::Item> {
         let shape = self.shapes[self.idx];
@@ -14,9 +14,9 @@ impl Iterator for ShapeIter {
 
 impl IntoIterator for Shapes {
     type Item = Shape;
-    type IntoIter = ShapeIter;
+    type IntoIter = Iter;
     fn into_iter(self) -> Self::IntoIter {
-        ShapeIter {
+        Iter {
             shapes: self.0,
             idx: 0,
         }
