@@ -48,6 +48,7 @@ mod tests {
     #[test]
     fn test_board_highest_rock_y() {
         let b = Board::new();
+        assert_eq!(b.highest_rock_y(), 0);
     }
 }
 
