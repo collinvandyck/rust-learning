@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
-// seven units wide
+// the floor is at level y = 0. positions above
+// the board are at y > 0.
 pub struct Board {
     width: usize, // always 7
     rows: Vec<Vec<Tile>>,
@@ -23,7 +24,8 @@ impl Board {
         }
     }
     pub fn run(&mut self) {
-        println!("Running...");
+        let shape = self.shapes.next();
+        println!("Running... {shape:?}");
     }
 }
 
