@@ -8,11 +8,13 @@ impl Board {
         let entities = vec![];
         Self { width, entities }
     }
+
     pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
         println!("{self}");
         let shape = shapes.next().unwrap();
         self.add_shape(shape);
     }
+
     fn render(&self) -> String {
         let mut buf = String::new();
         // TODO: print the shapes
@@ -20,12 +22,14 @@ impl Board {
         let _ = write!(buf, "+{}+", "-".repeat(self.width)).unwrap();
         buf
     }
+
     fn add_shape(&mut self, shape: Shape) {
         let mut points = Points(shape.starting_coords());
         self.adjust_points_for_insert(&mut points);
         let entity = Entity { shape, points };
         self.entities.push(entity);
     }
+
     /// Each rock appears so that its left edge is two units away from
     /// the left wall and its bottom edge is three units above the highest
     /// rock in the room (or the floor, if there isn't one).
