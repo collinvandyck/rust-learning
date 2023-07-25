@@ -16,11 +16,13 @@ impl Board {
         buf
     }
     fn add_shape(&mut self, shape: Shape) {
-        let points = Points(shape.starting_coords());
+        let mut points = Points(shape.starting_coords());
+        self.adjust_points_for_insert(&mut points);
         let entity = Entity { shape, points };
-        // todo: adjust points to accommodate starting position
         self.entities.push(entity);
     }
+    // todo: adjust points to accommodate starting position
+    fn adjust_points_for_insert(&mut self, points: &mut Points) {}
 }
 
 impl Display for Board {
