@@ -53,6 +53,10 @@ mod tests {
         let shape = Shape::Square;
         b.add_shape(shape);
         assert_eq!(b.highest_rock_y(), 1);
+
+        let shape = Shape::Pipe;
+        b.add_shape(shape);
+        assert_eq!(b.highest_rock_y(), 3);
     }
 }
 
