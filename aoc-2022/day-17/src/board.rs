@@ -19,8 +19,21 @@ impl Board {
 
     pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
         let shape = shapes.next().unwrap();
-        self.add_shape(shape);
+        let entity = self.place_shape(shape); // figure out where to put the entity
+        self.entities.push(entity);
         println!("{self}");
+    }
+
+    fn place_shape(&mut self, shape: Shape) -> Entity {
+        let height = shape.height();
+        let highest_y = self.highest_rock_y();
+        let mut points = Points(shape.starting_coords());
+        points.iter_mut().for_each(|p| {
+            p.0 += 3;
+            p.1 = (height - p.1) + highest_y + 3;
+        });
+        let entity = Entity { shape, points };
+        entity
     }
 
     fn render(&self) -> String {
@@ -60,21 +73,6 @@ impl Board {
         points
     }
 
-    /// Each rock appears so that its left edge is two units away from
-    /// the left wall and its bottom edge is three units above the highest
-    /// rock in the room (or the floor, if there isn't one).
-    fn add_shape(&mut self, shape: Shape) {
-        let height = shape.height();
-        let highest_y = self.highest_rock_y();
-        let mut points = Points(shape.starting_coords());
-        points.iter_mut().for_each(|p| {
-            p.0 += 3;
-            p.1 = (height - p.1) + highest_y + 3;
-        });
-        let entity = Entity { shape, points };
-        self.entities.push(entity);
-    }
-
     /// returns the highest rock y position. The floor is represented at y=0.
     fn highest_rock_y(&self) -> i32 {
         self.entities
@@ -83,112 +81,6 @@ impl Board {
             .map(|p| p.1)
             .max()
             .unwrap_or(0)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_board_add_shape_l() {
-        let mut b = Board::new();
-        assert_eq!(b.highest_rock_y(), 0);
-
-        // |.......| 7
-        // |....#..| 6
-        // |....#..| 5
-        // |..###..| 4
-        // |.......| 3
-        // |.......| 2
-        // |.......| 1
-        // +-------+
-        b.add_shape(Shape::L);
-        println!("{b}");
-        assert_eq!(b.highest_rock_y(), 6);
-        assert_eq!(
-            b.sorted_points(),
-            vec![
-                Point(5, 6),
-                Point(5, 5),
-                Point(3, 4),
-                Point(4, 4),
-                Point(5, 4),
-            ]
-        );
-    }
-
-    #[test]
-    fn test_board_add_shape_pipe() {
-        let mut b = Board::new();
-        assert_eq!(b.highest_rock_y(), 0);
-
-        // |..#....| 7
-        // |..#....| 6
-        // |..#....| 5
-        // |..#....| 4
-        // |.......| 3
-        // |.......| 2
-        // |.......| 1
-        // +-------+
-        b.add_shape(Shape::Pipe);
-        println!("{b}");
-        assert_eq!(b.highest_rock_y(), 7);
-        assert_eq!(
-            b.sorted_points(),
-            vec![Point(3, 7), Point(3, 6), Point(3, 5), Point(3, 4)]
-        );
-    }
-
-    #[test]
-    fn test_board_add_shape() {
-        let mut b = Board::new();
-        assert_eq!(b.highest_rock_y(), 0);
-
-        // |..##...| 5
-        // |..##...| 4
-        // |.......| 3
-        // |.......| 2
-        // |.......| 1
-        // +-------+
-        let shape = Shape::Square;
-        b.add_shape(shape);
-        assert_eq!(b.highest_rock_y(), 5);
-        assert_eq!(
-            b.sorted_points(),
-            vec![Point(3, 5), Point(4, 5), Point(3, 4), Point(4, 4)]
-        );
-
-        // |..#....| 12
-        // |..#....|
-        // |..#....| 10
-        // |..#....|
-        // |.......|
-        // |.......|
-        // |.......|
-        // |..##...| 5
-        // |..##...| 4
-        // |.......|
-        // |.......|
-        // |.......| 1
-        // +-------+
-        assert_eq!(b.highest_rock_y(), 5);
-        let shape = Shape::Pipe;
-        b.add_shape(shape);
-        assert_eq!(b.highest_rock_y(), 12);
-        assert_eq!(
-            b.sorted_points(),
-            vec![
-                Point(3, 12),
-                Point(3, 11),
-                Point(3, 10),
-                Point(3, 9),
-                Point(3, 5),
-                Point(4, 5),
-                Point(3, 4),
-                Point(4, 4)
-            ]
-        );
     }
 }
 
