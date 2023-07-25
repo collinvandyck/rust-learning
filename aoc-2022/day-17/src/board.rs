@@ -94,7 +94,6 @@ mod tests {
         // +-------+
         b.add_shape(Shape::L);
         println!("{b}");
-        b = dbg!(b);
         assert_eq!(b.highest_rock_y(), 6);
         assert_eq!(
             b.sorted_points(),
