@@ -21,7 +21,9 @@ impl Board {
         let entity = Entity { shape, points };
         self.entities.push(entity);
     }
-    // todo: adjust points to accommodate starting position
+    /// Each rock appears so that its left edge is two units away from
+    /// the left wall and its bottom edge is three units above the highest
+    /// rock in the room (or the floor, if there isn't one).
     fn adjust_points_for_insert(&mut self, points: &mut Points) {}
 }
 
