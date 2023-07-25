@@ -47,3 +47,17 @@ impl From<char> for Gust {
         }
     }
 }
+
+#[test]
+fn test_gusts_iter() {
+    let gusts: Gusts = "<>".chars().map(Gust::from).collect::<Vec<_>>().into();
+    let mut iter = gusts.into_iter();
+    assert_eq!(iter.next(), Some(Gust::Left));
+    assert_eq!(iter.next(), Some(Gust::Right));
+    assert_eq!(iter.next(), Some(Gust::Left));
+    assert_eq!(iter.next(), Some(Gust::Right));
+    assert_eq!(iter.next(), Some(Gust::Left));
+    assert_eq!(iter.next(), Some(Gust::Right));
+    assert_eq!(iter.next(), Some(Gust::Left));
+    assert_eq!(iter.next(), Some(Gust::Right));
+}
