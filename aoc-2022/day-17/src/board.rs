@@ -1,5 +1,12 @@
 use crate::prelude::*;
 
+impl Board {
+    pub fn run(&mut self) {
+        let shape = self.shapes.next();
+        println!("Running... {shape:?}");
+    }
+}
+
 // the floor is at level y = 0. positions above
 // the board are at y > 0.
 pub struct Board {
@@ -22,10 +29,6 @@ impl Board {
             shapes,
             gusts,
         }
-    }
-    pub fn run(&mut self) {
-        let shape = self.shapes.next();
-        println!("Running... {shape:?}");
     }
 }
 
