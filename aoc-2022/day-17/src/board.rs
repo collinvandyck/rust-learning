@@ -16,14 +16,29 @@ impl Board {
         println!("{self}");
         let shape = shapes.next().unwrap();
         self.add_shape(shape);
+        println!("{self}");
     }
 
     fn render(&self) -> String {
         let mut buf = String::new();
+        for y in (1..=self.highest_rock_y()).rev() {
+            for x in 1..=7 {}
+        }
         // TODO: print the shapes
         // print the base.
         let _ = write!(buf, "+{}+", "-".repeat(self.width)).unwrap();
         buf
+    }
+
+    fn sorted_points(&self) -> Vec<Point> {
+        let mut points = self
+            .entities
+            .iter()
+            .flat_map(|e| e.points.iter())
+            .copied()
+            .collect::<Vec<_>>();
+        points.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        points
     }
 
     /// Each rock appears so that its left edge is two units away from
@@ -69,6 +84,10 @@ mod tests {
         let shape = Shape::Square;
         b.add_shape(shape);
         assert_eq!(b.highest_rock_y(), 5);
+        assert_eq!(
+            b.sorted_points(),
+            vec![Point(2, 5), Point(3, 5), Point(2, 4), Point(3, 4)]
+        );
 
         // |..#....| 12
         // |..#....|
