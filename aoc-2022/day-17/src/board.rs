@@ -12,9 +12,20 @@ impl Board {
     }
 }
 
-enum Gust {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Gust {
     Left,
     Right,
+}
+
+impl Into<Gust> for char {
+    fn into(self) -> Gust {
+        match self {
+            '<' => Gust::Left,
+            '>' => Gust::Right,
+            _ => panic!("Invalid gust: {self}"),
+        }
+    }
 }
 
 enum Tile {
