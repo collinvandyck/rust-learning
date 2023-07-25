@@ -47,8 +47,12 @@ mod tests {
     use super::*;
     #[test]
     fn test_board_highest_rock_y() {
-        let b = Board::new();
+        let mut b = Board::new();
         assert_eq!(b.highest_rock_y(), 0);
+
+        let shape = Shape::Square;
+        b.add_shape(shape);
+        assert_eq!(b.highest_rock_y(), 1);
     }
 }
 
