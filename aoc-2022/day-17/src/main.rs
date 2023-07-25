@@ -1,4 +1,8 @@
+#![allow(dead_code)]
+
+mod board;
 mod prelude {
+    pub use crate::board::*;
     pub use clap::Parser;
 }
 use prelude::*;
