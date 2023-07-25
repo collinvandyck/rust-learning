@@ -20,8 +20,12 @@ impl Board {
     pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
         let shape = shapes.next().unwrap();
         let entity = self.shape_to_entity(shape); // figure out where to put the entity
-        self.entities.push(entity);
+        self.drop(entity);
         println!("{self}");
+    }
+
+    fn drop(&mut self, entity: Entity) {
+        self.entities.push(entity);
     }
 
     fn shape_to_entity(&mut self, shape: Shape) -> Entity {
