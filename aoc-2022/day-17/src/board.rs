@@ -57,8 +57,8 @@ impl Board {
         let mut points = Points(shape.starting_coords());
         points = dbg!(points);
         points.iter_mut().for_each(|p| {
-            p.0 += 2;
-            p.1 += highest_y + 3 + 1;
+            p.0 += 3;
+            p.1 += highest_y + 4;
         });
         let entity = Entity { shape, points };
         self.entities.push(entity);
