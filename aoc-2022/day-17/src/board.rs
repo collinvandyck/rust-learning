@@ -19,12 +19,12 @@ impl Board {
 
     pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
         let shape = shapes.next().unwrap();
-        let entity = self.place_shape(shape); // figure out where to put the entity
+        let entity = self.shape_to_entity(shape); // figure out where to put the entity
         self.entities.push(entity);
         println!("{self}");
     }
 
-    fn place_shape(&mut self, shape: Shape) -> Entity {
+    fn shape_to_entity(&mut self, shape: Shape) -> Entity {
         let height = shape.height();
         let highest_y = self.highest_rock_y();
         let mut points = Points(shape.starting_coords());
@@ -32,8 +32,7 @@ impl Board {
             p.0 += 3;
             p.1 = (height - p.1) + highest_y + 3;
         });
-        let entity = Entity { shape, points };
-        entity
+        Entity { shape, points }
     }
 
     fn render(&self) -> String {
