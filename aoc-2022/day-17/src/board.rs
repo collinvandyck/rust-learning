@@ -13,7 +13,6 @@ impl Board {
     }
 
     pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
-        println!("{self}");
         let shape = shapes.next().unwrap();
         self.add_shape(shape);
         println!("{self}");
@@ -24,6 +23,7 @@ impl Board {
         let mut lines = vec![];
         for y in (1..=self.highest_rock_y()).rev() {
             let mut line = String::new();
+            line.push('|');
             for x in 1..=7 {
                 if points.peek().filter(|p| p.0 == x && p.1 == y).is_some() {
                     line.push('#');
@@ -32,6 +32,7 @@ impl Board {
                     line.push('.');
                 }
             }
+            line.push('|');
             lines.push(line);
         }
         lines.push(format!("+{}+", "-".repeat(self.width)));
@@ -54,9 +55,8 @@ impl Board {
     /// rock in the room (or the floor, if there isn't one).
     fn add_shape(&mut self, shape: Shape) {
         let height = shape.height();
-        let highest_y = dbg!(self.highest_rock_y());
+        let highest_y = self.highest_rock_y();
         let mut points = Points(shape.starting_coords());
-        points = dbg!(points);
         points.iter_mut().for_each(|p| {
             p.0 += 3;
             p.1 = (height - p.1) + highest_y + 3;
@@ -122,7 +122,6 @@ mod tests {
         // |.......| 1
         // +-------+
         b.add_shape(Shape::Pipe);
-        b = dbg!(b);
         println!("{b}");
         assert_eq!(b.highest_rock_y(), 7);
         assert_eq!(
