@@ -1,5 +1,5 @@
 use std::{
-    fmt::{Display, Write},
+    fmt::Display,
     ops::{AddAssign, Deref, DerefMut},
 };
 
@@ -9,7 +9,12 @@ impl Board {
     pub fn new() -> Self {
         let width = 7;
         let entities = vec![];
-        Self { width, entities }
+        let falling = None;
+        Self {
+            width,
+            entities,
+            falling,
+        }
     }
 
     pub fn run(&mut self, mut shapes: Shapes, mut gusts: Gusts) {
@@ -24,7 +29,7 @@ impl Board {
         for y in (1..=self.highest_rock_y()).rev() {
             let mut line = String::new();
             line.push('|');
-            for x in 1..=7 {
+            for x in 1..=self.width {
                 if points.peek().filter(|p| p.0 == x && p.1 == y).is_some() {
                     line.push('#');
                     points.next();
@@ -35,7 +40,7 @@ impl Board {
             line.push('|');
             lines.push(line);
         }
-        lines.push(format!("+{}+", "-".repeat(self.width)));
+        lines.push(format!("+{}+", "-".repeat(self.width as usize)));
         lines.join("\n")
     }
 
@@ -46,6 +51,11 @@ impl Board {
             .flat_map(|e| e.points.iter())
             .copied()
             .collect::<Vec<_>>();
+        if let Some(entity) = &self.falling {
+            entity.points.0.iter().for_each(|p| {
+                points.push(p.clone());
+            })
+        }
         points.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         points
     }
@@ -192,8 +202,9 @@ impl Display for Board {
 // the board are at y > 0.
 #[derive(Debug)]
 pub struct Board {
-    width: usize, // always 7
+    width: i32, // always 7
     entities: Vec<Entity>,
+    falling: Option<Entity>,
 }
 
 type Shapes = Box<dyn Iterator<Item = Shape>>;
