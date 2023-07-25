@@ -70,6 +70,15 @@ impl Shape {
             Shape::Square => vec![Point(0, 0), Point(1, 0), Point(0, 1), Point(1, 1)],
         }
     }
+    pub fn height(&self) -> i32 {
+        match self {
+            Shape::Slab => 1,
+            Shape::Cross => 3,
+            Shape::L => 3,
+            Shape::Pipe => 4,
+            Shape::Square => 2,
+        }
+    }
 }
 
 #[test]

@@ -26,19 +26,19 @@ impl Board {
         buf
     }
 
-    fn add_shape(&mut self, shape: Shape) {
-        let mut points = Points(shape.starting_coords());
-        self.adjust_points_for_insert(&mut points);
-        let entity = Entity { shape, points };
-        self.entities.push(entity);
-    }
-
     /// Each rock appears so that its left edge is two units away from
     /// the left wall and its bottom edge is three units above the highest
     /// rock in the room (or the floor, if there isn't one).
-    fn adjust_points_for_insert(&mut self, points: &mut Points) {
-        let adjust = Point(2, 3 + self.highest_rock_y());
-        points.iter_mut().for_each(|p| *p += adjust);
+    fn add_shape(&mut self, shape: Shape) {
+        let highest_y = self.highest_rock_y();
+        let shape_height = shape.height();
+        let mut points = Points(shape.starting_coords());
+        points.iter_mut().for_each(|p| {
+            p.0 += 2;
+            p.1 += highest_y + shape_height - 1;
+        });
+        let entity = Entity { shape, points };
+        self.entities.push(entity);
     }
 
     /// returns the highest rock y position. The floor is represented at y=0.
@@ -56,7 +56,7 @@ impl Board {
 mod tests {
     use super::*;
     #[test]
-    fn test_board_highest_rock_y() {
+    fn test_board_add_shape() {
         let mut b = Board::new();
         assert_eq!(b.highest_rock_y(), 0);
 
