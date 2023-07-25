@@ -2,8 +2,10 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 mod board;
+mod shapes;
 mod prelude {
     pub use crate::board::*;
+    pub use crate::shapes::*;
     pub use clap::Parser;
 }
 use prelude::*;

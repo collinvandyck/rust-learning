@@ -1,15 +1,20 @@
 // seven units wide
-pub struct Chamber {
+pub struct Board {
     width: usize, // always 7
     rows: Vec<Vec<Tile>>,
 }
 
-impl Chamber {
+impl Board {
     pub fn new() -> Self {
         let width = 7;
         let rows = vec![];
         Self { width, rows }
     }
+}
+
+enum Gust {
+    Left,
+    Right,
 }
 
 enum Tile {
@@ -20,23 +25,4 @@ enum Tile {
 struct Point {
     x: usize,
     y: usize,
-}
-
-fn shapes() -> [Shape; 5] {
-    [
-        Shape::Slab,
-        Shape::Cross,
-        Shape::L,
-        Shape::Pipe,
-        Shape::Square,
-    ]
-}
-
-#[derive(Clone, Copy)]
-enum Shape {
-    Slab,
-    Cross,
-    L,
-    Pipe,
-    Square,
 }
