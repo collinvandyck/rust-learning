@@ -84,8 +84,10 @@ mod tests {
         // |.......|
         // |.......| 1
         // +-------+
+        assert_eq!(b.highest_rock_y(), 5);
         let shape = Shape::Pipe;
         b.add_shape(shape);
+        b = dbg!(b);
         assert_eq!(b.highest_rock_y(), 12);
     }
 }
