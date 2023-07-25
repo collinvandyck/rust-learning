@@ -24,7 +24,12 @@ impl Board {
         println!("{self}");
     }
 
+    /// alternates between gusting and dropping until the entity comes to rest,
+    /// at which point the method will exit.
     fn drop(&mut self, entity: Entity) {
+        if let Some(gust) = self.gusts.next() {
+            println!("{gust:?}");
+        }
         self.entities.push(entity);
     }
 
