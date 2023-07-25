@@ -4,7 +4,7 @@ use crate::prelude::*;
 // the board are at y > 0.
 pub struct Board {
     width: usize, // always 7
-    rows: Vec<Vec<Tile>>,
+    entities: Vec<Entity>,
     shapes: Shapes,
     gusts: Gusts,
 }
@@ -15,10 +15,10 @@ type Gusts = Box<dyn Iterator<Item = Gust>>;
 impl Board {
     pub fn new(shapes: Shapes, gusts: Gusts) -> Self {
         let width = 7;
-        let rows = vec![];
+        let entities = vec![];
         Self {
             width,
-            rows,
+            entities,
             shapes,
             gusts,
         }
@@ -28,6 +28,9 @@ impl Board {
         println!("Running... {shape:?}");
     }
 }
+
+// The point is the coordinate of the upper left part of the shape.
+struct Entity(Shape, Point);
 
 enum Tile {
     Empty,

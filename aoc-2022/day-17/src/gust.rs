@@ -13,12 +13,12 @@ impl From<Vec<Gust>> for Gusts {
     }
 }
 
-pub struct GustIter {
+pub struct Iter {
     gusts: Gusts,
     idx: usize,
 }
 
-impl Iterator for GustIter {
+impl Iterator for Iter {
     type Item = Gust;
     fn next(&mut self) -> Option<Self::Item> {
         let res = self.gusts.0.get(self.idx).unwrap();
@@ -29,9 +29,9 @@ impl Iterator for GustIter {
 
 impl IntoIterator for Gusts {
     type Item = Gust;
-    type IntoIter = GustIter;
+    type IntoIter = Iter;
     fn into_iter(self) -> Self::IntoIter {
-        GustIter {
+        Iter {
             gusts: self,
             idx: 0,
         }
