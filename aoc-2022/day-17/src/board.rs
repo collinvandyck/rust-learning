@@ -35,7 +35,7 @@ impl Board {
         let mut points = Points(shape.starting_coords());
         points.iter_mut().for_each(|p| {
             p.0 += 2;
-            p.1 += highest_y + shape_height - 1;
+            p.1 += highest_y + 3 + shape_height - 1;
         });
         let entity = Entity { shape, points };
         self.entities.push(entity);
@@ -60,19 +60,33 @@ mod tests {
         let mut b = Board::new();
         assert_eq!(b.highest_rock_y(), 0);
 
-        // |..##...|
-        // |..##...|
-        // |.......|
-        // |.......|
-        // |.......|
+        // |..##...| 5
+        // |..##...| 4
+        // |.......| 3
+        // |.......| 2
+        // |.......| 1
         // +-------+
         let shape = Shape::Square;
         b.add_shape(shape);
+        b = dbg!(b);
         assert_eq!(b.highest_rock_y(), 5);
 
+        // |..#....| 12
+        // |..#....|
+        // |..#....| 10
+        // |..#....|
+        // |.......|
+        // |.......|
+        // |.......|
+        // |..##...| 5
+        // |..##...| 4
+        // |.......|
+        // |.......|
+        // |.......| 1
+        // +-------+
         let shape = Shape::Pipe;
         b.add_shape(shape);
-        assert_eq!(b.highest_rock_y(), 3);
+        assert_eq!(b.highest_rock_y(), 12);
     }
 }
 
@@ -84,6 +98,7 @@ impl Display for Board {
 
 // the floor is at level y = 0. positions above
 // the board are at y > 0.
+#[derive(Debug)]
 pub struct Board {
     width: usize, // always 7
     entities: Vec<Entity>,
@@ -92,6 +107,7 @@ pub struct Board {
 type Shapes = Box<dyn Iterator<Item = Shape>>;
 type Gusts = Box<dyn Iterator<Item = Gust>>;
 
+#[derive(Debug)]
 struct Entity {
     shape: Shape,
     points: Points,
