@@ -28,14 +28,25 @@ impl Board {
     /// alternates between gusting and dropping until the entity comes to rest,
     /// at which point the method will exit.
     fn drop(&mut self, mut entity: Entity) {
-        if let Some(gust) = self.gusts.next() {
-            let adjustment = match gust {
-                Gust::Left => Point(-1, 0),
-                Gust::Right => Point(1, 0),
-            };
+        // adjust for gust
+        loop {
+            if let Some(gust) = self.gusts.next() {
+                let adjustment = match gust {
+                    Gust::Left => Point(-1, 0),
+                    Gust::Right => Point(1, 0),
+                };
+                let candidate_points = entity.points.add(adjustment);
+                if self.is_space_available(&entity, &candidate_points) {
+                    entity.points = candidate_points;
+                }
+            }
+            // adjust for drop
+            let adjustment = Point(0, -1);
             let candidate_points = entity.points.add(adjustment);
             if self.is_space_available(&entity, &candidate_points) {
                 entity.points = candidate_points;
+            } else {
+                break;
             }
         }
         self.entities.push(entity);
