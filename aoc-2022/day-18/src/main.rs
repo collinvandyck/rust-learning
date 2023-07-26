@@ -19,7 +19,7 @@ struct Args {
     filename: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Point(u32, u32, u32);
 impl Point {
     fn parse(line: String) -> Self {
@@ -99,5 +99,5 @@ fn test_point_squares() {
     )
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Square(Point, Point);
