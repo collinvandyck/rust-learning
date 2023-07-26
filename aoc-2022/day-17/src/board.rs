@@ -11,22 +11,22 @@ use crate::prelude::*;
 pub struct Board {
     width: i32, // always 7
     rocks: HashSet<Point>,
-    entities: Vec<Entity>,
     shapes: Shapes, // iterator
     gusts: Gusts,   // iterator
+    highest_y: i32,
 }
 
 impl Board {
     pub fn new(shapes: Shapes, gusts: Gusts) -> Self {
         let width = 7;
-        let entities = vec![];
         let rocks = HashSet::new();
+        let highest_y = 0;
         Self {
             width,
             rocks,
-            entities,
             shapes,
             gusts,
+            highest_y,
         }
     }
 
@@ -34,7 +34,8 @@ impl Board {
     pub fn run(&mut self, num_rocks: usize) {
         for count in 0..num_rocks {
             if count % 1000 == 0 {
-                println!("{count}");
+                let pct = count as f64 / num_rocks as f64 * 100 as f64;
+                println!("{count} ({pct:0.2})");
             }
             let shape = self.shapes.next().unwrap();
             let entity = self.shape_to_entity(shape); // figure out where to put the entity
@@ -70,7 +71,14 @@ impl Board {
                 break;
             }
         }
-        self.entities.push(entity);
+        self.add_rocks(&entity.points);
+    }
+
+    fn add_rocks(&mut self, points: &Points) {
+        for point in points.0.iter() {
+            self.rocks.insert(*point);
+            self.highest_y = i32::max(self.highest_y, point.1);
+        }
     }
 
     fn is_space_available(&self, points: &Points) -> bool {
@@ -80,10 +88,7 @@ impl Board {
         }
         // next check to make sure that there is space on the board. if there
         // are any points that overlap, we must return false.
-        self.entities.iter().flat_map(|e| e.points.iter()).all(|p| {
-            // p cannot be in any of the points
-            !points.iter().any(|can| p.0 == can.0 && p.1 == can.1)
-        })
+        points.iter().all(|p| !self.rocks.contains(p))
     }
 
     fn shape_to_entity(&mut self, shape: Shape) -> Entity {
@@ -98,6 +103,8 @@ impl Board {
     }
 
     fn render(&self) -> String {
+        "render not implemented yet".to_string()
+        /*
         let mut points = self.sorted_points().into_iter().peekable();
         let mut lines = vec![];
         for y in (1..=self.highest_rock_y()).rev() {
@@ -116,27 +123,12 @@ impl Board {
         }
         lines.push(format!("+{}+", "-".repeat(self.width as usize)));
         lines.join("\n")
-    }
-
-    fn sorted_points(&self) -> Vec<Point> {
-        let mut points = self
-            .entities
-            .iter()
-            .flat_map(|e| e.points.iter())
-            .copied()
-            .collect::<Vec<_>>();
-        points.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-        points
+        */
     }
 
     /// returns the highest rock y position. The floor is represented at y=0.
     fn highest_rock_y(&self) -> i32 {
-        self.entities
-            .iter()
-            .flat_map(|e| e.points.0.iter())
-            .map(|p| p.1)
-            .max()
-            .unwrap_or(0)
+        self.highest_y
     }
     pub fn height(&self) -> i32 {
         self.highest_rock_y()
@@ -158,7 +150,7 @@ struct Entity {
     points: Points,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Point(pub i32, pub i32);
 
 impl Point {
