@@ -29,6 +29,18 @@ fn part_one(lines: &[String]) {
     println!("Part 1 count: {count}");
 }
 
+// part 2 needs to also count the surface area but only include the
+// area for sides/squares that are exposed to the air. cubes of air
+// that are wholly contained by other sides in some way should not
+// be counted.
+//
+// one approach might involve gathering all of the squares that are
+// not overlapped by other cube squares (i.e. the output of part one)
+// and then determine if that square can reach the air. this is difficult
+// because a square could be part of a larger structure, like a tunnel
+// with many bends but which ultimately is exposed to the air. this doesn't
+// seem that feasible... another representation of the data seems like
+// it might be more approachable.
 fn part_two(lines: &[String]) {
     let mut lookup: HashMap<Square, usize> = HashMap::new();
     for line in lines.iter() {
