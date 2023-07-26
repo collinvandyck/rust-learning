@@ -27,13 +27,13 @@ struct Args {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Point(u32, u32, u32);
+struct Point(i32, i32, i32);
 impl Point {
     fn parse(line: String) -> Self {
         let mut iter = line.split(',');
-        let x = iter.next().unwrap().parse::<u32>().unwrap();
-        let y = iter.next().unwrap().parse::<u32>().unwrap();
-        let z = iter.next().unwrap().parse::<u32>().unwrap();
+        let x = iter.next().unwrap().parse::<i32>().unwrap();
+        let y = iter.next().unwrap().parse::<i32>().unwrap();
+        let z = iter.next().unwrap().parse::<i32>().unwrap();
         Self(x, y, z)
     }
 
