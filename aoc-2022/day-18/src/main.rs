@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs::File,
     io::{BufRead, BufReader},
 };
@@ -7,10 +8,16 @@ use clap::Parser;
 
 fn main() {
     let args = Args::parse();
+    let mut lookup: HashMap<Square, usize> = HashMap::new();
     for line in BufReader::new(File::open(&args.filename).unwrap()).lines() {
         let point = Point::parse(line.unwrap());
-        println!("{point:?}");
+        for square in point.squares() {
+            let entry = lookup.entry(square).or_insert(0);
+            *entry += 1;
+        }
     }
+    let count = lookup.iter().filter(|&(_a, b)| *b == 1).count();
+    println!("Count: {count}");
 }
 
 #[derive(Parser)]
