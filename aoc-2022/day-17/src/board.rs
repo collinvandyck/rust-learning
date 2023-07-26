@@ -19,9 +19,11 @@ impl Board {
 
     /// the main run loop.
     pub fn run(&mut self) {
-        let shape = self.shapes.next().unwrap();
-        let entity = self.shape_to_entity(shape); // figure out where to put the entity
-        self.drop(entity);
+        for _ in 0..10 {
+            let shape = self.shapes.next().unwrap();
+            let entity = self.shape_to_entity(shape); // figure out where to put the entity
+            self.drop(entity);
+        }
         println!("{self}");
     }
 
