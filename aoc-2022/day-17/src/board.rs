@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     fmt::Display,
     ops::{AddAssign, Deref, DerefMut},
 };
@@ -20,8 +20,10 @@ impl Board {
     pub fn new(shapes: Shapes, gusts: Gusts) -> Self {
         let width = 7;
         let entities = vec![];
+        let rocks = HashSet::new();
         Self {
             width,
+            rocks,
             entities,
             shapes,
             gusts,
