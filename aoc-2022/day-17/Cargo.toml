@@ -10,3 +10,6 @@ clap = { version = "4.3.19", features = ["derive"] }
 rand = "0.8.5"
 regex = "1.9.1"
 thiserror = "1.0.44"
+
+[profile.release]
+debug = 1
