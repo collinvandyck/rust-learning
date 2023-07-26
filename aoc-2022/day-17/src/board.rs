@@ -32,7 +32,7 @@ impl Board {
 
     /// the main run loop.
     pub fn run(&mut self, num_rocks: usize) {
-        for count in 0..=num_rocks {
+        for count in 0..num_rocks {
             if count % 1000 == 0 {
                 println!("{count}");
             }
