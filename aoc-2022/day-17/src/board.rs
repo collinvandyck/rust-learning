@@ -17,6 +17,7 @@ impl Board {
         }
     }
 
+    /// the main run loop.
     pub fn run(&mut self) {
         let shape = self.shapes.next().unwrap();
         let entity = self.shape_to_entity(shape); // figure out where to put the entity
@@ -28,9 +29,19 @@ impl Board {
     /// at which point the method will exit.
     fn drop(&mut self, entity: Entity) {
         if let Some(gust) = self.gusts.next() {
-            println!("{gust:?}");
+            let adjustment = match gust {
+                Gust::Left => Point(-1, 0),
+                Gust::Right => Point(1, 0),
+            };
+            if self.is_space_available(&entity, adjustment) {
+                // make the adjustment
+            }
         }
         self.entities.push(entity);
+    }
+
+    fn is_space_available(&self, entity: &Entity, adjustment: Point) -> bool {
+        todo!()
     }
 
     fn shape_to_entity(&mut self, shape: Shape) -> Entity {
@@ -123,6 +134,17 @@ impl AddAssign for Point {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Points(Vec<Point>);
+
+impl Points {
+    pub fn add(&self, point: Point) -> Points {
+        Points(
+            self.0
+                .iter()
+                .map(|p| Point(p.0 + point.0, p.1 + point.1))
+                .collect::<Vec<_>>(),
+        )
+    }
+}
 
 impl Deref for Points {
     type Target = Vec<Point>;
