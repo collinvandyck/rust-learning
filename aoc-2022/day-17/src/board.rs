@@ -18,13 +18,19 @@ impl Board {
     }
 
     /// the main run loop.
-    pub fn run(&mut self) {
-        for _ in 0..2022 {
+    pub fn run(&mut self, num_rocks: usize) {
+        for count in 0..=num_rocks {
+            if count % 1000 == 0 {
+                println!("{count}");
+            }
             let shape = self.shapes.next().unwrap();
             let entity = self.shape_to_entity(shape); // figure out where to put the entity
             self.drop(entity);
         }
-        println!("{self}");
+        if num_rocks < 5000 {
+            println!("{self}");
+        }
+        println!("Height: {}", self.height());
     }
 
     /// alternates between gusting and dropping until the entity comes to rest,
@@ -38,14 +44,14 @@ impl Board {
                     Gust::Right => Point(1, 0),
                 };
                 let candidate_points = entity.points.add(adjustment);
-                if self.is_space_available(&entity, &candidate_points) {
+                if self.is_space_available(&candidate_points) {
                     entity.points = candidate_points;
                 }
             }
             // adjust for drop
             let adjustment = Point(0, -1);
             let candidate_points = entity.points.add(adjustment);
-            if self.is_space_available(&entity, &candidate_points) {
+            if self.is_space_available(&candidate_points) {
                 entity.points = candidate_points;
             } else {
                 break;
@@ -54,7 +60,7 @@ impl Board {
         self.entities.push(entity);
     }
 
-    fn is_space_available(&self, entity: &Entity, points: &Points) -> bool {
+    fn is_space_available(&self, points: &Points) -> bool {
         // first check to make sure the points are in bounds
         if !points.in_bounds(self.width) {
             return false;
@@ -118,6 +124,9 @@ impl Board {
             .map(|p| p.1)
             .max()
             .unwrap_or(0)
+    }
+    pub fn height(&self) -> i32 {
+        self.highest_rock_y()
     }
 }
 

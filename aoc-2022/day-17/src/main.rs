@@ -21,6 +21,9 @@ use prelude::*;
 struct Args {
     #[arg(short, default_value = "example.txt")]
     pub filename: String,
+
+    #[arg(short, default_value_t = 2022)]
+    pub num_rocks: usize,
 }
 
 fn main() {
@@ -38,7 +41,7 @@ fn part_1(args: &Args) {
     let shapes = shapes().into_iter();
     let shapes = Box::new(shapes);
     let mut board = Board::new(shapes, gusts);
-    board.run();
+    board.run(args.num_rocks);
 }
 
 fn load_gusts(args: &Args) -> Gusts {
