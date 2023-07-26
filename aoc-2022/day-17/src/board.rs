@@ -1,9 +1,20 @@
 use std::{
+    collections::{HashMap, HashSet},
     fmt::Display,
     ops::{AddAssign, Deref, DerefMut},
 };
 
 use crate::prelude::*;
+
+// the floor is at level y = 0. positions above
+// the board are at y > 0.
+pub struct Board {
+    width: i32, // always 7
+    rocks: HashSet<Point>,
+    entities: Vec<Entity>,
+    shapes: Shapes, // iterator
+    gusts: Gusts,   // iterator
+}
 
 impl Board {
     pub fn new(shapes: Shapes, gusts: Gusts) -> Self {
@@ -134,15 +145,6 @@ impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.render())
     }
-}
-
-// the floor is at level y = 0. positions above
-// the board are at y > 0.
-pub struct Board {
-    width: i32, // always 7
-    entities: Vec<Entity>,
-    shapes: Shapes,
-    gusts: Gusts,
 }
 
 type Shapes = Box<dyn Iterator<Item = Shape>>;
