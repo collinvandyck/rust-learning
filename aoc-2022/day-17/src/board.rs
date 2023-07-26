@@ -48,8 +48,10 @@ impl Board {
         }
         // next check to make sure that there is space on the board. if there
         // are any points that overlap, we must return false.
-
-        todo!()
+        self.entities.iter().flat_map(|e| e.points.iter()).all(|p| {
+            // p cannot be in any of the points
+            !points.iter().any(|can| p.0 == can.0 && p.1 == can.1)
+        })
     }
 
     fn shape_to_entity(&mut self, shape: Shape) -> Entity {
