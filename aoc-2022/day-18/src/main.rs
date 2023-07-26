@@ -13,6 +13,7 @@ fn main() {
         .flatten();
     let lines = lines.collect::<Vec<_>>();
     part_one(&lines);
+    part_two(&lines);
 }
 
 fn part_one(lines: &[String]) {
@@ -25,7 +26,20 @@ fn part_one(lines: &[String]) {
         }
     }
     let count = lookup.iter().filter(|&(_a, b)| *b == 1).count();
-    println!("Count: {count}");
+    println!("Part 1 count: {count}");
+}
+
+fn part_two(lines: &[String]) {
+    let mut lookup: HashMap<Square, usize> = HashMap::new();
+    for line in lines.iter() {
+        let point = Point::parse(line.to_string());
+        for square in point.squares() {
+            let entry = lookup.entry(square).or_insert(0);
+            *entry += 1;
+        }
+    }
+    let count = lookup.iter().filter(|&(_a, b)| *b == 1).count();
+    println!("Part 2 count: {count}");
 }
 
 #[derive(Parser)]
