@@ -8,9 +8,17 @@ use clap::Parser;
 
 fn main() {
     let args = Args::parse();
+    let lines = BufReader::new(File::open(&args.filename).unwrap())
+        .lines()
+        .flatten();
+    let lines = lines.collect::<Vec<_>>();
+    part_one(&lines);
+}
+
+fn part_one(lines: &Vec<String>) {
     let mut lookup: HashMap<Square, usize> = HashMap::new();
-    for line in BufReader::new(File::open(&args.filename).unwrap()).lines() {
-        let point = Point::parse(line.unwrap());
+    for line in lines.iter() {
+        let point = Point::parse(line.to_string());
         for square in point.squares() {
             let entry = lookup.entry(square).or_insert(0);
             *entry += 1;
