@@ -41,6 +41,16 @@ fn part_one(lines: &[String]) {
 // with many bends but which ultimately is exposed to the air. this doesn't
 // seem that feasible... another representation of the data seems like
 // it might be more approachable.
+//
+// Another approach might be to first detect any blank spaces in the
+// structure by taking slices of the structure, and determining if
+// there are any gaps. For each of these gaps, then run a pathing
+// algorithm to determine if you can escape. for each cub that
+// the pathing fails to reach the outside, that cube would be subtracted
+// from the total surface area.
+//
+// I would probably start by first determining the min and max x, y, and z.
+// From there start at the max z
 fn part_two(lines: &[String]) {
     let mut lookup: HashMap<Square, usize> = HashMap::new();
     for line in lines.iter() {
