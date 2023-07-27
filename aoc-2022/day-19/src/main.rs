@@ -9,9 +9,12 @@ use regex::Regex;
 
 fn main() {
     let config = Config::parse();
-    let lines = BufReader::new(File::open(&config.filename).unwrap()).lines();
-    for line in lines.flatten() {
-        let blueprint = Blueprint::parse(&line);
+    let blueprints = BufReader::new(File::open(&config.filename).unwrap())
+        .lines()
+        .flatten()
+        .map(|l| Blueprint::parse(&l))
+        .collect::<Vec<_>>();
+    for blueprint in blueprints {
         println!("{blueprint:?}");
     }
 }
@@ -32,6 +35,7 @@ lazy_static! {
     //Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
     static ref RE: Regex = Regex::new(r#"Blueprint (\d+): Each ore robot costs (\d+) ore. Each clay robot costs (\d+) ore. Each obsidian robot costs (\d+) ore and (\d+) clay. Each geode robot costs (\d+) ore and (\d+) obsidian."#).unwrap();
 }
+
 impl Blueprint {
     fn parse(line: &str) -> Blueprint {
         let caps = RE.captures(line).unwrap();
