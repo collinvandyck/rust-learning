@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::{
     fs::File,
     io::{BufRead, BufReader},
@@ -14,7 +17,7 @@ fn main() {
         .flatten()
         .map(|l| Blueprint::parse(&l))
         .collect::<Vec<_>>();
-    for blueprint in blueprints {
+    for blueprint in blueprints.iter().take(1) {
         println!("{blueprint:?}");
     }
 }
