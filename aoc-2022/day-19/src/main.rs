@@ -1,4 +1,5 @@
 use clap::Parser;
+use lazy_static::lazy_static;
 use regex::Regex;
 
 fn main() {
@@ -16,8 +17,9 @@ struct Blueprint {
     idx: usize,
 }
 
+lazy_static! {
+    static ref RE: Regex = Regex::new(r#""#).unwrap();
+}
 impl Blueprint {
-    fn parse(line: &str) -> Blueprint {
-        let re = Regex::new(r#""#).unwrap();
-    }
+    fn parse(line: &str) -> Blueprint {}
 }
