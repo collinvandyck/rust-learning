@@ -17,9 +17,16 @@ fn main() {
         .flatten()
         .map(|l| Blueprint::parse(&l))
         .collect::<Vec<_>>();
-    for blueprint in blueprints.iter().take(1) {
-        println!("{blueprint:?}");
-    }
+    let factory = Factory { blueprints };
+    factory.solve();
+}
+
+struct Factory {
+    blueprints: Vec<Blueprint>,
+}
+
+impl Factory {
+    fn solve(&self) {}
 }
 
 #[derive(Parser)]
