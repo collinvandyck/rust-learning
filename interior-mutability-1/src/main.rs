@@ -35,6 +35,14 @@ mod rc {
         let c: List = Cons(12, Rc::clone(&a));
         assert_eq!(Rc::strong_count(&a), 3);
     }
+    #[test]
+    fn test_weak() {
+        let a = Rc::new(5);
+        assert_eq!(Rc::strong_count(&a), 1);
+        let b = Rc::downgrade(&a);
+        assert_eq!(Rc::strong_count(&a), 1);
+        assert_eq!(Rc::weak_count(&a), 1);
+    }
 }
 
 fn box_example() {
