@@ -31,6 +31,7 @@ mod rc {
         let a: Rc<List> = Rc::new(Cons(42, Rc::new(Nil)));
         assert_eq!(Rc::strong_count(&a), 1);
         let b: List = Cons(11, Rc::clone(&a));
+        assert_eq!(Rc::strong_count(&a), 2);
         let c: List = Cons(12, Rc::clone(&a));
         assert_eq!(Rc::strong_count(&a), 3);
     }
