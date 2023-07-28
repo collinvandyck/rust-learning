@@ -9,8 +9,7 @@ mod rc {
         Cons(i32, Rc<List>),
         Nil,
     }
-    use List::Cons;
-    use List::Nil;
+    use List::*;
 
     #[test]
     fn test() {
