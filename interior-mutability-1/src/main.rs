@@ -17,14 +17,15 @@ mod rc {
         let b: List = Cons(11, Rc::clone(&a));
         let c: List = Cons(12, Rc::clone(&a));
     }
-}
-
-fn rc_panic_example() {
-    let mut r = Rc::new(String::new());
-    let _r2 = r.clone();
-    // fails because we have another reference to the rc, so get_mut will return a None.
-    Rc::get_mut(&mut r).unwrap().push_str("foo");
-    println!("{}", r);
+    #[test]
+    fn test_get_mut() {
+        let mut r = Rc::new(String::from("foobar"));
+        assert_eq!(Rc::get_mut(&mut r), Some(&mut "foobar".to_string()));
+        let holdup = r.clone();
+        assert_eq!(Rc::get_mut(&mut r), None);
+        drop(holdup);
+        assert_eq!(Rc::get_mut(&mut r), Some(&mut "foobar".to_string()));
+    }
 }
 
 fn box_example() {
