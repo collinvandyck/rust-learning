@@ -13,9 +13,9 @@ mod rc {
 
     #[test]
     fn test() {
-        let a = Rc::new(Cons(42, Rc::new(Nil)));
-        let b = Cons(11, Rc::clone(&a));
-        let c = Cons(12, Rc::clone(&a));
+        let a: Rc<List> = Rc::new(Cons(42, Rc::new(Nil)));
+        let b: List = Cons(11, Rc::clone(&a));
+        let c: List = Cons(12, Rc::clone(&a));
     }
 }
 
