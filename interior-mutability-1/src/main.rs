@@ -26,6 +26,14 @@ mod rc {
         drop(holdup);
         assert_eq!(Rc::get_mut(&mut r), Some(&mut "foobar".to_string()));
     }
+    #[test]
+    fn test_counts() {
+        let a: Rc<List> = Rc::new(Cons(42, Rc::new(Nil)));
+        assert_eq!(Rc::strong_count(&a), 1);
+        let b: List = Cons(11, Rc::clone(&a));
+        let c: List = Cons(12, Rc::clone(&a));
+        assert_eq!(Rc::strong_count(&a), 3);
+    }
 }
 
 fn box_example() {
