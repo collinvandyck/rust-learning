@@ -42,6 +42,14 @@ mod rc {
         let b = Rc::downgrade(&a);
         assert_eq!(Rc::strong_count(&a), 1);
         assert_eq!(Rc::weak_count(&a), 1);
+        let c = Rc::downgrade(&a);
+        assert_eq!(Rc::strong_count(&a), 1);
+        assert_eq!(Rc::weak_count(&a), 2);
+        drop(c);
+        assert_eq!(Rc::strong_count(&a), 1);
+        assert_eq!(Rc::weak_count(&a), 1);
+        drop(a);
+        assert_eq!(b.upgrade(), None);
     }
 }
 
