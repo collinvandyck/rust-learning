@@ -110,7 +110,12 @@ impl<'a> State<'a> {
             // we don't need to do anything.
             return vec![];
         }
+        let robots = self.num_robots(&resource);
         vec![Action::Wait(amount - inv)]
+    }
+
+    fn num_robots(&self, resource: &Resource) -> u64 {
+        *self.robots.get(resource).unwrap_or(&0)
     }
 
     fn get_amount(&self, resource: &Resource) -> u64 {
