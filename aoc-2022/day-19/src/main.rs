@@ -161,10 +161,11 @@ impl<'a> State<'a> {
     }
 
     fn build_plan(&self, resource: Resource, amount: u64) -> Vec<Action> {
-        if self.get_amount(&resource) > amount {
+        let inv = self.get_amount(&resource);
+        if inv >= amount {
             return vec![];
         }
-        vec![Action::Wait]
+        (0..amount - inv).map(|_| Action::Wait).collect::<Vec<_>>()
     }
 
     fn get_amount(&self, resource: &Resource) -> u64 {
@@ -190,7 +191,7 @@ fn test_build_plan() {
     assert_eq!(plan, vec![Action::Wait]);
 
     let plan = state.build_plan(Resource::Ore, 2);
-    assert_eq!(plan, vec![Action::Wait]);
+    assert_eq!(plan, vec![Action::Wait, Action::Wait]);
 }
 
 #[derive(Debug, PartialEq, Eq)]
