@@ -1,16 +1,17 @@
 #![allow(dead_code)]
 #![warn(clippy::all, clippy::pedantic)]
 
+use clap::Parser;
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::{
     collections::HashMap,
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
 };
-
-use clap::Parser;
-use lazy_static::lazy_static;
-use regex::Regex;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 fn main() {
     let config = Config::parse();
@@ -48,7 +49,7 @@ impl<'a> Solver<'a> {
         Self { blueprint }
     }
     fn solve(&mut self) {
-        let mut state = State::new(&self.blueprint);
+        let state = State::new(self.blueprint);
         println!("Solving for {}", self.blueprint);
         println!("State: {state}");
     }
@@ -74,7 +75,10 @@ impl Display for State<'_> {
 
 impl<'a> State<'a> {
     fn new(blueprint: &'a Blueprint) -> Self {
-        let amounts = HashMap::new();
+        let mut amounts = HashMap::new();
+        Resource::iter().for_each(|r| {
+            amounts.insert(r, 0);
+        });
         Self { blueprint, amounts }
     }
 }
@@ -176,10 +180,7 @@ impl Display for Robot {
     }
 }
 
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
-
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIter, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Resource {
     Ore,
     Clay,
