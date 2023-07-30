@@ -14,6 +14,8 @@ use std::{
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
+const MAX_TURNS: usize = 24;
+
 fn main() {
     let config = Config::parse();
     let blueprints = BufReader::new(File::open(config.filename).unwrap())
@@ -69,7 +71,7 @@ impl<'a> State<'a> {
         let amounts = Resource::iter().map(|r| (r, 0)).collect();
         // we always start with one ore collecting robot
         let robots = HashMap::from([(Resource::Ore, 1)]);
-        let max_turns = 24;
+        let max_turns = MAX_TURNS;
         let turn = 0;
         Self {
             blueprint,
