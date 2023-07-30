@@ -52,34 +52,50 @@ impl<'a> Solver<'a> {
     fn solve(&mut self) {
         let state = State::new(self.blueprint);
         println!("Solving for {}", self.blueprint);
-        println!("State: {state}");
+        println!("{state}");
     }
 }
 
 struct State<'a> {
     blueprint: &'a Blueprint,
     amounts: HashMap<Resource, u64>,
+    robots: HashMap<Resource, u64>,
+    max_turns: usize,
+    turn: usize,
 }
 
 impl<'a> State<'a> {
     fn new(blueprint: &'a Blueprint) -> Self {
-        let mut amounts = HashMap::new();
-        Resource::iter().for_each(|r| {
-            amounts.insert(r, 0);
-        });
-        Self { blueprint, amounts }
+        let amounts = Resource::iter().map(|r| (r, 0)).collect();
+        // we always start with one ore collecting robot
+        let robots = HashMap::from([(Resource::Ore, 1)]);
+        let max_turns = 24;
+        let turn = 0;
+        Self {
+            blueprint,
+            amounts,
+            robots,
+            max_turns,
+            turn,
+        }
     }
 }
 
 impl Display for State<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let keys = self.amounts.keys().sorted().collect::<Vec<_>>();
-        let amounts = keys
-            .into_iter()
+        let amounts = self
+            .amounts
+            .keys()
+            .sorted()
             .map(|k| format!("{}={}", k, self.amounts[k]))
-            .collect::<Vec<_>>()
             .join(", ");
-        write!(f, "{amounts}")
+        let robots = self
+            .robots
+            .keys()
+            .sorted()
+            .map(|k| format!("{}={}", k, self.robots[k]))
+            .join(",");
+        write!(f, "Amounts: {amounts}\nRobots:  {robots}")
     }
 }
 
