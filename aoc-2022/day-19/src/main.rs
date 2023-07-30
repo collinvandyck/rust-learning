@@ -179,7 +179,7 @@ fn test_build_plan() {
     };
     let state = State::new(&blueprint);
     let plan = state.build_plan(Resource::Ore, 1);
-    assert_eq!(plan, vec![Action::Wait])
+    assert_eq!(plan, vec![])
 }
 
 #[derive(Debug, PartialEq, Eq)]
