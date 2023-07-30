@@ -16,6 +16,11 @@ use strum_macros::EnumIter;
 
 const MAX_TURNS: usize = 24;
 
+lazy_static! {
+    //Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
+    static ref RE: Regex = Regex::new(r#"Blueprint (\d+): Each ore robot costs (\d+) ore. Each clay robot costs (\d+) ore. Each obsidian robot costs (\d+) ore and (\d+) clay. Each geode robot costs (\d+) ore and (\d+) obsidian."#).unwrap();
+}
+
 fn main() {
     let config = Config::parse();
     let blueprints = BufReader::new(File::open(config.filename).unwrap())
@@ -56,6 +61,14 @@ impl<'a> Solver<'a> {
         println!("Solving for {}\n", self.blueprint);
         println!("{state}");
     }
+}
+
+/// Action is something we can do. This can be doing nothing, or making a robot
+struct Action {}
+
+enum ActionType {
+    Noop,
+    MakeRobot(Resource),
 }
 
 struct State<'a> {
@@ -117,11 +130,6 @@ struct Config {
 struct Blueprint {
     idx: i32,
     robots: Vec<Robot>,
-}
-
-lazy_static! {
-    //Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
-    static ref RE: Regex = Regex::new(r#"Blueprint (\d+): Each ore robot costs (\d+) ore. Each clay robot costs (\d+) ore. Each obsidian robot costs (\d+) ore and (\d+) clay. Each geode robot costs (\d+) ore and (\d+) obsidian."#).unwrap();
 }
 
 impl Display for Blueprint {
