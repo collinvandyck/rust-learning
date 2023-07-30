@@ -53,7 +53,7 @@ impl<'a> Solver<'a> {
     }
     fn solve(&mut self) {
         let state = State::new(self.blueprint);
-        println!("Solving for {}", self.blueprint);
+        println!("Solving for {}\n", self.blueprint);
         println!("{state}");
     }
 }
@@ -87,7 +87,11 @@ impl Display for State<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let amounts = display_map(&self.amounts);
         let robots = display_map(&self.robots);
-        write!(f, "Amounts: {amounts}\nRobots:  {robots}")
+        write!(
+            f,
+            "Turn:    {}\nAmounts: {amounts}\nRobots:  {robots}",
+            self.turn
+        )
     }
 }
 
