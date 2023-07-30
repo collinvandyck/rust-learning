@@ -160,11 +160,11 @@ impl<'a> State<'a> {
         *self.amounts.get(&Resource::Geode).unwrap_or(&0_u64)
     }
 
-    fn build_plan(&self, resource: Resource, amount: u64) -> Option<Vec<Action>> {
+    fn build_plan(&self, resource: Resource, amount: u64) -> Vec<Action> {
         if self.get_amount(&resource) > amount {
-            return None;
+            return vec![];
         }
-        Some(vec![])
+        vec![Action::Wait]
     }
 
     fn get_amount(&self, resource: &Resource) -> u64 {
@@ -187,10 +187,10 @@ fn test_build_plan() {
     let state = State::new(&blueprint);
 
     let plan = state.build_plan(Resource::Ore, 1);
-    assert_eq!(plan, None);
+    assert_eq!(plan, vec![Action::Wait]);
 
     let plan = state.build_plan(Resource::Ore, 2);
-    assert_eq!(plan, Some(vec![Action::Wait]));
+    assert_eq!(plan, vec![Action::Wait]);
 }
 
 #[derive(Debug, PartialEq, Eq)]
