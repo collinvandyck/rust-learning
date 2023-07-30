@@ -2,6 +2,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use std::{
+    fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
 };
@@ -29,6 +30,20 @@ struct Factory {
 impl Factory {
     fn solve(&self) {
         println!("Solving for {} blueprints.", self.blueprints.len());
+        for blueprint in &self.blueprints {
+            let state = State { blueprint };
+            state.solve();
+        }
+    }
+}
+
+struct State<'a> {
+    blueprint: &'a Blueprint,
+}
+
+impl<'a> State<'a> {
+    fn solve(&self) {
+        println!("Solving for {}", self.blueprint);
     }
 }
 
@@ -47,6 +62,18 @@ struct Blueprint {
 lazy_static! {
     //Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
     static ref RE: Regex = Regex::new(r#"Blueprint (\d+): Each ore robot costs (\d+) ore. Each clay robot costs (\d+) ore. Each obsidian robot costs (\d+) ore and (\d+) clay. Each geode robot costs (\d+) ore and (\d+) obsidian."#).unwrap();
+}
+
+impl Display for Blueprint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let robots = self
+            .robots
+            .iter()
+            .map(|r| format!("{r}"))
+            .collect::<Vec<_>>()
+            .join(",");
+        write!(f, "[{:2}] robots=[{}]", self.idx, robots)
+    }
 }
 
 impl Blueprint {
@@ -105,6 +132,12 @@ struct Robot {
     resource: Resource,
 }
 
+impl Display for Robot {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "r={}", self.resource)
+    }
+}
+
 #[derive(Debug)]
 enum Resource {
     Ore,
@@ -113,8 +146,20 @@ enum Resource {
     Geode,
 }
 
+impl Display for Resource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
 #[derive(Debug)]
 struct Cost {
     resource: Resource,
     amount: i32,
+}
+
+impl Display for Cost {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}x{}", self.amount, self.resource)
+    }
 }
