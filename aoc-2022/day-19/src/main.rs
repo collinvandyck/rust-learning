@@ -176,6 +176,9 @@ impl Display for Robot {
     }
 }
 
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Resource {
     Ore,
