@@ -129,7 +129,7 @@ impl<'a> State<'a> {
         let mut wait = false;
         self.blueprint.robots.iter().for_each(|robot| {
             if self.can_afford(robot) {
-                res.push(Action::Build(robot));
+                res.push(Action::Build(robot.clone()));
             } else {
                 wait = true;
             }
@@ -192,12 +192,18 @@ fn test_build_plan() {
 
     let plan = state.build_plan(Resource::Ore, 2);
     assert_eq!(plan, vec![Action::Wait(2)]);
+
+    let plan = state.build_plan(Resource::Ore, 3);
+    assert_eq!(plan, vec![Action::Wait(3)]);
+
+    let plan = state.build_plan(Resource::Ore, 4);
+    assert_eq!(plan, vec![Action::Wait(4)]);
 }
 
 #[derive(Debug, PartialEq, Eq)]
-enum Action<'a> {
+enum Action {
     Wait(u64),
-    Build(&'a Robot),
+    Build(Robot),
 }
 
 #[test]
@@ -312,7 +318,7 @@ impl Blueprint {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 struct Robot {
     costs: Vec<Cost>,
     resource: Resource,
@@ -344,7 +350,7 @@ impl Display for Resource {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 struct Cost {
     resource: Resource,
     amount: u64,
