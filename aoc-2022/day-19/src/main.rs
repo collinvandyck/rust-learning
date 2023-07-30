@@ -61,6 +61,16 @@ struct State<'a> {
     amounts: HashMap<Resource, u64>,
 }
 
+impl<'a> State<'a> {
+    fn new(blueprint: &'a Blueprint) -> Self {
+        let mut amounts = HashMap::new();
+        Resource::iter().for_each(|r| {
+            amounts.insert(r, 0);
+        });
+        Self { blueprint, amounts }
+    }
+}
+
 impl Display for State<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let keys = self.amounts.keys().sorted().collect::<Vec<_>>();
@@ -70,16 +80,6 @@ impl Display for State<'_> {
             .collect::<Vec<_>>()
             .join(", ");
         write!(f, "{amounts}")
-    }
-}
-
-impl<'a> State<'a> {
-    fn new(blueprint: &'a Blueprint) -> Self {
-        let mut amounts = HashMap::new();
-        Resource::iter().for_each(|r| {
-            amounts.insert(r, 0);
-        });
-        Self { blueprint, amounts }
     }
 }
 
