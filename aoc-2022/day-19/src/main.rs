@@ -10,6 +10,7 @@ use std::{
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
+    vec,
 };
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -41,7 +42,7 @@ impl Factory {
     fn solve(&self) {
         println!("Solving for {} blueprints.", self.blueprints.len());
         for blueprint in &self.blueprints {
-            let mut solver = Solver::new(blueprint);
+            let solver = Solver::new(blueprint);
             solver.solve();
         }
     }
@@ -56,19 +57,23 @@ impl<'a> Solver<'a> {
     fn new(blueprint: &'a Blueprint) -> Self {
         Self { blueprint }
     }
-    fn solve(&mut self) {
-        let state = State::new(self.blueprint);
+    fn solve(&self) {
         println!("Solving for {}\n", self.blueprint);
-        println!("{state}");
+        let state = State::new(self.blueprint);
+        let state = self.solve_state(state);
+        println!("Solution:\n{state}");
     }
-}
-
-/// Action is something we can do. This can be doing nothing, or making a robot
-struct Action {}
-
-enum ActionType {
-    Noop,
-    MakeRobot(Resource),
+    fn solve_state(&self, state: State<'a>) -> State<'a> {
+        if state.is_done() {
+            return state;
+        }
+        let mut solution: Option<State<'a>> = None;
+        let nexts = state.next_states();
+        for next in nexts {
+            self.solve_state(next);
+        }
+        state
+    }
 }
 
 struct State<'a> {
@@ -94,6 +99,23 @@ impl<'a> State<'a> {
             turn,
         }
     }
+    fn next_states(&self) -> Vec<State<'a>> {
+        vec![]
+    }
+    fn is_done(&self) -> bool {
+        self.turn == self.max_turns
+    }
+    /// Returns the number of geode resources
+    fn score(&self) -> u64 {
+        *self.amounts.get(&Resource::Geode).unwrap_or(&0_u64)
+    }
+}
+
+#[test]
+fn test_index_hashmap() {
+    let m = HashMap::from([(Resource::Ore, 1)]);
+    assert_eq!(m[&Resource::Ore], 1);
+    assert_eq!(m.get(&Resource::Geode).unwrap_or(&42), &42);
 }
 
 impl Display for State<'_> {
