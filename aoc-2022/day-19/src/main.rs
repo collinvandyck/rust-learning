@@ -12,10 +12,11 @@ use regex::Regex;
 
 fn main() {
     let config = Config::parse();
-    let blueprints = BufReader::new(File::open(&config.filename).unwrap())
+    let blueprints = BufReader::new(File::open(config.filename).unwrap())
         .lines()
         .flatten()
         .map(|l| Blueprint::parse(&l))
+        .take(1)
         .collect::<Vec<_>>();
     let factory = Factory { blueprints };
     factory.solve();
@@ -26,7 +27,9 @@ struct Factory {
 }
 
 impl Factory {
-    fn solve(&self) {}
+    fn solve(&self) {
+        println!("Solving for {} blueprints.", self.blueprints.len());
+    }
 }
 
 #[derive(Parser)]
@@ -50,47 +53,48 @@ impl Blueprint {
     fn parse(line: &str) -> Blueprint {
         let caps = RE.captures(line).unwrap();
         let idx = caps.get(1).unwrap().as_str().parse::<i32>().unwrap();
-        let mut robots = vec![];
-        robots.push(Robot {
-            resource: Resource::Ore,
-            costs: vec![Cost {
+        let robots = vec![
+            Robot {
                 resource: Resource::Ore,
-                amount: caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
-            }],
-        });
-        robots.push(Robot {
-            resource: Resource::Clay,
-            costs: vec![Cost {
-                resource: Resource::Ore,
-                amount: caps.get(3).unwrap().as_str().parse::<i32>().unwrap(),
-            }],
-        });
-        robots.push(Robot {
-            resource: Resource::Obsidian,
-            costs: vec![
-                Cost {
+                costs: vec![Cost {
                     resource: Resource::Ore,
-                    amount: caps.get(4).unwrap().as_str().parse::<i32>().unwrap(),
-                },
-                Cost {
-                    resource: Resource::Clay,
-                    amount: caps.get(5).unwrap().as_str().parse::<i32>().unwrap(),
-                },
-            ],
-        });
-        robots.push(Robot {
-            resource: Resource::Geode,
-            costs: vec![
-                Cost {
+                    amount: caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
+                }],
+            },
+            Robot {
+                resource: Resource::Clay,
+                costs: vec![Cost {
                     resource: Resource::Ore,
-                    amount: caps.get(6).unwrap().as_str().parse::<i32>().unwrap(),
-                },
-                Cost {
-                    resource: Resource::Obsidian,
-                    amount: caps.get(7).unwrap().as_str().parse::<i32>().unwrap(),
-                },
-            ],
-        });
+                    amount: caps.get(3).unwrap().as_str().parse::<i32>().unwrap(),
+                }],
+            },
+            Robot {
+                resource: Resource::Obsidian,
+                costs: vec![
+                    Cost {
+                        resource: Resource::Ore,
+                        amount: caps.get(4).unwrap().as_str().parse::<i32>().unwrap(),
+                    },
+                    Cost {
+                        resource: Resource::Clay,
+                        amount: caps.get(5).unwrap().as_str().parse::<i32>().unwrap(),
+                    },
+                ],
+            },
+            Robot {
+                resource: Resource::Geode,
+                costs: vec![
+                    Cost {
+                        resource: Resource::Ore,
+                        amount: caps.get(6).unwrap().as_str().parse::<i32>().unwrap(),
+                    },
+                    Cost {
+                        resource: Resource::Obsidian,
+                        amount: caps.get(7).unwrap().as_str().parse::<i32>().unwrap(),
+                    },
+                ],
+            },
+        ];
         Blueprint { idx, robots }
     }
 }
