@@ -37,6 +37,7 @@ impl Factory {
     }
 }
 
+/// Solver finds the optimal solution for one particular blueprint.
 struct Solver<'a> {
     blueprint: &'a Blueprint,
 }
@@ -45,16 +46,6 @@ impl<'a> Solver<'a> {
     fn new(blueprint: &'a Blueprint) -> Self {
         Self { blueprint }
     }
-    fn solve(&self) {
-        println!("Solving for {}", self.blueprint);
-    }
-}
-
-struct State<'a> {
-    blueprint: &'a Blueprint,
-}
-
-impl<'a> State<'a> {
     fn solve(&self) {
         println!("Solving for {}", self.blueprint);
     }
