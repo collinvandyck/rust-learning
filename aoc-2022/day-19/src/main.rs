@@ -42,35 +42,24 @@ impl Factory {
     fn solve(&self) {
         println!("Solving for {} blueprints.", self.blueprints.len());
         for blueprint in &self.blueprints {
-            let solver = Solver::new(blueprint);
-            solver.solve();
+            Self::solve_blueprint(blueprint);
         }
     }
-}
-
-/// Solver finds the optimal solution for one particular blueprint.
-struct Solver<'a> {
-    blueprint: &'a Blueprint,
-}
-
-impl<'a> Solver<'a> {
-    fn new(blueprint: &'a Blueprint) -> Self {
-        Self { blueprint }
-    }
-    fn solve(&self) {
-        println!("Solving for {}\n", self.blueprint);
-        let state = State::new(self.blueprint);
-        let state = self.solve_state(state);
+    fn solve_blueprint(blueprint: &Blueprint) -> State {
+        println!("Solving for {}\n", blueprint);
+        let state = State::new(blueprint);
+        let state = Self::solve_state(state);
         println!("Solution:\n{state}");
+        state
     }
-    fn solve_state(&self, state: State<'a>) -> State<'a> {
+    fn solve_state(state: State) -> State {
         if state.is_done() {
             return state;
         }
-        let mut solution: Option<State<'a>> = None;
+        let mut solution: Option<State> = None;
         let nexts = state.next_states();
         for next in nexts {
-            let this = self.solve_state(next);
+            let this = Self::solve_state(next);
             solution = match solution {
                 Some(prev) if this.score() > prev.score() => Some(this),
                 Some(prev) => Some(prev),
