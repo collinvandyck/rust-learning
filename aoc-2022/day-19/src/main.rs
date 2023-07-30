@@ -71,7 +71,7 @@ impl Display for Blueprint {
             .iter()
             .map(|r| format!("{r}"))
             .collect::<Vec<_>>()
-            .join(",");
+            .join(", ");
         write!(f, "[{:2}] robots=[{}]", self.idx, robots)
     }
 }
@@ -134,7 +134,13 @@ struct Robot {
 
 impl Display for Robot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "r={}", self.resource)
+        let costs = self
+            .costs
+            .iter()
+            .map(|c| format!("{c}"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        write!(f, "{{r:{} c:[{costs}]}}", self.resource)
     }
 }
 
@@ -160,6 +166,6 @@ struct Cost {
 
 impl Display for Cost {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}x{}", self.amount, self.resource)
+        write!(f, "{} {}", self.amount, self.resource)
     }
 }
