@@ -72,7 +72,7 @@ impl Display for Blueprint {
             .map(|r| format!("{r}"))
             .collect::<Vec<_>>()
             .join(", ");
-        write!(f, "[{:2}] robots=[{}]", self.idx, robots)
+        write!(f, "Blueprint{{[{}] robots=[{}]}}", self.idx, robots)
     }
 }
 
