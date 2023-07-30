@@ -85,20 +85,22 @@ impl<'a> State<'a> {
 
 impl Display for State<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let amounts = self
-            .amounts
-            .iter()
-            .sorted()
-            .map(|e| format!("{}={}", e.0, e.1))
-            .join(", ");
-        let robots = self
-            .robots
-            .iter()
-            .sorted()
-            .map(|e| format!("{}={}", e.0, e.1))
-            .join(",");
+        let amounts = display_map(&self.amounts);
+        let robots = display_map(&self.robots);
         write!(f, "Amounts: {amounts}\nRobots:  {robots}")
     }
+}
+
+/// Prints a hashmap's entries. Requires entries be sortable and displayable.
+fn display_map<K, V>(m: &HashMap<K, V>) -> String
+where
+    K: Ord + Display,
+    V: Ord + Display,
+{
+    m.iter()
+        .sorted()
+        .map(|e| format!("{}={}", e.0, e.1))
+        .join(", ")
 }
 
 #[derive(Parser)]
