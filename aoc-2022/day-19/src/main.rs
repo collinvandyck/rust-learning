@@ -58,18 +58,12 @@ impl Factory {
         if state.is_done() {
             return state;
         }
-        let mut solution: Option<State> = None;
-        let nexts = state.next_states();
-        println!("Nexts: {}", nexts.len());
-        for next in nexts {
-            let this = Self::solve_state(depth + 1, next);
-            solution = match solution {
-                Some(prev) if this.score() > prev.score() => Some(this),
-                Some(prev) => Some(prev),
-                None => Some(this),
-            }
-        }
-        solution.unwrap()
+        state
+            .next_states()
+            .into_iter()
+            .map(|s| Self::solve_state(depth + 1, s))
+            .reduce(|a, b| if a.score() > b.score() { a } else { b })
+            .unwrap()
     }
 }
 
