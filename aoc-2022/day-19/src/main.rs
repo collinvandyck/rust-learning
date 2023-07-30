@@ -31,9 +31,22 @@ impl Factory {
     fn solve(&self) {
         println!("Solving for {} blueprints.", self.blueprints.len());
         for blueprint in &self.blueprints {
-            let state = State { blueprint };
-            state.solve();
+            let solver = Solver::new(blueprint);
+            solver.solve();
         }
+    }
+}
+
+struct Solver<'a> {
+    blueprint: &'a Blueprint,
+}
+
+impl<'a> Solver<'a> {
+    fn new(blueprint: &'a Blueprint) -> Self {
+        Self { blueprint }
+    }
+    fn solve(&self) {
+        println!("Solving for {}", self.blueprint);
     }
 }
 
