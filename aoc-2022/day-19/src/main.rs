@@ -97,8 +97,8 @@ impl<'a> State<'a> {
         for action in actions {
             let mut state = self.clone();
             match action {
-                Action::Wait => {
-                    state.mine();
+                Action::Wait(amount) => {
+                    // state.mine();
                 }
                 Action::Build(robot) => {
                     // deduct the cost
@@ -136,7 +136,7 @@ impl<'a> State<'a> {
         });
         if wait {
             // there are some things we can't build so we should add an action to wait.
-            res.push(Action::Wait)
+            //res.push(Action::Wait)
         }
         res
     }
@@ -165,7 +165,7 @@ impl<'a> State<'a> {
         if inv >= amount {
             return vec![];
         }
-        (0..amount - inv).map(|_| Action::Wait).collect::<Vec<_>>()
+        vec![Action::Wait(amount - inv)]
     }
 
     fn get_amount(&self, resource: &Resource) -> u64 {
@@ -188,15 +188,15 @@ fn test_build_plan() {
     let state = State::new(&blueprint);
 
     let plan = state.build_plan(Resource::Ore, 1);
-    assert_eq!(plan, vec![Action::Wait]);
+    assert_eq!(plan, vec![Action::Wait(1)]);
 
     let plan = state.build_plan(Resource::Ore, 2);
-    assert_eq!(plan, vec![Action::Wait, Action::Wait]);
+    assert_eq!(plan, vec![Action::Wait(2)]);
 }
 
 #[derive(Debug, PartialEq, Eq)]
 enum Action<'a> {
-    Wait,
+    Wait(u64),
     Build(&'a Robot),
 }
 
