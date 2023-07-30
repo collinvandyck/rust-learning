@@ -15,7 +15,8 @@ use std::{
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-const MAX_TURNS: usize = 24;
+//const MAX_TURNS: usize = 24;
+const MAX_TURNS: usize = 3;
 
 lazy_static! {
     //Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
@@ -48,18 +49,20 @@ impl Factory {
     fn solve_blueprint(blueprint: &Blueprint) -> State {
         println!("Solving for {}\n", blueprint);
         let state = State::new(blueprint);
-        let state = Self::solve_state(state);
-        println!("Solution (score={}):\n{state}", state.score());
+        let state = Self::solve_state(0, state);
+        println!("\nSolution (score={}):\n{state}", state.score());
         state
     }
-    fn solve_state(state: State) -> State {
+    fn solve_state(depth: usize, state: State) -> State {
+        println!("\nSolve state (depth={depth})\n{state}");
         if state.is_done() {
             return state;
         }
         let mut solution: Option<State> = None;
         let nexts = state.next_states();
+        println!("Nexts: {}", nexts.len());
         for next in nexts {
-            let this = Self::solve_state(next);
+            let this = Self::solve_state(depth + 1, next);
             solution = match solution {
                 Some(prev) if this.score() > prev.score() => Some(this),
                 Some(prev) => Some(prev),
@@ -96,12 +99,42 @@ impl<'a> State<'a> {
     }
     fn next_states(&self) -> Vec<State<'a>> {
         let mut res = vec![];
+        let actions = self.actions();
+        for action in actions {
+            let mut state = self.clone();
+            if let Some(robot) = action {
+                // deduct the cost
+                robot.costs.iter().for_each(|Cost { resource, amount }| {
+                    *state.amounts.entry(*resource).or_insert(0) -= *amount;
+                });
+                // then mine
+                state.mine();
+                // then push the robot so that it can be active
+                *state.robots.entry(robot.resource).or_insert(0) += 1;
+            } else {
+                state.mine();
+            }
+            res.push(state);
+        }
+        res
+    }
 
-        // do nothing.
-        let mut clone = self.clone();
-        clone.mine();
-        res.push(clone);
+    fn can_afford(&self, robot: &Robot) -> bool {
+        robot
+            .costs
+            .iter()
+            .map(|Cost { resource, amount }| (self.amounts.get(resource).unwrap_or(&0), amount))
+            .all(|(has, wants)| has >= wants)
+    }
 
+    fn actions(&self) -> Vec<Option<&Robot>> {
+        let mut res = vec![];
+        res.push(None);
+        self.blueprint.robots.iter().for_each(|robot| {
+            if self.can_afford(robot) {
+                res.push(Some(robot));
+            }
+        });
         res
     }
 
@@ -136,9 +169,10 @@ impl Display for State<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let amounts = display_map(&self.amounts);
         let robots = display_map(&self.robots);
+        let score = self.score();
         write!(
             f,
-            "Turn:    {}\nAmounts: {amounts}\nRobots:  {robots}",
+            "Score:   {score}\nTurn:    {}\nAmounts: {amounts}\nRobots:  {robots}",
             self.turn
         )
     }
@@ -189,14 +223,14 @@ impl Blueprint {
                 resource: Resource::Ore,
                 costs: vec![Cost {
                     resource: Resource::Ore,
-                    amount: caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
+                    amount: caps.get(2).unwrap().as_str().parse::<u64>().unwrap(),
                 }],
             },
             Robot {
                 resource: Resource::Clay,
                 costs: vec![Cost {
                     resource: Resource::Ore,
-                    amount: caps.get(3).unwrap().as_str().parse::<i32>().unwrap(),
+                    amount: caps.get(3).unwrap().as_str().parse::<u64>().unwrap(),
                 }],
             },
             Robot {
@@ -204,11 +238,11 @@ impl Blueprint {
                 costs: vec![
                     Cost {
                         resource: Resource::Ore,
-                        amount: caps.get(4).unwrap().as_str().parse::<i32>().unwrap(),
+                        amount: caps.get(4).unwrap().as_str().parse::<u64>().unwrap(),
                     },
                     Cost {
                         resource: Resource::Clay,
-                        amount: caps.get(5).unwrap().as_str().parse::<i32>().unwrap(),
+                        amount: caps.get(5).unwrap().as_str().parse::<u64>().unwrap(),
                     },
                 ],
             },
@@ -217,11 +251,11 @@ impl Blueprint {
                 costs: vec![
                     Cost {
                         resource: Resource::Ore,
-                        amount: caps.get(6).unwrap().as_str().parse::<i32>().unwrap(),
+                        amount: caps.get(6).unwrap().as_str().parse::<u64>().unwrap(),
                     },
                     Cost {
                         resource: Resource::Obsidian,
-                        amount: caps.get(7).unwrap().as_str().parse::<i32>().unwrap(),
+                        amount: caps.get(7).unwrap().as_str().parse::<u64>().unwrap(),
                     },
                 ],
             },
@@ -265,7 +299,7 @@ impl Display for Resource {
 #[derive(Debug)]
 struct Cost {
     resource: Resource,
-    amount: i32,
+    amount: u64,
 }
 
 impl Display for Cost {
