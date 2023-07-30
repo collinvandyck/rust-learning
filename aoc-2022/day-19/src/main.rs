@@ -15,8 +15,8 @@ use std::{
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-//const MAX_TURNS: usize = 24;
-const MAX_TURNS: usize = 3;
+const MAX_TURNS: usize = 24;
+//const MAX_TURNS: usize = 10;
 
 lazy_static! {
     //Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
@@ -54,8 +54,8 @@ impl Factory {
         state
     }
     fn solve_state(depth: usize, state: State) -> State {
-        println!("\nSolve state (depth={depth})\n{state}");
         if state.is_done() {
+            //println!("\nSolve state (depth={depth})\n{state}");
             return state;
         }
         state
@@ -96,17 +96,20 @@ impl<'a> State<'a> {
         let actions = self.actions();
         for action in actions {
             let mut state = self.clone();
-            if let Some(robot) = action {
-                // deduct the cost
-                robot.costs.iter().for_each(|Cost { resource, amount }| {
-                    *state.amounts.entry(*resource).or_insert(0) -= *amount;
-                });
-                // then mine
-                state.mine();
-                // then push the robot so that it can be active
-                *state.robots.entry(robot.resource).or_insert(0) += 1;
-            } else {
-                state.mine();
+            match action {
+                Action::Wait => {
+                    state.mine();
+                }
+                Action::Build(robot) => {
+                    // deduct the cost
+                    robot.costs.iter().for_each(|Cost { resource, amount }| {
+                        *state.amounts.entry(*resource).or_insert(0) -= *amount;
+                    });
+                    // then mine
+                    state.mine();
+                    // then push the robot so that it can be active
+                    *state.robots.entry(robot.resource).or_insert(0) += 1;
+                }
             }
             res.push(state);
         }
@@ -121,14 +124,20 @@ impl<'a> State<'a> {
             .all(|(has, wants)| has >= wants)
     }
 
-    fn actions(&self) -> Vec<Option<&Robot>> {
+    fn actions(&self) -> Vec<Action> {
         let mut res = vec![];
-        res.push(None);
+        let mut wait = false;
         self.blueprint.robots.iter().for_each(|robot| {
             if self.can_afford(robot) {
-                res.push(Some(robot));
+                res.push(Action::Build(robot));
+            } else {
+                wait = true;
             }
         });
+        if wait {
+            // there are some things we can't build so we should add an action to wait.
+            res.push(Action::Wait)
+        }
         res
     }
 
@@ -150,6 +159,33 @@ impl<'a> State<'a> {
     fn score(&self) -> u64 {
         *self.amounts.get(&Resource::Geode).unwrap_or(&0_u64)
     }
+
+    fn build_plan(&self, resource: Resource, amount: usize) -> Vec<Action> {
+        vec![]
+    }
+}
+
+#[test]
+fn test_build_plan() {
+    let blueprint = Blueprint {
+        idx: 0,
+        robots: vec![Robot {
+            costs: vec![Cost {
+                resource: Resource::Ore,
+                amount: 4,
+            }],
+            resource: Resource::Ore,
+        }],
+    };
+    let state = State::new(&blueprint);
+    let plan = state.build_plan(Resource::Ore, 1);
+    assert_eq!(plan, vec![Action::Wait])
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum Action<'a> {
+    Wait,
+    Build(&'a Robot),
 }
 
 #[test]
@@ -256,9 +292,15 @@ impl Blueprint {
         ];
         Blueprint { idx, robots }
     }
+    fn robot_for_resource<'a>(&'a self, resource: &Resource) -> &'a Robot {
+        self.robots
+            .iter()
+            .find(|r| &r.resource == resource)
+            .unwrap()
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 struct Robot {
     costs: Vec<Cost>,
     resource: Resource,
@@ -290,7 +332,7 @@ impl Display for Resource {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 struct Cost {
     resource: Resource,
     amount: u64,
