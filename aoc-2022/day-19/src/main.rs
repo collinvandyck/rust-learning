@@ -2,6 +2,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use clap::Parser;
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::{
@@ -62,8 +63,7 @@ struct State<'a> {
 
 impl Display for State<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut keys = self.amounts.keys().collect::<Vec<_>>();
-        keys.sort();
+        let keys = self.amounts.keys().sorted().collect::<Vec<_>>();
         let amounts = keys
             .into_iter()
             .map(|k| format!("{}={}", k, self.amounts[k]))
