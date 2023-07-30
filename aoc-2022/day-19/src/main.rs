@@ -49,21 +49,7 @@ impl Factory {
     fn solve_blueprint(blueprint: &Blueprint) -> State {
         println!("Solving for {}\n", blueprint);
         let state = State::new(blueprint);
-        let state = Self::solve_state(0, state);
-        println!("\nSolution (score={}):\n{state}", state.score());
         state
-    }
-    fn solve_state(depth: usize, state: State) -> State {
-        if state.is_done() {
-            //println!("\nSolve state (depth={depth})\n{state}");
-            return state;
-        }
-        state
-            .next_states()
-            .into_iter()
-            .map(|s| Self::solve_state(depth + 1, s))
-            .reduce(|a, b| if a.score() > b.score() { a } else { b })
-            .unwrap()
     }
 }
 
@@ -91,54 +77,12 @@ impl<'a> State<'a> {
             turn,
         }
     }
-    fn next_states(&self) -> Vec<State<'a>> {
-        let mut res = vec![];
-        let actions = self.actions();
-        for action in actions {
-            let mut state = self.clone();
-            match action {
-                Action::Wait(amount) => {
-                    // state.mine();
-                }
-                Action::Build(robot) => {
-                    // deduct the cost
-                    robot.costs.iter().for_each(|Cost { resource, amount }| {
-                        *state.amounts.entry(*resource).or_insert(0) -= *amount;
-                    });
-                    // then mine
-                    state.mine();
-                    // then push the robot so that it can be active
-                    *state.robots.entry(robot.resource).or_insert(0) += 1;
-                }
-            }
-            res.push(state);
-        }
-        res
-    }
-
     fn can_afford(&self, robot: &Robot) -> bool {
         robot
             .costs
             .iter()
             .map(|Cost { resource, amount }| (self.amounts.get(resource).unwrap_or(&0), amount))
             .all(|(has, wants)| has >= wants)
-    }
-
-    fn actions(&self) -> Vec<Action> {
-        let mut res = vec![];
-        let mut wait = false;
-        self.blueprint.robots.iter().for_each(|robot| {
-            if self.can_afford(robot) {
-                res.push(Action::Build(robot.clone()));
-            } else {
-                wait = true;
-            }
-        });
-        if wait {
-            // there are some things we can't build so we should add an action to wait.
-            //res.push(Action::Wait)
-        }
-        res
     }
 
     /// mines resources for each robot. bumps the turns counter.
@@ -163,6 +107,7 @@ impl<'a> State<'a> {
     fn build_plan(&self, resource: Resource, amount: u64) -> Vec<Action> {
         let inv = self.get_amount(&resource);
         if inv >= amount {
+            // we don't need to do anything.
             return vec![];
         }
         vec![Action::Wait(amount - inv)]
@@ -180,7 +125,7 @@ fn test_build_plan() {
         robots: vec![Robot {
             costs: vec![Cost {
                 resource: Resource::Ore,
-                amount: 4,
+                amount: 2,
             }],
             resource: Resource::Ore,
         }],
@@ -193,17 +138,33 @@ fn test_build_plan() {
     let plan = state.build_plan(Resource::Ore, 2);
     assert_eq!(plan, vec![Action::Wait(2)]);
 
+    // wait  -> ore robots = 1     -> ore = 1
+    // wait  -> ore robots = 1     -> ore = 2
+    // build -> ore robots = 1(+1) -> ore = 1
+    // wait  -> ore robots = 2     -> ore = 3
     let plan = state.build_plan(Resource::Ore, 3);
-    assert_eq!(plan, vec![Action::Wait(3)]);
+    assert_eq!(plan, vec![Action::Wait(2), Action::Build(Resource::Ore)]);
 
+    // wait  -> ore robots = 1     -> ore = 1
+    // wait  -> ore robots = 1     -> ore = 2
+    // build -> ore robots = 1(+1) -> ore = 1
+    // wait  -> ore robots = 2     -> ore = 3
+    // wait  -> ore robots = 2     -> ore = 5
     let plan = state.build_plan(Resource::Ore, 4);
-    assert_eq!(plan, vec![Action::Wait(4)]);
+    assert_eq!(
+        plan,
+        vec![
+            Action::Wait(2),
+            Action::Build(Resource::Ore),
+            Action::Wait(1)
+        ]
+    );
 }
 
 #[derive(Debug, PartialEq, Eq)]
 enum Action {
     Wait(u64),
-    Build(Robot),
+    Build(Resource),
 }
 
 #[test]
