@@ -70,12 +70,18 @@ impl<'a> Solver<'a> {
         let mut solution: Option<State<'a>> = None;
         let nexts = state.next_states();
         for next in nexts {
-            self.solve_state(next);
+            let this = self.solve_state(next);
+            solution = match solution {
+                Some(prev) if this.score() > prev.score() => Some(this),
+                Some(prev) => Some(prev),
+                None => Some(this),
+            }
         }
-        state
+        solution.unwrap()
     }
 }
 
+#[derive(Clone)]
 struct State<'a> {
     blueprint: &'a Blueprint,
     amounts: HashMap<Resource, u64>,
@@ -100,11 +106,30 @@ impl<'a> State<'a> {
         }
     }
     fn next_states(&self) -> Vec<State<'a>> {
-        vec![]
+        let mut res = vec![];
+
+        // do nothing.
+        let mut clone = self.clone();
+        clone.mine();
+        res.push(clone);
+
+        res
     }
+
+    /// mines resources for each robot. bumps the turns counter.
+    fn mine(&mut self) {
+        self.robots.iter().for_each(|(res, count)| {
+            let entry = self.amounts.entry(*res).or_insert(0);
+            *entry += *count;
+        });
+        self.turn += 1;
+    }
+
+    /// are we out of turns?
     fn is_done(&self) -> bool {
         self.turn == self.max_turns
     }
+
     /// Returns the number of geode resources
     fn score(&self) -> u64 {
         *self.amounts.get(&Resource::Geode).unwrap_or(&0_u64)
@@ -234,7 +259,7 @@ impl Display for Robot {
     }
 }
 
-#[derive(EnumIter, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIter, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 enum Resource {
     Ore,
     Clay,
