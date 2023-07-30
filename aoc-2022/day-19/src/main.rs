@@ -49,7 +49,7 @@ impl Factory {
         println!("Solving for {}\n", blueprint);
         let state = State::new(blueprint);
         let state = Self::solve_state(state);
-        println!("Solution:\n{state}");
+        println!("Solution (score={}):\n{state}", state.score());
         state
     }
     fn solve_state(state: State) -> State {
