@@ -143,7 +143,14 @@ fn test_build_plan() {
     // build -> ore robots = 1(+1) -> ore = 1
     // wait  -> ore robots = 2     -> ore = 3
     let plan = state.build_plan(Resource::Ore, 3);
-    assert_eq!(plan, vec![Action::Wait(2), Action::Build(Resource::Ore)]);
+    assert_eq!(
+        plan,
+        vec![
+            Action::Wait(2),
+            Action::Build(Resource::Ore),
+            Action::Wait(1)
+        ]
+    );
 
     // wait  -> ore robots = 1     -> ore = 1
     // wait  -> ore robots = 1     -> ore = 2
@@ -156,7 +163,22 @@ fn test_build_plan() {
         vec![
             Action::Wait(2),
             Action::Build(Resource::Ore),
-            Action::Wait(1)
+            Action::Wait(2)
+        ]
+    );
+
+    // wait  -> ore robots = 1     -> ore = 1
+    // wait  -> ore robots = 1     -> ore = 2
+    // build -> ore robots = 1(+1) -> ore = 1
+    // wait  -> ore robots = 2     -> ore = 3
+    // wait  -> ore robots = 2     -> ore = 5
+    let plan = state.build_plan(Resource::Ore, 5);
+    assert_eq!(
+        plan,
+        vec![
+            Action::Wait(2),
+            Action::Build(Resource::Ore),
+            Action::Wait(2)
         ]
     );
 }
