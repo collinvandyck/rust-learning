@@ -2,6 +2,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use std::{
+    collections::HashMap,
     fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
@@ -31,7 +32,7 @@ impl Factory {
     fn solve(&self) {
         println!("Solving for {} blueprints.", self.blueprints.len());
         for blueprint in &self.blueprints {
-            let solver = Solver::new(blueprint);
+            let mut solver = Solver::new(blueprint);
             solver.solve();
         }
     }
@@ -46,8 +47,35 @@ impl<'a> Solver<'a> {
     fn new(blueprint: &'a Blueprint) -> Self {
         Self { blueprint }
     }
-    fn solve(&self) {
+    fn solve(&mut self) {
+        let mut state = State::new(&self.blueprint);
         println!("Solving for {}", self.blueprint);
+        println!("State: {state}");
+    }
+}
+
+struct State<'a> {
+    blueprint: &'a Blueprint,
+    amounts: HashMap<Resource, u64>,
+}
+
+impl Display for State<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut keys = self.amounts.keys().collect::<Vec<_>>();
+        keys.sort();
+        let amounts = keys
+            .into_iter()
+            .map(|k| format!("{}={}", k, self.amounts[k]))
+            .collect::<Vec<_>>()
+            .join(", ");
+        write!(f, "{amounts}")
+    }
+}
+
+impl<'a> State<'a> {
+    fn new(blueprint: &'a Blueprint) -> Self {
+        let amounts = HashMap::new();
+        Self { blueprint, amounts }
     }
 }
 
@@ -148,7 +176,7 @@ impl Display for Robot {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Resource {
     Ore,
     Clay,
