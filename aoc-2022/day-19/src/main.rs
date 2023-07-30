@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(dead_code, unused)]
 #![warn(clippy::all, clippy::pedantic)]
 
 use clap::Parser;
