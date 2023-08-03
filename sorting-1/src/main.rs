@@ -10,6 +10,7 @@ mod tests {
     use sorting_1::sorters::bubblesort::BubbleSort;
     use sorting_1::sorters::insertion::InsertionSort;
     use sorting_1::sorters::mergesort::MergeSort;
+    use sorting_1::sorters::selectionsort::SelectionSort;
     use sorting_1::Sorter;
 
     struct Res {
@@ -23,6 +24,7 @@ mod tests {
         res.push(test_sorter::<BubbleSort>());
         res.push(test_sorter::<MergeSort>());
         res.push(test_sorter::<InsertionSort>());
+        res.push(test_sorter::<SelectionSort>());
         res.sort_by(|a, b| a.dur.cmp(&b.dur));
         for r in res {
             println!("{}:\t{}us", r.name, r.dur);
