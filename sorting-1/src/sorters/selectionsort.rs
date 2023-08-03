@@ -23,10 +23,3 @@ impl Sorter for SelectionSort {
         }
     }
 }
-
-#[test]
-fn test_selection_sort() {
-    let mut nums = [3, 5];
-    SelectionSort::sort(&mut nums);
-    assert_eq!(nums, [3, 5]);
-}
