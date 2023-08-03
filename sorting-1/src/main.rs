@@ -6,7 +6,7 @@ mod tests {
     use sorting_1::Sorter;
 
     #[test]
-    fn test_bubblesort() {
+    fn test_sorts() {
         test_harness("bubblesort", BubbleSort::sort);
     }
 
