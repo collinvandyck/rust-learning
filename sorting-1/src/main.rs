@@ -7,8 +7,16 @@ mod tests {
 
     #[test]
     fn test_bubblesort() {
+        test_harness("bubblesort", BubbleSort::sort);
+    }
+
+    fn test_harness<F>(name: &str, f: F)
+    where
+        F: Fn(&mut [i32]),
+    {
+        println!("Testing {name}");
         let mut nums = [1, 5, 3, 4, 2];
-        BubbleSort::sort(&mut nums);
+        f(&mut nums);
         assert_eq!(nums, [1, 2, 3, 4, 5]);
     }
 }
