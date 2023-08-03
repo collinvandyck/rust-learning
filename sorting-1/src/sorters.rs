@@ -33,12 +33,12 @@ impl Sorter for MergeSort {
         T: Ord + Copy + Debug,
     {
         let mut buf = slice.to_vec();
-        Self::do_sort(slice, &mut buf, 0);
+        Self::do_sort(slice, &mut buf);
     }
 }
 
 impl MergeSort {
-    fn do_sort<T>(slice: &mut [T], buf: &mut [T], depth: usize)
+    fn do_sort<T>(slice: &mut [T], buf: &mut [T])
     where
         T: Ord + Copy + Debug,
     {
@@ -52,8 +52,8 @@ impl MergeSort {
             return;
         }
         let mid = slice.len() / 2;
-        Self::do_sort(&mut slice[..mid], buf, depth + 1);
-        Self::do_sort(&mut slice[mid..], buf, depth + 1);
+        Self::do_sort(&mut slice[..mid], buf);
+        Self::do_sort(&mut slice[mid..], buf);
         let mut h = 0;
         let mut i = 0;
         let mut j = mid;
