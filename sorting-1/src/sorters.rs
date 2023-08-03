@@ -5,5 +5,12 @@ impl crate::Sorter for BubbleSort {
     where
         T: Ord,
     {
+        for i in 0..slice.len() {
+            for j in 0..slice.len() - 1 {
+                if slice[j] > slice[i] {
+                    slice.swap(i, j);
+                }
+            }
+        }
     }
 }
