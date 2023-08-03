@@ -1,6 +1,8 @@
+use crate::Sorter;
+
 pub struct BubbleSort;
 
-impl crate::Sorter for BubbleSort {
+impl Sorter for BubbleSort {
     fn sort<T>(slice: &mut [T])
     where
         T: Ord,
@@ -12,5 +14,15 @@ impl crate::Sorter for BubbleSort {
                 }
             }
         }
+    }
+}
+
+pub struct MergeSort;
+
+impl Sorter for MergeSort {
+    fn sort<T>(slice: &mut [T])
+    where
+        T: Ord,
+    {
     }
 }
