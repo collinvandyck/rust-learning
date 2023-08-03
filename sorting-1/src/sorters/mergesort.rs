@@ -2,46 +2,6 @@ use std::fmt::Debug;
 
 use crate::Sorter;
 
-pub struct BubbleSort;
-
-impl Sorter for BubbleSort {
-    fn name() -> &'static str {
-        "bubblesort"
-    }
-    fn sort<T>(slice: &mut [T])
-    where
-        T: Ord,
-    {
-        for i in 0..slice.len() {
-            for j in 0..slice.len() - 1 {
-                if slice[j] > slice[i] {
-                    slice.swap(i, j);
-                }
-            }
-        }
-    }
-}
-
-pub struct InsertionSort;
-
-impl Sorter for InsertionSort {
-    fn name() -> &'static str {
-        "insertionsort"
-    }
-    fn sort<T>(slice: &mut [T])
-    where
-        T: Ord,
-    {
-        for i in 1..slice.len() {
-            let mut j = i;
-            while j > 0 && slice[j - 1] > slice[j] {
-                slice.swap(j - 1, j);
-                j -= 1;
-            }
-        }
-    }
-}
-
 pub struct MergeSort;
 
 impl Sorter for MergeSort {

@@ -7,7 +7,9 @@ mod tests {
 
     use rand::thread_rng;
     use rand::Rng;
-    use sorting_1::sorters::*;
+    use sorting_1::sorters::bubblesort::BubbleSort;
+    use sorting_1::sorters::insertion::InsertionSort;
+    use sorting_1::sorters::mergesort::MergeSort;
     use sorting_1::Sorter;
 
     struct Res {
