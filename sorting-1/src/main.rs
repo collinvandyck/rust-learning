@@ -2,7 +2,7 @@ fn main() {}
 
 #[cfg(test)]
 mod tests {
-    const NUMS: usize = 7_000;
+    const NUMS: usize = 15_000;
     use std::time::Instant;
 
     use rand::thread_rng;
