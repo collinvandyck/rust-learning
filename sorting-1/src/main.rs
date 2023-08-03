@@ -2,6 +2,10 @@ fn main() {}
 
 #[cfg(test)]
 mod tests {
+    use std::time::Instant;
+
+    use rand::thread_rng;
+    use rand::Rng;
     use sorting_1::sorters::*;
     use sorting_1::Sorter;
 
@@ -15,10 +19,20 @@ mod tests {
     where
         S: Sorter,
     {
+        let rng = thread_rng();
+        let mut nums = rng
+            .sample_iter(&rand::distributions::Standard)
+            .take(20_000)
+            .collect::<Vec<i32>>();
+        let mut sorted = nums.clone();
+        sorted.sort();
         let name = S::name();
         println!("Testing {name}");
-        let mut nums = [9, 1, 3, 4, 8, 7, 2, 6, 0, 5];
+        let start = Instant::now();
         S::sort(&mut nums);
-        assert_eq!(nums, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        let end = Instant::now();
+        let dur = end.duration_since(start);
+        println!("Dur: {}", dur.as_micros());
+        assert_eq!(nums, sorted);
     }
 }
