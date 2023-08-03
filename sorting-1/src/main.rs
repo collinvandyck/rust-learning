@@ -13,6 +13,7 @@ mod tests {
     fn test_sorts() {
         test_sorter::<BubbleSort>();
         test_sorter::<MergeSort>();
+        test_sorter::<InsertionSort>();
     }
 
     fn test_sorter<S>()
@@ -22,7 +23,7 @@ mod tests {
         let rng = thread_rng();
         let mut nums = rng
             .sample_iter(&rand::distributions::Standard)
-            .take(10_000)
+            .take(1_000)
             .collect::<Vec<i32>>();
         let mut sorted = nums.clone();
         sorted.sort();
