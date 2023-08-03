@@ -4,5 +4,5 @@ pub trait Sorter {
     fn name() -> &'static str;
     fn sort<T>(slice: &mut [T])
     where
-        T: Ord;
+        T: Ord + Copy;
 }
