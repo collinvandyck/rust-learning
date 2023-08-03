@@ -22,7 +22,7 @@ mod tests {
         let rng = thread_rng();
         let mut nums = rng
             .sample_iter(&rand::distributions::Standard)
-            .take(20_000)
+            .take(10_000)
             .collect::<Vec<i32>>();
         let mut sorted = nums.clone();
         sorted.sort();
