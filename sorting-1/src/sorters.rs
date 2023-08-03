@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::Sorter;
 
 pub struct BubbleSort;
@@ -28,19 +30,20 @@ impl Sorter for MergeSort {
     }
     fn sort<T>(slice: &mut [T])
     where
-        T: Ord + Copy,
+        T: Ord + Copy + Debug,
     {
         let mut buf = slice.to_vec();
-        Self::do_sort(slice, &mut buf);
+        Self::do_sort(slice, &mut buf, 0);
     }
 }
 
 impl MergeSort {
-    fn do_sort<T>(slice: &mut [T], buf: &mut [T])
+    fn do_sort<T>(slice: &mut [T], buf: &mut [T], depth: usize)
     where
-        T: Ord + Copy,
+        T: Ord + Copy + Debug,
     {
-        println!("Slice len: {}", slice.len());
+        let indent = "  ".repeat(depth);
+        println!("{indent}Slice:     {slice:?}");
         if slice.len() <= 1 {
             return;
         }
@@ -48,31 +51,49 @@ impl MergeSort {
             if slice[0] > slice[1] {
                 slice.swap(0, 1);
             }
+            return;
         }
         let mid = slice.len() / 2;
-        Self::sort(&mut slice[..mid]);
-        Self::sort(&mut slice[mid..]);
+        Self::do_sort(&mut slice[..mid], buf, depth + 1);
+        Self::do_sort(&mut slice[mid..], buf, depth + 1);
         let mut h = 0;
         let mut i = 0;
         let mut j = mid;
-        while i < mid && j < slice.len() - 1 {
+        println!("{indent}Sorting  : {slice:?} (mid={mid} h=[h] i={i} j={j})");
+        while i < mid && j < slice.len() {
+            println!("{indent}Loop     : (i={i:?} j={j:?})");
             buf[h] = if slice[j] < slice[i] {
+                println!(
+                    "{indent}Result   : {:?}<{:?} (h={h} i={i} j={j})",
+                    slice[j], slice[i]
+                );
                 j += 1;
                 slice[j - 1]
             } else {
+                println!(
+                    "{indent}Result   : {:?}<={:?} (h={h} i={i} j={j})",
+                    slice[i], slice[j]
+                );
                 i += 1;
                 slice[i - 1]
             };
             h += 1;
         }
-        if i < mid {
+        println!("{indent}First P  : {:?} (i={i} j={j})", &buf[..h]);
+        if i < mid - 1 {
+            println!("{indent}Fill Frst");
             for x in i..mid {
                 buf[h] = slice[x];
+                h += 1;
             }
         } else if j < slice.len() - 1 {
-            for x in j..slice.len() - 1 {
+            println!("{indent}Fill Scnd: {:?}", &slice[j..slice.len()]);
+            for x in j..slice.len() {
                 buf[h] = slice[x];
+                h += 1;
             }
         }
+        slice.copy_from_slice(&buf[..slice.len()]);
+        println!("{indent}Returning: {slice:?}");
     }
 }
