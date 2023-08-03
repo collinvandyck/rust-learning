@@ -42,8 +42,8 @@ impl MergeSort {
     where
         T: Ord + Copy + Debug,
     {
-        let indent = "  ".repeat(depth);
-        println!("{indent}Slice:     {slice:?}");
+        //let indent = "  ".repeat(depth);
+        //println!("{indent}Slice:     {slice:?}");
         if slice.len() <= 1 {
             return;
         }
@@ -59,44 +59,42 @@ impl MergeSort {
         let mut h = 0;
         let mut i = 0;
         let mut j = mid;
-        println!("{indent}Sorting  : {slice:?} (mid={mid} h=[h] i={i} j={j})");
+        //println!("{indent}Sorting  : {slice:?} (mid={mid} h=[h] i={i} j={j})");
         while i < mid && j < slice.len() {
-            println!("{indent}Loop     : (i={i:?} j={j:?})");
+            //println!("{indent}Loop     : (i={i:?} j={j:?})");
             buf[h] = if slice[j] < slice[i] {
-                println!(
-                    "{indent}Test     : {:?}<{:?} (h={h} i={i} j={j})",
-                    slice[j], slice[i]
-                );
+                //println!(
+                //"{indent}Test     : {:?}<{:?} (h={h} i={i} j={j})",
+                //slice[j], slice[i]
+                //);
                 j += 1;
                 slice[j - 1]
             } else {
-                println!(
-                    "{indent}Test     : {:?}<={:?} (h={h} i={i} j={j})",
-                    slice[i], slice[j]
-                );
+                //println!(
+                //"{indent}Test     : {:?}<={:?} (h={h} i={i} j={j})",
+                //slice[i], slice[j]
+                //);
                 i += 1;
                 slice[i - 1]
             };
             h += 1;
-            println!("{indent}Buf      : {:?}", &buf[..h]);
+            //println!("{indent}Buf      : {:?}", &buf[..h]);
         }
-        println!("{indent}First P  : {:?} (i={i} j={j})", &buf[..h]);
+        //println!("{indent}First P  : {:?} (i={i} j={j})", &buf[..h]);
         if i < mid {
-            println!("{indent}Fill Frst");
+            //println!("{indent}Fill Frst");
             for x in i..mid {
                 buf[h] = slice[x];
                 h += 1;
             }
         } else if j < slice.len() {
-            println!("{indent}Fill Scnd: {:?}", &slice[j..slice.len()]);
+            //println!("{indent}Fill Scnd: {:?}", &slice[j..slice.len()]);
             for x in j..slice.len() {
                 buf[h] = slice[x];
                 h += 1;
             }
-        } else {
-            println!("{indent}WELP");
         }
         slice.copy_from_slice(&buf[..slice.len()]);
-        println!("{indent}Returning: {slice:?}");
+        //println!("{indent}Returning: {slice:?}");
     }
 }
