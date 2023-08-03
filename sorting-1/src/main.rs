@@ -17,8 +17,8 @@ mod tests {
     {
         let name = S::name();
         println!("Testing {name}");
-        let mut nums = [1, 5, 3];
+        let mut nums = [1, 5, 3, 2, 4];
         S::sort(&mut nums);
-        assert_eq!(nums, [1, 3, 5]);
+        assert_eq!(nums, [1, 2, 3, 4, 5]);
     }
 }
