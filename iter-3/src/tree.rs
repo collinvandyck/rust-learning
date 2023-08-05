@@ -97,7 +97,9 @@ mod tests {
         assert_eq!(t.size(), 0);
         t.insert("foo", 32);
         assert_eq!(t.size(), 1);
-        t.insert("foo", 32);
-        assert_eq!(t.size(), 1);
+        t.insert("bar", 33);
+        assert_eq!(t.size(), 2);
+        t.insert("bar", 33);
+        assert_eq!(t.size(), 2);
     }
 }
