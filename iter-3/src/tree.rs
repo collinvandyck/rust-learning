@@ -26,7 +26,7 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
             TreeMap::NonEmpty(node) => Some(node),
         })
     }
-    pub fn get<'a>(&'a self, k: K) -> &'a Option<Entry<K, V>> {
+    pub fn get<'a>(&'a self, _k: K) -> &'a Option<V> {
         &None
     }
 }
@@ -40,7 +40,7 @@ impl<'a, K: Ord, V: PartialEq> IntoIterator for &'a TreeMap<K, V> {
 }
 
 impl<K: Ord, V: PartialEq> Index<K> for TreeMap<K, V> {
-    type Output = Option<Entry<K, V>>;
+    type Output = Option<V>;
     fn index<'a>(&'a self, index: K) -> &Self::Output {
         self.get(index)
     }
@@ -132,14 +132,20 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_index() {
+        let mut t: TreeMap<&'static str, String> = TreeMap::new();
+        assert_eq!(t["foo"], None);
+        t.insert("foo", "foobar".to_string());
+        assert_eq!(t["foo"], Some("foobar".to_string()));
+    }
+
+    #[test]
     fn test_simple_iter() {
-        println!("here");
         let mut t = TreeMap::new();
         t.insert("foo", 32);
         t.insert("bar", 33);
         t.insert("zar", 34);
         t.insert("aar", 35);
-        println!("here");
         let v = t.iter().count();
         assert_eq!(v, 4);
     }
