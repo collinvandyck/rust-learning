@@ -28,8 +28,28 @@ where
             TreeMap::NonEmpty(n) => n.insert(node),
         }
     }
+    pub fn iter<'a>(&'a self) -> TreeIter<'a, K, V> {
+        let cur = match self {
+            TreeMap::Empty => None,
+            TreeMap::NonEmpty(node) => Some(node),
+        };
+        TreeIter { cur }
+    }
 }
 
+impl<'a, K, V> IntoIterator for &'a TreeMap<K, V>
+where
+    K: Ord,
+    V: PartialEq,
+{
+    type Item = TreeNode<K, V>;
+    type IntoIter = TreeIter<'a, K, V>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub struct TreeNode<K, V> {
     key: K,
     val: V,
@@ -87,6 +107,17 @@ where
     }
 }
 
+pub struct TreeIter<'a, K, V> {
+    cur: Option<&'a TreeNode<K, V>>,
+}
+
+impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
+    type Item = TreeNode<K, V>;
+    fn next(&mut self) -> Option<Self::Item> {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -94,6 +125,7 @@ mod tests {
     #[test]
     fn test_new_tree() {
         let mut t = TreeMap::new();
+
         assert_eq!(t.size(), 0);
         t.insert("foo", 32);
         assert_eq!(t.size(), 1);
@@ -101,5 +133,12 @@ mod tests {
         assert_eq!(t.size(), 2);
         t.insert("bar", 33);
         assert_eq!(t.size(), 2);
+    }
+
+    #[test]
+    fn test_tree_iter() {
+        let mut t: TreeMap<&'static str, i32> = TreeMap::new();
+        let v = t.iter().collect::<Vec<_>>();
+        assert_eq!(v, vec![]);
     }
 }
