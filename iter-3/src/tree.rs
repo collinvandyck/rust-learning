@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, fmt::Debug, ops::Index};
 
 /// TreeMap is a map whose iteration is ordered on the keys.
-pub struct TreeMap<K, V>(Option<TreeNode<K, V>>);
+pub struct TreeMap<K, V>(Option<Box<TreeNode<K, V>>>);
 
 impl<K: Ord, V: PartialEq> TreeMap<K, V> {
     pub fn new() -> Self {
@@ -15,7 +15,7 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         if let Some(ref mut root) = &mut self.0 {
             root.insert(node);
         } else {
-            self.0 = Some(node);
+            self.0 = Some(Box::new(node));
         }
     }
     pub fn iter<'a>(&'a self) -> TreeIter<'a, K, V> {
@@ -29,33 +29,48 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         }
     }
     pub fn delete(&mut self, k: K) -> Option<V> {
-        let mut root = self.0.take();
-        Self::delete_node(&mut root, k)
+        Self::delete_node(&mut self.0, k)
     }
-    fn delete_node(node: &mut Option<TreeNode<K, V>>, k: K) -> Option<V> {
+    fn delete_node(node: &mut Option<Box<TreeNode<K, V>>>, k: K) -> Option<V> {
         let comparison = match node {
             None => None,
             Some(n) => Some(k.cmp(&n.entry.key)),
         };
         match comparison {
-            None => return None,
+            None => {
+                println!("None");
+                return None;
+            }
             Some(Ordering::Equal) => {
+                println!("Equal");
                 let n = node.take().unwrap();
                 let res = n.entry.val;
                 *node = None;
                 return Some(res);
             }
-            Some(Ordering::Less) => {}
-            Some(Ordering::Greater) => {}
-        }
-        if let Some(n) = node.take() {
-            if n.entry.key == k {
-                let res = n.entry.val;
-                *node = None;
-                return Some(res);
+            Some(Ordering::Less) => {
+                println!("Less");
+                // the key is less than this node.
+                if let Some(ref mut root) = node {
+                    let left = &mut root.left;
+                    let res = Self::delete_node(left, k);
+                    return res;
+                } else {
+                    return None;
+                }
+            }
+            Some(Ordering::Greater) => {
+                println!("Greater");
+                // They key is greater than this node.
+                if let Some(ref mut root) = node {
+                    let right = &mut root.right;
+                    let res = Self::delete_node(right, k);
+                    return res;
+                } else {
+                    return None;
+                }
             }
         }
-        None
     }
 }
 
@@ -64,14 +79,6 @@ impl<'a, K: Ord, V: PartialEq> IntoIterator for &'a TreeMap<K, V> {
     type IntoIter = TreeIter<'a, K, V>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
-    }
-}
-
-impl<K: Ord, V: PartialEq> Index<K> for TreeMap<K, V> {
-    type Output = V;
-    fn index<'a>(&'a self, index: K) -> &Self::Output {
-        let res = self.get(index);
-        res.unwrap()
     }
 }
 
@@ -137,7 +144,7 @@ pub struct TreeIter<'a, K, V> {
 }
 
 impl<'a, K, V> TreeIter<'a, K, V> {
-    fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
+    fn new(cur: Option<&'a Box<TreeNode<K, V>>>) -> Self {
         let mut iter = Self { stack: vec![] };
         if let Some(node) = cur {
             iter.push_left(node);
@@ -178,6 +185,24 @@ mod tests {
         assert_eq!(t.delete("foo"), None);
         t.insert("foo", 32);
         assert_eq!(t.delete("foo"), Some(32));
+        assert_eq!(t.delete("foo"), None);
+
+        println!();
+        t.insert("abc", 1);
+        t.insert("def", 2);
+
+        println!("Delete 1");
+        assert_eq!(t.delete("def"), Some(2));
+
+        println!("Delete 2");
+        assert_eq!(t.delete("abc"), Some(1));
+
+        t.insert("def", 2);
+        t.insert("abc", 1);
+        assert_eq!(t.delete("abc"), Some(1));
+        assert_eq!(t.delete("def"), Some(2));
+        assert_eq!(t.delete("abc"), None);
+        assert_eq!(t.delete("def"), None);
     }
 
     #[test]
