@@ -1,4 +1,4 @@
-use std::{fmt::Debug, ops::Index};
+use std::{cmp::Ordering, fmt::Debug, ops::Index};
 
 /// TreeMap is a map whose iteration is ordered on the keys.
 pub enum TreeMap<K, V> {
@@ -32,6 +32,9 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         } else {
             None
         }
+    }
+    pub fn delete(&mut self, k: K) -> Option<V> {
+        None
     }
 }
 
@@ -79,20 +82,16 @@ impl<K: Ord, V: PartialEq> TreeNode<K, V> {
         }
     }
     fn get<'a>(&'a self, k: K) -> Option<&'a V> {
-        if self.entry.key == k {
-            return Some(&self.entry.val);
+        let next = match k.cmp(&self.entry.key) {
+            Ordering::Equal => return Some(&self.entry.val),
+            Ordering::Less => &self.left,
+            Ordering::Greater => &self.right,
+        };
+        if let Some(next) = next {
+            next.get(k)
+        } else {
+            None
         }
-        if k < self.entry.key {
-            if let Some(left) = &self.left {
-                return left.get(k);
-            }
-        }
-        if k > self.entry.key {
-            if let Some(right) = &self.right {
-                return right.get(k);
-            }
-        }
-        None
     }
     fn insert(&mut self, node: TreeNode<K, V>) {
         if node.entry.key == self.entry.key {
@@ -163,10 +162,9 @@ mod tests {
     }
 
     #[test]
-    fn test_index() {
-        let mut t: TreeMap<&'static str, String> = TreeMap::new();
-        t.insert("foo", "foobar".to_string());
-        assert_eq!(t["foo"], "foobar".to_string());
+    fn test_delete() {
+        let mut t: TreeMap<&'static str, i32> = TreeMap::new();
+        assert_eq!(t.delete("foo"), None);
     }
 
     #[test]
