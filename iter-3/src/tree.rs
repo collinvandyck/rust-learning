@@ -163,6 +163,7 @@ mod tests {
         assert_eq!(t.delete("foo"), None);
         t.insert("foo", 32);
         assert_eq!(t.delete("foo"), Some(32));
+        assert_eq!(t.delete("foo"), None);
     }
 
     #[test]
