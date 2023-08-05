@@ -56,13 +56,19 @@ where
     where
         F: FnMut(&K, &V),
     {
-        if let Some(node) = &self.left {
-            node.walk(&mut f);
+        fn walk_helper<K, V, F>(node: &TreeNode<K, V>, f: &mut F)
+        where
+            F: FnMut(&K, &V),
+        {
+            if let Some(node) = &node.left {
+                walk_helper(node, f);
+            }
+            f(&node.key, &node.val);
+            if let Some(node) = &node.right {
+                walk_helper(node, f);
+            }
         }
-        f(&self.key, &self.val);
-        if let Some(node) = &self.right {
-            node.walk(&mut f);
-        }
+        walk_helper(self, &mut f);
     }
     fn insert(&mut self, node: TreeNode<K, V>) {
         if node.key == self.key {
