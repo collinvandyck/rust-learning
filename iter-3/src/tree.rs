@@ -1,33 +1,28 @@
 use std::{cmp::Ordering, fmt::Debug, ops::Index};
 
 /// TreeMap is a map whose iteration is ordered on the keys.
-pub enum TreeMap<K, V> {
-    Empty,
-    NonEmpty(TreeNode<K, V>),
-}
+pub struct TreeMap<K, V>(Option<TreeNode<K, V>>);
 
 impl<K: Ord, V: PartialEq> TreeMap<K, V> {
     pub fn new() -> Self {
-        Self::Empty
+        Self(None)
     }
     pub fn size(&self) -> usize {
         self.iter().count()
     }
     pub fn insert(&mut self, k: K, v: V) {
         let node = TreeNode::new(k, v);
-        match self {
-            TreeMap::Empty => *self = TreeMap::NonEmpty(node),
-            TreeMap::NonEmpty(n) => n.insert(node),
+        if let Some(ref mut root) = &mut self.0 {
+            root.insert(node);
+        } else {
+            self.0 = Some(node);
         }
     }
     pub fn iter<'a>(&'a self) -> TreeIter<'a, K, V> {
-        TreeIter::new(match self {
-            TreeMap::Empty => None,
-            TreeMap::NonEmpty(node) => Some(node),
-        })
+        TreeIter::new(self.0.as_ref())
     }
     pub fn get<'a>(&'a self, k: K) -> Option<&V> {
-        if let TreeMap::NonEmpty(node) = self {
+        if let Some(ref node) = self.0 {
             node.get(k)
         } else {
             None
