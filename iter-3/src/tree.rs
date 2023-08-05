@@ -126,13 +126,25 @@ where
 }
 
 pub struct TreeIter<'a, K, V> {
-    stack: Vec<&'a TreeNode<K, V>>,
+    stack: Vec<&'a IterNode<'a, K, V>>,
+}
+
+struct IterNode<'a, K, V> {
+    visited: bool,
+    node: &'a TreeNode<K, V>,
+}
+
+impl<'a, K, V> IterNode<'a, K, V> {
+    fn new(node: &'a TreeNode<K, V>) -> Self {
+        let visited = false;
+        Self { visited, node }
+    }
 }
 
 impl<'a, K, V> TreeIter<'a, K, V> {
     fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
         let mut stack = vec![];
-        cur.iter().for_each(|n| stack.push(*n));
+        cur.iter().for_each(|n| stack.push(IterNode::new(*n)));
         Self { stack }
     }
 }
@@ -144,9 +156,15 @@ where
     type Item = &'a Entry<K, V>;
 
     /// We need to push the full left sequence onto the stack first.
+    /// Then we pop off the item from the stack.
+    /// This is the value we must return
+    /// but then we want to push the right.
+    ///
+    /// When we next invoke next, we need to know if the
+    /// current node at the top of the stack has visited
+    /// the left hand side or not. Otherwise, we'll end up infinitely looping.
     fn next(&mut self) -> Option<Self::Item> {
         thread::sleep(Duration::from_millis(100));
-
         if self.stack.is_empty() {
             return None;
         }
