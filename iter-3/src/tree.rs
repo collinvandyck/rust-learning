@@ -140,15 +140,15 @@ impl<'a, K, V> IterNode<'a, K, V> {
 impl<'a, K, V> TreeIter<'a, K, V> {
     fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
         let mut stack = vec![];
-        cur.iter().for_each(|n| stack.push(IterNode::new(*n)));
+        if let Some(cur) = cur {
+            stack.push(IterNode::new(cur));
+            let mut left = &cur.left;
+            while let Some(node) = left {
+                stack.push(IterNode::new(&node));
+                left = &node.left;
+            }
+        }
         Self { stack }
-    }
-    /// Sets this node's visited value to true and returns the previous value.
-    fn set_visited(&mut self) -> bool {
-        let node = self.stack.last_mut().unwrap();
-        let visited = node.visited;
-        node.visited = true;
-        visited
     }
 }
 
@@ -159,17 +159,18 @@ where
     type Item = &'a Entry<K, V>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        println!("Next");
         if self.stack.is_empty() {
             return None;
-        }
-        if !self.set_visited() {
-            while let Some(ref left) = self.stack.last().unwrap().node.left {
-                self.stack.push(IterNode::new(&left));
-            }
         }
         let res = self.stack.pop().unwrap();
         if let Some(ref right) = res.node.right {
             self.stack.push(IterNode::new(&right));
+            let mut cur = right;
+            while let Some(ref left) = cur.left {
+                self.stack.push(IterNode::new(&left));
+                cur = left;
+            }
         }
         Some(&res.node.entry)
     }
@@ -180,6 +181,19 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_simple_iter() {
+        println!("here");
+        let mut t = TreeMap::new();
+        t.insert("foo", 32);
+        t.insert("bar", 33);
+        t.insert("zar", 34);
+        t.insert("aar", 35);
+        println!("here");
+        let v = t.iter().count();
+        assert_eq!(v, 4);
+    }
+
+    #[test]
     fn test_adds() {
         let mut t = TreeMap::new();
         assert_eq!(t.size(), 0);
@@ -187,6 +201,7 @@ mod tests {
         t.insert("bar", 33);
         assert_eq!(t.size(), 2);
         t.insert("zar", 34);
+        assert_eq!(t.size(), 3);
         t.insert("aar", 35);
         assert_eq!(t.size(), 4);
     }
