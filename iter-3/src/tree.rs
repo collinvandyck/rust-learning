@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 pub enum TreeMap<K, V> {
     Empty,
@@ -7,8 +7,8 @@ pub enum TreeMap<K, V> {
 
 impl<K, V> TreeMap<K, V>
 where
-    K: Ord + Debug,
-    V: PartialEq + Debug,
+    K: Ord,
+    V: PartialEq,
 {
     pub fn new() -> Self {
         Self::Empty
@@ -34,8 +34,8 @@ where
 
 impl<'a, K, V> IntoIterator for &'a TreeMap<K, V>
 where
-    K: Ord + Debug,
-    V: PartialEq + Debug,
+    K: Ord,
+    V: PartialEq,
 {
     type Item = &'a Entry<K, V>;
     type IntoIter = TreeIter<'a, K, V>;
@@ -53,16 +53,6 @@ pub struct Entry<K, V> {
 impl<K, V> Entry<K, V> {
     fn new(key: K, val: V) -> Self {
         Self { key, val }
-    }
-}
-
-impl<K, V> Display for Entry<K, V>
-where
-    K: Debug,
-    V: Debug,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({:?},{:?})", self.key, self.val)
     }
 }
 
@@ -143,19 +133,16 @@ impl<'a, K, V> TreeIter<'a, K, V> {
     }
 }
 
-impl<'a, K, V> Iterator for TreeIter<'a, K, V>
-where
-    K: Debug,
-{
+impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
     type Item = &'a Entry<K, V>;
     fn next(&mut self) -> Option<Self::Item> {
         match self.stack.pop() {
             None => None,
-            Some(res) => {
-                if let Some(ref right) = res.right {
+            Some(node) => {
+                if let Some(ref right) = node.right {
                     self.push_left(right);
                 }
-                Some(&res.entry)
+                Some(&node.entry)
             }
         }
     }
