@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![warn(clippy::all, clippy::pedantic)]
+
 use iter_3::tree::Tree;
 
 fn main() {
