@@ -127,12 +127,11 @@ pub struct TreeIter<'a, K, V> {
 
 impl<'a, K, V> TreeIter<'a, K, V> {
     fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
-        let stack = vec![];
-        let mut res = Self { stack };
+        let mut iter = Self { stack: vec![] };
         if let Some(node) = cur {
-            res.push_left(node);
+            iter.push_left(node);
         }
-        res
+        iter
     }
     fn push_left(&mut self, node: &'a TreeNode<K, V>) {
         self.stack.push(node);
