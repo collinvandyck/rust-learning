@@ -33,7 +33,7 @@ where
             TreeMap::Empty => None,
             TreeMap::NonEmpty(node) => Some(node),
         };
-        TreeIter { cur }
+        TreeIter::new(cur)
     }
 }
 
@@ -116,6 +116,12 @@ where
 
 pub struct TreeIter<'a, K, V> {
     cur: Option<&'a TreeNode<K, V>>,
+}
+
+impl<'a, K, V> TreeIter<'a, K, V> {
+    fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
+        Self { cur }
+    }
 }
 
 impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
