@@ -18,8 +18,8 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
             self.0 = Some(Box::new(node));
         }
     }
-    pub fn iter<'a>(&'a self) -> TreeIter<'a, K, V> {
-        TreeIter::new(self.0.as_ref())
+    pub fn iter<'a>(&'a self) -> BorrowedIter<'a, K, V> {
+        BorrowedIter::new(self.0.as_ref())
     }
     pub fn get<'a>(&'a self, k: K) -> Option<&V> {
         if let Some(ref node) = self.0 {
@@ -48,9 +48,12 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
                         (None, None) => {}
                         (left @ Some(_), None) => *node = left,
                         (None, right @ Some(_)) => *node = right,
-                        (Some(mut left), Some(right)) => {
-                            // TODO: drain or into_iter all of the right nodes and then
-                            // add them one by one to left.
+                        (Some(mut left), right @ Some(_)) => {
+                            let iter = OwnedIter::new(right);
+                            for entry in iter {
+                                let node = TreeNode::new(entry.key, entry.val);
+                                left.insert(node);
+                            }
                             *node = Some(left);
                         }
                     }
@@ -63,7 +66,7 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
 
 impl<'a, K: Ord, V: PartialEq> IntoIterator for &'a TreeMap<K, V> {
     type Item = &'a Entry<K, V>;
-    type IntoIter = TreeIter<'a, K, V>;
+    type IntoIter = BorrowedIter<'a, K, V>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
@@ -126,11 +129,49 @@ impl<K: Ord, V: PartialEq> TreeNode<K, V> {
     }
 }
 
-pub struct TreeIter<'a, K, V> {
+pub struct OwnedIter<K, V> {
+    stack: Vec<Box<TreeNode<K, V>>>,
+}
+
+impl<K, V> OwnedIter<K, V> {
+    fn new(cur: Option<Box<TreeNode<K, V>>>) -> Self {
+        let mut iter = Self { stack: vec![] };
+        if let Some(node) = cur {
+            iter.push_left(node);
+        }
+        iter
+    }
+    fn push_left(&mut self, mut node: Box<TreeNode<K, V>>) {
+        let mut left = node.left.take();
+        self.stack.push(node);
+        while let Some(mut node) = left {
+            left = node.left.take();
+            self.stack.push(node);
+        }
+    }
+}
+
+impl<K, V> Iterator for OwnedIter<K, V> {
+    type Item = Entry<K, V>;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.stack.pop() {
+            None => None,
+            Some(mut node) => {
+                let right = node.right.take();
+                if let Some(right) = right {
+                    self.push_left(right);
+                }
+                Some(node.entry)
+            }
+        }
+    }
+}
+
+pub struct BorrowedIter<'a, K, V> {
     stack: Vec<&'a TreeNode<K, V>>,
 }
 
-impl<'a, K, V> TreeIter<'a, K, V> {
+impl<'a, K, V> BorrowedIter<'a, K, V> {
     fn new(cur: Option<&'a Box<TreeNode<K, V>>>) -> Self {
         let mut iter = Self { stack: vec![] };
         if let Some(node) = cur {
@@ -147,7 +188,7 @@ impl<'a, K, V> TreeIter<'a, K, V> {
     }
 }
 
-impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
+impl<'a, K, V> Iterator for BorrowedIter<'a, K, V> {
     type Item = &'a Entry<K, V>;
     fn next(&mut self) -> Option<Self::Item> {
         match self.stack.pop() {
@@ -250,7 +291,7 @@ mod tests {
     fn test_tree_iter() {
         // empty
         let mut t: TreeMap<&'static str, i32> = TreeMap::new();
-        let v = t.into_iter().collect::<Vec<_>>();
+        let v = t.iter().collect::<Vec<_>>();
         assert!(v.is_empty());
 
         // has one entry
