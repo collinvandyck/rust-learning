@@ -1,8 +1,4 @@
-use std::{
-    fmt::{Debug, Display},
-    thread,
-    time::Duration,
-};
+use std::fmt::{Debug, Display};
 
 pub enum TreeMap<K, V> {
     Empty,
@@ -126,7 +122,7 @@ where
 }
 
 pub struct TreeIter<'a, K, V> {
-    stack: Vec<&'a IterNode<'a, K, V>>,
+    stack: Vec<IterNode<'a, K, V>>,
 }
 
 struct IterNode<'a, K, V> {
@@ -147,6 +143,12 @@ impl<'a, K, V> TreeIter<'a, K, V> {
         cur.iter().for_each(|n| stack.push(IterNode::new(*n)));
         Self { stack }
     }
+    fn set_visited(&mut self) -> bool {
+        let node = self.stack.last_mut().unwrap();
+        let visited = node.visited;
+        node.visited = true;
+        visited
+    }
 }
 
 impl<'a, K, V> Iterator for TreeIter<'a, K, V>
@@ -155,27 +157,21 @@ where
 {
     type Item = &'a Entry<K, V>;
 
-    /// We need to push the full left sequence onto the stack first.
-    /// Then we pop off the item from the stack.
-    /// This is the value we must return
-    /// but then we want to push the right.
-    ///
-    /// When we next invoke next, we need to know if the
-    /// current node at the top of the stack has visited
-    /// the left hand side or not. Otherwise, we'll end up infinitely looping.
     fn next(&mut self) -> Option<Self::Item> {
-        thread::sleep(Duration::from_millis(100));
         if self.stack.is_empty() {
             return None;
         }
-        while let Some(ref left) = self.stack.last().unwrap().left {
-            self.stack.push(&left);
+        let visited = self.set_visited();
+        if !visited {
+            while let Some(ref left) = self.stack.last().unwrap().node.left {
+                self.stack.push(IterNode::new(&left));
+            }
         }
         let res = self.stack.pop().unwrap();
-        if let Some(ref right) = res.right {
-            self.stack.push(&right);
+        if let Some(ref right) = res.node.right {
+            self.stack.push(IterNode::new(&right));
         }
-        Some(&res.entry)
+        Some(&res.node.entry)
     }
 }
 
@@ -186,6 +182,7 @@ mod tests {
     #[test]
     fn test_adds() {
         let mut t = TreeMap::new();
+        assert_eq!(t.size(), 0);
         t.insert("foo", 32);
         t.insert("bar", 33);
         assert_eq!(t.size(), 2);
