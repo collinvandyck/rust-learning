@@ -149,16 +149,16 @@ where
     K: Debug,
 {
     type Item = &'a Entry<K, V>;
-
     fn next(&mut self) -> Option<Self::Item> {
-        if self.stack.is_empty() {
-            return None;
+        match self.stack.pop() {
+            None => None,
+            Some(res) => {
+                if let Some(ref right) = res.right {
+                    self.push_left(right);
+                }
+                Some(&res.entry)
+            }
         }
-        let res = self.stack.pop().unwrap();
-        if let Some(ref right) = res.right {
-            self.push_left(right);
-        }
-        Some(&res.entry)
     }
 }
 
