@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, fmt::Debug};
+use std::{borrow::Borrow, fmt::Debug, thread, time::Duration};
 
 pub enum TreeMap<K, V> {
     Empty,
@@ -145,6 +145,8 @@ where
         }
         // push all of the left nodes onto the stack.
         while let Some(ref left) = self.stack.last().unwrap().left {
+            thread::sleep(Duration::from_millis(100));
+            println!("Push left");
             self.stack.push(&left);
         }
 
@@ -153,6 +155,8 @@ where
 
         // before returning the value, push all right right nodes onto the stack.
         while let Some(ref right) = res.right {
+            thread::sleep(Duration::from_millis(100));
+            println!("Push Right");
             self.stack.push(&right);
         }
         println!("Returning {:?}", &res.entry);
