@@ -143,6 +143,7 @@ impl<'a, K, V> TreeIter<'a, K, V> {
         cur.iter().for_each(|n| stack.push(IterNode::new(*n)));
         Self { stack }
     }
+    /// Sets this node's visited value to true and returns the previous value.
     fn set_visited(&mut self) -> bool {
         let node = self.stack.last_mut().unwrap();
         let visited = node.visited;
@@ -161,8 +162,7 @@ where
         if self.stack.is_empty() {
             return None;
         }
-        let visited = self.set_visited();
-        if !visited {
+        if !self.set_visited() {
             while let Some(ref left) = self.stack.last().unwrap().node.left {
                 self.stack.push(IterNode::new(&left));
             }
@@ -186,6 +186,9 @@ mod tests {
         t.insert("foo", 32);
         t.insert("bar", 33);
         assert_eq!(t.size(), 2);
+        t.insert("zar", 34);
+        t.insert("aar", 35);
+        assert_eq!(t.size(), 4);
     }
 
     #[test]
