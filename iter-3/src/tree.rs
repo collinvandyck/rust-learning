@@ -29,6 +29,17 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         }
     }
     pub fn delete(&mut self, k: K) -> Option<V> {
+        let mut root = self.0.take();
+        Self::delete_node(&mut root, k)
+    }
+    fn delete_node(node: &mut Option<TreeNode<K, V>>, k: K) -> Option<V> {
+        if let Some(n) = node.take() {
+            if n.entry.key == k {
+                let res = n.entry.val;
+                *node = None;
+                return Some(res);
+            }
+        }
         None
     }
 }
@@ -147,6 +158,14 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_delete() {
+        let mut t: TreeMap<&'static str, i32> = TreeMap::new();
+        assert_eq!(t.delete("foo"), None);
+        t.insert("foo", 32);
+        assert_eq!(t.delete("foo"), Some(32));
+    }
+
+    #[test]
     fn test_get() {
         let mut t: TreeMap<&'static str, i32> = TreeMap::new();
         t.insert("foo", 32);
@@ -154,14 +173,6 @@ mod tests {
         assert_eq!(t.get("bar"), None);
         t.insert("bar", 42);
         assert_eq!(t.get("bar"), Some(&42));
-    }
-
-    #[test]
-    fn test_delete() {
-        let mut t: TreeMap<&'static str, i32> = TreeMap::new();
-        assert_eq!(t.delete("foo"), None);
-        t.insert("foo", 32);
-        assert_eq!(t.delete("foo"), Some(32));
     }
 
     #[test]
