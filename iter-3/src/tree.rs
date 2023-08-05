@@ -32,44 +32,18 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         Self::delete_node(&mut self.0, k)
     }
     fn delete_node(node: &mut Option<Box<TreeNode<K, V>>>, k: K) -> Option<V> {
-        let comparison = match node {
+        match node {
             None => None,
-            Some(n) => Some(k.cmp(&n.entry.key)),
-        };
-        match comparison {
-            None => {
-                println!("None");
-                return None;
-            }
-            Some(Ordering::Equal) => {
-                println!("Equal");
-                let n = node.take().unwrap();
-                let res = n.entry.val;
-                *node = None;
-                return Some(res);
-            }
-            Some(Ordering::Less) => {
-                println!("Less");
-                // the key is less than this node.
-                if let Some(ref mut root) = node {
-                    let left = &mut root.left;
-                    let res = Self::delete_node(left, k);
-                    return res;
-                } else {
-                    return None;
+            Some(root) => match k.cmp(&root.entry.key) {
+                Ordering::Equal => {
+                    let n = node.take().unwrap();
+                    let res = n.entry.val;
+                    *node = None;
+                    Some(res)
                 }
-            }
-            Some(Ordering::Greater) => {
-                println!("Greater");
-                // They key is greater than this node.
-                if let Some(ref mut root) = node {
-                    let right = &mut root.right;
-                    let res = Self::delete_node(right, k);
-                    return res;
-                } else {
-                    return None;
-                }
-            }
+                Ordering::Less => Self::delete_node(&mut root.left, k),
+                Ordering::Greater => Self::delete_node(&mut root.right, k),
+            },
         }
     }
 }
