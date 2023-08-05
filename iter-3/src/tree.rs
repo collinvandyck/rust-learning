@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::{borrow::Borrow, fmt::Debug};
 
 pub enum TreeMap<K, V> {
     Empty,
@@ -41,8 +41,8 @@ where
 
 impl<'a, K, V> IntoIterator for &'a TreeMap<K, V>
 where
-    K: Ord,
-    V: PartialEq,
+    K: Ord + Debug,
+    V: PartialEq + Debug,
 {
     type Item = &'a Entry<K, V>;
     type IntoIter = TreeIter<'a, K, V>;
@@ -130,7 +130,11 @@ impl<'a, K, V> TreeIter<'a, K, V> {
     }
 }
 
-impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
+impl<'a, K, V> Iterator for TreeIter<'a, K, V>
+where
+    K: Debug,
+    V: Debug,
+{
     type Item = &'a Entry<K, V>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -151,6 +155,7 @@ impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
         while let Some(ref right) = res.right {
             self.stack.push(&right);
         }
+        println!("Returning {:?}", &res.entry);
         Some(&res.entry)
     }
 }
