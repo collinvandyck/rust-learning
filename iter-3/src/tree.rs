@@ -1,6 +1,7 @@
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 pub enum Tree<K, V> {
+    Dummy(Option<V>),
     Empty,
     NonEmpty(Node<K, V>),
 }
@@ -11,10 +12,11 @@ where
     V: PartialEq,
 {
     pub fn new() -> Self {
-        Self::Empty
+        Self::Dummy(None)
     }
     pub fn size(&self) -> usize {
         match *self {
+            Tree::Dummy(_) => 0,
             Tree::Empty => 0,
             Tree::NonEmpty(_) => 1,
         }
@@ -23,7 +25,10 @@ where
 
 impl<K, V> Index<K> for Tree<K, V> {
     type Output = Option<V>;
-    fn index(&self, index: K) -> &Self::Output {
+    fn index(&self, index: K) -> &Option<V> {
+        if let Tree::Dummy(o) = self {
+            return o;
+        }
         &None
     }
 }
