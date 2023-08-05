@@ -50,9 +50,14 @@ where
 }
 
 #[derive(Debug, PartialEq)]
-pub struct TreeNode<K, V> {
+pub struct Entry<K, V> {
     key: K,
     val: V,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct TreeNode<K, V> {
+    entry: Entry<K, V>,
     left: Option<Box<TreeNode<K, V>>>,
     right: Option<Box<TreeNode<K, V>>>,
 }
@@ -65,12 +70,8 @@ where
     fn new(key: K, val: V) -> Self {
         let left = None;
         let right = None;
-        Self {
-            key,
-            val,
-            left,
-            right,
-        }
+        let entry = Entry { key, val };
+        Self { entry, left, right }
     }
     fn walk<F>(&self, mut f: F)
     where
@@ -83,7 +84,7 @@ where
             if let Some(node) = &node.left {
                 walk_helper(node, f);
             }
-            f(&node.key, &node.val);
+            f(&node.entry.key, &node.entry.val);
             if let Some(node) = &node.right {
                 walk_helper(node, f);
             }
@@ -91,11 +92,11 @@ where
         walk_helper(self, &mut f);
     }
     fn insert(&mut self, node: TreeNode<K, V>) {
-        if node.key == self.key {
-            self.val = node.val;
+        if node.entry.key == self.entry.key {
+            self.entry.val = node.entry.val;
             return;
         }
-        let child = if node.key < self.key {
+        let child = if node.entry.key < self.entry.key {
             &mut self.left
         } else {
             &mut self.right
@@ -138,6 +139,10 @@ mod tests {
     #[test]
     fn test_tree_iter() {
         let mut t: TreeMap<&'static str, i32> = TreeMap::new();
+        let v = t.iter().collect::<Vec<_>>();
+        assert_eq!(v, vec![]);
+
+        t.insert("age", 48);
         let v = t.iter().collect::<Vec<_>>();
         assert_eq!(v, vec![]);
     }
