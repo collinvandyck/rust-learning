@@ -1,4 +1,8 @@
-use std::fmt::{Debug, Display};
+use std::{
+    fmt::{Debug, Display},
+    thread,
+    time::Duration,
+};
 
 pub enum TreeMap<K, V> {
     Empty,
@@ -133,10 +137,16 @@ impl<'a, K, V> TreeIter<'a, K, V> {
     }
 }
 
-impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
+impl<'a, K, V> Iterator for TreeIter<'a, K, V>
+where
+    K: Debug,
+{
     type Item = &'a Entry<K, V>;
 
+    /// We need to push the full left sequence onto the stack first.
     fn next(&mut self) -> Option<Self::Item> {
+        thread::sleep(Duration::from_millis(100));
+
         if self.stack.is_empty() {
             return None;
         }
@@ -156,15 +166,30 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_adds() {
+        let mut t = TreeMap::new();
+        t.insert("foo", 32);
+        t.insert("bar", 33);
+        assert_eq!(t.size(), 2);
+    }
+
+    #[test]
     fn test_new_tree() {
         let mut t = TreeMap::new();
 
+        println!("Here");
         assert_eq!(t.size(), 0);
+        println!("Here2");
         t.insert("foo", 32);
+        println!("Here3");
         assert_eq!(t.size(), 1);
+        println!("Here4");
         t.insert("bar", 33);
+        println!("Here5");
         assert_eq!(t.size(), 2);
+        println!("Here6");
         t.insert("bar", 33);
+        println!("Here7");
         assert_eq!(t.size(), 2);
     }
 
