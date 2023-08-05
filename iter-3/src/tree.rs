@@ -122,29 +122,17 @@ where
 }
 
 pub struct TreeIter<'a, K, V> {
-    stack: Vec<IterNode<'a, K, V>>,
-}
-
-struct IterNode<'a, K, V> {
-    visited: bool,
-    node: &'a TreeNode<K, V>,
-}
-
-impl<'a, K, V> IterNode<'a, K, V> {
-    fn new(node: &'a TreeNode<K, V>) -> Self {
-        let visited = false;
-        Self { visited, node }
-    }
+    stack: Vec<&'a TreeNode<K, V>>,
 }
 
 impl<'a, K, V> TreeIter<'a, K, V> {
     fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
         let mut stack = vec![];
         if let Some(cur) = cur {
-            stack.push(IterNode::new(cur));
+            stack.push(cur);
             let mut left = &cur.left;
-            while let Some(node) = left {
-                stack.push(IterNode::new(&node));
+            while let Some(ref node) = left {
+                stack.push(node);
                 left = &node.left;
             }
         }
@@ -159,20 +147,19 @@ where
     type Item = &'a Entry<K, V>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        println!("Next");
         if self.stack.is_empty() {
             return None;
         }
         let res = self.stack.pop().unwrap();
-        if let Some(ref right) = res.node.right {
-            self.stack.push(IterNode::new(&right));
+        if let Some(ref right) = res.right {
+            self.stack.push(&right);
             let mut cur = right;
             while let Some(ref left) = cur.left {
-                self.stack.push(IterNode::new(&left));
+                self.stack.push(&left);
                 cur = left;
             }
         }
-        Some(&res.node.entry)
+        Some(&res.entry)
     }
 }
 
