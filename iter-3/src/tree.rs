@@ -5,11 +5,7 @@ pub enum TreeMap<K, V> {
     NonEmpty(TreeNode<K, V>),
 }
 
-impl<K, V> TreeMap<K, V>
-where
-    K: Ord,
-    V: PartialEq,
-{
+impl<K: Ord, V: PartialEq> TreeMap<K, V> {
     pub fn new() -> Self {
         Self::Empty
     }
@@ -32,11 +28,7 @@ where
     }
 }
 
-impl<'a, K, V> IntoIterator for &'a TreeMap<K, V>
-where
-    K: Ord,
-    V: PartialEq,
-{
+impl<'a, K: Ord, V: PartialEq> IntoIterator for &'a TreeMap<K, V> {
     type Item = &'a Entry<K, V>;
     type IntoIter = TreeIter<'a, K, V>;
     fn into_iter(self) -> Self::IntoIter {
@@ -63,16 +55,13 @@ pub struct TreeNode<K, V> {
     right: Option<Box<TreeNode<K, V>>>,
 }
 
-impl<K, V> TreeNode<K, V>
-where
-    K: Ord,
-    V: PartialEq,
-{
+impl<K: Ord, V: PartialEq> TreeNode<K, V> {
     fn new(key: K, val: V) -> Self {
-        let left = None;
-        let right = None;
-        let entry = Entry { key, val };
-        Self { entry, left, right }
+        Self {
+            entry: Entry::new(key, val),
+            left: None,
+            right: None,
+        }
     }
     /// walk is not really needed, was just an intermediary state
     /// to make sure the tree looked right
@@ -104,9 +93,10 @@ where
         } else {
             &mut self.right
         };
-        match child {
-            None => *child = Some(Box::new(node)),
-            Some(ref mut child) => child.insert(node),
+        if let Some(child) = child {
+            child.insert(node);
+        } else {
+            *child = Some(Box::new(node))
         }
     }
 }
@@ -123,12 +113,11 @@ impl<'a, K, V> TreeIter<'a, K, V> {
         }
         iter
     }
-    fn push_left(&mut self, node: &'a TreeNode<K, V>) {
+    fn push_left(&mut self, mut node: &'a TreeNode<K, V>) {
         self.stack.push(node);
-        let mut left = &node.left;
-        while let Some(ref node) = left {
-            self.stack.push(node);
-            left = &node.left;
+        while let Some(n) = node.left.as_ref() {
+            self.stack.push(n);
+            node = n;
         }
     }
 }
