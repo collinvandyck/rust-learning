@@ -143,6 +143,7 @@ where
             println!("Returned none");
             return None;
         }
+
         // push all of the left nodes onto the stack.
         while let Some(ref left) = self.stack.last().unwrap().left {
             thread::sleep(Duration::from_millis(100));
@@ -154,10 +155,14 @@ where
         let res = self.stack.pop().unwrap();
 
         // before returning the value, push all right right nodes onto the stack.
-        while let Some(ref right) = res.right {
+        // we want to start with res, and then follow that.
+        let mut right = res;
+
+        while let Some(ref node) = right.right {
             thread::sleep(Duration::from_millis(100));
             println!("Push Right");
-            self.stack.push(&right);
+            self.stack.push(&node);
+            right = &node;
         }
         println!("Returning {:?}", &res.entry);
         Some(&res.entry)
