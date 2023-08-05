@@ -26,8 +26,12 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
             TreeMap::NonEmpty(node) => Some(node),
         })
     }
-    pub fn get<'a>(&'a self, _k: K) -> &'a Option<V> {
-        &None
+    pub fn get<'a>(&'a self, k: K) -> Option<&V> {
+        if let TreeMap::NonEmpty(node) = self {
+            node.get(k)
+        } else {
+            None
+        }
     }
 }
 
@@ -40,9 +44,10 @@ impl<'a, K: Ord, V: PartialEq> IntoIterator for &'a TreeMap<K, V> {
 }
 
 impl<K: Ord, V: PartialEq> Index<K> for TreeMap<K, V> {
-    type Output = Option<V>;
+    type Output = V;
     fn index<'a>(&'a self, index: K) -> &Self::Output {
-        self.get(index)
+        let res = self.get(index);
+        res.unwrap()
     }
 }
 
@@ -72,6 +77,22 @@ impl<K: Ord, V: PartialEq> TreeNode<K, V> {
             left: None,
             right: None,
         }
+    }
+    fn get<'a>(&'a self, k: K) -> Option<&'a V> {
+        if self.entry.key == k {
+            return Some(&self.entry.val);
+        }
+        if k < self.entry.key {
+            if let Some(left) = &self.left {
+                return left.get(k);
+            }
+        }
+        if k > self.entry.key {
+            if let Some(right) = &self.right {
+                return right.get(k);
+            }
+        }
+        None
     }
     fn insert(&mut self, node: TreeNode<K, V>) {
         if node.entry.key == self.entry.key {
@@ -132,11 +153,20 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_get() {
+        let mut t: TreeMap<&'static str, i32> = TreeMap::new();
+        t.insert("foo", 32);
+        assert_eq!(t.get("foo"), Some(&32));
+        assert_eq!(t.get("bar"), None);
+        t.insert("bar", 42);
+        assert_eq!(t.get("bar"), Some(&42));
+    }
+
+    #[test]
     fn test_index() {
         let mut t: TreeMap<&'static str, String> = TreeMap::new();
-        assert_eq!(t["foo"], None);
         t.insert("foo", "foobar".to_string());
-        assert_eq!(t["foo"], Some("foobar".to_string()));
+        assert_eq!(t["foo"], "foobar".to_string());
     }
 
     #[test]
