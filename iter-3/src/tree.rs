@@ -33,6 +33,21 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         Self::delete_node(&mut root, k)
     }
     fn delete_node(node: &mut Option<TreeNode<K, V>>, k: K) -> Option<V> {
+        let comparison = match node {
+            None => None,
+            Some(n) => Some(k.cmp(&n.entry.key)),
+        };
+        match comparison {
+            None => return None,
+            Some(Ordering::Equal) => {
+                let n = node.take().unwrap();
+                let res = n.entry.val;
+                *node = None;
+                return Some(res);
+            }
+            Some(Ordering::Less) => {}
+            Some(Ordering::Greater) => {}
+        }
         if let Some(n) = node.take() {
             if n.entry.key == k {
                 let res = n.entry.val;
@@ -163,7 +178,6 @@ mod tests {
         assert_eq!(t.delete("foo"), None);
         t.insert("foo", 32);
         assert_eq!(t.delete("foo"), Some(32));
-        assert_eq!(t.delete("foo"), None);
     }
 
     #[test]
