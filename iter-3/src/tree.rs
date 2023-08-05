@@ -1,5 +1,3 @@
-use std::borrow::BorrowMut;
-
 pub enum TreeMap<K, V> {
     Empty,
     NonEmpty(TreeNode<K, V>),
@@ -14,9 +12,13 @@ where
         Self::Empty
     }
     pub fn size(&self) -> usize {
-        match *self {
+        match self {
             TreeMap::Empty => 0,
-            TreeMap::NonEmpty(_) => todo!(),
+            TreeMap::NonEmpty(root) => {
+                let mut size = 0;
+                root.walk(|_k, _v| size += 1);
+                size
+            }
         }
     }
     pub fn insert(&mut self, k: K, v: V) {
@@ -50,6 +52,18 @@ where
             right,
         }
     }
+    fn walk<F>(&self, mut f: F)
+    where
+        F: FnMut(&K, &V),
+    {
+        if let Some(node) = &self.left {
+            node.walk(&mut f);
+        }
+        f(&self.key, &self.val);
+        if let Some(node) = &self.right {
+            node.walk(&mut f);
+        }
+    }
     fn insert(&mut self, node: TreeNode<K, V>) {
         if node.key == self.key {
             self.val = node.val;
@@ -60,10 +74,9 @@ where
         } else {
             &mut self.right
         };
-        if let Some(child) = child {
-            child.insert(node);
-        } else {
-            *child = Some(Box::new(node));
+        match child {
+            None => *child = Some(Box::new(node)),
+            Some(ref mut child) => child.insert(node),
         }
     }
 }
