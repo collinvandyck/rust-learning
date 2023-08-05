@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+/// TreeMap is a map whose iteration is ordered on the keys.
 pub enum TreeMap<K, V> {
     Empty,
     NonEmpty(TreeNode<K, V>),
@@ -20,11 +21,10 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         }
     }
     pub fn iter<'a>(&'a self) -> TreeIter<'a, K, V> {
-        let cur = match self {
+        TreeIter::new(match self {
             TreeMap::Empty => None,
             TreeMap::NonEmpty(node) => Some(node),
-        };
-        TreeIter::new(cur)
+        })
     }
 }
 
