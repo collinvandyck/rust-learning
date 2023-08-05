@@ -14,14 +14,7 @@ where
         Self::Empty
     }
     pub fn size(&self) -> usize {
-        match self {
-            TreeMap::Empty => 0,
-            TreeMap::NonEmpty(root) => {
-                let mut size = 0;
-                root.walk(|_k, _v| size += 1);
-                size
-            }
-        }
+        self.iter().count()
     }
     pub fn insert(&mut self, k: K, v: V) {
         let node = TreeNode::new(k, v);
@@ -80,16 +73,6 @@ pub struct TreeNode<K, V> {
     right: Option<Box<TreeNode<K, V>>>,
 }
 
-impl<K, V> Display for TreeNode<K, V>
-where
-    K: Debug,
-    V: Debug,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "foo")
-    }
-}
-
 impl<K, V> TreeNode<K, V>
 where
     K: Ord,
@@ -101,6 +84,8 @@ where
         let entry = Entry { key, val };
         Self { entry, left, right }
     }
+    /// walk is not really needed, was just an intermediary state
+    /// to make sure the tree looked right
     fn walk<F>(&self, mut f: F)
     where
         F: FnMut(&K, &V),
@@ -140,59 +125,28 @@ pub struct TreeIter<'a, K, V> {
     stack: Vec<&'a TreeNode<K, V>>,
 }
 
-impl<'a, K, V> TreeIter<'a, K, V>
-where
-    K: Debug,
-    V: Debug,
-{
+impl<'a, K, V> TreeIter<'a, K, V> {
     fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
         let mut stack = vec![];
-        if let Some(node) = cur {
-            stack.push(node);
-        }
+        cur.iter().for_each(|n| stack.push(*n));
         Self { stack }
-    }
-    fn stack_str(&'a self) -> String {
-        let mems = self
-            .stack
-            .iter()
-            .map(|node| format!("{}", node.entry))
-            .collect::<Vec<_>>()
-            .join(", ");
-        format!("[{mems}]")
     }
 }
 
-impl<'a, K, V> Iterator for TreeIter<'a, K, V>
-where
-    K: Debug,
-    V: Debug,
-{
+impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
     type Item = &'a Entry<K, V>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        println!("next stack={}", self.stack_str());
         if self.stack.is_empty() {
             return None;
         }
-
-        // push all of the left nodes onto the stack.
         while let Some(ref left) = self.stack.last().unwrap().left {
             self.stack.push(&left);
         }
-
-        // pop and retain the value of the leftmost node
         let res = self.stack.pop().unwrap();
-
-        // before returning the value, push all right right nodes onto the stack.
-        // we want to start with res, and then follow that.
-        let mut right = res;
-
-        while let Some(ref node) = right.right {
-            self.stack.push(&node);
-            right = &node;
+        if let Some(ref right) = res.right {
+            self.stack.push(&right);
         }
-        println!("Returning {:?}", &res.entry);
         Some(&res.entry)
     }
 }
@@ -231,23 +185,21 @@ mod tests {
         let v = t.iter().collect::<Vec<_>>();
         assert_eq!(v, vec![&Entry::new("age", 49)]);
 
-        // add a new entry with a greater value
+        // add a new entry with a greater key
         t.insert("age2", 50);
         let v = t.iter().collect::<Vec<_>>();
         assert_eq!(v, vec![&Entry::new("age", 49), &Entry::new("age2", 50)]);
 
-        println!("\nFOO\n");
-
-        // add a new entry with a lesser value
+        // add a new entry with a lesser key
         t.insert("age3", 45);
         assert_eq!(t.size(), 3);
         let v = t.iter().collect::<Vec<_>>();
         assert_eq!(
             v,
             vec![
-                &Entry::new("age3", 45),
                 &Entry::new("age", 49),
-                &Entry::new("age2", 50)
+                &Entry::new("age2", 50),
+                &Entry::new("age3", 45),
             ]
         );
     }
