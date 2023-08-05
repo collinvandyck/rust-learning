@@ -1,7 +1,4 @@
-use std::ops::{Index, IndexMut};
-
 pub enum Tree<K, V> {
-    Dummy(Option<V>),
     Empty,
     NonEmpty(Node<K, V>),
 }
@@ -12,24 +9,20 @@ where
     V: PartialEq,
 {
     pub fn new() -> Self {
-        Self::Dummy(None)
+        Self::Empty
     }
     pub fn size(&self) -> usize {
         match *self {
-            Tree::Dummy(_) => 0,
             Tree::Empty => 0,
-            Tree::NonEmpty(_) => 1,
+            Tree::NonEmpty(_) => todo!(),
         }
     }
-}
-
-impl<K, V> Index<K> for Tree<K, V> {
-    type Output = Option<V>;
-    fn index(&self, index: K) -> &Option<V> {
-        if let Tree::Dummy(o) = self {
-            return o;
+    pub fn insert(&mut self, k: K, v: V) {
+        let node = Node::new(k, v);
+        match self {
+            Tree::Empty => *self = Tree::NonEmpty(node),
+            Tree::NonEmpty(n) => n.insert(node),
         }
-        &None
     }
 }
 
@@ -44,6 +37,11 @@ where
     K: Ord,
     V: PartialEq,
 {
+    fn new(key: K, val: V) -> Self {
+        let children = vec![];
+        Self { key, val, children }
+    }
+    fn insert(&mut self, node: Node<K, V>) {}
 }
 
 #[cfg(test)]
@@ -52,8 +50,9 @@ mod tests {
 
     #[test]
     fn test_new_tree() {
-        let t: Tree<&'static str, i32> = Tree::new();
+        let mut t = Tree::new();
         assert_eq!(t.size(), 0);
-        assert_eq!(t["foo"], None);
+        t.insert("foo", 32);
+        assert_eq!(t.size(), 0);
     }
 }
