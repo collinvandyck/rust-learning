@@ -160,6 +160,8 @@ mod tests {
     fn test_delete() {
         let mut t: TreeMap<&'static str, i32> = TreeMap::new();
         assert_eq!(t.delete("foo"), None);
+        t.insert("foo", 32);
+        assert_eq!(t.delete("foo"), Some(32));
     }
 
     #[test]
