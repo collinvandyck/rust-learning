@@ -42,7 +42,7 @@ where
     K: Ord,
     V: PartialEq,
 {
-    type Item = TreeNode<K, V>;
+    type Item = Entry<K, V>;
     type IntoIter = TreeIter<'a, K, V>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
@@ -53,6 +53,12 @@ where
 pub struct Entry<K, V> {
     key: K,
     val: V,
+}
+
+impl<K, V> Entry<K, V> {
+    fn new(key: K, val: V) -> Self {
+        Self { key, val }
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -113,7 +119,7 @@ pub struct TreeIter<'a, K, V> {
 }
 
 impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
-    type Item = TreeNode<K, V>;
+    type Item = Entry<K, V>;
     fn next(&mut self) -> Option<Self::Item> {
         None
     }
@@ -144,6 +150,6 @@ mod tests {
 
         t.insert("age", 48);
         let v = t.iter().collect::<Vec<_>>();
-        assert_eq!(v, vec![]);
+        assert_eq!(v, vec![Entry::new("age", 48)]);
     }
 }
