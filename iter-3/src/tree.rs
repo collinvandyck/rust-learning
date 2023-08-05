@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, ops::Index};
 
 /// TreeMap is a map whose iteration is ordered on the keys.
 pub enum TreeMap<K, V> {
@@ -26,6 +26,9 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
             TreeMap::NonEmpty(node) => Some(node),
         })
     }
+    pub fn get<'a>(&'a self, k: K) -> &'a Option<Entry<K, V>> {
+        &None
+    }
 }
 
 impl<'a, K: Ord, V: PartialEq> IntoIterator for &'a TreeMap<K, V> {
@@ -33,6 +36,13 @@ impl<'a, K: Ord, V: PartialEq> IntoIterator for &'a TreeMap<K, V> {
     type IntoIter = TreeIter<'a, K, V>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
+    }
+}
+
+impl<K: Ord, V: PartialEq> Index<K> for TreeMap<K, V> {
+    type Output = Option<Entry<K, V>>;
+    fn index<'a>(&'a self, index: K) -> &Self::Output {
+        self.get(index)
     }
 }
 
@@ -62,26 +72,6 @@ impl<K: Ord, V: PartialEq> TreeNode<K, V> {
             left: None,
             right: None,
         }
-    }
-    /// walk is not really needed, was just an intermediary state
-    /// to make sure the tree looked right
-    fn walk<F>(&self, mut f: F)
-    where
-        F: FnMut(&K, &V),
-    {
-        fn walk_helper<K, V, F>(node: &TreeNode<K, V>, f: &mut F)
-        where
-            F: FnMut(&K, &V),
-        {
-            if let Some(node) = &node.left {
-                walk_helper(node, f);
-            }
-            f(&node.entry.key, &node.entry.val);
-            if let Some(node) = &node.right {
-                walk_helper(node, f);
-            }
-        }
-        walk_helper(self, &mut f);
     }
     fn insert(&mut self, node: TreeNode<K, V>) {
         if node.entry.key == self.entry.key {
