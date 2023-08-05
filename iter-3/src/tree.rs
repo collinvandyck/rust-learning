@@ -35,14 +35,14 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
         match node {
             None => None,
             Some(root) => match k.cmp(&root.entry.key) {
+                Ordering::Less => Self::delete_node(&mut root.left, k),
+                Ordering::Greater => Self::delete_node(&mut root.right, k),
                 Ordering::Equal => {
                     let n = node.take().unwrap();
                     let res = n.entry.val;
                     *node = None;
                     Some(res)
                 }
-                Ordering::Less => Self::delete_node(&mut root.left, k),
-                Ordering::Greater => Self::delete_node(&mut root.right, k),
             },
         }
     }
