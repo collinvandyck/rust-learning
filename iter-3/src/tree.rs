@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, fmt::Debug, ops::Index};
+use std::{cmp::Ordering, fmt::Debug};
 
 /// TreeMap is a map whose iteration is ordered on the keys.
 pub struct TreeMap<K, V>(Option<Box<TreeNode<K, V>>>);
@@ -31,6 +31,7 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
     pub fn delete(&mut self, k: K) -> Option<V> {
         Self::delete_node(&mut self.0, k)
     }
+    // a helper function so we can work with Option<Box<TN>> as a parameter.
     fn delete_node(node: &mut Option<Box<TreeNode<K, V>>>, k: K) -> Option<V> {
         match node {
             None => None,
@@ -38,9 +39,21 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
                 Ordering::Less => Self::delete_node(&mut root.left, k),
                 Ordering::Greater => Self::delete_node(&mut root.right, k),
                 Ordering::Equal => {
-                    let n = node.take().unwrap();
-                    let res = n.entry.val;
-                    *node = None;
+                    let root = node.take().unwrap();
+                    let TreeNode { entry, left, right } = *root;
+                    let res = entry.val;
+                    // we need to change the tree based on the state of left and right.
+                    // regardless we will be removing this node.
+                    match (left, right) {
+                        (None, None) => {}
+                        (left @ Some(_), None) => *node = left,
+                        (None, right @ Some(_)) => *node = right,
+                        (Some(mut left), Some(right)) => {
+                            // TODO: drain or into_iter all of the right nodes and then
+                            // add them one by one to left.
+                            *node = Some(left);
+                        }
+                    }
                     Some(res)
                 }
             },
