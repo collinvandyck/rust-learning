@@ -156,12 +156,7 @@ where
         }
         let res = self.stack.pop().unwrap();
         if let Some(ref right) = res.right {
-            self.stack.push(&right);
-            let mut cur = right;
-            while let Some(ref left) = cur.left {
-                self.stack.push(&left);
-                cur = left;
-            }
+            self.push_left(right);
         }
         Some(&res.entry)
     }
