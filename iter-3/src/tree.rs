@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 pub enum TreeMap<K, V> {
     Empty,
     NonEmpty(TreeNode<K, V>),
@@ -42,7 +44,7 @@ where
     K: Ord,
     V: PartialEq,
 {
-    type Item = Entry<K, V>;
+    type Item = &'a Entry<K, V>;
     type IntoIter = TreeIter<'a, K, V>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
@@ -115,19 +117,41 @@ where
 }
 
 pub struct TreeIter<'a, K, V> {
-    cur: Option<&'a TreeNode<K, V>>,
+    stack: Vec<&'a TreeNode<K, V>>,
 }
 
 impl<'a, K, V> TreeIter<'a, K, V> {
     fn new(cur: Option<&'a TreeNode<K, V>>) -> Self {
-        Self { cur }
+        let mut stack = vec![];
+        if let Some(node) = cur {
+            stack.push(node);
+        }
+        Self { stack }
     }
 }
 
 impl<'a, K, V> Iterator for TreeIter<'a, K, V> {
-    type Item = Entry<K, V>;
+    type Item = &'a Entry<K, V>;
+
     fn next(&mut self) -> Option<Self::Item> {
-        None
+        println!("next stack={}", self.stack.len());
+        if self.stack.is_empty() {
+            println!("Returned none");
+            return None;
+        }
+        // push all of the left nodes onto the stack.
+        while let Some(ref left) = self.stack.last().unwrap().left {
+            self.stack.push(&left);
+        }
+
+        // pop and retain the value of the leftmost node
+        let res = self.stack.pop().unwrap();
+
+        // before returning the value, push all right right nodes onto the stack.
+        while let Some(ref right) = res.right {
+            self.stack.push(&right);
+        }
+        Some(&res.entry)
     }
 }
 
@@ -150,12 +174,25 @@ mod tests {
 
     #[test]
     fn test_tree_iter() {
+        // empty
         let mut t: TreeMap<&'static str, i32> = TreeMap::new();
-        let v = t.iter().collect::<Vec<_>>();
-        assert_eq!(v, vec![]);
+        let v = t.into_iter().collect::<Vec<_>>();
+        assert!(v.is_empty());
 
+        // has one entry
         t.insert("age", 48);
         let v = t.iter().collect::<Vec<_>>();
-        assert_eq!(v, vec![Entry::new("age", 48)]);
+        assert_eq!(v, vec![&Entry::new("age", 48)]);
+
+        // change the value of the entry
+        t.insert("age", 49);
+        let v = t.iter().collect::<Vec<_>>();
+        assert_eq!(v, vec![&Entry::new("age", 49)]);
+
+        // add a new entry with a greater value
+        t.insert("age2", 50);
+        println!("\nfailing\n");
+        let v = t.iter().collect::<Vec<_>>();
+        assert_eq!(v, vec![&Entry::new("age", 49), &Entry::new("age", 50)]);
     }
 }
