@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 pub enum Tree<K, V> {
     Empty,
     NonEmpty(Node<K, V>),
@@ -16,6 +18,13 @@ where
             Tree::Empty => 0,
             Tree::NonEmpty(_) => 1,
         }
+    }
+}
+
+impl<K, V> Index<K> for Tree<K, V> {
+    type Output = Option<V>;
+    fn index(&self, index: K) -> &Self::Output {
+        &None
     }
 }
 
@@ -40,5 +49,6 @@ mod tests {
     fn test_new_tree() {
         let t: Tree<&'static str, i32> = Tree::new();
         assert_eq!(t.size(), 0);
+        assert_eq!(t["foo"], None);
     }
 }
