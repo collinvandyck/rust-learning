@@ -205,7 +205,50 @@ impl<'a, K, V> Iterator for BorrowedIter<'a, K, V> {
 
 #[cfg(test)]
 mod tests {
+    use rand::{seq::SliceRandom, thread_rng};
+
     use super::*;
+    #[test]
+    fn test_random_unsorted_deletes() {
+        let mut rng = thread_rng();
+        const N: i32 = 1000;
+        let mut nums = (0..N).collect::<Vec<_>>();
+        nums.shuffle(&mut rng);
+        let mut t: TreeMap<i32, i32> = TreeMap::new();
+        for i in &nums {
+            t.insert(*i, *i);
+        }
+        assert_eq!(t.size(), N as usize);
+        for i in &nums {
+            assert_eq!(t.get(*i), Some(i));
+        }
+        for i in &nums {
+            assert_eq!(t.delete(*i), Some(*i));
+            assert_eq!(t.delete(*i), None);
+        }
+        assert_eq!(t.size(), 0);
+    }
+    #[test]
+    fn test_random_sorted_deletes() {
+        let mut rng = thread_rng();
+        const N: i32 = 100000;
+        let mut nums = (0..N).collect::<Vec<_>>();
+        nums.shuffle(&mut rng);
+        let mut t: TreeMap<i32, i32> = TreeMap::new();
+        for i in &nums {
+            t.insert(*i, *i);
+        }
+        assert_eq!(t.size(), N as usize);
+        nums.sort();
+        for i in &nums {
+            assert_eq!(t.get(*i), Some(i));
+        }
+        for i in &nums {
+            assert_eq!(t.delete(*i), Some(*i));
+            assert_eq!(t.delete(*i), None);
+        }
+        assert_eq!(t.size(), 0);
+    }
 
     #[test]
     fn test_delete() {
