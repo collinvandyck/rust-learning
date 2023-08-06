@@ -18,10 +18,10 @@ impl<K: Ord, V: PartialEq> TreeMap<K, V> {
             self.0 = Some(Box::new(node));
         }
     }
-    pub fn iter<'a>(&'a self) -> BorrowedIter<'a, K, V> {
+    pub fn iter(&self) -> BorrowedIter<K, V> {
         BorrowedIter::new(self.0.as_ref())
     }
-    pub fn get<'a>(&'a self, k: K) -> Option<&V> {
+    pub fn get(&self, k: K) -> Option<&V> {
         if let Some(ref node) = self.0 {
             node.get(k)
         } else {
