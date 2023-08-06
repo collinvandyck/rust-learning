@@ -1,6 +1,6 @@
-use std::thread::yield_now;
 use mini_redis::{Connection, Frame};
 use tokio::net::{TcpListener, TcpStream};
+use tokio::task::yield_now;
 
 #[tokio::main]
 async fn main() {
@@ -12,6 +12,7 @@ async fn main() {
         });
         tokio::spawn(async {
             println!("hi there") ;
+            yield_now().await;
         });
     }
 }
