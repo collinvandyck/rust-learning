@@ -1,3 +1,4 @@
+use std::thread::yield_now;
 use mini_redis::{Connection, Frame};
 use tokio::net::{TcpListener, TcpStream};
 
@@ -6,7 +7,12 @@ async fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").await.unwrap();
     loop {
         let (foobar, _addr) = listener.accept().await.unwrap();
-        process(foobar).await;
+        tokio::spawn(async move {
+            process(foobar).await;
+        });
+        tokio::spawn(async {
+            println!("hi there") ;
+        });
     }
 }
 
