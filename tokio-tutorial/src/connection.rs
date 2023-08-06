@@ -46,7 +46,7 @@ impl Connection {
                 self.stream.write_all(b":").await?;
                 self.write_decimal(*val).await?;
             }
-            frame => unimplemented!()
+            _ => unimplemented!()
         }
         self.stream.flush().await?;
         Ok(())
