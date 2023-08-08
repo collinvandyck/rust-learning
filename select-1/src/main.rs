@@ -1,8 +1,8 @@
 use std::future::Future;
-use tokio::sync::oneshot;
-use tokio::net::{TcpListener, TcpStream};
 use std::io;
 use std::time::Duration;
+use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::{mpsc, oneshot};
 use tokio::time::sleep;
 
 #[tokio::main]
@@ -12,6 +12,7 @@ async fn main() {
         Ok(()) => println!("Accept done"),
         Err(e) => eprintln!("Accept failed: {e:?}"),
     }
+    receive_on_multiple_channels().await;
 }
 
 async fn test_select_loop() {
@@ -34,7 +35,7 @@ async fn test_select_loop() {
     println!("{one:?} {two:?}");
 }
 
-async fn get(rx1: impl Future<Output=&str>) {
+async fn get(rx1: impl Future<Output = &str>) {
     tokio::select! {
         val = rx1 => {
             println!("rx1 first with {val:?}");
@@ -43,14 +44,14 @@ async fn get(rx1: impl Future<Output=&str>) {
 }
 
 fn process(socket: TcpStream) {
-   println!("Socket connect: {socket:?}") ;
+    println!("Socket connect: {socket:?}");
 }
 
 async fn test_accept_loop() -> io::Result<()> {
     let (tx, rx) = oneshot::channel();
 
     tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
+        sleep(Duration::from_millis(500)).await;
         tx.send(()).unwrap();
     });
 
@@ -73,4 +74,29 @@ async fn test_accept_loop() -> io::Result<()> {
     }
 
     Ok(())
+}
+
+async fn receive_on_multiple_channels() {
+    let (tx1, mut rx1) = mpsc::channel(128);
+    let (tx2, mut rx2) = mpsc::channel(128);
+    let (tx3, mut rx3) = mpsc::channel(128);
+
+    tokio::spawn(async move {
+        let _ = tx1.send("foo").await;
+    });
+
+    loop {
+        let msg = tokio::select! {
+            Some(msg) = rx1.recv() => msg,
+            Some(msg) = rx2.recv() => msg,
+            Some(msg) = rx3.recv() => msg,
+            else => {
+                println!("All channels closed");
+                break;
+            }
+        };
+
+        println!("Got {:?}", msg);
+        break;
+    }
 }
