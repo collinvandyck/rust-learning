@@ -1,4 +1,7 @@
+use scheduler_1::scheduler::Scheduler;
+
 #[tokio::main]
 async fn main() {
-    println!("Hello, world!");
+    let s = Scheduler::new();
+    println!("ok");
 }
