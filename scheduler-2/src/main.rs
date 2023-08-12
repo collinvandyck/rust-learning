@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use clap::Parser;
@@ -17,8 +17,31 @@ async fn main() -> Result<()> {
     let args = Args::parse();
     let sched = Scheduler::new();
     let num_tasks = args.num_tasks;
+
+    let (tx, mut rx) = mpsc::channel::<bool>(num_tasks);
+    tokio::spawn(generate(sched.clone(), tx));
     let mut num_scheduled = 0;
-    let (tx, mut rx) = mpsc::channel::<()>(num_tasks);
+    let mut num_rejected = 0;
+    let mut interval = tokio::time::interval(Duration::from_millis(100));
+    interval.tick().await;
+
+    loop {
+        tokio::select! {
+            _ = interval.tick() => {
+                println!("{num_scheduled} {num_rejected}");
+                //
+            }
+            Some(scheduled) = rx.recv() => {
+                if scheduled {
+                    num_scheduled += 1;
+                } else {
+                    num_rejected += 1;
+                }
+            }
+        }
+    }
+
+    /*
     for _ in 0..num_tasks {
         let tx = tx.clone();
         let res = sched
@@ -40,4 +63,20 @@ async fn main() -> Result<()> {
         num_tasks - num_scheduled
     );
     Ok(())
+    */
+}
+
+async fn generate(sched: Scheduler, tx: mpsc::Sender<bool>) -> Result<()> {
+    loop {
+        let tx = tx.clone();
+        let tx2 = tx.clone();
+        let res = sched
+            .schedule("task1", async move {
+                tx.send(true).await.unwrap();
+            })
+            .await?;
+        if res == Response::Rejected {
+            tx2.send(false).await.unwrap();
+        }
+    }
 }

@@ -3,6 +3,7 @@ use anyhow::Result;
 use std::{future::Future, sync::Arc};
 use tokio::sync::{mpsc, oneshot};
 
+#[derive(Clone)]
 pub struct Scheduler {
     tx: Arc<mpsc::Sender<Request>>,
 }
