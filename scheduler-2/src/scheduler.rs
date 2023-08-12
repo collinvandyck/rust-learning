@@ -33,9 +33,9 @@ impl Scheduler {
 }
 
 pub(crate) struct Request {
-    pub(crate) typ: TaskType,
-    pub(crate) cmd: Command,
-    pub(crate) tx: oneshot::Sender<Response>,
+    pub typ: TaskType,
+    pub cmd: Command,
+    pub tx: oneshot::Sender<Response>,
 }
 
 impl Request {

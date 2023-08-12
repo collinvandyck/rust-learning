@@ -18,10 +18,12 @@ impl Command {
     }
 
     pub(crate) async fn run(&mut self) {
-        let fut = {
+        if let Some(fut) = {
             let mut future = self.0.lock().unwrap();
-            future.take().unwrap()
-        };
-        fut.await;
+            let fut = future.take();
+            fut
+        } {
+            fut.await;
+        }
     }
 }

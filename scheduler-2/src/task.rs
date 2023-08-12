@@ -10,6 +10,9 @@ impl TaskType {
     pub fn new<T: Into<String>>(id: T) -> Self {
         Self(id.into())
     }
+    pub fn from<T: Into<TaskType>>(t: T) -> Self {
+        t.into()
+    }
 }
 
 impl From<&str> for TaskType {
