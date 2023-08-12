@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     let num_tasks = args.num_tasks;
 
     let (tx, mut rx) = mpsc::channel::<bool>(num_tasks);
-    tokio::spawn(generate(sched.clone(), tx));
+    tokio::spawn(generate(sched.clone(), tx, args.num_task_types));
     let mut num_scheduled = 0;
     let mut num_rejected = 0;
     let mut interval = tokio::time::interval(Duration::from_millis(100));
@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
     }
 }
 
-async fn generate(sched: Scheduler, tx: mpsc::Sender<bool>) -> Result<()> {
+async fn generate(sched: Scheduler, tx: mpsc::Sender<bool>, num_types: usize) -> Result<()> {
     loop {
         let tx = tx.clone();
         let tx2 = tx.clone();
