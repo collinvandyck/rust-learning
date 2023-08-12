@@ -37,15 +37,22 @@ impl Control {
                     }
                 }
                 Some(Request{typ, cmd, tx}) = self.rx.recv() => {
-                    let res_tx = self.res_tx.clone();
-                    tokio::spawn(async move {
-                        let mut runner = Runner::new(typ, cmd, res_tx);
-                        runner.run().await;
-                    });
-                    let _ = tx.send(Response::Scheduled);
+                    if !self.state.try_run(&typ) {
+                        let _ = tx.send(Response::Rejected);
+                    } else {
+                        let res_tx = self.res_tx.clone();
+                        tokio::spawn(async move {
+                            let mut runner = Runner::new(typ, cmd, res_tx);
+                            runner.run().await;
+                        });
+                        let _ = tx.send(Response::Scheduled);
+                    }
                 }
             }
         }
+    }
+    fn try_run(&mut self, typ: &TaskType) -> bool {
+        self.state.try_run(typ)
     }
 }
 
@@ -92,11 +99,11 @@ impl State {
             running: HashMap::default(),
         }
     }
-    fn try_run(&mut self, typ: TaskType) -> bool {
-        if self.running.contains_key(&typ) {
+    fn try_run(&mut self, typ: &TaskType) -> bool {
+        if self.running.contains_key(typ) {
             return false;
         }
-        self.running.insert(typ, true);
+        self.running.insert(typ.clone(), true);
         true
     }
     fn remove(&mut self, typ: TaskType) {
