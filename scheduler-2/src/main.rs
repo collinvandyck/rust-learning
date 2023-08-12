@@ -56,11 +56,13 @@ async fn main() -> Result<()> {
 }
 
 async fn generate(sched: Scheduler, tx: mpsc::Sender<bool>, num_types: usize) -> Result<()> {
+    let mut names = (0..num_types).into_iter().map(|i| format!("{i}")).cycle();
     loop {
         let tx = tx.clone();
         let tx2 = tx.clone();
+        let next = names.next().unwrap();
         let res = sched
-            .schedule("task1", async move {
+            .schedule(next, async move {
                 tx.send(true).await.unwrap();
             })
             .await?;

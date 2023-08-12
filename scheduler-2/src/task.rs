@@ -17,3 +17,9 @@ impl From<&str> for TaskType {
         Self(id.to_string())
     }
 }
+
+impl From<String> for TaskType {
+    fn from(id: String) -> Self {
+        Self(id)
+    }
+}
