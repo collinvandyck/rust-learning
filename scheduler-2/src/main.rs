@@ -7,9 +7,6 @@ use tokio::sync::mpsc;
 
 #[derive(Parser)]
 struct Args {
-    #[arg(short, default_value_t = 100000)]
-    num_tasks: usize,
-
     #[arg(short = 't', default_value_t = 1)]
     num_task_types: usize,
 }
@@ -18,13 +15,12 @@ struct Args {
 async fn main() -> Result<()> {
     let args = Args::parse();
     let sched = Scheduler::new();
-    let num_tasks = args.num_tasks;
 
-    let (tx, mut rx) = mpsc::channel::<bool>(num_tasks);
+    let (tx, mut rx) = mpsc::channel::<bool>(args.num_task_types);
     tokio::spawn(generate(sched.clone(), tx, args.num_task_types));
     let mut num_scheduled = 0;
     let mut num_rejected = 0;
-    let mut interval = tokio::time::interval(Duration::from_millis(100));
+    let mut interval = tokio::time::interval(Duration::from_millis(50));
     interval.tick().await;
     let mut start = Instant::now();
     loop {
