@@ -47,7 +47,7 @@ impl Request {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Response {
     Scheduled,
     Rejected,
