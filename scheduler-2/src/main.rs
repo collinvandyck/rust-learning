@@ -9,11 +9,13 @@ use tokio::sync::mpsc;
 struct Args {
     #[arg(short, default_value_t = 100000)]
     num_tasks: usize,
+
+    #[arg(short = 't', default_value_t = 1)]
+    num_task_types: usize,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let start = Instant::now();
     let args = Args::parse();
     let sched = Scheduler::new();
     let num_tasks = args.num_tasks;
@@ -24,12 +26,23 @@ async fn main() -> Result<()> {
     let mut num_rejected = 0;
     let mut interval = tokio::time::interval(Duration::from_millis(100));
     interval.tick().await;
-
+    let mut start = Instant::now();
     loop {
         tokio::select! {
             _ = interval.tick() => {
-                println!("{num_scheduled} {num_rejected}");
-                //
+                let dur = Instant::now().duration_since(start);
+                let per_sec = if num_scheduled == 0 {
+                    0.0
+                } else {
+                    num_scheduled as f64 / dur.as_secs_f64()
+                };
+                let success_pct = num_scheduled as f64 / (num_scheduled as f64 + num_rejected as f64) * 100.0;
+                println!("{success_pct:3.0}%\t{per_sec:.0}/sec\t{num_scheduled} {num_rejected}");
+
+                // reset
+                num_scheduled=0;
+                num_rejected=0;
+                start = Instant::now();
             }
             Some(scheduled) = rx.recv() => {
                 if scheduled {
@@ -40,30 +53,6 @@ async fn main() -> Result<()> {
             }
         }
     }
-
-    /*
-    for _ in 0..num_tasks {
-        let tx = tx.clone();
-        let res = sched
-            .schedule("task1", async move {
-                tx.send(()).await.unwrap();
-            })
-            .await?;
-        if res == Response::Scheduled {
-            num_scheduled += 1;
-        }
-    }
-    for _ in 0..num_scheduled {
-        rx.recv().await.unwrap();
-    }
-    let dur = Instant::now().duration_since(start);
-    let per_sec = num_scheduled as f64 / dur.as_secs_f64();
-    println!(
-        "{per_sec:.0}/sec. scheduled:{num_scheduled} rejected : {} dur: {dur:?}",
-        num_tasks - num_scheduled
-    );
-    Ok(())
-    */
 }
 
 async fn generate(sched: Scheduler, tx: mpsc::Sender<bool>) -> Result<()> {
