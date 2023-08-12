@@ -7,7 +7,7 @@ use tokio::sync::mpsc;
 
 #[derive(Parser)]
 struct Args {
-    #[arg(short = 't', default_value_t = 1)]
+    #[arg(short = 't', default_value_t = 8)]
     num_task_types: usize,
 }
 

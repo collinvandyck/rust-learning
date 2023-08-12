@@ -2,5 +2,6 @@
 
 mod command;
 mod control;
+mod hooks;
 pub mod scheduler;
 mod task;
