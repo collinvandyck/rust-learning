@@ -43,8 +43,8 @@ impl Scheduler {
         let req = TaskRequest::new(typ, cmd, tx);
         let req = Request::Task(req);
         self.tx.send(req).await?;
-        let res = rx.await?;
-        Ok(res)
+        let scheduler_response = rx.await?;
+        Ok(scheduler_response)
     }
 }
 
