@@ -4,7 +4,7 @@ use tokio::sync::mpsc;
 
 use crate::{
     command::Command,
-    scheduler::{Request, Response},
+    scheduler::{CommandRequest, Request, Response},
     task::TaskType,
 };
 
@@ -36,16 +36,23 @@ impl Control {
                         }
                     }
                 }
-                Some(Request{typ, cmd, tx}) = self.rx.recv() => {
-                    if !self.state.try_run(&typ) {
-                        let _ = tx.send(Response::Rejected);
-                    } else {
-                        let res_tx = self.res_tx.clone();
-                        tokio::spawn(async move {
-                            let mut runner = Runner::new(typ, cmd, res_tx);
-                            runner.run().await;
-                        });
-                        let _ = tx.send(Response::Scheduled);
+                Some(req) = self.rx.recv() => {
+                    match req {
+                        Request::Command(CommandRequest{typ, cmd, tx}) => {
+                            if !self.state.try_run(&typ) {
+                                let _ = tx.send(Response::Rejected);
+                            } else {
+                                let res_tx = self.res_tx.clone();
+                                tokio::spawn(async move {
+                                    let mut runner = Runner::new(typ, cmd, res_tx);
+                                    runner.run().await;
+                                });
+                                let _ = tx.send(Response::Accepted);
+                            }
+                        }
+                        Request::Wait(_) => {
+                            println!("wait");
+                        }
                     }
                 }
             }

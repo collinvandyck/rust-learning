@@ -25,20 +25,31 @@ impl Scheduler {
         let typ = typ.into();
         let cmd = Command::new(f);
         let (tx, rx) = oneshot::channel();
-        let req = Request::new(typ, cmd, tx);
+        let req = CommandRequest::new(typ, cmd, tx);
+        let req = Request::Command(req);
         self.tx.send(req).await?;
         let res = rx.await?;
         Ok(res)
     }
 }
 
-pub(crate) struct Request {
+pub(crate) enum Request {
+    Command(CommandRequest),
+    Wait(WaitRequest),
+}
+
+/// Instructs the scheduler to wait for all currently running tasks to complete. Any other requests
+/// that are received while waiting will be rejected.
+pub(crate) struct WaitRequest {}
+
+/// A request to run a particular command/task.
+pub(crate) struct CommandRequest {
     pub typ: TaskType,
     pub cmd: Command,
     pub tx: oneshot::Sender<Response>,
 }
 
-impl Request {
+impl CommandRequest {
     pub(crate) fn new(task_id: TaskType, command: Command, tx: oneshot::Sender<Response>) -> Self {
         Self {
             typ: task_id,
@@ -50,6 +61,6 @@ impl Request {
 
 #[derive(Debug, PartialEq)]
 pub enum Response {
-    Scheduled,
+    Accepted,
     Rejected,
 }
