@@ -9,6 +9,7 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
+    #[must_use]
     pub fn new(hooks: Option<Box<dyn Hooks + Send + 'static>>) -> Scheduler {
         let (tx, rx) = mpsc::channel(1024);
         tokio::spawn(async move {
@@ -18,6 +19,7 @@ impl Scheduler {
         Self { tx: tx.into() }
     }
 
+    #[must_use]
     pub fn builder() -> Builder {
         Builder { hooks: None }
     }
