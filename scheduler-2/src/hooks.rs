@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 pub type HookResult = Result<(), Arc<anyhow::Error>>;
 
-pub(crate) type WrappedHooks = Option<Box<dyn Hooks + Send + 'static>>;
+pub(crate) type Wrapped = Option<Box<dyn Hooks + Send + 'static>>;
 
 /// Hooks defines the trait that clients can implement to provide
 /// callbacks to scheduler lifecycle methods.

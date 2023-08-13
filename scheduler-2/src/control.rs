@@ -4,7 +4,7 @@ use tokio::sync::mpsc;
 
 use crate::{
     command::Command,
-    hooks::WrappedHooks,
+    hooks,
     scheduler::{Request, Response, TaskRequest, WaitRequest},
     task,
 };
@@ -15,11 +15,11 @@ pub(crate) struct Control {
     rx: mpsc::Receiver<Request>,
     res_tx: mpsc::Sender<RunResult>,
     res_rx: mpsc::Receiver<RunResult>,
-    hooks: WrappedHooks,
+    hooks: hooks::Wrapped,
 }
 
 impl Control {
-    pub(crate) fn new(rx: mpsc::Receiver<Request>, hooks: WrappedHooks) -> Self {
+    pub(crate) fn new(rx: mpsc::Receiver<Request>, hooks: hooks::Wrapped) -> Self {
         let (res_tx, res_rx) = mpsc::channel(1024);
         Self {
             rx,
