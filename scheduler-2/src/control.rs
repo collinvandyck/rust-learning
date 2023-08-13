@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     command::Command,
     hooks,
@@ -15,6 +17,8 @@ pub(crate) struct Control {
     res_tx: mpsc::Sender<RunResult>,
     res_rx: mpsc::Receiver<RunResult>,
     hooks: hooks::Wrapped,
+    rules: Rules,
+    running: HashMap<task::Type, bool>,
 }
 
 impl Control {
@@ -25,11 +29,13 @@ impl Control {
             res_tx,
             res_rx,
             hooks,
+            rules,
+            running: HashMap::default(),
         }
     }
     /// The main loop of the Controller.
     pub(crate) async fn run(&mut self) {
-        let mut state = State::new();
+        let mut state = State::new(&self.rules);
         let mut wait: Option<WaitRequest> = None;
         loop {
             // if we are waiting and there are no more tasks running, then complete the wait by
