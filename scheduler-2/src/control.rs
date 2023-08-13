@@ -70,8 +70,7 @@ impl Control {
                             // ensure consistency.
                             if let Some(hook) = self.hooks.as_mut() {
                                 let fut = hook.on_task_start(&typ);
-                                let res = fut.await;
-                                if let Err(e) = res {
+                                if let Err(e) = fut.await {
                                     println!("Error in hook: {e:?}");
                                 }
                             }
