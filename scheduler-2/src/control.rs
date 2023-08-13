@@ -17,12 +17,17 @@ pub(crate) struct Control {
 impl Control {
     pub(crate) fn new(rx: mpsc::Receiver<Request>) -> Self {
         let (res_tx, res_rx) = mpsc::channel(1024);
-        let state = State::new();
         Self { rx, res_tx, res_rx }
     }
     pub(crate) async fn run(&mut self) {
         let mut state = State::new();
+        let mut wait: Option<WaitRequest> = None;
         loop {
+            if wait.is_some() && state.num_running() == 0 {
+                let wr = wait.take().unwrap();
+                let _ = wr.tx.send(Response::Accepted);
+                println!("Wait completed.");
+            }
             tokio::select! {
                 Some(res) = self.res_rx.recv() => {
                     match res {
@@ -45,9 +50,13 @@ impl Control {
                                 let _ = tx.send(Response::Accepted);
                             }
                         }
-                        Request::Wait(WaitRequest{ tx }) => {
+                        Request::Wait(wr) => {
                             println!("wait");
-                            let _ = tx.send(Response::Accepted);
+                            if wait.is_some() {
+                                let _ = wr.tx.send(Response::Rejected);
+                            } else {
+                                wait = Some(wr);
+                            }
                         }
                     }
                 }
@@ -98,6 +107,10 @@ impl State {
         Self {
             running: HashMap::default(),
         }
+    }
+    /// Returns the number of currently executing tasks
+    fn num_running(&self) -> usize {
+        self.running.len()
     }
     fn try_run(&mut self, typ: &TaskType) -> bool {
         if self.running.contains_key(typ) {
