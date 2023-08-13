@@ -72,6 +72,7 @@ async fn test_fut_fn() {
         let instant = rx.recv().await.unwrap();
         if let Some(last) = last {
             let dur = instant - last;
+            println!("dur: {:?}", dur);
             assert!(dur < Duration::from_millis(10));
         } else {
             last = Some(instant);

@@ -1,4 +1,4 @@
-use crate::{command::Command, control::Control, hooks::Hooks, task::Type};
+use crate::{command::Command, control::Control, hooks::Hooks, state::Rules, task::Type};
 use anyhow::Result;
 use std::{future::Future, sync::Arc};
 use tokio::sync::{mpsc, oneshot};
@@ -21,7 +21,7 @@ impl Scheduler {
 
     #[must_use]
     pub fn builder() -> Builder {
-        Builder { hooks: None }
+        Builder::new()
     }
 
     /// Waits for all running tasks to complete. Any tasks that are attempted to be scheduled while
@@ -62,9 +62,16 @@ impl Scheduler {
 
 pub struct Builder {
     hooks: Option<Box<dyn Hooks + Send + 'static>>,
+    rules: Rules,
 }
 
 impl Builder {
+    fn new() -> Self {
+        Self {
+            hooks: None,
+            rules: Rules::default(),
+        }
+    }
     #[must_use]
     pub fn hooks(mut self, hooks: impl Hooks + Send + 'static) -> Self {
         self.hooks = Some(Box::new(hooks));

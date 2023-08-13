@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use crate::task;
 
@@ -38,4 +38,19 @@ pub struct Rules {
     default: Rule,
 }
 
-pub struct Rule {}
+pub struct Rule {
+    pub max_running: usize,
+    pub run_every: Option<Duration>,
+}
+
+impl Default for Rules {
+    fn default() -> Self {
+        Self {
+            rules: HashMap::default(),
+            default: Rule {
+                max_running: 1,
+                run_every: None,
+            },
+        }
+    }
+}

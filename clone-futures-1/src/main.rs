@@ -1,10 +1,6 @@
 #![allow(dead_code)]
 
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::{Arc, Mutex},
-};
+use std::{future::Future, pin::Pin, sync::Arc};
 use tokio::sync::{self, oneshot};
 #[cfg(test)]
 mod tests;
@@ -15,23 +11,21 @@ async fn main() {
 }
 
 /// A Fn that produces new Fut futures.
+///
+/// It is wrapped in arc because the FutFn must be cloneable.
 #[derive(Clone)]
-struct FutFn(Arc<Mutex<Box<dyn Fn() -> Fut + Send + 'static>>>);
+struct FutFn(Arc<Box<dyn Fn() -> Fut + Send + Sync + 'static>>);
 
 impl FutFn {
     fn new<F>(f: F) -> Self
     where
-        F: Fn() -> Fut + Send + 'static,
+        F: Fn() -> Fut + Send + Sync + 'static,
     {
         let f = Box::new(f);
-        FutFn(Arc::new(Mutex::new(f)))
+        Self(Arc::new(f))
     }
     fn spawn(&self) {
-        let fut: Fut = {
-            let guard_fn = self.0.lock().unwrap();
-            guard_fn()
-        };
-        // here we have produced a future and the mutex is unlocked
+        let fut = self.0();
         fut.spawn();
     }
 }
