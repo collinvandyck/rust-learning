@@ -8,6 +8,8 @@ use std::{
 
 type HookResult = Result<(), Arc<anyhow::Error>>;
 
+pub(crate) type WrappedHooks = Option<Box<dyn Hooks + Send + 'static>>;
+
 /// Hooks defines the trait that clients can implement to provide
 /// callbacks to scheduler lifecycle methods.
 #[async_trait]

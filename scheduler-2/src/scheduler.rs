@@ -9,10 +9,10 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
-    pub fn new(hooks: Option<Box<dyn Hooks>>) -> Scheduler {
+    pub fn new(hooks: Option<Box<dyn Hooks + Send + 'static>>) -> Scheduler {
         let (tx, rx) = mpsc::channel(1024);
         tokio::spawn(async move {
-            let mut ctrl = Control::new(rx);
+            let mut ctrl = Control::new(rx, hooks);
             ctrl.run().await;
         });
         Self { tx: tx.into() }
@@ -47,11 +47,11 @@ impl Scheduler {
 }
 
 pub struct SchedulerBuilder {
-    hooks: Option<Box<dyn Hooks>>,
+    hooks: Option<Box<dyn Hooks + Send + 'static>>,
 }
 
 impl SchedulerBuilder {
-    pub fn hooks(mut self, hooks: impl Hooks + 'static) -> Self {
+    pub fn hooks(mut self, hooks: impl Hooks + Send + 'static) -> Self {
         self.hooks = Some(Box::new(hooks));
         self
     }
