@@ -5,3 +5,4 @@ mod control;
 mod hooks;
 pub mod scheduler;
 mod task;
+mod tests;
