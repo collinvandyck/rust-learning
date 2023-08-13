@@ -4,7 +4,7 @@ use tokio::sync::mpsc;
 
 use crate::{
     command::Command,
-    scheduler::{Request, Response, TaskRequest},
+    scheduler::{Request, Response, TaskRequest, WaitRequest},
     task::TaskType,
 };
 
@@ -50,8 +50,9 @@ impl Control {
                                 let _ = tx.send(Response::Accepted);
                             }
                         }
-                        Request::Wait(_) => {
+                        Request::Wait(WaitRequest{ tx }) => {
                             println!("wait");
+                            let _ = tx.send(Response::Accepted);
                         }
                     }
                 }

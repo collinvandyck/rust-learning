@@ -50,6 +50,8 @@ pub(crate) enum Request {
 /// Instructs the scheduler to wait for all currently running tasks to complete. Any other requests
 /// that are received while waiting will be rejected.
 pub(crate) struct WaitRequest {
+    /// The scheduler will transmit on this channel once the wait is done
+    /// or if the wait is rejected for some reason.
     pub tx: oneshot::Sender<Response>,
 }
 

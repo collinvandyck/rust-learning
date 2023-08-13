@@ -1,14 +1,14 @@
 use crate::scheduler::Scheduler;
-use std::time::Duration;
-use tokio::time::sleep;
+use anyhow::Result;
 
 #[tokio::test]
-async fn test_scheduler() {
+async fn test_scheduler() -> Result<()> {
     let sched = Scheduler::new();
-    let _ = sched
+    sched
         .task("task", async {
             println!("task");
         })
-        .await;
-    sleep(Duration::from_millis(100)).await;
+        .await?;
+    sched.wait().await?;
+    Ok(())
 }
