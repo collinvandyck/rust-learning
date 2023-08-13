@@ -43,6 +43,14 @@ impl Control {
                     match res {
                         RunResult::Finished(typ) => {
                             state.remove(&typ);
+
+                            // invoke the hook letting us know that the task has finished.
+                            if let Some(hook) = self.hooks.as_mut() {
+                                let fut = hook.on_task_complete(&typ);
+                                if let Err(e) = fut.await {
+                                    println!("Error in hook.on_task_complete: {e:?}");
+                                }
+                            }
                         }
                     }
                 }

@@ -30,6 +30,7 @@ impl Scheduler {
     /// # Errors
     ///
     /// Returns an error if the scheduler is already waiting or has been shut down.
+    /// Returns an error if the scheduler encountered an error running a hook.
     pub async fn wait(&self) -> Result<Response> {
         let (tx, rx) = oneshot::channel();
         let req = WaitRequest { tx };
