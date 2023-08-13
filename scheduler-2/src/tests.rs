@@ -84,7 +84,7 @@ async fn test_scheduler_rules() -> Result<()> {
         )
         .build();
     let sched = Scheduler::builder()
-        .hooks(hooks.into())
+        .hooks(hooks.clone().into())
         .rules(rules)
         .build();
 
@@ -122,12 +122,6 @@ impl TestHooks {
     fn bump_count(&self) {
         let mut count = self.count.lock().unwrap();
         *count = *count + 1;
-    }
-}
-
-impl From<TestHooks> for hooks::Hooks {
-    fn from(hooks: TestHooks) -> Self {
-        hooks::Hooks(Some(Box::new(hooks)))
     }
 }
 

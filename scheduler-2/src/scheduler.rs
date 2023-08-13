@@ -78,20 +78,28 @@ impl Builder {
             rules: Rules::default(),
         }
     }
+
     #[must_use]
     pub fn rules(mut self, rules: Rules) -> Self {
         self.rules = rules;
         self
     }
+
     #[must_use]
-    pub fn hooks(mut self, hooks: Hooks) -> Self {
-        self.hooks = hooks.into();
+    pub fn hooks(mut self, hooks: Box<impl Callback + Send + Sync + 'static>) -> Self {
+        self.hooks = Hooks(Some(hooks));
         self
     }
 
     #[must_use]
     pub fn build(self) -> Scheduler {
         Scheduler::new(self.hooks, self.rules)
+    }
+}
+
+impl Into<Hooks> for Box<dyn Callback + Send + Sync + 'static> {
+    fn into(self) -> Hooks {
+        Hooks(Some(self))
     }
 }
 

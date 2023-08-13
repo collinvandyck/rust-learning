@@ -47,9 +47,3 @@ impl Callback for Hooks {
         }
     }
 }
-
-impl From<Box<dyn Callback + Send + Sync + 'static>> for Hooks {
-    fn from(cb: Box<dyn Callback + Send + Sync + 'static>) -> Self {
-        Self(Some(cb))
-    }
-}
