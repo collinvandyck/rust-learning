@@ -29,8 +29,7 @@ impl Scheduler {
         let req = WaitRequest { tx };
         let req = Request::Wait(req);
         self.tx.send(req).await?;
-        let res = rx.await?;
-        Ok(res)
+        Ok(rx.await?)
     }
 
     pub async fn run_task<T: Into<TaskType>, F>(&self, typ: T, f: F) -> Result<Response>
@@ -43,8 +42,7 @@ impl Scheduler {
         let req = TaskRequest::new(typ, cmd, tx);
         let req = Request::Task(req);
         self.tx.send(req).await?;
-        let scheduler_response = rx.await?;
-        Ok(scheduler_response)
+        Ok(rx.await?)
     }
 }
 
