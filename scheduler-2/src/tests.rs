@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use crate::hooks::HookResult;
-use crate::task::TaskType;
+use crate::task::Type;
 use crate::{hooks::Hooks, scheduler::Scheduler};
 use anyhow::Result;
 use async_trait::async_trait;
@@ -81,7 +81,7 @@ impl TestHooks {
 
 #[async_trait]
 impl Hooks for TestHooks {
-    async fn on_task_start(&self, typ: &TaskType) -> HookResult {
+    async fn on_task_start(&self, typ: &Type) -> HookResult {
         println!("Hook: on_task_start: {:?}", typ);
         sleep(Duration::from_millis(5)).await;
         self.bump_count();

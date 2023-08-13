@@ -1,23 +1,23 @@
 /// `TaskType` identifies the kind of task.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct TaskType(String);
+pub struct Type(String);
 
-impl TaskType {
+impl Type {
     pub fn new<T: Into<String>>(id: T) -> Self {
         Self(id.into())
     }
-    pub fn from<T: Into<TaskType>>(t: T) -> Self {
+    pub fn from<T: Into<Type>>(t: T) -> Self {
         t.into()
     }
 }
 
-impl From<&str> for TaskType {
+impl From<&str> for Type {
     fn from(id: &str) -> Self {
         Self(id.to_string())
     }
 }
 
-impl From<String> for TaskType {
+impl From<String> for Type {
     fn from(id: String) -> Self {
         Self(id)
     }

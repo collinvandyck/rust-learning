@@ -6,7 +6,7 @@ use crate::{
     command::Command,
     hooks::WrappedHooks,
     scheduler::{Request, Response, TaskRequest, WaitRequest},
-    task::TaskType,
+    task,
 };
 
 /// Control is the main synchronization point for running tasks. It receives requests from the
@@ -96,13 +96,13 @@ impl Control {
 }
 
 struct Runner {
-    typ: Option<TaskType>,
+    typ: Option<task::Type>,
     cmd: Command,
     res_tx: Option<mpsc::Sender<RunResult>>,
 }
 
 impl Runner {
-    fn new(typ: TaskType, cmd: Command, res_tx: mpsc::Sender<RunResult>) -> Self {
+    fn new(typ: task::Type, cmd: Command, res_tx: mpsc::Sender<RunResult>) -> Self {
         Self {
             typ: Some(typ),
             cmd,
@@ -128,12 +128,12 @@ impl Drop for Runner {
 
 /// This enum is used to communicate the result of a task run back to the controller.
 enum RunResult {
-    Finished(TaskType),
+    Finished(task::Type),
 }
 
 /// State is used to keep track of the currently running tasks.
 struct State {
-    running: HashMap<TaskType, bool>,
+    running: HashMap<task::Type, bool>,
 }
 
 impl State {
@@ -147,14 +147,14 @@ impl State {
         self.running.len()
     }
     /// Return true if we are allowed to run this task type.
-    fn try_run(&mut self, typ: &TaskType) -> bool {
+    fn try_run(&mut self, typ: &task::Type) -> bool {
         if self.running.contains_key(typ) {
             return false;
         }
         self.running.insert(typ.clone(), true);
         true
     }
-    fn remove(&mut self, typ: &TaskType) {
+    fn remove(&mut self, typ: &task::Type) {
         self.running.remove(typ);
     }
 }

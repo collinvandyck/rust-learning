@@ -1,4 +1,4 @@
-use crate::{command::Command, control::Control, hooks::Hooks, task::TaskType};
+use crate::{command::Command, control::Control, hooks::Hooks, task::Type};
 use anyhow::Result;
 use std::{future::Future, sync::Arc};
 use tokio::sync::{mpsc, oneshot};
@@ -45,7 +45,7 @@ impl Scheduler {
     ///
     /// Returns an error if the scheduler has been shut down. Errors should be propagated up the
     /// stack resulting in program termination.
-    pub async fn run_task<T: Into<TaskType>, F>(&self, typ: T, f: F) -> Result<Response>
+    pub async fn run_task<T: Into<Type>, F>(&self, typ: T, f: F) -> Result<Response>
     where
         F: Future<Output = ()> + Send + 'static,
     {
@@ -91,13 +91,13 @@ pub(crate) struct WaitRequest {
 
 /// A request to run a particular command/task.
 pub(crate) struct TaskRequest {
-    pub typ: TaskType,
+    pub typ: Type,
     pub cmd: Command,
     pub tx: oneshot::Sender<Response>,
 }
 
 impl TaskRequest {
-    pub(crate) fn new(task_id: TaskType, command: Command, tx: oneshot::Sender<Response>) -> Self {
+    pub(crate) fn new(task_id: Type, command: Command, tx: oneshot::Sender<Response>) -> Self {
         Self {
             typ: task_id,
             cmd: command,

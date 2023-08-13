@@ -1,4 +1,4 @@
-use crate::task::TaskType;
+use crate::task::Type;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -12,5 +12,5 @@ pub(crate) type WrappedHooks = Option<Box<dyn Hooks + Send + 'static>>;
 pub trait Hooks {
     /// Called when the task has been scheduled, but before the task
     /// actually starts executing.
-    async fn on_task_start(&self, typ: &TaskType) -> HookResult;
+    async fn on_task_start(&self, typ: &Type) -> HookResult;
 }
