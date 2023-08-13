@@ -54,6 +54,7 @@ impl TestHooks {
 impl Hooks for TestHooks {
     async fn on_task_start(&mut self, typ: &TaskType) -> HookResult {
         println!("Hook: on_task_start: {:?}", typ);
+        sleep(Duration::from_millis(10)).await;
         let mut count = self.count.lock().unwrap();
         *count = *count + 1;
         Ok(())

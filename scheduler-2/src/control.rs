@@ -60,26 +60,27 @@ impl Control {
                             // otherwise, try and run the task if we are able to.
                             if !state.try_run(&typ) {
                                 let _ = tx.send(Response::Rejected);
-                            } else {
-                                let res_tx = self.res_tx.clone();
-                                let task_typ = typ.clone();
-                                tokio::spawn(async move {
-                                    let mut runner = Runner::new(task_typ, cmd, res_tx);
-                                    runner.run().await;
-                                });
-                                let _ = tx.send(Response::Accepted);
+                                continue;
+                            }
+                            let res_tx = self.res_tx.clone();
+                            let task_typ = typ.clone();
 
-                                // if we accepted, invoke the hook if it exists. we will block
-                                // the scheduler until the hook is completed so that we can
-                                // ensure consistency.
-                                if let Some(hook) = self.hooks.as_mut() {
-                                    let fut = hook.on_task_start(&typ);
-                                    let res = fut.await;
-                                    if let Err(e) = res {
-                                        println!("Error in hook: {:?}", e);
-                                    }
+                            // if we accepted, invoke the hook if it exists. we will block
+                            // the scheduler until the hook is completed so that we can
+                            // ensure consistency.
+                            if let Some(hook) = self.hooks.as_mut() {
+                                let fut = hook.on_task_start(&typ);
+                                let res = fut.await;
+                                if let Err(e) = res {
+                                    println!("Error in hook: {:?}", e);
                                 }
                             }
+                            // finally, spawn the task and send the accepted response.
+                            tokio::spawn(async move {
+                                let mut runner = Runner::new(task_typ, cmd, res_tx);
+                                runner.run().await;
+                            });
+                            let _ = tx.send(Response::Accepted);
                         }
                         Request::Wait(wr) => {
                             if wait.is_some() {
