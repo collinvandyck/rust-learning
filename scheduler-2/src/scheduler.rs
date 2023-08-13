@@ -51,6 +51,7 @@ pub struct Builder {
 }
 
 impl Builder {
+    #[must_use]
     pub fn hooks(mut self, hooks: impl Hooks + Send + 'static) -> Self {
         self.hooks = Some(Box::new(hooks));
         self

@@ -1,8 +1,4 @@
-pub(crate) struct Task {
-    typ: TaskType,
-}
-
-/// TaskType identifies the kind of task.
+/// `TaskType` identifies the kind of task.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TaskType(String);
 
