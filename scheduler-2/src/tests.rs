@@ -65,11 +65,19 @@ async fn test_scheduler_task_panic() -> Result<()> {
 #[tokio::test]
 async fn test_scheduler_rules() -> Result<()> {
     let hooks = TestHooks::new();
+    let count = 10;
     let rules = Rules::builder()
         .rule(
             "foo",
             Rule {
-                max_running: 100,
+                max_running: count,
+                run_every: None,
+            },
+        )
+        .rule(
+            "bar",
+            Rule {
+                max_running: 5,
                 run_every: None,
             },
         )
@@ -79,14 +87,18 @@ async fn test_scheduler_rules() -> Result<()> {
         .rules(rules)
         .build();
 
-    for _ in 0..100 {
+    let (tx, rx) = tokio::sync::mpsc::channel(1);
+    for _ in 0..count {
+        let tx = tx.clone();
         let res = sched
-            .run_task("foo", async {
-                sleep(Duration::from_millis(1)).await;
+            .run_task("foo", async move {
+                let _ = tx.send(()).await;
             })
             .await?;
         assert_eq!(res, Response::Accepted);
     }
+    // allow the tasks to run.
+    drop(rx);
 
     Ok(())
 }
