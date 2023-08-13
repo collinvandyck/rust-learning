@@ -5,7 +5,7 @@ use crate::hooks::HookResult;
 use crate::rules::{Rule, Rules};
 use crate::scheduler::Response;
 use crate::task::Type;
-use crate::{hooks::Hooks, scheduler::Scheduler};
+use crate::{hooks::Callback, scheduler::Scheduler};
 use anyhow::Result;
 use async_trait::async_trait;
 use tokio::time::sleep;
@@ -125,7 +125,7 @@ impl TestHooks {
 }
 
 #[async_trait]
-impl Hooks for TestHooks {
+impl Callback for TestHooks {
     async fn on_task_start(&self, typ: &Type) -> HookResult {
         println!("Hook: on_task_start: {:?}", typ);
         self.bump_count();

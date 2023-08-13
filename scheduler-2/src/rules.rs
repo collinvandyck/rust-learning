@@ -3,6 +3,9 @@ use std::{collections::HashMap, time::Duration};
 use crate::task;
 
 /// Rules govern how things can and cannot be scheduled.
+///
+/// Each task type can have its own rule, and there is a default rule
+/// that applies to task types that do not have a specific rule.
 pub struct Rules {
     rules: HashMap<task::Type, Rule>,
     default: Rule,

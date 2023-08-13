@@ -38,7 +38,7 @@ impl Control {
         loop {
             // if we are waiting and there are no more tasks running, then complete the wait by
             // transmitting on the channel and replacing the option.
-            if wait.is_some() && self.running() == 0 {
+            if wait.is_some() && self.total_running() == 0 {
                 let wr = wait.take().unwrap();
                 let _ = wr.tx.send(Response::Accepted);
             }
@@ -79,7 +79,7 @@ impl Control {
                             // if we accepted, invoke the hook if it exists. we will block
                             // the scheduler until the hook is completed so that we can
                             // ensure consistency.
-                            if let Some(hook) = self.hooks.as_mut() {
+                            if let Some(hook) = &mut self.hooks {
                                 let fut = hook.on_task_start(&typ);
                                 if let Err(e) = fut.await {
                                     println!("Error in hook: {e:?}");
@@ -105,7 +105,7 @@ impl Control {
         }
     }
     /// Returns the total number of running tasks.
-    fn running(&self) -> usize {
+    fn total_running(&self) -> usize {
         self.running.iter().map(|(_, v)| *v).sum()
     }
     fn task_finished(&mut self, typ: &task::Type) {
