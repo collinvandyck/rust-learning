@@ -4,7 +4,7 @@ use tokio::sync::mpsc;
 
 use crate::{
     command::Command,
-    scheduler::{CommandRequest, Request, Response},
+    scheduler::{Request, Response, TaskRequest},
     task::TaskType,
 };
 
@@ -38,7 +38,7 @@ impl Control {
                 }
                 Some(req) = self.rx.recv() => {
                     match req {
-                        Request::Command(CommandRequest{typ, cmd, tx}) => {
+                        Request::Task(TaskRequest{typ, cmd, tx}) => {
                             if !self.state.try_run(&typ) {
                                 let _ = tx.send(Response::Rejected);
                             } else {
