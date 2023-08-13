@@ -13,4 +13,8 @@ pub trait Hooks {
     /// Called when the task has been scheduled, but before the task
     /// actually starts executing.
     async fn on_task_start(&self, typ: &Type) -> HookResult;
+
+    /// Called when the task has been scheduled, but before the task
+    /// actually starts executing.
+    async fn on_task_complete(&self, typ: &Type) -> HookResult;
 }

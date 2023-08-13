@@ -87,4 +87,10 @@ impl Hooks for TestHooks {
         self.bump_count();
         Ok(())
     }
+
+    async fn on_task_complete(&self, typ: &Type) -> HookResult {
+        println!("Hook: on_task_complete: {:?}", typ);
+        sleep(Duration::from_millis(5)).await;
+        Ok(())
+    }
 }
