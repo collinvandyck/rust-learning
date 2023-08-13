@@ -13,6 +13,10 @@ impl Rules {
     pub fn builder() -> Builder {
         Builder::new()
     }
+
+    pub fn get(&self, typ: &task::Type) -> &Rule {
+        self.rules.get(typ).unwrap_or(&self.default)
+    }
 }
 
 pub struct Rule {

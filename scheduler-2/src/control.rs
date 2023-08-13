@@ -17,7 +17,7 @@ pub(crate) struct Control {
     res_rx: mpsc::Receiver<RunResult>,
     hooks: hooks::Wrapped,
     rules: Rules,
-    running: HashMap<task::Type, bool>,
+    running: HashMap<task::Type, usize>,
 }
 
 impl Control {
@@ -31,21 +31,6 @@ impl Control {
             rules,
             running: HashMap::default(),
         }
-    }
-    fn running(&self) -> usize {
-        self.running.len()
-    }
-    fn task_finished(&mut self, typ: &task::Type) {
-        self.running.remove(typ);
-    }
-    /// Checks to see whether or not we can run a task of this type. If so, then we mark it as
-    /// running and return true. Otherwise, we return false.
-    fn try_run(&mut self, typ: &task::Type) -> bool {
-        if self.running.contains_key(typ) {
-            return false;
-        }
-        self.running.insert(typ.clone(), true);
-        true
     }
     /// The main loop of the Controller.
     pub(crate) async fn run(&mut self) {
@@ -118,6 +103,29 @@ impl Control {
                 }
             }
         }
+    }
+    /// Returns the total number of running tasks.
+    fn running(&self) -> usize {
+        self.running.iter().map(|(_, v)| *v).sum()
+    }
+    fn task_finished(&mut self, typ: &task::Type) {
+        let count = self.running.get_mut(typ).unwrap();
+        if *count == 0 {
+            panic!("task count is 0 for task type: {:?}", typ);
+        }
+        *count -= 1;
+    }
+    /// Checks to see whether or not we can run a task of this type. If so, then we mark it as
+    /// running and return true. Otherwise, we return false.
+    fn try_run(&mut self, typ: &task::Type) -> bool {
+        let rule = self.rules.get(typ);
+        let count = self.running.get(typ).unwrap_or(&0);
+        if count >= &rule.max_running {
+            // we can't run any more of this task type.
+            return false;
+        }
+        self.running.insert(typ.clone(), *count + 1);
+        true
     }
 }
 
