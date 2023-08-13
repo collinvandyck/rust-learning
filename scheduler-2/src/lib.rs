@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![warn(clippy::all, clippy::pedantic)]
 
 mod command;
 mod control;

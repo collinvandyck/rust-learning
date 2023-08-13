@@ -18,8 +18,8 @@ impl Scheduler {
         Self { tx: tx.into() }
     }
 
-    pub fn builder() -> SchedulerBuilder {
-        SchedulerBuilder { hooks: None }
+    pub fn builder() -> Builder {
+        Builder { hooks: None }
     }
 
     pub async fn wait(&self) -> Result<Response> {
@@ -46,11 +46,11 @@ impl Scheduler {
     }
 }
 
-pub struct SchedulerBuilder {
+pub struct Builder {
     hooks: Option<Box<dyn Hooks + Send + 'static>>,
 }
 
-impl SchedulerBuilder {
+impl Builder {
     pub fn hooks(mut self, hooks: impl Hooks + Send + 'static) -> Self {
         self.hooks = Some(Box::new(hooks));
         self
