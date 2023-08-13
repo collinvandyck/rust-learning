@@ -16,7 +16,7 @@ pub(crate) type WrappedHooks = Option<Box<dyn Hooks + Send + 'static>>;
 pub trait Hooks {
     /// Called when the task has been scheduled, but before the task
     /// actually starts executing.
-    async fn on_task_start(&self, typ: &TaskType) -> HookResult;
+    async fn on_task_start(&mut self, typ: &TaskType) -> HookResult;
 }
 
 type AsyncFuture = Box<dyn Future<Output = HookResult> + Send + 'static>;
@@ -24,23 +24,4 @@ type WrappedFuture = Arc<Mutex<Option<Pin<AsyncFuture>>>>;
 
 pub struct DefaultHooks {
     start: WrappedFuture,
-}
-
-use futures::future::FutureExt;
-
-impl DefaultHooks {
-    fn new() -> Self {
-        let fut = async move { Ok(()) };
-        let fut = fut.shared();
-        let fut = fut.clone();
-        let start: WrappedFuture = Arc::new(Mutex::new(Some(Box::pin(fut))));
-        DefaultHooks { start }
-    }
-}
-
-#[async_trait]
-impl Hooks for DefaultHooks {
-    async fn on_task_start(&self, _typ: &TaskType) -> HookResult {
-        Ok(())
-    }
 }

@@ -46,7 +46,7 @@ impl TestHooks {
 
 #[async_trait]
 impl Hooks for TestHooks {
-    async fn on_task_start(&self, typ: &TaskType) -> HookResult {
+    async fn on_task_start(&mut self, typ: &TaskType) -> HookResult {
         println!("Hook: on_task_start: {:?}", typ);
         Ok(())
     }
