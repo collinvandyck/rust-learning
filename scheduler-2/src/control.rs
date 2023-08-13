@@ -38,7 +38,6 @@ impl Control {
             if wait.is_some() && state.num_running() == 0 {
                 let wr = wait.take().unwrap();
                 let _ = wr.tx.send(Response::Accepted);
-                println!("Wait completed.");
             }
             // After we're done with bookkeeping, enter the select.
             tokio::select! {
@@ -70,7 +69,9 @@ impl Control {
                                 });
                                 let _ = tx.send(Response::Accepted);
 
-                                // if we accepted, invoke the hook if it exists.
+                                // if we accepted, invoke the hook if it exists. we will block
+                                // the scheduler until the hook is completed so that we can
+                                // ensure consistency.
                                 if let Some(hook) = self.hooks.as_mut() {
                                     let fut = hook.on_task_start(&typ);
                                     let res = fut.await;
@@ -81,7 +82,6 @@ impl Control {
                             }
                         }
                         Request::Wait(wr) => {
-                            println!("wait");
                             if wait.is_some() {
                                 let _ = wr.tx.send(Response::Rejected);
                             } else {

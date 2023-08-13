@@ -6,7 +6,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-type HookResult = Result<(), Arc<anyhow::Error>>;
+pub type HookResult = Result<(), Arc<anyhow::Error>>;
 
 pub(crate) type WrappedHooks = Option<Box<dyn Hooks + Send + 'static>>;
 
