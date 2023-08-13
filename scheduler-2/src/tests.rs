@@ -34,11 +34,13 @@ async fn test_scheduler_hooks() -> Result<()> {
     Ok(())
 }
 
-struct TestHooks;
+struct TestHooks {
+    count: usize,
+}
 
 impl TestHooks {
     fn new() -> Self {
-        TestHooks
+        TestHooks { count: 0 }
     }
 }
 
