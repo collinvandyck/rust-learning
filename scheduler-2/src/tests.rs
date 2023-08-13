@@ -6,7 +6,7 @@ use tokio::time::sleep;
 
 #[tokio::test]
 async fn test_scheduler() -> Result<()> {
-    let sched = Scheduler::new();
+    let sched = Scheduler::builder().build();
     sched
         .task("task", async {
             sleep(Duration::from_millis(0)).await;

@@ -9,7 +9,7 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
-    pub fn new() -> Scheduler {
+    pub fn new(hooks: Option<Box<dyn Hooks>>) -> Scheduler {
         let (tx, rx) = mpsc::channel(1024);
         tokio::spawn(async move {
             let mut ctrl = Control::new(rx);
@@ -48,6 +48,17 @@ impl Scheduler {
 
 pub struct SchedulerBuilder {
     hooks: Option<Box<dyn Hooks>>,
+}
+
+impl SchedulerBuilder {
+    pub fn hooks(mut self, hooks: impl Hooks + 'static) -> Self {
+        self.hooks = Some(Box::new(hooks));
+        self
+    }
+
+    pub fn build(self) -> Scheduler {
+        Scheduler::new(self.hooks)
+    }
 }
 
 pub(crate) enum Request {

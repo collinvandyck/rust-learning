@@ -14,7 +14,7 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
-    let sched = Scheduler::new();
+    let sched = Scheduler::builder().build();
 
     let (tx, mut rx) = mpsc::channel::<bool>(args.num_task_types);
     tokio::spawn(generate(sched.clone(), tx, args.num_task_types));
