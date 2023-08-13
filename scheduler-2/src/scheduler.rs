@@ -29,7 +29,7 @@ impl Scheduler {
     ///
     /// # Errors
     ///
-    /// Returns an error if the scheduler is already waiting.
+    /// Returns an error if the scheduler is already waiting or has been shut down.
     pub async fn wait(&self) -> Result<Response> {
         let (tx, rx) = oneshot::channel();
         let req = WaitRequest { tx };
@@ -38,6 +38,13 @@ impl Scheduler {
         Ok(rx.await?)
     }
 
+    /// Schedules a task to be run. The response will indicate whether or not the task was accepted
+    /// or rejected.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the scheduler has been shut down. Errors should be propagated up the
+    /// stack resulting in program termination.
     pub async fn run_task<T: Into<TaskType>, F>(&self, typ: T, f: F) -> Result<Response>
     where
         F: Future<Output = ()> + Send + 'static,
