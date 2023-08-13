@@ -63,11 +63,21 @@ impl Control {
                                 let _ = tx.send(Response::Rejected);
                             } else {
                                 let res_tx = self.res_tx.clone();
+                                let task_typ = typ.clone();
                                 tokio::spawn(async move {
-                                    let mut runner = Runner::new(typ, cmd, res_tx);
+                                    let mut runner = Runner::new(task_typ, cmd, res_tx);
                                     runner.run().await;
                                 });
                                 let _ = tx.send(Response::Accepted);
+
+                                // if we accepted, invoke the hook if it exists.
+                                if let Some(hook) = self.hooks.as_mut() {
+                                    let fut = hook.on_task_start(&typ);
+                                    let res = fut.await;
+                                    if let Err(e) = res {
+                                        println!("Error in hook: {:?}", e);
+                                    }
+                                }
                             }
                         }
                         Request::Wait(wr) => {
