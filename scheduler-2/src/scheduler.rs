@@ -31,7 +31,7 @@ impl Scheduler {
         Ok(res)
     }
 
-    pub async fn task<T: Into<TaskType>, F>(&self, typ: T, f: F) -> Result<Response>
+    pub async fn run_task<T: Into<TaskType>, F>(&self, typ: T, f: F) -> Result<Response>
     where
         F: Future<Output = ()> + Send + 'static,
     {

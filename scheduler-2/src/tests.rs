@@ -12,7 +12,7 @@ use tokio::time::sleep;
 async fn test_scheduler() -> Result<()> {
     let sched = Scheduler::builder().build();
     sched
-        .task("task", async {
+        .run_task("task", async {
             sleep(Duration::from_millis(0)).await;
             println!("task");
         })
@@ -26,7 +26,7 @@ async fn test_scheduler_hooks() -> Result<()> {
     let hooks = TestHooks::new();
     let sched = Scheduler::builder().hooks(hooks.clone()).build();
     for _ in 0..10 {
-        sched.task("task", async {}).await?;
+        sched.run_task("task", async {}).await?;
     }
     sched.wait().await?;
     assert_eq!(10, hooks.get_count());
