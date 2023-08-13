@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
