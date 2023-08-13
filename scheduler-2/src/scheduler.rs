@@ -24,6 +24,12 @@ impl Scheduler {
         Builder { hooks: None }
     }
 
+    /// Waits for all running tasks to complete. Any tasks that are attempted to be scheduled while
+    /// waiting will be rejected. Useful for tests, but not in production.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the scheduler is already waiting.
     pub async fn wait(&self) -> Result<Response> {
         let (tx, rx) = oneshot::channel();
         let req = WaitRequest { tx };
