@@ -5,7 +5,6 @@ use crate::{
     hooks,
     rules::Rules,
     scheduler::{Request, Response, TaskRequest, WaitRequest},
-    state::State,
     task,
 };
 use tokio::sync::mpsc;
@@ -33,14 +32,28 @@ impl Control {
             running: HashMap::default(),
         }
     }
+    fn running(&self) -> usize {
+        self.running.len()
+    }
+    fn task_finished(&mut self, typ: &task::Type) {
+        self.running.remove(typ);
+    }
+    /// Checks to see whether or not we can run a task of this type. If so, then we mark it as
+    /// running and return true. Otherwise, we return false.
+    fn try_run(&mut self, typ: &task::Type) -> bool {
+        if self.running.contains_key(typ) {
+            return false;
+        }
+        self.running.insert(typ.clone(), true);
+        true
+    }
     /// The main loop of the Controller.
     pub(crate) async fn run(&mut self) {
-        let mut state = State::new(&self.rules);
         let mut wait: Option<WaitRequest> = None;
         loop {
             // if we are waiting and there are no more tasks running, then complete the wait by
             // transmitting on the channel and replacing the option.
-            if wait.is_some() && state.running() == 0 {
+            if wait.is_some() && self.running() == 0 {
                 let wr = wait.take().unwrap();
                 let _ = wr.tx.send(Response::Accepted);
             }
@@ -49,7 +62,7 @@ impl Control {
                 Some(res) = self.res_rx.recv() => {
                     match res {
                         RunResult::Finished(typ) => {
-                            state.remove(&typ);
+                            self.task_finished(&typ);
 
                             // invoke the hook letting us know that the task has finished.
                             if let Some(hook) = self.hooks.as_mut() {
@@ -71,7 +84,7 @@ impl Control {
                                 continue;
                             }
                             // otherwise, try and run the task if we are able to.
-                            if !state.try_run(&typ) {
+                            if !self.try_run(&typ) {
                                 let _ = tx.send(Response::Rejected);
                                 continue;
                             }
