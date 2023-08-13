@@ -44,7 +44,7 @@ impl Control {
                 Some(res) = self.res_rx.recv() => {
                     match res {
                         RunResult::Finished(typ) => {
-                            state.remove(typ);
+                            state.remove(&typ);
                         }
                     }
                 }
@@ -155,7 +155,7 @@ impl State {
         self.running.insert(typ.clone(), true);
         true
     }
-    fn remove(&mut self, typ: TaskType) {
-        self.running.remove(&typ);
+    fn remove(&mut self, typ: &TaskType) {
+        self.running.remove(typ);
     }
 }
