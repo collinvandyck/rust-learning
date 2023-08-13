@@ -58,7 +58,7 @@ async fn generate(sched: Scheduler, tx: mpsc::Sender<bool>, num_types: usize) ->
         let tx2 = tx.clone();
         let next = names.next().unwrap();
         let res = sched
-            .schedule(next, async move {
+            .task(next, async move {
                 tx.send(true).await.unwrap();
             })
             .await?;

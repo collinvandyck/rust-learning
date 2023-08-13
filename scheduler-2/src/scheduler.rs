@@ -18,7 +18,16 @@ impl Scheduler {
         Self { tx: tx.into() }
     }
 
-    pub async fn schedule<T: Into<TaskType>, F>(&self, typ: T, f: F) -> Result<Response>
+    pub async fn wait(&self) -> Result<Response> {
+        let (tx, rx) = oneshot::channel();
+        let req = WaitRequest { tx };
+        let req = Request::Wait(req);
+        self.tx.send(req).await?;
+        let res = rx.await?;
+        Ok(res)
+    }
+
+    pub async fn task<T: Into<TaskType>, F>(&self, typ: T, f: F) -> Result<Response>
     where
         F: Future<Output = ()> + Send + 'static,
     {
@@ -40,7 +49,9 @@ pub(crate) enum Request {
 
 /// Instructs the scheduler to wait for all currently running tasks to complete. Any other requests
 /// that are received while waiting will be rejected.
-pub(crate) struct WaitRequest {}
+pub(crate) struct WaitRequest {
+    pub tx: oneshot::Sender<Response>,
+}
 
 /// A request to run a particular command/task.
 pub(crate) struct TaskRequest {
