@@ -1,13 +1,11 @@
-use std::collections::HashMap;
-
-use tokio::sync::mpsc;
-
 use crate::{
     command::Command,
     hooks,
     scheduler::{Request, Response, TaskRequest, WaitRequest},
+    state::State,
     task,
 };
+use tokio::sync::mpsc;
 
 /// Control is the main synchronization point for running tasks. It receives requests from the
 /// scheduler on a channel and then decides what to do with those requests.
@@ -129,32 +127,4 @@ impl Drop for Runner {
 /// This enum is used to communicate the result of a task run back to the controller.
 enum RunResult {
     Finished(task::Type),
-}
-
-/// State is used to keep track of the currently running tasks.
-struct State {
-    running: HashMap<task::Type, bool>,
-}
-
-impl State {
-    fn new() -> Self {
-        Self {
-            running: HashMap::default(),
-        }
-    }
-    /// Returns the number of currently executing tasks
-    fn num_running(&self) -> usize {
-        self.running.len()
-    }
-    /// Return true if we are allowed to run this task type.
-    fn try_run(&mut self, typ: &task::Type) -> bool {
-        if self.running.contains_key(typ) {
-            return false;
-        }
-        self.running.insert(typ.clone(), true);
-        true
-    }
-    fn remove(&mut self, typ: &task::Type) {
-        self.running.remove(typ);
-    }
 }
