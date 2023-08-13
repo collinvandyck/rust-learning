@@ -72,7 +72,7 @@ impl Control {
                                 let fut = hook.on_task_start(&typ);
                                 let res = fut.await;
                                 if let Err(e) = res {
-                                    println!("Error in hook: {:?}", e);
+                                    println!("Error in hook: {e:?}");
                                 }
                             }
                             // finally, spawn the task and send the accepted response.
