@@ -10,7 +10,6 @@ use crate::{
 
 pub(crate) struct Control {
     rx: mpsc::Receiver<Request>,
-    state: State,
     res_tx: mpsc::Sender<RunResult>,
     res_rx: mpsc::Receiver<RunResult>,
 }
@@ -19,27 +18,23 @@ impl Control {
     pub(crate) fn new(rx: mpsc::Receiver<Request>) -> Self {
         let (res_tx, res_rx) = mpsc::channel(1024);
         let state = State::new();
-        Self {
-            rx,
-            state,
-            res_tx,
-            res_rx,
-        }
+        Self { rx, res_tx, res_rx }
     }
     pub(crate) async fn run(&mut self) {
+        let mut state = State::new();
         loop {
             tokio::select! {
                 Some(res) = self.res_rx.recv() => {
                     match res {
                         RunResult::Finished(typ) => {
-                            self.state.remove(typ);
+                            state.remove(typ);
                         }
                     }
                 }
                 Some(req) = self.rx.recv() => {
                     match req {
                         Request::Task(TaskRequest{typ, cmd, tx}) => {
-                            if !self.state.try_run(&typ) {
+                            if !state.try_run(&typ) {
                                 let _ = tx.send(Response::Rejected);
                             } else {
                                 let res_tx = self.res_tx.clone();
@@ -58,9 +53,6 @@ impl Control {
                 }
             }
         }
-    }
-    fn try_run(&mut self, typ: &TaskType) -> bool {
-        self.state.try_run(typ)
     }
 }
 
