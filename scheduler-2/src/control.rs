@@ -8,6 +8,8 @@ use crate::{
     task::TaskType,
 };
 
+/// Control is the main synchronization point for running tasks. It receives requests from the
+/// scheduler on a channel and then decides what to do with those requests.
 pub(crate) struct Control {
     rx: mpsc::Receiver<Request>,
     res_tx: mpsc::Sender<RunResult>,
@@ -19,15 +21,19 @@ impl Control {
         let (res_tx, res_rx) = mpsc::channel(1024);
         Self { rx, res_tx, res_rx }
     }
+    /// The main loop of the Controller.
     pub(crate) async fn run(&mut self) {
         let mut state = State::new();
         let mut wait: Option<WaitRequest> = None;
         loop {
+            // if we are waiting and there are no more tasks running, then complete the wait by
+            // transmitting on the channel and replacing the option.
             if wait.is_some() && state.num_running() == 0 {
                 let wr = wait.take().unwrap();
                 let _ = wr.tx.send(Response::Accepted);
                 println!("Wait completed.");
             }
+            // After we're done with bookkeeping, enter the select.
             tokio::select! {
                 Some(res) = self.res_rx.recv() => {
                     match res {
@@ -39,6 +45,13 @@ impl Control {
                 Some(req) = self.rx.recv() => {
                     match req {
                         Request::Task(TaskRequest{typ, cmd, tx}) => {
+                            // if we are waiting, that means no more tasks should be scheduled
+                            // until the wait is complete.
+                            if wait.is_some() {
+                                let _ = tx.send(Response::Rejected);
+                                continue;
+                            }
+                            // otherwise, try and run the task if we are able to.
                             if !state.try_run(&typ) {
                                 let _ = tx.send(Response::Rejected);
                             } else {
