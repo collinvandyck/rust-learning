@@ -115,6 +115,8 @@ impl Runner {
     }
 }
 
+/// We implement drop for runner so that it drops the res_tx when it is dropped. This is used to
+/// signal to the controller that the task has finished regardless of task behavior.
 impl Drop for Runner {
     fn drop(&mut self) {
         let tx = self.res_tx.take().unwrap();

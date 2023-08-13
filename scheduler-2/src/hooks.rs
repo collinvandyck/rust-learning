@@ -16,7 +16,7 @@ pub(crate) type WrappedHooks = Option<Box<dyn Hooks + Send + 'static>>;
 pub trait Hooks {
     /// Called when the task has been scheduled, but before the task
     /// actually starts executing.
-    async fn on_task_start(&mut self, typ: &TaskType) -> HookResult;
+    async fn on_task_start(&self, typ: &TaskType) -> HookResult;
 }
 
 type AsyncFuture = Box<dyn Future<Output = HookResult> + Send + 'static>;

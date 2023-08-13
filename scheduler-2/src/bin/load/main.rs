@@ -52,7 +52,7 @@ async fn main() -> Result<()> {
 }
 
 async fn generate(sched: Scheduler, tx: mpsc::Sender<bool>, num_types: usize) -> Result<()> {
-    let mut names = (0..num_types).into_iter().map(|i| format!("{i}")).cycle();
+    let mut names = (0..num_types).map(|i| format!("{i}")).cycle();
     loop {
         let tx = tx.clone();
         let tx2 = tx.clone();

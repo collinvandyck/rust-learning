@@ -22,12 +22,7 @@ impl Command {
     /// Runs the composed future by first taking ownership of the future and then
     /// awaiting it.
     pub(crate) async fn run(&mut self) {
-        if let Some(fut) = {
-            let mut future = self.0.lock().unwrap();
-            let fut = future.take();
-            fut
-        } {
-            fut.await;
-        }
+        let fut = { self.0.lock().unwrap().take() };
+        fut.unwrap().await
     }
 }
