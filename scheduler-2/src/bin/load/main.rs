@@ -32,9 +32,9 @@ async fn main() -> Result<()> {
                 let per_sec = if num_scheduled == 0 {
                     0.0
                 } else {
-                    num_scheduled as f64 / dur.as_secs_f64()
+                    f64::from(num_scheduled) / dur.as_secs_f64()
                 };
-                let success_pct = num_scheduled as f64 / (num_scheduled as f64 + num_rejected as f64) * 100.0;
+                let success_pct = f64::from(num_scheduled)/ (f64::from(num_scheduled) + f64::from(num_rejected)) * 100.0;
                 println!("{success_pct:3.0}%\t{per_sec:.0}/sec\t{num_scheduled} {num_rejected}");
 
                 // reset
