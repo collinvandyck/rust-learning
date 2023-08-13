@@ -1,6 +1,7 @@
 use crate::{
     command::Command,
     hooks,
+    rules::Rules,
     scheduler::{Request, Response, TaskRequest, WaitRequest},
     state::State,
     task,
@@ -17,7 +18,7 @@ pub(crate) struct Control {
 }
 
 impl Control {
-    pub(crate) fn new(rx: mpsc::Receiver<Request>, hooks: hooks::Wrapped) -> Self {
+    pub(crate) fn new(rx: mpsc::Receiver<Request>, hooks: hooks::Wrapped, rules: Rules) -> Self {
         let (res_tx, res_rx) = mpsc::channel(1024);
         Self {
             rx,

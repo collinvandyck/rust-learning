@@ -10,10 +10,10 @@ pub struct Scheduler {
 
 impl Scheduler {
     #[must_use]
-    pub fn new(hooks: Option<Box<dyn Hooks + Send + 'static>>) -> Scheduler {
+    pub fn new(hooks: Option<Box<dyn Hooks + Send + 'static>>, rules: Rules) -> Scheduler {
         let (tx, rx) = mpsc::channel(1024);
         tokio::spawn(async move {
-            let mut ctrl = Control::new(rx, hooks);
+            let mut ctrl = Control::new(rx, hooks, rules);
             ctrl.run().await;
         });
         Self { tx: tx.into() }
@@ -85,7 +85,7 @@ impl Builder {
 
     #[must_use]
     pub fn build(self) -> Scheduler {
-        Scheduler::new(self.hooks)
+        Scheduler::new(self.hooks, self.rules)
     }
 }
 
