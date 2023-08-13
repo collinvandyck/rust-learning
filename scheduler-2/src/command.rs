@@ -4,9 +4,11 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-pub(crate) struct Command(WrappedFuture);
 type AsyncFuture = Box<dyn Future<Output = ()> + Send + 'static>;
 type WrappedFuture = Arc<Mutex<Option<Pin<AsyncFuture>>>>;
+
+/// Command wraps futures to be executed by the scheduler.
+pub(crate) struct Command(WrappedFuture);
 
 impl Command {
     pub(crate) fn new<F>(f: F) -> Self
@@ -17,6 +19,8 @@ impl Command {
         Self(future)
     }
 
+    /// Runs the composed future by first taking ownership of the future and then
+    /// awaiting it.
     pub(crate) async fn run(&mut self) {
         if let Some(fut) = {
             let mut future = self.0.lock().unwrap();

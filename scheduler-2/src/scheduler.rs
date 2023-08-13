@@ -1,4 +1,4 @@
-use crate::{command::Command, control::Control, task::TaskType};
+use crate::{command::Command, control::Control, hooks::Hooks, task::TaskType};
 use anyhow::Result;
 use std::{future::Future, sync::Arc};
 use tokio::sync::{mpsc, oneshot};
@@ -16,6 +16,10 @@ impl Scheduler {
             ctrl.run().await;
         });
         Self { tx: tx.into() }
+    }
+
+    pub fn builder() -> SchedulerBuilder {
+        SchedulerBuilder { hooks: None }
     }
 
     pub async fn wait(&self) -> Result<Response> {
@@ -40,6 +44,10 @@ impl Scheduler {
         let res = rx.await?;
         Ok(res)
     }
+}
+
+pub struct SchedulerBuilder {
+    hooks: Option<Box<dyn Hooks>>,
 }
 
 pub(crate) enum Request {
