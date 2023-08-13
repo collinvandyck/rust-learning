@@ -23,6 +23,6 @@ impl Command {
     /// awaiting it.
     pub(crate) async fn run(&mut self) {
         let fut = { self.0.lock().unwrap().take() };
-        fut.unwrap().await
+        fut.unwrap().await;
     }
 }
