@@ -107,10 +107,12 @@ impl Drop for Runner {
     }
 }
 
+/// This enum is used to communicate the result of a task run back to the controller.
 enum RunResult {
     Finished(TaskType),
 }
 
+/// State is used to keep track of the currently running tasks.
 struct State {
     running: HashMap<TaskType, bool>,
 }
@@ -125,6 +127,7 @@ impl State {
     fn num_running(&self) -> usize {
         self.running.len()
     }
+    /// Return true if we are allowed to run this task type.
     fn try_run(&mut self, typ: &TaskType) -> bool {
         if self.running.contains_key(typ) {
             return false;
