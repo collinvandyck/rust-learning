@@ -56,6 +56,7 @@ impl Builder {
         self
     }
 
+    #[must_use]
     pub fn build(self) -> Scheduler {
         Scheduler::new(self.hooks)
     }
