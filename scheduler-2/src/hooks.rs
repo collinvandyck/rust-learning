@@ -1,13 +1,12 @@
+use crate::task::TaskType;
+use async_trait::async_trait;
 use std::{
     future::Future,
     pin::Pin,
     sync::{Arc, Mutex},
 };
 
-use anyhow::Result;
-use async_trait::async_trait;
-
-use crate::task::TaskType;
+type HookResult = Result<(), Arc<anyhow::Error>>;
 
 /// Hooks defines the trait that clients can implement to provide
 /// callbacks to scheduler lifecycle methods.
@@ -15,19 +14,23 @@ use crate::task::TaskType;
 pub trait Hooks {
     /// Called when the task has been scheduled, but before the task
     /// actually starts executing.
-    async fn on_task_start(&self, typ: TaskType) -> Result<()>;
+    async fn on_task_start(&self, typ: TaskType) -> HookResult;
 }
 
-type AsyncFuture = Box<dyn Future<Output = Result<()>> + Send + 'static>;
+type AsyncFuture = Box<dyn Future<Output = HookResult> + Send + 'static>;
 type WrappedFuture = Arc<Mutex<Option<Pin<AsyncFuture>>>>;
 
 pub struct DefaultHooks {
     start: WrappedFuture,
 }
 
+use futures::future::FutureExt;
+
 impl DefaultHooks {
     fn new() -> Self {
         let fut = async move { Ok(()) };
+        let fut = fut.shared();
+        let fut = fut.clone();
         let start: WrappedFuture = Arc::new(Mutex::new(Some(Box::pin(fut))));
         DefaultHooks { start }
     }
@@ -35,7 +38,7 @@ impl DefaultHooks {
 
 #[async_trait]
 impl Hooks for DefaultHooks {
-    async fn on_task_start(&self, _typ: TaskType) -> Result<()> {
+    async fn on_task_start(&self, _typ: TaskType) -> HookResult {
         Ok(())
     }
 }
