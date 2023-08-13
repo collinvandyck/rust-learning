@@ -2,6 +2,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use crate::hooks::HookResult;
+use crate::rules::{Rule, Rules};
+use crate::scheduler::Response;
 use crate::task::Type;
 use crate::{hooks::Hooks, scheduler::Scheduler};
 use anyhow::Result;
@@ -63,7 +65,28 @@ async fn test_scheduler_task_panic() -> Result<()> {
 #[tokio::test]
 async fn test_scheduler_rules() -> Result<()> {
     let hooks = TestHooks::new();
-    let sched = Scheduler::builder().hooks(hooks.clone()).build();
+    let rules = Rules::builder()
+        .rule(
+            "foo",
+            Rule {
+                max_running: 100,
+                run_every: None,
+            },
+        )
+        .build();
+    let sched = Scheduler::builder()
+        .hooks(hooks.clone())
+        .rules(rules)
+        .build();
+
+    for _ in 0..100 {
+        let res = sched
+            .run_task("foo", async {
+                sleep(Duration::from_millis(1)).await;
+            })
+            .await?;
+        assert_eq!(res, Response::Accepted);
+    }
 
     Ok(())
 }

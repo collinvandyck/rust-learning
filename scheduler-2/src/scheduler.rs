@@ -73,7 +73,7 @@ impl Builder {
         }
     }
     #[must_use]
-    fn rules(mut self, rules: Rules) -> Self {
+    pub fn rules(mut self, rules: Rules) -> Self {
         self.rules = rules;
         self
     }

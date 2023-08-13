@@ -48,8 +48,8 @@ impl Builder {
         self
     }
     #[must_use]
-    pub fn rule(mut self, typ: task::Type, rule: Rule) -> Self {
-        self.rules.rules.insert(typ, rule);
+    pub fn rule<T: Into<task::Type>>(mut self, typ: T, rule: Rule) -> Self {
+        self.rules.rules.insert(typ.into(), rule);
         self
     }
     #[must_use]
