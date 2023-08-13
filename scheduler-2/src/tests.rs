@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use crate::hooks;
 use crate::hooks::HookResult;
 use crate::rules::{Rule, Rules};
 use crate::scheduler::Response;
@@ -26,7 +27,7 @@ async fn test_scheduler() -> Result<()> {
 #[tokio::test]
 async fn test_scheduler_hooks() -> Result<()> {
     let hooks = TestHooks::new();
-    let sched = Scheduler::builder().hooks(hooks.clone()).build();
+    let sched = Scheduler::builder().hooks(hooks.clone().into()).build();
     let num = 10;
     for _ in 0..num {
         sched.run_task("task", async {}).await?;
@@ -40,7 +41,7 @@ async fn test_scheduler_hooks() -> Result<()> {
 #[tokio::test]
 async fn test_scheduler_task_panic() -> Result<()> {
     let hooks = TestHooks::new();
-    let sched = Scheduler::builder().hooks(hooks.clone()).build();
+    let sched = Scheduler::builder().hooks(hooks.clone().into()).build();
 
     // run a task that panics.
     sched
@@ -83,7 +84,7 @@ async fn test_scheduler_rules() -> Result<()> {
         )
         .build();
     let sched = Scheduler::builder()
-        .hooks(hooks.clone())
+        .hooks(hooks.into())
         .rules(rules)
         .build();
 
@@ -121,6 +122,12 @@ impl TestHooks {
     fn bump_count(&self) {
         let mut count = self.count.lock().unwrap();
         *count = *count + 1;
+    }
+}
+
+impl From<TestHooks> for hooks::Hooks {
+    fn from(hooks: TestHooks) -> Self {
+        hooks::Hooks(Some(Box::new(hooks)))
     }
 }
 

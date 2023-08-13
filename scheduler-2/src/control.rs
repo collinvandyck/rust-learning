@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     command::Command,
-    hooks,
+    hooks::{self, Callback},
     rules::Rules,
     scheduler::{Request, Response, TaskRequest, WaitRequest},
     task,
@@ -15,13 +15,13 @@ pub(crate) struct Control {
     rx: mpsc::Receiver<Request>,
     res_tx: mpsc::Sender<RunResult>,
     res_rx: mpsc::Receiver<RunResult>,
-    hooks: hooks::Wrapped,
+    hooks: hooks::Hooks,
     rules: Rules,
     running: HashMap<task::Type, usize>,
 }
 
 impl Control {
-    pub(crate) fn new(rx: mpsc::Receiver<Request>, hooks: hooks::Wrapped, rules: Rules) -> Self {
+    pub(crate) fn new(rx: mpsc::Receiver<Request>, hooks: hooks::Hooks, rules: Rules) -> Self {
         let (res_tx, res_rx) = mpsc::channel(1024);
         Self {
             rx,
@@ -50,11 +50,9 @@ impl Control {
                             self.task_finished(&typ);
 
                             // invoke the hook letting us know that the task has finished.
-                            if let Some(hook) = self.hooks.as_mut() {
-                                let fut = hook.on_task_complete(&typ);
-                                if let Err(e) = fut.await {
-                                    println!("Error in hook.on_task_complete: {e:?}");
-                                }
+                            let hook_res = (&self.hooks).on_task_complete(&typ).await;
+                            if let Err(e) = hook_res {
+                                println!("Error in hook.on_task_complete: {e:?}");
                             }
                         }
                     }
@@ -79,11 +77,9 @@ impl Control {
                             // if we accepted, invoke the hook if it exists. we will block
                             // the scheduler until the hook is completed so that we can
                             // ensure consistency.
-                            if let Some(hook) = &mut self.hooks {
-                                let fut = hook.on_task_start(&typ);
-                                if let Err(e) = fut.await {
-                                    println!("Error in hook: {e:?}");
-                                }
+                            let hook_res = &self.hooks.on_task_start(&typ).await;
+                            if let Err(e) = hook_res {
+                                println!("Error in hook: {e:?}");
                             }
                             // finally, spawn the task and send the accepted response.
                             tokio::spawn(async move {

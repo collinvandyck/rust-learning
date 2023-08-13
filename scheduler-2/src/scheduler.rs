@@ -1,4 +1,10 @@
-use crate::{command::Command, control::Control, hooks::Callback, rules::Rules, task::Type};
+use crate::{
+    command::Command,
+    control::Control,
+    hooks::{Callback, Hooks},
+    rules::Rules,
+    task::Type,
+};
 use anyhow::Result;
 use std::{future::Future, sync::Arc};
 use tokio::sync::{mpsc, oneshot};
@@ -10,10 +16,7 @@ pub struct Scheduler {
 
 impl Scheduler {
     #[must_use]
-    pub fn new(
-        hooks: Option<Box<dyn Callback + Send + Sync + 'static>>,
-        rules: Rules,
-    ) -> Scheduler {
+    pub fn new(hooks: Hooks, rules: Rules) -> Scheduler {
         let (tx, rx) = mpsc::channel(1024);
         tokio::spawn(async move {
             let mut ctrl = Control::new(rx, hooks, rules);
@@ -64,14 +67,14 @@ impl Scheduler {
 }
 
 pub struct Builder {
-    hooks: Option<Box<dyn Callback + Send + Sync + 'static>>,
+    hooks: Hooks,
     rules: Rules,
 }
 
 impl Builder {
     fn new() -> Self {
         Self {
-            hooks: None,
+            hooks: Hooks::default(),
             rules: Rules::default(),
         }
     }
@@ -81,8 +84,8 @@ impl Builder {
         self
     }
     #[must_use]
-    pub fn hooks(mut self, hooks: impl Callback + Send + Sync + 'static) -> Self {
-        self.hooks = Some(Box::new(hooks));
+    pub fn hooks(mut self, hooks: Hooks) -> Self {
+        self.hooks = hooks.into();
         self
     }
 
