@@ -1,4 +1,4 @@
-use crate::{command::Command, control::Control, hooks::Hooks, state::Rules, task::Type};
+use crate::{command::Command, control::Control, hooks::Hooks, rules::Rules, task::Type};
 use anyhow::Result;
 use std::{future::Future, sync::Arc};
 use tokio::sync::{mpsc, oneshot};
@@ -71,6 +71,11 @@ impl Builder {
             hooks: None,
             rules: Rules::default(),
         }
+    }
+    #[must_use]
+    fn rules(mut self, rules: Rules) -> Self {
+        self.rules = rules;
+        self
     }
     #[must_use]
     pub fn hooks(mut self, hooks: impl Hooks + Send + 'static) -> Self {

@@ -32,25 +32,3 @@ impl State {
         self.running.remove(typ);
     }
 }
-
-pub struct Rules {
-    rules: HashMap<task::Type, Rule>,
-    default: Rule,
-}
-
-pub struct Rule {
-    pub max_running: usize,
-    pub run_every: Option<Duration>,
-}
-
-impl Default for Rules {
-    fn default() -> Self {
-        Self {
-            rules: HashMap::default(),
-            default: Rule {
-                max_running: 1,
-                run_every: None,
-            },
-        }
-    }
-}

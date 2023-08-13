@@ -3,6 +3,7 @@
 mod command;
 mod control;
 mod hooks;
+mod rules;
 pub mod scheduler;
 mod state;
 mod task;
