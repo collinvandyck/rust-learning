@@ -33,7 +33,7 @@ impl Control {
         loop {
             // if we are waiting and there are no more tasks running, then complete the wait by
             // transmitting on the channel and replacing the option.
-            if wait.is_some() && state.num_running() == 0 {
+            if wait.is_some() && state.running() == 0 {
                 let wr = wait.take().unwrap();
                 let _ = wr.tx.send(Response::Accepted);
             }

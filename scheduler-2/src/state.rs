@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use crate::task;
 
 /// State is used to keep track of the currently running tasks.
+///
+/// It is meant to be used by a single task that is controlling what gets run or what does not, and
+/// because of that it is not threadsafe by design.
 pub(crate) struct State {
     running: HashMap<task::Type, bool>,
 }
@@ -14,7 +17,7 @@ impl State {
         }
     }
     /// Returns the number of currently executing tasks
-    pub(crate) fn num_running(&self) -> usize {
+    pub(crate) fn running(&self) -> usize {
         self.running.len()
     }
     /// Return true if we are allowed to run this task type.
@@ -29,3 +32,10 @@ impl State {
         self.running.remove(typ);
     }
 }
+
+pub struct Rules {
+    rules: HashMap<task::Type, Rule>,
+    default: Rule,
+}
+
+pub struct Rule {}
