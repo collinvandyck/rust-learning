@@ -1,7 +1,6 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::hooks;
 use crate::hooks::HookResult;
 use crate::rules::{Rule, Rules};
 use crate::scheduler::Response;
