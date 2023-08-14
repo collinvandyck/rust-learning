@@ -17,13 +17,8 @@ pub trait Callback {
 
 pub type HookResult = Result<(), Arc<anyhow::Error>>;
 
+#[derive(Default)]
 pub struct Hooks(pub Option<Box<dyn Callback + Send + Sync + 'static>>);
-
-impl Default for Hooks {
-    fn default() -> Self {
-        Self(None)
-    }
-}
 
 #[async_trait]
 impl Callback for Hooks {

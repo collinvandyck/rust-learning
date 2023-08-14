@@ -50,7 +50,7 @@ impl Control {
                             self.task_finished(&typ);
 
                             // invoke the hook letting us know that the task has finished.
-                            let hook_res = (&self.hooks).on_task_complete(&typ).await;
+                            let hook_res = &self.hooks.on_task_complete(&typ).await;
                             if let Err(e) = hook_res {
                                 println!("Error in hook.on_task_complete: {e:?}");
                             }
@@ -102,13 +102,16 @@ impl Control {
     }
     /// Returns the total number of running tasks.
     fn total_running(&self) -> usize {
-        self.running.iter().map(|(_, v)| *v).sum()
+        self.running.values().sum()
     }
     fn task_finished(&mut self, typ: &task::Type) {
         let count = self.running.get_mut(typ).unwrap();
-        if *count == 0 {
-            panic!("task count is 0 for task type: {:?}", typ);
-        }
+        assert!(
+            *count > 0,
+            "task count is {} for task type {:?}",
+            *count,
+            typ
+        );
         *count -= 1;
     }
     /// Checks to see whether or not we can run a task of this type. If so, then we mark it as

@@ -97,9 +97,9 @@ impl Builder {
     }
 }
 
-impl Into<Hooks> for Box<dyn Callback + Send + Sync + 'static> {
-    fn into(self) -> Hooks {
-        Hooks(Some(self))
+impl From<Box<dyn Callback + Send + Sync + 'static>> for Hooks {
+    fn from(value: Box<dyn Callback + Send + Sync + 'static>) -> Self {
+        Hooks(Some(value))
     }
 }
 

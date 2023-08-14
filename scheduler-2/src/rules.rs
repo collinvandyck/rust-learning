@@ -39,6 +39,7 @@ impl Default for Rules {
     }
 }
 
+#[derive(Default)]
 pub struct Builder {
     rules: Rules,
 }
@@ -57,9 +58,10 @@ impl Builder {
     #[must_use]
     pub fn rule<T: Into<task::Type>>(mut self, typ: T, rule: Rule) -> Self {
         let typ = typ.into();
-        if self.rules.rules.contains_key(&typ) {
-            panic!("duplicate rule for type: {:?}", typ);
-        }
+        assert!(
+            !self.rules.rules.contains_key(&typ),
+            "duplicate rule for type {typ:?}"
+        );
         self.rules.rules.insert(typ.clone(), rule);
         self
     }
