@@ -26,6 +26,13 @@ async fn create(db_url: &str) -> Result<()> {
 async fn migrate(pool: &mut Pool<Sqlite>) -> Result<()> {
     let mut conn = pool.acquire().await?;
     conn.ensure_migrations_table().await?;
+    println!("Running migrations");
+    sqlx::migrate!("db/migrations").run(&mut conn).await?;
+    println!("Current migrations:");
+    let migrations = conn.list_applied_migrations().await?;
+    for migration in migrations {
+        println!("\t{}", migration.version);
+    }
     Ok(())
 }
 
