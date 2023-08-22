@@ -33,6 +33,8 @@ async fn migrate(pool: &mut Pool<Sqlite>) -> Result<()> {
     for migration in migrations {
         println!("\t{}", migration.version);
     }
+    sqlx::migrate!("db/migrations").run(&mut conn).await?;
+
     Ok(())
 }
 
