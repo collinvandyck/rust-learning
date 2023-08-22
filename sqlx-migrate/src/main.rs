@@ -1,6 +1,10 @@
 #![allow(dead_code, unused)]
 use anyhow::Result;
-use sqlx::{migrate::MigrateDatabase, sqlite::SqlitePoolOptions, Pool, Sqlite};
+use sqlx::{
+    migrate::{Migrate, MigrateDatabase},
+    sqlite::SqlitePoolOptions,
+    Pool, Sqlite,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -20,6 +24,8 @@ async fn create(db_url: &str) -> Result<()> {
 }
 
 async fn migrate(pool: &mut Pool<Sqlite>) -> Result<()> {
+    let mut conn = pool.acquire().await?;
+    conn.ensure_migrations_table().await?;
     Ok(())
 }
 
