@@ -1,18 +1,29 @@
+#![allow(dead_code, unused)]
 use anyhow::Result;
-use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::{migrate::MigrateDatabase, sqlite::SqlitePoolOptions, Pool, Sqlite};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    create().await?;
-    run().await?;
+    let db_url = "sqlite://test.db";
+    create(db_url).await?;
+    let mut pool = connect(db_url).await?;
+    migrate(&mut pool).await?;
     Ok(())
 }
 
-async fn create() -> Result<()> {
+async fn create(db_url: &str) -> Result<()> {
+    if Sqlite::database_exists(db_url).await? {
+        return Ok(());
+    }
+    Sqlite::create_database(db_url).await?;
     Ok(())
 }
 
-async fn run() -> Result<()> {
-    let _pool = SqlitePoolOptions::new().connect("sqlite:test.db").await?;
+async fn migrate(pool: &mut Pool<Sqlite>) -> Result<()> {
     Ok(())
+}
+
+async fn connect(db_url: &str) -> Result<Pool<Sqlite>> {
+    let pool = SqlitePoolOptions::new().connect("sqlite://test.db").await?;
+    Ok(pool)
 }
