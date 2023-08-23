@@ -13,8 +13,9 @@ async fn test_migrate_conn() -> Result<()> {
         .max_connections(100)
         .connect("sqlite::memory:")
         .await?;
-    let mut conn = pool.acquire().await?;
-    sqlx::migrate!("./migrations").run(&mut conn).await?;
+    let conn = pool.acquire().await?;
+    let mut conn = conn.detach();
+    sqlx::migrate!("./migrations").run_direct(&mut conn).await?;
 
     #[derive(PartialEq, Eq, Debug, sqlx::FromRow)]
     struct Record(String);
