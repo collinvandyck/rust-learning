@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 async-trait = "0.1.73"
-sqlx = { version = "0.7.1", features = ["runtime-tokio", "sqlite"] }
+sqlx = { version = "0.6.3", features = ["runtime-tokio-native-tls", "sqlite"] } # Simple SQL
 tokio = { version = "1.32.0", features = ["full"] }
