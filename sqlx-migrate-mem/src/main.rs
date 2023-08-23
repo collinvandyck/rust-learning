@@ -3,6 +3,11 @@ use sqlx::{pool::PoolOptions, Pool, Sqlite};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    test_migrate_shared_conn().await?;
+    Ok(())
+}
+
+async fn test_migrate_shared_conn() -> Result<()> {
     let pool: Pool<Sqlite> = PoolOptions::new()
         .max_connections(100)
         .connect("sqlite::memory:")
