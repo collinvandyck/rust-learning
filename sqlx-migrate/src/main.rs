@@ -1,10 +1,29 @@
 #![allow(dead_code, unused)]
 use anyhow::Result;
+use async_trait::async_trait;
 use sqlx::{
     migrate::{Migrate, MigrateDatabase},
     sqlite::SqlitePoolOptions,
     Pool, Sqlite,
 };
+
+#[async_trait]
+trait Migrator {
+    async fn migrate(&self) -> Result<()>;
+}
+
+struct DefaultMigrator;
+
+#[async_trait]
+impl Migrator for DefaultMigrator {
+    async fn migrate(&self) -> Result<()> {
+        let db_url = "sqlite://test.db";
+        create(db_url).await?;
+        let mut pool = connect(db_url).await?;
+        migrate(&mut pool).await?;
+        Ok(())
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
