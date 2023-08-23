@@ -1,21 +1,34 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use sqlx::{pool::PoolOptions, Pool, Sqlite};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    test_migrate_shared_conn().await?;
-    test_migrate_conn().await?;
+    if let Err(e) = test_migrate_shared_conn().await {
+        println!("Shared conn test failed: {e}");
+    }
+    if let Err(e) = test_migrate_conn().await {
+        println!("Detached conn test failed: {e}");
+    }
+    Ok(())
+}
+
+async fn migrate(pool: &mut Pool<Sqlite>, detach: bool) -> Result<()> {
+    let mut conn = pool.acquire().await.context("acquire failed")?;
+    if detach {
+        let mut conn = conn.detach();
+        sqlx::migrate!("./migrations").run_direct(&mut conn).await?;
+    } else {
+        sqlx::migrate!("./migrations").run(&mut conn).await?;
+    }
     Ok(())
 }
 
 async fn test_migrate_conn() -> Result<()> {
-    let pool: Pool<Sqlite> = PoolOptions::new()
+    let mut pool: Pool<Sqlite> = PoolOptions::new()
         .max_connections(100)
         .connect("sqlite::memory:")
         .await?;
-    let conn = pool.acquire().await?;
-    let mut conn = conn.detach();
-    sqlx::migrate!("./migrations").run_direct(&mut conn).await?;
+    migrate(&mut pool, true).await?;
 
     #[derive(PartialEq, Eq, Debug, sqlx::FromRow)]
     struct Record(String);
@@ -31,12 +44,12 @@ async fn test_migrate_conn() -> Result<()> {
 }
 
 async fn test_migrate_shared_conn() -> Result<()> {
-    let pool: Pool<Sqlite> = PoolOptions::new()
+    let mut pool: Pool<Sqlite> = PoolOptions::new()
         .max_connections(100)
         .connect("sqlite::memory:")
         .await?;
-    let mut conn = pool.acquire().await?;
-    sqlx::migrate!("./migrations").run(&mut conn).await?;
+
+    migrate(&mut pool, false).await?;
 
     #[derive(PartialEq, Eq, Debug, sqlx::FromRow)]
     struct Record(String);
