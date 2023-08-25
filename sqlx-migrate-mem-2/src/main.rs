@@ -2,7 +2,7 @@ fn main() {}
 
 #[cfg(test)]
 mod tests {
-    use anyhow::Result;
+    use anyhow::{anyhow, Result};
     use sqlx::{
         sqlite::{SqliteConnectOptions, SqlitePoolOptions},
         Pool, Sqlite,
@@ -15,10 +15,11 @@ mod tests {
     #[tokio::test]
     async fn test_migration() -> Result<()> {
         let mut pool = connect().await?;
-        let recs = get_records(&mut pool).await?;
+        let recs = get_records(&mut pool)
+            .await
+            .map_err(|e| anyhow!("test check failed: {e}"))?;
         assert_eq!(recs.len(), 1);
         assert_eq!(recs.get(0), Some(&Record("collin".to_string())));
-
         Ok(())
     }
 
@@ -31,10 +32,11 @@ mod tests {
     }
 
     async fn connect() -> Result<Pool<Sqlite>> {
-        let connection_str = "sqlite://?mode=memory&cache=private";
+        let _connection_str = "sqlite://?mode=memory&cache=private";
+        let connection_str = "sqlite::memory:";
         let opts = SqliteConnectOptions::from_str(connection_str)?;
         let mut pool = SqlitePoolOptions::new()
-            .min_connections(2)
+            .min_connections(100)
             .max_connections(100)
             .connect_with(opts)
             .await?;
@@ -47,6 +49,11 @@ mod tests {
         let mut conn = conn.detach();
         sqlx::migrate!("./migrations").run_direct(&mut conn).await?;
         println!("migrated!");
+        let recs = get_records(pool)
+            .await
+            .map_err(|e| anyhow!("migrate check failed: {e}"))?;
+        assert_eq!(recs.len(), 1);
+        assert_eq!(recs.get(0), Some(&Record("collin".to_string())));
 
         Ok(())
     }
