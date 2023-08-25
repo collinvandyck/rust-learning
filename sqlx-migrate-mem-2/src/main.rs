@@ -15,6 +15,17 @@ mod tests {
     #[tokio::test]
     async fn test_migration() -> Result<()> {
         let pool = connect().await?;
+        let mut conn = pool.acquire().await?;
+
+        #[derive(sqlx::FromRow, Debug, PartialEq, Eq)]
+        struct Record(String);
+
+        let recs = sqlx::query_as::<_, Record>("select name from foo")
+            .fetch_all(&mut conn)
+            .await?;
+        assert_eq!(recs.len(), 1);
+        assert_eq!(recs.get(0), Some(&Record("collin".to_string())));
+
         Ok(())
     }
 }
