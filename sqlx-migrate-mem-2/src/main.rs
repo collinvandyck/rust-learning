@@ -1,11 +1,7 @@
 fn main() {}
 
-#[derive(sqlx::FromRow, Debug, PartialEq, Eq)]
-struct Record(String);
-
 #[cfg(test)]
 mod tests {
-    use super::*;
     use anyhow::Result;
     use sqlx::{
         sqlite::{SqliteConnectOptions, SqlitePoolOptions},
@@ -13,18 +9,25 @@ mod tests {
     };
     use std::str::FromStr;
 
+    #[derive(sqlx::FromRow, Debug, PartialEq, Eq)]
+    struct Record(String);
+
     #[tokio::test]
     async fn test_migration() -> Result<()> {
-        let pool = connect().await?;
-        let mut conn = pool.acquire().await?;
-
-        let recs = sqlx::query_as::<_, Record>("select name from foo")
-            .fetch_all(&mut conn)
-            .await?;
+        let mut pool = connect().await?;
+        let recs = get_records(&mut pool).await?;
         assert_eq!(recs.len(), 1);
         assert_eq!(recs.get(0), Some(&Record("collin".to_string())));
 
         Ok(())
+    }
+
+    async fn get_records(pool: &mut Pool<Sqlite>) -> Result<Vec<Record>> {
+        let mut conn = pool.acquire().await?;
+        let recs = sqlx::query_as::<_, Record>("select name from foo")
+            .fetch_all(&mut conn)
+            .await?;
+        Ok(recs)
     }
 
     async fn connect() -> Result<Pool<Sqlite>> {
