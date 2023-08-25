@@ -10,8 +10,11 @@ fn main() {}
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
+
+    use crate::connect;
     #[tokio::test]
     async fn test_migration() -> Result<()> {
+        let pool = connect().await?;
         Ok(())
     }
 }
@@ -24,6 +27,13 @@ async fn connect() -> Result<Pool<Sqlite>> {
         .max_connections(100)
         .connect_with(opts)
         .await?;
-    // migrate
+    migrate(&mut pool).await?;
     Ok(pool)
+}
+
+async fn migrate(pool: &mut Pool<Sqlite>) -> Result<()> {
+    let conn = pool.acquire().await?;
+    let mut conn = conn.detach();
+    sqlx::migrate!("./migrations").run_direct(&mut conn).await?;
+    Ok(())
 }

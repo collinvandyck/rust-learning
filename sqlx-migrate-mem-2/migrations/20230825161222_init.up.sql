@@ -1,1 +1,1 @@
--- Add up migration script here
+Foo;
