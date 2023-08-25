@@ -35,5 +35,6 @@ async fn migrate(pool: &mut Pool<Sqlite>) -> Result<()> {
     let conn = pool.acquire().await?;
     let mut conn = conn.detach();
     sqlx::migrate!("./migrations").run_direct(&mut conn).await?;
+    println!("migrated!");
     Ok(())
 }
