@@ -5,8 +5,9 @@ use tracing_subscriber::FmtSubscriber;
 #[tokio::main]
 async fn main() {
     let subscriber = FmtSubscriber::builder().finish();
-    let _def = tracing::subscriber::set_default(subscriber);
+    let guard = tracing::subscriber::set_default(subscriber);
     event!(Level::INFO, age = 48, "hi there");
+    drop(guard);
     info!("Starting");
     do_stuff().await;
     info!("Done");
