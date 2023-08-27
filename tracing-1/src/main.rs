@@ -1,10 +1,15 @@
 use tracing::{event, info, Level};
 use tracing_attributes::instrument;
+use tracing_subscriber::FmtSubscriber;
 
 #[tokio::main]
 async fn main() {
+    let subscriber = FmtSubscriber::builder().finish();
+    let _def = tracing::subscriber::set_default(subscriber);
+    event!(Level::INFO, age = 48, "hi there");
+    info!("Starting");
     do_stuff().await;
-    println!("Done");
+    info!("Done");
 }
 
 #[instrument]
