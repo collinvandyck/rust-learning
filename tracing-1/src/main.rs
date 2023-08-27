@@ -4,6 +4,7 @@ use tracing_attributes::instrument;
 #[tokio::main]
 async fn main() {
     do_stuff().await;
+    println!("Done");
 }
 
 #[instrument]
