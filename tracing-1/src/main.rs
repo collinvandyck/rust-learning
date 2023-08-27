@@ -1,4 +1,13 @@
+use tracing::{event, info, Level};
+use tracing_attributes::instrument;
+
 #[tokio::main]
 async fn main() {
-    println!("Hello, world!");
+    do_stuff().await;
+}
+
+#[instrument]
+async fn do_stuff() {
+    event!(Level::INFO, "foo bar");
+    info!("hi");
 }
