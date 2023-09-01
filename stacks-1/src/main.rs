@@ -28,12 +28,16 @@ async fn main() -> Result<()> {
     }
     tx.send(ball).await?;
     let mut rng = thread_rng();
-    while let Some(ball) = rx.recv().await {
-        info!(ball = ?ball);
-        let idx = rng.gen_range(0..txs.len());
-        txs[idx].send(ball).await?;
+
+    loop {
+        tokio::select! {
+            Some(ball) = rx.recv() => {
+                info!(ball = ?ball);
+                let idx = rng.gen_range(0..txs.len());
+                txs[idx].send(ball).await?;
+            }
+        }
     }
-    Ok(())
 }
 
 async fn player(tx: Sender<Ball>, mut rx: Receiver<Ball>) {

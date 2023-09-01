@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.75"
+backtrace = "0.3.69"
 clap = { version = "4.4.2", features = ["derive"] }
 rand = "0.8.5"
 tokio = { version = "1.32.0", features = ["full"] }
