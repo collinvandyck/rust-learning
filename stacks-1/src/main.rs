@@ -6,7 +6,7 @@ use anyhow::Result;
 use rand::{thread_rng, Rng};
 use tokio::{
     sync::mpsc::{self, Receiver, Sender},
-    time::sleep,
+    time::{sleep, Instant},
 };
 use tracing::info;
 
@@ -28,6 +28,8 @@ async fn main() -> Result<()> {
     }
     tx.send(ball).await?;
     let mut rng = thread_rng();
+    let sleep = sleep(Duration::from_secs(1));
+    tokio::pin!(sleep);
 
     loop {
         tokio::select! {
@@ -35,6 +37,10 @@ async fn main() -> Result<()> {
                 info!(ball = ?ball);
                 let idx = rng.gen_range(0..txs.len());
                 txs[idx].send(ball).await?;
+            }
+            () = &mut sleep => {
+                info!("BOOP");
+                sleep.as_mut().reset(Instant::now() + Duration::from_secs(1));
             }
         }
     }
