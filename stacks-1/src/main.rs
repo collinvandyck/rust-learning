@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 use std::time::Duration;
+use tracing_subscriber::FmtSubscriber;
 
 use anyhow::Result;
 use rand::{thread_rng, Rng};
@@ -7,9 +8,13 @@ use tokio::{
     sync::mpsc::{self, Receiver, Sender},
     time::sleep,
 };
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let subscriber = FmtSubscriber::builder().finish();
+    let _guard = tracing::subscriber::set_default(subscriber);
+
     let ball = Ball { count: 0 };
     let (tx, mut rx) = mpsc::channel::<Ball>(1);
     let mut txs = vec![];
@@ -24,7 +29,7 @@ async fn main() -> Result<()> {
     tx.send(ball).await?;
     let mut rng = thread_rng();
     while let Some(ball) = rx.recv().await {
-        println!("ball: #{ball:?}");
+        info!(ball = ?ball);
         let idx = rng.gen_range(0..txs.len());
         txs[idx].send(ball).await?;
     }
