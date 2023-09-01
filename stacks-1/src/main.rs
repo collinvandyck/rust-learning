@@ -41,6 +41,7 @@ async fn main() -> Result<()> {
             () = &mut sleep => {
                 info!("BOOP");
                 sleep.as_mut().reset(Instant::now() + Duration::from_secs(1));
+                return Ok(());
             }
         }
     }
