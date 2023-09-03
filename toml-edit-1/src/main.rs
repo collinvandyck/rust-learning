@@ -1,6 +1,8 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
+use tokio::fs;
+use toml::Table;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -9,6 +11,8 @@ async fn main() -> Result<()> {
     if !config.is_file() {
         bail!("expected {config:?} to exist");
     }
-    println!("Hello, world!");
+    let contents = fs::read_to_string(&config).await?;
+    let table = contents.parse::<Table>()?;
+    println!("doc: {table:?}");
     Ok(())
 }
