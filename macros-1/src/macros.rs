@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! myvec {
-    ( $( $x:expr ),* ) => {
+    ( $( $x:expr ),* ) => {{
         {
             let mut temp_vec = Vec::new();
             $(
@@ -8,5 +8,5 @@ macro_rules! myvec {
             )*
             temp_vec
         }
-    };
+    }};
 }
