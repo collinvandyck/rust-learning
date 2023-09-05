@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
+use configparser::ini::Ini;
 use tokio::fs;
 use toml::Table;
 
@@ -11,8 +12,9 @@ async fn main() -> Result<()> {
     if !config.is_file() {
         bail!("expected {config:?} to exist");
     }
+
     let contents = fs::read_to_string(&config).await?;
-    let table = contents.parse::<Table>()?;
-    println!("doc: {table:?}");
+    let _ini = Ini::new().load(&config).map_err(|err| anyhow!("{err}"))?;
+    println!("{_ini:?}");
     Ok(())
 }
