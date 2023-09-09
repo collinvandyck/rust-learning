@@ -4,6 +4,7 @@ use anyhow::Result;
 use mockall::automock;
 use sqlx::{Pool, Sqlite};
 
+#[derive(Clone)]
 pub struct DB {
     pool: Pool<Sqlite>,
 }

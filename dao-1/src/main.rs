@@ -1,19 +1,19 @@
-#![allow(dead_code, unused)]
-
 use anyhow::Result;
-use dao_1::dao::User;
-#[double]
 use dao_1::dao::DB;
-use mockall_double::double;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _dao = DB::new_db().await?;
+    let dao = DB::new_db().await?;
+    let _dao = dao.clone();
     Ok(())
 }
 
 #[tokio::test]
 async fn test_dao() -> Result<()> {
+    use dao_1::dao::User;
+    #[double]
+    use dao_1::dao::DB;
+    use mockall_double::double;
     let mut db = DB::new();
     db.expect_get_users().returning(|| {
         Ok(vec![User {
