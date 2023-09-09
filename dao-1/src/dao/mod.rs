@@ -1,12 +1,14 @@
 use anyhow::Result;
+use mockall::automock;
 use sqlx::{Pool, Sqlite};
 
 pub struct Dao {
     pool: Pool<Sqlite>,
 }
 
+#[automock]
 impl Dao {
-    pub async fn new() -> Result<Self> {
+    pub async fn new_dao() -> Result<Self> {
         let pool = Pool::connect("sqlite://:memory:").await?;
         Ok(Self { pool })
     }
@@ -24,4 +26,25 @@ pub struct User {
     pub id: i64,
     pub name: String,
     pub age: i32,
+}
+
+#[tokio::test]
+async fn test_dao() -> Result<()> {
+    let dao = mock_dao().await;
+    let users = dao.get_users().await?;
+    assert_eq!(users.len(), 1);
+    Ok(())
+}
+
+#[allow(dead_code)]
+async fn mock_dao() -> MockDao {
+    let mut dao = MockDao::new();
+    dao.expect_get_users().returning(|| {
+        Ok(vec![User {
+            id: 1,
+            name: "test".to_string(),
+            age: 20,
+        }])
+    });
+    dao
 }
