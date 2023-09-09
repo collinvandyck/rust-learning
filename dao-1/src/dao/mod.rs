@@ -10,7 +10,7 @@ pub struct DB {
 
 #[automock]
 impl DB {
-    pub async fn new_dao() -> Result<Self> {
+    pub async fn new_db() -> Result<Self> {
         let pool = Pool::connect("sqlite://:memory:").await?;
         Ok(Self { pool })
     }
