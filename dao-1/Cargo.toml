@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 mockall = "0.11.4"
+mockall_double = "0.3.0"
 sqlx = { version = "0.7.0", features = ["runtime-tokio-native-tls", "sqlite"] } # Simple SQL
 thiserror = "1.0.48"
 tokio = { version = "1.32.0", features = ["full"] }
