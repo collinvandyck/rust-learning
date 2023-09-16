@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use clap::Parser;
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
@@ -17,11 +18,18 @@ use std::{
     time::Duration,
 };
 
+#[derive(clap::Parser)]
+struct Args {
+    #[arg(long)]
+    table: bool,
+}
+
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 
 fn main() -> Result<()> {
+    let args = Args::parse();
     let mut term = setup_terminal().context("setup term")?;
-    let res = run(&mut term).context("run");
+    let res = run(&args, &mut term).context("run");
     restore_terminal(&mut term).context("restore term")?;
     if let Err(err) = res {
         eprintln!("{err}");
@@ -30,9 +38,13 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run(term: &mut Term) -> Result<()> {
+fn run(args: &Args, term: &mut Term) -> Result<()> {
     loop {
-        term.draw(render_table)?;
+        if args.table {
+            term.draw(|frame| render_table(frame))?;
+        } else {
+            term.draw(render)?;
+        }
         if should_quit()? {
             break;
         }
