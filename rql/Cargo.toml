@@ -10,4 +10,5 @@ anyhow = "1.0.75"
 clap = { version = "4.4.3", features = ["derive"] }
 crossterm = "0.27.0"
 ratatui = "0.23.0"
+sqlx = { version = "0.7.1", features = ["sqlite"] }
 thiserror = "1.0.48"

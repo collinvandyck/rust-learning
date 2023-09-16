@@ -5,13 +5,8 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use ratatui::{
-    prelude::{Constraint, CrosstermBackend},
-    style::{Color, Modifier, Style},
-    text::{Line, Span},
-    widgets::{Block, Cell, Paragraph, Row, Table},
-    Frame, Terminal,
-};
+use ratatui::prelude::*;
+use ratatui::widgets::{Block, Cell, Paragraph, Row, Table};
 use std::{
     io::{self, Stdout},
     process,
