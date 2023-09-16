@@ -25,8 +25,10 @@ impl App {
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
-        term.draw(|frame| {
-            let greeting = Paragraph::new("Hello World! (press 'q' to quit)");
+        let tables = self.dao.tables()?;
+        term.draw(move |frame| {
+            let f = tables.join(", ");
+            let greeting = Paragraph::new("{f}");
             frame.render_widget(greeting, frame.size());
         })?;
         Ok(())

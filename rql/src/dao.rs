@@ -6,6 +6,7 @@ use anyhow::Result;
 use sqlx::{Pool, Sqlite, SqlitePool};
 use tokio::runtime::Runtime;
 
+#[derive(Clone)]
 pub struct BlockingDao {
     inner: Arc<BlockingInner>,
 }
