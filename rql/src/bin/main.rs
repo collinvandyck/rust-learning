@@ -6,7 +6,8 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Cell, Paragraph, Row, Table};
+use ratatui::widgets::{Block, Cell, Row, Table};
+use ratatui_1::app::App;
 use std::{
     io::{self, Stdout},
     process,
@@ -17,29 +18,30 @@ use std::{
 struct Args {
     #[arg(long)]
     table: bool,
+    path: String,
 }
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 
-fn main() -> Result<()> {
-    let args = Args::parse();
-    let mut term = setup_terminal().context("setup term")?;
-    let res = run(&args, &mut term).context("run");
-    restore_terminal(&mut term).context("restore term")?;
-    if let Err(err) = res {
-        eprintln!("{err}");
+fn main() {
+    if let Err(err) = setup_and_run() {
+        eprintln!("{err:?}");
         process::exit(1);
     }
-    Ok(())
+}
+
+fn setup_and_run() -> Result<()> {
+    let args = Args::parse();
+    let mut term = setup_terminal().context("term setup failed")?;
+    let res = run(&args, &mut term);
+    restore_terminal(&mut term).context("term restore failed")?;
+    res
 }
 
 fn run(args: &Args, term: &mut Term) -> Result<()> {
+    let mut app = App::new(&args.path)?;
     loop {
-        if args.table {
-            term.draw(|frame| render_table(frame))?;
-        } else {
-            term.draw(render)?;
-        }
+        app.draw(term)?;
         if should_quit()? {
             break;
         }
@@ -47,6 +49,7 @@ fn run(args: &Args, term: &mut Term) -> Result<()> {
     Ok(())
 }
 
+#[allow(dead_code)]
 fn render_table(frame: &mut Frame<CrosstermBackend<Stdout>>) {
     let table = Table::new(vec![
         // Row can be created from simple strings.
@@ -96,11 +99,6 @@ fn render_table(frame: &mut Frame<CrosstermBackend<Stdout>>) {
     // ...and potentially show a symbol in front of the selection.
     .highlight_symbol(">>");
     frame.render_widget(table, frame.size());
-}
-
-fn render(frame: &mut Frame<CrosstermBackend<Stdout>>) {
-    let greeting = Paragraph::new("Hello World! (press 'q' to quit)");
-    frame.render_widget(greeting, frame.size());
 }
 
 fn should_quit() -> Result<bool> {
