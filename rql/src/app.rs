@@ -28,7 +28,7 @@ impl App {
         let tables = self.dao.tables()?;
         term.draw(move |frame| {
             let f = tables.join(", ");
-            let greeting = Paragraph::new("{f}");
+            let greeting = Paragraph::new(format!("{f}"));
             frame.render_widget(greeting, frame.size());
         })?;
         Ok(())
