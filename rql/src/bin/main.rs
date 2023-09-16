@@ -7,7 +7,7 @@ use crossterm::{
 };
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Cell, Row, Table};
-use ratatui_1::app::App;
+use ratatui_1::app::{App, Tick};
 use std::{
     io::{self, Stdout},
     process,
@@ -42,8 +42,11 @@ fn run(args: &Args, term: &mut Term) -> Result<()> {
     let mut app = App::new(&args.path)?;
     loop {
         app.draw(term)?;
-        if should_quit()? {
-            break;
+        match app.tick()? {
+            Tick::Quit => {
+                break;
+            }
+            _ => {}
         }
     }
     Ok(())

@@ -1,12 +1,18 @@
 #![allow(dead_code, unused)]
 
-use std::io::Stdout;
+use std::{io::Stdout, time::Duration};
 
 use crate::dao::BlockingDao;
-use anyhow::Result;
+use anyhow::{Context, Result};
+use crossterm::event::{self, Event, KeyCode};
 use ratatui::{prelude::CrosstermBackend, widgets::Paragraph};
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
+
+pub enum Tick {
+    Quit,
+    Nothing,
+}
 
 pub struct App {
     dao: BlockingDao,
@@ -24,5 +30,16 @@ impl App {
             frame.render_widget(greeting, frame.size());
         })?;
         Ok(())
+    }
+
+    pub fn tick(&mut self) -> Result<Tick> {
+        if event::poll(Duration::from_millis(250)).context("event poll failed")? {
+            if let Event::Key(key) = event::read().context("event read failed")? {
+                if KeyCode::Char('q') == key.code {
+                    return Ok(Tick::Quit);
+                }
+            }
+        }
+        Ok(Tick::Nothing)
     }
 }
