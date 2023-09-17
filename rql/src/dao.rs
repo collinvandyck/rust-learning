@@ -85,12 +85,6 @@ impl<'a> DB<'a> {
     }
 }
 
-impl<'a> From<&'a dyn AsRef<str>> for DB<'a> {
-    fn from(value: &'a dyn AsRef<str>) -> Self {
-        Self::Path(value.as_ref())
-    }
-}
-
 impl Dao {
     pub async fn new(db: DB<'_>) -> Result<Self> {
         let pool = db.connect().await?;
