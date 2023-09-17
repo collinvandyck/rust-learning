@@ -1,18 +1,22 @@
 use ratatui::widgets::ListState;
 
 /// Represents a list of tables.
-pub struct Tables {
+pub struct DbTables {
     pub names: Vec<String>,
     pub state: ListState,
 }
 
-impl Tables {
+impl DbTables {
     pub fn new(names: Vec<String>) -> Self {
         let mut state = ListState::default();
         if !names.is_empty() {
             state.select(Some(0));
         }
         Self { names, state }
+    }
+
+    pub fn max_len(&self) -> u16 {
+        self.names.iter().map(|s| s.len() as u16).max().unwrap_or(0)
     }
 
     pub fn next(&mut self) {

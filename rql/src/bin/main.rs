@@ -7,7 +7,7 @@ use crossterm::{
 use ratatui::prelude::*;
 use rql::{
     app::{App, Tick},
-    dao::DB,
+    dao::DbType,
 };
 use std::{
     io::{self, Stdout},
@@ -38,7 +38,7 @@ fn setup_and_run() -> Result<()> {
 }
 
 fn run(args: &Args, term: &mut Term) -> Result<()> {
-    let db: DB = DB::Path(args.db_path.as_str());
+    let db: DbType = DbType::Path(args.db_path.as_str());
     let mut app = App::new(db)?;
     loop {
         app.draw(term)?;

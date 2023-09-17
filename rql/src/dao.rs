@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool, TypeInfo};
-use std::{ops::Deref, sync::Arc, time::Instant};
+use std::{fmt::Display, fs::write, ops::Deref, sync::Arc, time::Instant};
 use tokio::runtime::Runtime;
 
 #[derive(Clone)]
@@ -14,7 +14,7 @@ struct BlockingInner {
 }
 
 impl BlockingDao {
-    pub fn new(db: DB) -> Result<Self> {
+    pub fn new(db: DbType) -> Result<Self> {
         let rt = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()?;
@@ -50,9 +50,10 @@ pub struct TableSchema {
 }
 
 #[derive(sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct TableColumn {
     cid: u32,
-    name: String,
+    pub name: String,
     #[sqlx(rename = "type")]
     typ: String,
     notnull: bool,
@@ -84,6 +85,24 @@ pub enum FieldValue {
     Date(Option<Instant>),
     Time(Option<Instant>),
     DateTime(Option<Instant>),
+}
+
+impl Display for FieldValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use FieldValue::*;
+        match self {
+            Text(Some(val)) => write!(f, "{val}"),
+            Real(Some(val)) => write!(f, "{val}"),
+            Blob(Some(val)) => write!(f, "bytes {{ len = {}}}", val.len()),
+            Integer(Some(val)) => write!(f, "{val}"),
+            Numeric(Some(val)) => write!(f, "{val}"),
+            Boolean(Some(val)) => write!(f, "{val}"),
+            Date(Some(val)) => write!(f, "{val:?}"),
+            Time(Some(val)) => write!(f, "{val:?}"),
+            DateTime(Some(val)) => write!(f, "{val:?}"),
+            _ => Ok(()),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -181,12 +200,12 @@ impl Deref for Records {
     }
 }
 
-pub enum DB<'a> {
+pub enum DbType<'a> {
     Path(&'a str),
     Memory,
 }
 
-impl<'a> DB<'a> {
+impl<'a> DbType<'a> {
     async fn connect(&'a self) -> Result<Pool<Sqlite>> {
         match self {
             Self::Path(path) => {
@@ -203,7 +222,7 @@ impl<'a> DB<'a> {
 }
 
 impl Dao {
-    pub async fn new(db: DB<'_>) -> Result<Self> {
+    pub async fn new(db: DbType<'_>) -> Result<Self> {
         let pool = db.connect().await?;
         Ok(Self { pool })
     }
@@ -270,7 +289,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_decode() -> Result<()> {
-        let dao = Dao::new(DB::Memory).await?;
+        let dao = Dao::new(DbType::Memory).await?;
         dao.execute("create table foo (name string, age integer)")
             .await?;
         let schema = dao.table_schema("foo").await?;

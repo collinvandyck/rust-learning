@@ -1,16 +1,16 @@
 use std::{io::Stdout, time::Duration};
 
 use crate::{
-    dao::{BlockingDao, Field, Record, DB},
-    table::Table,
-    tables::Tables,
+    dao::{BlockingDao, DbType},
+    table::DbTable,
+    tables::DbTables,
 };
 use anyhow::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     prelude::{Constraint, CrosstermBackend, Direction, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, List, ListItem},
+    widgets::{Block, Borders, Cell, List, ListItem, Row, Table},
 };
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
@@ -21,27 +21,34 @@ pub enum Tick {
 }
 
 pub struct App {
-    dao: BlockingDao,     // db handle
-    tables: Tables,       // the list of tables
-    table: Option<Table>, // the selected table
+    dao: BlockingDao,       // db handle
+    tables: DbTables,       // the list of tables
+    table: Option<DbTable>, // the selected table
 }
 
 impl App {
-    pub fn new(db: DB) -> Result<Self> {
+    pub fn new(db: DbType) -> Result<Self> {
         let dao = BlockingDao::new(db)?;
-        let tables = Tables::new(dao.tables()?);
+        let tables = DbTables::new(dao.tables()?);
         let mut table = None;
         if let Some(name) = tables.selected() {
-            table.replace(Table::new(dao.clone(), name)?);
+            table.replace(DbTable::new(dao.clone(), name)?);
         }
         Ok(Self { dao, tables, table })
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
+        let size = term.size()?;
         term.draw(move |frame| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+                .constraints(
+                    [
+                        Constraint::Length(self.tables.max_len() + 3), // padding
+                        Constraint::Max(size.width),
+                    ]
+                    .as_ref(),
+                )
                 .split(frame.size());
             let items: Vec<ListItem> = self
                 .tables
@@ -59,24 +66,44 @@ impl App {
                 );
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, chunks[0], state);
-            if let Some(table) = &self.table {
-                let max = frame.size().height as usize;
-                let items: Vec<ListItem> = table
+            if let Some(selected_table) = &self.table {
+                let header_cells = selected_table
+                    .schema
+                    .cols
+                    .iter()
+                    .map(|col| Cell::from(col.name.clone()).style(Style::default()));
+                let header = Row::new(header_cells)
+                    .style(Style::default())
+                    .height(1)
+                    .bottom_margin(1);
+                let max_records = frame.size().height as usize;
+                let rows = selected_table
                     .records
                     .iter()
-                    .take(max)
+                    .take(max_records)
                     .map(|record| {
-                        record
+                        let cells = record
                             .fields
                             .iter()
-                            .map(|field| format!("{:?}", field.val))
-                            .collect::<Vec<_>>()
-                            .join(", ")
-                    })
-                    .map(|s| ListItem::new(s))
-                    .collect();
-                let list = List::new(items);
-                frame.render_widget(list, chunks[1]);
+                            .map(|field| format!("{}", field.val))
+                            .map(|s| Cell::from(s).style(Style::default()));
+                        Row::new(cells)
+                    });
+                let num_cols = selected_table.schema.cols.len();
+                let pct = (100.0 / num_cols as f64) as u16;
+                let widths = selected_table
+                    .schema
+                    .cols
+                    .iter()
+                    .map(|_| Constraint::Percentage(pct))
+                    .collect::<Vec<_>>();
+                let table: Table = Table::new(rows)
+                    .header(header)
+                    .block(Block::default().borders(Borders::ALL))
+                    .highlight_style(Style::default().fg(Color::LightGreen))
+                    .highlight_symbol(">>")
+                    .widths(&widths);
+                frame.render_widget(table, chunks[1]);
             }
         })?;
         Ok(())
@@ -96,7 +123,7 @@ impl App {
                             self.tables.previous();
                         }
                         if let Some(name) = self.tables.selected() {
-                            self.table.replace(Table::new(self.dao.clone(), name)?);
+                            self.table.replace(DbTable::new(self.dao.clone(), name)?);
                         }
                     }
                     _ => {}

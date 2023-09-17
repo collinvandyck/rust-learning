@@ -3,14 +3,14 @@ use anyhow::Result;
 use crate::dao::{BlockingDao, Records, TableSchema};
 
 /// Enables the display of a table's contents
-pub struct Table {
+pub struct DbTable {
     dao: BlockingDao,
     name: String,
-    schema: TableSchema,
+    pub schema: TableSchema,
     pub records: Records,
 }
 
-impl Table {
+impl DbTable {
     pub fn new(dao: BlockingDao, name: String) -> Result<Self> {
         let schema = dao.table_schema(&name)?;
         let records = dao.records(&name, &schema)?;
