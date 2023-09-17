@@ -67,6 +67,7 @@ pub struct Field {
     val: FieldValue,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum FieldValue {
     Null,
     Text(String),
@@ -138,7 +139,10 @@ impl FieldType {
 
 impl From<&str> for FieldType {
     fn from(value: &str) -> Self {
-        match value {
+        match value.to_lowercase().as_ref() {
+            "string" => FieldType::Text,
+            "integer" => FieldType::Integer,
+
             "NULL" => FieldType::Null,
             "TEXT" => FieldType::Text,
             "REAL" => FieldType::Real,
@@ -230,8 +234,13 @@ impl Dao {
             for column in row.columns() {
                 let name = column.name().to_string();
                 let ord = column.ordinal();
+                let col = &schema.cols[ord];
                 let type_info = column.type_info();
-                let typ = FieldType::from(type_info.name());
+                println!(
+                    "ord: {ord} type_info: {type_info} name: {name} coltyp: {}",
+                    col.typ
+                );
+                let typ = FieldType::from(col.typ.as_ref());
                 let val = typ.decode(&row, ord)?;
                 let field = Field { name, typ, val };
                 record.fields.push(field);
@@ -255,15 +264,20 @@ mod tests {
     #[tokio::test]
     async fn test_decode() -> Result<()> {
         let dao = Dao::new(DB::Memory).await?;
-        dao.execute("create table foo (name string)").await?;
+        dao.execute("create table foo (name string, age integer)")
+            .await?;
         let schema = dao.table_schema("foo").await?;
         let records = dao.records("foo", &schema).await?;
         assert_eq!(records.len(), 0);
-        dao.execute("insert into foo (name) values ('collin')")
+        dao.execute("insert into foo (name, age) values ('collin', 46)")
             .await?;
         let records = dao.records("foo", &schema).await?;
         assert_eq!(records.len(), 1);
-        assert_eq!(records[0].fields.len(), 1);
+        assert_eq!(records[0].fields.len(), 2);
+        assert_eq!(
+            records[0].fields[0].val,
+            FieldValue::Text("collin".to_string())
+        );
         Ok(())
     }
 }
