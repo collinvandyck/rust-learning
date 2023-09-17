@@ -1,7 +1,7 @@
 use anyhow::Result;
 use ratatui::widgets::{ListState, TableState};
 
-use crate::dao::{BlockingDao, Record, Records, TableSchema};
+use crate::dao::{BlockingDao, GetRecords, Record, Records, TableSchema};
 
 /// Enables the display of a table's contents
 pub struct DbTable {
@@ -17,7 +17,14 @@ impl DbTable {
     pub fn new(dao: BlockingDao, name: String) -> Result<Self> {
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
-        let records = dao.records(&name, &schema)?;
+        let records = dao.records(
+            &schema,
+            GetRecords {
+                table_name: name.clone(),
+                offset: 0,
+                limit: 100000,
+            },
+        )?;
         let state = TableState::default();
         let table = Self {
             dao,

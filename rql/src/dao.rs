@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
-use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool, TypeInfo};
-use std::{fmt::Display, fs::write, ops::Deref, sync::Arc, time::Instant};
+use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool};
+use std::{fmt::Display, ops::Deref, sync::Arc, time::Instant};
 use tokio::runtime::Runtime;
 
 #[derive(Clone)]
@@ -34,10 +34,8 @@ impl BlockingDao {
             .block_on(self.inner.dao.table_schema(table_name))
     }
 
-    pub fn records<P: AsRef<str>>(&self, table_name: P, schema: &TableSchema) -> Result<Records> {
-        self.inner
-            .rt
-            .block_on(self.inner.dao.records(table_name, schema))
+    pub fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Records> {
+        self.inner.rt.block_on(self.inner.dao.records(schema, req))
     }
 
     pub fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
@@ -210,6 +208,12 @@ pub enum DbType<'a> {
     Memory,
 }
 
+pub struct GetRecords {
+    pub table_name: String,
+    pub limit: usize,
+    pub offset: usize,
+}
+
 impl<'a> DbType<'a> {
     async fn connect(&'a self) -> Result<Pool<Sqlite>> {
         match self {
@@ -272,9 +276,10 @@ impl Dao {
         Ok(record.count as u64)
     }
 
-    async fn records<P: AsRef<str>>(&self, table_name: P, schema: &TableSchema) -> Result<Records> {
+    async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Records> {
+        let table_name = req.table_name.as_str();
         let mut conn = self.pool.acquire().await?;
-        let query = format!("select * from {} limit 20", table_name.as_ref());
+        let query = format!("select * from {}", table_name);
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = Records::default();
         for row in rows {
@@ -311,11 +316,29 @@ mod tests {
         dao.execute("create table foo (name string, age integer)")
             .await?;
         let schema = dao.table_schema("foo").await?;
-        let records = dao.records("foo", &schema).await?;
+        let records = dao
+            .records(
+                &schema,
+                GetRecords {
+                    table_name: "foo".to_string(),
+                    limit: 100,
+                    offset: 0,
+                },
+            )
+            .await?;
         assert_eq!(records.len(), 0);
         dao.execute("insert into foo (name, age) values ('collin', 46)")
             .await?;
-        let records = dao.records("foo", &schema).await?;
+        let records = dao
+            .records(
+                &schema,
+                GetRecords {
+                    table_name: "foo".to_string(),
+                    limit: 100,
+                    offset: 0,
+                },
+            )
+            .await?;
         assert_eq!(records.len(), 1);
         assert_eq!(records[0].fields.len(), 2);
         assert_eq!(

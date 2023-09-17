@@ -1,5 +1,3 @@
-use std::{default, io::Stdout, time::Duration};
-
 use crate::{
     dao::{BlockingDao, DbType},
     table::DbTable,
@@ -12,6 +10,7 @@ use ratatui::{
     style::{Color, Modifier, Style},
     widgets::{Block, Borders, Cell, List, ListItem, Row, Table},
 };
+use std::{io::Stdout, time::Duration};
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 
@@ -31,7 +30,7 @@ pub struct App {
     dao: BlockingDao,       // db handle
     tables: DbTables,       // the list of tables
     table: Option<DbTable>, // the selected table
-    focus: Focus,
+    focus: Focus,           // what ui element has focus
 }
 
 impl App {
@@ -99,19 +98,14 @@ impl App {
                     .style(Style::default())
                     .height(1)
                     .bottom_margin(1);
-                let max_records = frame.size().height as usize;
-                let rows = selected_table
-                    .records
-                    .iter()
-                    .take(max_records)
-                    .map(|record| {
-                        let cells = record
-                            .fields
-                            .iter()
-                            .map(|field| format!("{}", field.val))
-                            .map(|s| Cell::from(s).style(Style::default()));
-                        Row::new(cells).height(1)
-                    });
+                let rows = selected_table.records.iter().map(|record| {
+                    let cells = record
+                        .fields
+                        .iter()
+                        .map(|field| format!("{}", field.val))
+                        .map(|s| Cell::from(s).style(Style::default()));
+                    Row::new(cells).height(1)
+                });
                 let num_cols = selected_table.schema.cols.len();
                 let pct = (100.0 / num_cols as f64) as u16;
                 let widths = selected_table
@@ -174,7 +168,7 @@ impl App {
                                 }
                             }
                         }
-                        KeyCode::Char('q') => {
+                        KeyCode::Char('q') | KeyCode::Esc => {
                             return Ok(Tick::Quit);
                         }
                         _ => {}
@@ -201,7 +195,7 @@ impl App {
                                 }
                             }
                         }
-                        KeyCode::Char('h') | KeyCode::Char('q') => {
+                        KeyCode::Char('h') | KeyCode::Char('q') | KeyCode::Esc => {
                             self.focus = Focus::Tables;
                             if let Some(table) = &mut self.table {
                                 table.unselect();
