@@ -70,15 +70,15 @@ pub struct Field {
 #[derive(Debug, PartialEq)]
 pub enum FieldValue {
     Null,
-    Text(String),
-    Real(f64),
-    Blob(Vec<u8>),
-    Integer(i64),
-    Numeric(f64),
-    Boolean(bool),
-    Date(Instant),
-    Time(Instant),
-    DateTime(Instant),
+    Text(Option<String>),
+    Real(Option<f64>),
+    Blob(Option<Vec<u8>>),
+    Integer(Option<i64>),
+    Numeric(Option<f64>),
+    Boolean(Option<bool>),
+    Date(Option<Instant>),
+    Time(Option<Instant>),
+    DateTime(Option<Instant>),
 }
 
 #[derive(Debug)]
@@ -112,41 +112,46 @@ impl FieldType {
         Ok(val)
     }
 
-    fn decode_instant(&self, row: &SqliteRow, idx: usize) -> Result<Instant> {
+    fn decode_instant(&self, row: &SqliteRow, idx: usize) -> Result<Option<Instant>> {
         todo!()
     }
 
-    fn decode_bool(&self, row: &SqliteRow, idx: usize) -> Result<bool> {
-        Ok(row.try_get::<bool, _>(idx)?)
+    fn decode_bool(&self, row: &SqliteRow, idx: usize) -> Result<Option<bool>> {
+        Ok(row.try_get::<Option<bool>, _>(idx)?)
     }
 
-    fn decode_i64(&self, row: &SqliteRow, idx: usize) -> Result<i64> {
-        Ok(row.try_get::<i64, _>(idx)?)
+    fn decode_i64(&self, row: &SqliteRow, idx: usize) -> Result<Option<i64>> {
+        Ok(row.try_get::<Option<i64>, _>(idx)?)
     }
 
-    fn decode_bytes(&self, row: &SqliteRow, idx: usize) -> Result<Vec<u8>> {
-        Ok(row.try_get::<Vec<u8>, _>(idx)?)
+    fn decode_bytes(&self, row: &SqliteRow, idx: usize) -> Result<Option<Vec<u8>>> {
+        Ok(row.try_get::<Option<Vec<u8>>, _>(idx)?)
     }
 
-    fn decode_f64(&self, row: &SqliteRow, idx: usize) -> Result<f64> {
-        Ok(row.try_get::<f64, _>(idx)?)
+    fn decode_f64(&self, row: &SqliteRow, idx: usize) -> Result<Option<f64>> {
+        Ok(row.try_get::<Option<f64>, _>(idx)?)
     }
 
-    fn decode_string(&self, row: &SqliteRow, idx: usize) -> Result<String> {
-        Ok(row.try_get::<String, _>(idx)?)
+    fn decode_string(&self, row: &SqliteRow, idx: usize) -> Result<Option<String>> {
+        Ok(row.try_get::<Option<String>, _>(idx)?)
     }
 }
 
 impl From<&str> for FieldType {
     fn from(value: &str) -> Self {
-        match value.to_lowercase().as_ref() {
-            "string" => FieldType::Text,
+        let value = value.to_lowercase();
+        let value = value.as_str();
+        if value.starts_with("varchar") {
+            return FieldType::Text;
+        }
+        match value {
+            "string" | "text" => FieldType::Text,
             "integer" => FieldType::Integer,
+            "blob" => FieldType::Blob,
 
             "NULL" => FieldType::Null,
             "TEXT" => FieldType::Text,
             "REAL" => FieldType::Real,
-            "BLOB" => FieldType::Blob,
             "INTEGER" => FieldType::Integer,
             "NUMERIC" => FieldType::Numeric,
             "BOOLEAN" => FieldType::Boolean,
@@ -276,9 +281,9 @@ mod tests {
         assert_eq!(records[0].fields.len(), 2);
         assert_eq!(
             records[0].fields[0].val,
-            FieldValue::Text("collin".to_string())
+            FieldValue::Text(Some("collin".to_string()))
         );
-        assert_eq!(records[0].fields[1].val, FieldValue::Integer(46),);
+        assert_eq!(records[0].fields[1].val, FieldValue::Integer(Some(46)),);
         Ok(())
     }
 }
