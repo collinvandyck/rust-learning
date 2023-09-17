@@ -58,7 +58,7 @@ impl App {
                 .map(|n| ListItem::new(n).style(Style::default().fg(Color::Cyan)))
                 .collect();
             let list = List::new(items)
-                .block(Block::default().borders(Borders::ALL))
+                .block(Block::default().title("tables").borders(Borders::ALL))
                 .highlight_style(
                     Style::default()
                         .fg(Color::LightGreen)
@@ -99,7 +99,11 @@ impl App {
                     .collect::<Vec<_>>();
                 let table: Table = Table::new(rows)
                     .header(header)
-                    .block(Block::default().borders(Borders::ALL))
+                    .block(
+                        Block::default()
+                            .title(selected_table.name.clone())
+                            .borders(Borders::ALL),
+                    )
                     .highlight_style(Style::default().fg(Color::LightGreen))
                     .highlight_symbol(">>")
                     .widths(&widths);

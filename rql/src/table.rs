@@ -5,7 +5,7 @@ use crate::dao::{BlockingDao, Records, TableSchema};
 /// Enables the display of a table's contents
 pub struct DbTable {
     dao: BlockingDao,
-    name: String,
+    pub name: String,
     pub schema: TableSchema,
     pub records: Records,
 }
