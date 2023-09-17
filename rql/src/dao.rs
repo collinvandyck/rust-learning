@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool, TypeInfo};
-use std::{sync::Arc, time::Instant};
+use std::{ops::Deref, sync::Arc, time::Instant};
 use tokio::runtime::Runtime;
 
 #[derive(Clone)]
@@ -56,11 +56,15 @@ pub struct TableColumn {
 }
 
 /// A row in the table
-pub struct Record {}
+#[derive(Default)]
+pub struct Record {
+    fields: Vec<Field>,
+}
 
 pub struct Field {
     name: String,
     typ: FieldType,
+    val: FieldValue,
 }
 
 pub enum FieldValue {
@@ -91,7 +95,7 @@ pub enum FieldType {
 }
 
 impl FieldType {
-    async fn decode(&self, row: SqliteRow, idx: usize) -> Result<FieldValue> {
+    fn decode(&self, row: &SqliteRow, idx: usize) -> Result<FieldValue> {
         match self {
             FieldType::Null => Ok(FieldValue::Null),
             FieldType::Text => Ok(FieldValue::Text(self.decode_string(row, idx)?)),
@@ -106,27 +110,27 @@ impl FieldType {
         }
     }
 
-    fn decode_instant(&self, row: SqliteRow, idx: usize) -> Result<Instant> {
+    fn decode_instant(&self, row: &SqliteRow, idx: usize) -> Result<Instant> {
         todo!()
     }
 
-    fn decode_bool(&self, row: SqliteRow, idx: usize) -> Result<bool> {
+    fn decode_bool(&self, row: &SqliteRow, idx: usize) -> Result<bool> {
         Ok(row.try_get::<bool, _>(idx)?)
     }
 
-    fn decode_i64(&self, row: SqliteRow, idx: usize) -> Result<i64> {
+    fn decode_i64(&self, row: &SqliteRow, idx: usize) -> Result<i64> {
         Ok(row.try_get::<i64, _>(idx)?)
     }
 
-    fn decode_bytes(&self, row: SqliteRow, idx: usize) -> Result<Vec<u8>> {
+    fn decode_bytes(&self, row: &SqliteRow, idx: usize) -> Result<Vec<u8>> {
         Ok(row.try_get::<Vec<u8>, _>(idx)?)
     }
 
-    fn decode_f64(&self, row: SqliteRow, idx: usize) -> Result<f64> {
+    fn decode_f64(&self, row: &SqliteRow, idx: usize) -> Result<f64> {
         Ok(row.try_get::<f64, _>(idx)?)
     }
 
-    fn decode_string(&self, row: SqliteRow, idx: usize) -> Result<String> {
+    fn decode_string(&self, row: &SqliteRow, idx: usize) -> Result<String> {
         Ok(row.try_get::<String, _>(idx)?)
     }
 }
@@ -149,7 +153,17 @@ impl From<&str> for FieldType {
     }
 }
 
-pub struct Records {}
+#[derive(Default)]
+pub struct Records {
+    records: Vec<Record>,
+}
+
+impl Deref for Records {
+    type Target = Vec<Record>;
+    fn deref(&self) -> &Self::Target {
+        &self.records
+    }
+}
 
 pub enum DB<'a> {
     Path(&'a str),
@@ -209,15 +223,21 @@ impl Dao {
         let mut conn = self.pool.acquire().await?;
         let query = format!("select * from {}", table_name.as_ref());
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
+        let mut records = Records::default();
         for row in rows {
+            let mut record = Record::default();
             for column in row.columns() {
-                let name = column.name();
+                let name = column.name().to_string();
                 let ord = column.ordinal();
                 let type_info = column.type_info();
-                let field_type = FieldType::from(type_info.name());
+                let typ = FieldType::from(type_info.name());
+                let val = typ.decode(&row, ord)?;
+                let field = Field { name, typ, val };
+                record.fields.push(field);
             }
+            records.records.push(record);
         }
-        todo!()
+        Ok(records)
     }
 
     async fn execute(&self, sql: &'static str) -> Result<()> {
@@ -237,6 +257,7 @@ mod tests {
         dao.execute("create table foo (name string)").await?;
         let schema = dao.table_schema("foo").await?;
         let records = dao.records("foo", &schema).await?;
+        assert_eq!(records.len(), 1);
         Ok(())
     }
 }
