@@ -219,10 +219,22 @@ impl Dao {
         }
         todo!()
     }
+
+    async fn execute(&self, sql: &'static str) -> Result<()> {
+        let mut conn = self.pool.acquire().await?;
+        sqlx::query(sql).execute(&mut *conn).await?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn test_decode() {}
+    use super::*;
+
+    #[tokio::test]
+    async fn test_decode() -> Result<()> {
+        let dao = Dao::new(DB::Memory).await?;
+        dao.execute("create table foo (name string)").await?;
+        Ok(())
+    }
 }
