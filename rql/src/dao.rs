@@ -63,10 +63,6 @@ pub struct Field {
     typ: FieldType,
 }
 
-impl Field {
-    fn new(name: String) -> Self {}
-}
-
 pub enum FieldValue {
     Null,
     Text(String),
