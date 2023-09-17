@@ -222,4 +222,7 @@ impl Dao {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    #[test]
+    fn test_decode() {}
+}
