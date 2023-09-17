@@ -235,6 +235,8 @@ mod tests {
     async fn test_decode() -> Result<()> {
         let dao = Dao::new(DB::Memory).await?;
         dao.execute("create table foo (name string)").await?;
+        let schema = dao.table_schema("foo").await?;
+        let records = dao.records("foo", &schema).await?;
         Ok(())
     }
 }
