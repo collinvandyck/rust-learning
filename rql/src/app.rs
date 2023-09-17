@@ -1,11 +1,12 @@
 use std::{io::Stdout, time::Duration};
 
-use crate::{dao::BlockingDao, widgets::Tables};
+use crate::{dao::BlockingDao, tables::Tables};
 use anyhow::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     prelude::CrosstermBackend,
-    widgets::{List, ListItem},
+    style::{Color, Modifier, Style},
+    widgets::{Block, Borders, List, ListItem},
 };
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
@@ -18,6 +19,11 @@ pub enum Tick {
 pub struct App {
     dao: BlockingDao,
     tables: Tables,
+}
+
+enum State {
+    Start,
+    Table(String),
 }
 
 impl App {
@@ -33,9 +39,16 @@ impl App {
                 .tables
                 .names
                 .iter()
-                .map(|n| ListItem::new(n.as_str()))
+                .map(|n| n.clone())
+                .map(|n| ListItem::new(n).style(Style::default().fg(Color::Cyan)))
                 .collect();
-            let list = List::new(items);
+            let list = List::new(items)
+                .block(Block::default().borders(Borders::ALL))
+                .highlight_style(
+                    Style::default()
+                        .fg(Color::LightGreen)
+                        .add_modifier(Modifier::BOLD),
+                );
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, frame.size(), state);
         })?;

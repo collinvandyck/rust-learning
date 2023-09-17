@@ -1,5 +1,6 @@
-use ratatui::widgets::{List, ListItem, ListState};
+use ratatui::widgets::ListState;
 
+/// Represents a list of tables.
 pub struct Tables {
     pub names: Vec<String>,
     pub state: ListState,
@@ -7,20 +8,11 @@ pub struct Tables {
 
 impl Tables {
     pub fn new(names: Vec<String>) -> Self {
-        Self {
-            names,
-            state: ListState::default(),
+        let mut state = ListState::default();
+        if !names.is_empty() {
+            state.select(Some(0));
         }
-    }
-
-    pub fn list(&self) -> List {
-        let items = self
-            .names
-            .iter()
-            .map(|n| n.clone())
-            .map(|n| ListItem::new(n))
-            .collect::<Vec<_>>();
-        List::new(items)
+        Self { names, state }
     }
 
     pub fn next(&mut self) {
@@ -39,6 +31,13 @@ impl Tables {
             .map(|i| if i == 0 { self.names.len() - 1 } else { i - 1 })
             .unwrap_or(0);
         self.state.select(Some(i));
+    }
+
+    pub fn selected(&self) -> Option<String> {
+        self.state
+            .selected()
+            .map(|i| self.names.get(i).map(|s| s.clone()))
+            .flatten()
     }
 
     pub fn unselect(&mut self) {

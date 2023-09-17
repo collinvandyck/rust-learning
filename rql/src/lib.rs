@@ -1,3 +1,3 @@
 pub mod app;
 pub mod dao;
-pub mod widgets;
+pub mod tables;
