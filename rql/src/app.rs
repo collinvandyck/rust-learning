@@ -1,6 +1,6 @@
 use std::{io::Stdout, time::Duration};
 
-use crate::{dao::BlockingDao, tables::Tables};
+use crate::{dao::BlockingDao, table::Table, tables::Tables};
 use anyhow::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
@@ -17,20 +17,20 @@ pub enum Tick {
 }
 
 pub struct App {
-    dao: BlockingDao,
-    tables: Tables,
-}
-
-enum State {
-    Start,
-    Table(String),
+    dao: BlockingDao,     // db handle
+    tables: Tables,       // the list of tables
+    table: Option<Table>, // the selected table
 }
 
 impl App {
     pub fn new<P: AsRef<str>>(path: P) -> Result<Self> {
         let dao = BlockingDao::new(path)?;
         let tables = Tables::new(dao.tables()?);
-        Ok(Self { dao, tables })
+        let mut table = None;
+        if let Some(name) = tables.selected() {
+            table.replace(Table::new(dao.clone(), name)?);
+        }
+        Ok(Self { dao, tables, table })
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
@@ -62,11 +62,15 @@ impl App {
                     return Ok(Tick::Quit);
                 }
                 match key.code {
-                    KeyCode::Char('j') => {
-                        self.tables.next();
-                    }
-                    KeyCode::Char('k') => {
-                        self.tables.previous();
+                    KeyCode::Char('j') | KeyCode::Char('k') => {
+                        if key.code == KeyCode::Char('j') {
+                            self.tables.next();
+                        } else {
+                            self.tables.previous();
+                        }
+                        if let Some(name) = self.tables.selected() {
+                            self.table.replace(Table::new(self.dao.clone(), name)?);
+                        }
                     }
                     _ => {}
                 }

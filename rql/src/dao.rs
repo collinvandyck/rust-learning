@@ -1,5 +1,3 @@
-#![allow(dead_code, unused)]
-
 use anyhow::{Context, Result};
 use sqlx::{Pool, Sqlite, SqlitePool};
 use std::sync::Arc;
@@ -30,7 +28,7 @@ impl BlockingDao {
         self.inner.rt.block_on(self.inner.dao.tables())
     }
 
-    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<TableSchema> {
+    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<Column> {
         self.inner
             .rt
             .block_on(self.inner.dao.table_schema(table_name))
@@ -43,7 +41,7 @@ struct Dao {
 }
 
 #[derive(sqlx::FromRow)]
-struct TableSchema {
+struct Column {
     cid: u32,
     name: String,
     typ: String,
@@ -78,12 +76,12 @@ impl Dao {
         Ok(res)
     }
 
-    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<TableSchema> {
+    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<Vec<Column>> {
         let mut conn = self.pool.acquire().await?;
-        let res = sqlx::query_as::<_, TableSchema>("pragma table_info(?)")
+        let res = sqlx::query_as::<_, Column>("pragma table_info(?)")
             .bind(table_name.as_ref())
-            .fetch_one(&mut *conn)
+            .fetch_all(&mut *conn)
             .await?;
-        todo!();
+        Ok(res)
     }
 }
