@@ -278,6 +278,7 @@ mod tests {
             records[0].fields[0].val,
             FieldValue::Text("collin".to_string())
         );
+        assert_eq!(records[0].fields[1].val, FieldValue::Integer(46),);
         Ok(())
     }
 }
