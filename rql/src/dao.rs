@@ -245,11 +245,6 @@ impl Dao {
                 let name = column.name().to_string();
                 let ord = column.ordinal();
                 let col = &schema.cols[ord];
-                let type_info = column.type_info();
-                println!(
-                    "ord: {ord} type_info: {type_info} name: {name} coltyp: {}",
-                    col.typ
-                );
                 let typ = FieldType::from(col.typ.as_ref());
                 let val = typ.decode(&row, ord)?;
                 let field = Field { name, typ, val };
