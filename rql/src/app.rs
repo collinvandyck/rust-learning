@@ -1,10 +1,10 @@
 #![allow(dead_code, unused)]
 
-use std::{io::Stdout, sync::mpsc, time::Duration};
+use std::{char, io::Stdout, sync::mpsc, time::Duration};
 
 use crate::dao::BlockingDao;
 use anyhow::{Context, Result};
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use ratatui::{prelude::CrosstermBackend, widgets::Paragraph};
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
@@ -46,6 +46,12 @@ impl App {
         }
         if event::poll(Duration::from_millis(250)).context("event poll failed")? {
             if let Event::Key(key) = event::read().context("event read failed")? {
+                if KeyCode::Char('c') == key.code && key.modifiers.contains(KeyModifiers::CONTROL) {
+                    return Ok(Tick::Quit);
+                }
+                if KeyCode::Char(0x03 as char) == key.code {
+                    return Ok(Tick::Quit);
+                }
                 if KeyCode::Char('q') == key.code {
                     return Ok(Tick::Quit);
                 }
