@@ -71,7 +71,7 @@ impl App {
                 );
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, chunks[0], state);
-            if let Some(selected_table) = &self.table {
+            if let Some(selected_table) = &mut self.table {
                 let header_cells = selected_table
                     .schema
                     .cols
@@ -113,7 +113,8 @@ impl App {
                     .highlight_style(Style::default().fg(Color::LightGreen))
                     .highlight_symbol(">>")
                     .widths(&widths);
-                frame.render_widget(table, chunks[1]);
+                let state = &mut selected_table.state;
+                frame.render_stateful_widget(table, chunks[1], state);
             }
         })?;
         Ok(())
