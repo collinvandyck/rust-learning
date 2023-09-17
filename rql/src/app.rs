@@ -58,7 +58,12 @@ impl App {
                 .map(|n| ListItem::new(n).style(Style::default().fg(Color::Cyan)))
                 .collect();
             let list = List::new(items)
-                .block(Block::default().title("tables").borders(Borders::ALL))
+                .block(
+                    Block::default()
+                        .title("[ tables ]")
+                        .title_style(Style::default().fg(Color::LightGreen))
+                        .borders(Borders::ALL),
+                )
                 .highlight_style(
                     Style::default()
                         .fg(Color::LightGreen)
@@ -101,7 +106,8 @@ impl App {
                     .header(header)
                     .block(
                         Block::default()
-                            .title(selected_table.name.clone())
+                            .title(format!("[ Table: {} ]", selected_table.name))
+                            .title_style(Style::default().fg(Color::LightGreen))
                             .borders(Borders::ALL),
                     )
                     .highlight_style(Style::default().fg(Color::LightGreen))

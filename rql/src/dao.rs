@@ -256,7 +256,7 @@ impl Dao {
 
     async fn records<P: AsRef<str>>(&self, table_name: P, schema: &TableSchema) -> Result<Records> {
         let mut conn = self.pool.acquire().await?;
-        let query = format!("select * from {}", table_name.as_ref());
+        let query = format!("select * from {} limit 100", table_name.as_ref());
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = Records::default();
         for row in rows {
