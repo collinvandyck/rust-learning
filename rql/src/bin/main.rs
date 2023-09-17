@@ -16,8 +16,8 @@ struct Args {
     #[arg(long)]
     table: bool,
 
-    #[arg(default_value = "data")]
-    path: String,
+    #[arg(env)]
+    db_path: String,
 }
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
@@ -38,7 +38,7 @@ fn setup_and_run() -> Result<()> {
 }
 
 fn run(args: &Args, term: &mut Term) -> Result<()> {
-    let mut app = App::new(&args.path)?;
+    let mut app = App::new(&args.db_path)?;
     loop {
         app.draw(term)?;
         match app.tick()? {
