@@ -28,7 +28,7 @@ impl BlockingDao {
         self.inner.rt.block_on(self.inner.dao.tables())
     }
 
-    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<Column> {
+    pub fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<TableSchema> {
         self.inner
             .rt
             .block_on(self.inner.dao.table_schema(table_name))
@@ -40,10 +40,15 @@ struct Dao {
     pool: Pool<Sqlite>,
 }
 
+pub struct TableSchema {
+    pub cols: Vec<Column>,
+}
+
 #[derive(sqlx::FromRow)]
-struct Column {
+pub struct Column {
     cid: u32,
     name: String,
+    #[sqlx(rename = "type")]
     typ: String,
     notnull: bool,
     dflt_value: String,
@@ -76,12 +81,13 @@ impl Dao {
         Ok(res)
     }
 
-    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<Vec<Column>> {
+    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<TableSchema> {
         let mut conn = self.pool.acquire().await?;
-        let res = sqlx::query_as::<_, Column>("pragma table_info(?)")
-            .bind(table_name.as_ref())
+        let query = format!("pragma table_info({})", table_name.as_ref());
+        let cols = sqlx::query_as::<_, Column>(&query)
             .fetch_all(&mut *conn)
             .await?;
-        Ok(res)
+        let schema = TableSchema { cols };
+        Ok(schema)
     }
 }
