@@ -10,7 +10,11 @@ use ratatui::{
     style::{Color, Modifier, Style},
     widgets::{Block, Borders, Cell, List, ListItem, Row, Table},
 };
-use std::{io::Stdout, time::Duration};
+use std::{
+    io::Stdout,
+    time::{Duration, Instant},
+};
+use tracing::{debug, instrument, trace};
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 
@@ -51,6 +55,7 @@ impl App {
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
+        let start = Instant::now();
         let size = term.size()?;
         term.draw(move |frame| {
             let chunks = Layout::default()
@@ -136,12 +141,15 @@ impl App {
                 frame.render_stateful_widget(table, chunks[1], state);
             }
         })?;
+        let elapsed = start.elapsed();
+        trace!(?elapsed, "Draw");
         Ok(())
     }
 
     pub fn tick(&mut self) -> Result<Tick> {
         if event::poll(Duration::from_millis(250)).context("event poll failed")? {
             if let Event::Key(key) = event::read().context("event read failed")? {
+                let start = Instant::now();
                 if Self::should_quit(key) {
                     return Ok(Tick::Quit);
                 }
@@ -204,6 +212,8 @@ impl App {
                         _ => {}
                     },
                 }
+                let elapsed = start.elapsed();
+                trace!(?elapsed, "Tick");
             }
         }
         Ok(Tick::Continue)

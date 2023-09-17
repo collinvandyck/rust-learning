@@ -13,8 +13,10 @@ use std::{
     io::{self, Stdout},
     process,
 };
+use tracing::{debug, error, info};
+use tracing_subscriber::{filter::Directive, fmt::format::FmtSpan, EnvFilter};
 
-#[derive(clap::Parser)]
+#[derive(clap::Parser, Debug)]
 struct Args {
     #[arg(long, env, default_value = "rql.log")]
     log: String,
@@ -36,9 +38,16 @@ fn main() {
 fn init_tracing(args: &Args) -> Result<()> {
     let log_file = args.log.clone();
     let log_file = std::fs::File::create(&log_file)?;
+    let mut filter = EnvFilter::default();
+    for directive in &["rql=debug", "main=debug", "error"] {
+        let directive: Directive = directive.parse()?;
+        filter = filter.add_directive(directive);
+    }
     tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .with_writer(log_file)
+        .with_level(true)
+        .with_target(true)
+        .with_env_filter(filter)
         .init();
     Ok(())
 }
@@ -52,7 +61,7 @@ fn setup_and_run(args: &Args) -> Result<()> {
 }
 
 fn run(args: &Args, term: &mut Term) -> Result<()> {
-    tracing::error!("Running");
+    info!(?args, "Running");
     let db: DbType = DbType::Path(args.db_path.as_str());
     let mut app = App::new(db)?;
     loop {
