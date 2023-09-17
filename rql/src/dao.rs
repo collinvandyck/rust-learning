@@ -33,6 +33,11 @@ impl BlockingDao {
             .rt
             .block_on(self.inner.dao.table_schema(table_name))
     }
+    pub fn records<P: AsRef<str>>(&self, table_name: P, schema: &TableSchema) -> Result<Records> {
+        self.inner
+            .rt
+            .block_on(self.inner.dao.records(table_name, schema))
+    }
 }
 
 #[derive(Clone)]
