@@ -255,6 +255,7 @@ impl Dao {
         Ok(records)
     }
 
+    #[cfg(test)]
     async fn execute(&self, sql: &'static str) -> Result<()> {
         let mut conn = self.pool.acquire().await?;
         sqlx::query(sql).execute(&mut *conn).await?;
