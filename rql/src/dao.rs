@@ -1,9 +1,8 @@
 #![allow(dead_code, unused)]
 
-use std::sync::Arc;
-
-use anyhow::Result;
+use anyhow::{Context, Result};
 use sqlx::{Pool, Sqlite, SqlitePool};
+use std::sync::Arc;
 use tokio::runtime::Runtime;
 
 #[derive(Clone)]
@@ -55,7 +54,10 @@ struct TableSchema {
 
 impl Dao {
     pub async fn new<P: AsRef<str>>(path: P) -> Result<Self> {
-        let pool = SqlitePool::connect(path.as_ref()).await?;
+        let path = path.as_ref();
+        let pool = SqlitePool::connect(path)
+            .await
+            .context(format!(r#"could not open "{path}""#))?;
         Ok(Self { pool })
     }
 

@@ -1,6 +1,4 @@
-#![allow(dead_code, unused)]
-
-use std::{char, io::Stdout, sync::mpsc, time::Duration};
+use std::{io::Stdout, time::Duration};
 
 use crate::dao::BlockingDao;
 use anyhow::{Context, Result};
@@ -16,19 +14,12 @@ pub enum Tick {
 
 pub struct App {
     dao: BlockingDao,
-    kill_rx: mpsc::Receiver<()>,
 }
 
 impl App {
     pub fn new<P: AsRef<str>>(path: P) -> Result<Self> {
-        let (tx, rx) = mpsc::sync_channel(1024);
-        ctrlc::set_handler(move || {
-            // catch kills
-            panic!("kill");
-            tx.send(()).expect("could not send kill signal");
-        })?;
         let dao = BlockingDao::new(path)?;
-        Ok(Self { dao, kill_rx: rx })
+        Ok(Self { dao })
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
@@ -41,15 +32,9 @@ impl App {
     }
 
     pub fn tick(&mut self) -> Result<Tick> {
-        if let Ok(_) = self.kill_rx.try_recv() {
-            return Ok(Tick::Quit);
-        }
         if event::poll(Duration::from_millis(250)).context("event poll failed")? {
             if let Event::Key(key) = event::read().context("event read failed")? {
                 if KeyCode::Char('c') == key.code && key.modifiers.contains(KeyModifiers::CONTROL) {
-                    return Ok(Tick::Quit);
-                }
-                if KeyCode::Char(0x03 as char) == key.code {
                     return Ok(Tick::Quit);
                 }
                 if KeyCode::Char('q') == key.code {
