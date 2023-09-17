@@ -14,11 +14,11 @@ struct BlockingInner {
 }
 
 impl BlockingDao {
-    pub fn new<P: AsRef<str>>(path: P) -> Result<Self> {
+    pub fn new(db: DB) -> Result<Self> {
         let rt = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()?;
-        let dao = rt.block_on(Dao::new(path))?;
+        let dao = rt.block_on(Dao::new(db))?;
         let inner = BlockingInner { dao, rt };
         let inner = inner.into();
         Ok(Self { inner })
@@ -55,12 +55,45 @@ pub struct Column {
     pk: bool,
 }
 
+/// A row in the table
+pub struct Record {}
+
+pub struct Field {
+    name: String,
+}
+
+pub struct Records {}
+
+pub enum DB<'a> {
+    Path(&'a str),
+    Memory,
+}
+
+impl<'a> DB<'a> {
+    async fn connect(&'a self) -> Result<Pool<Sqlite>> {
+        match self {
+            Self::Path(path) => {
+                let path = path.as_ref();
+                SqlitePool::connect(path)
+                    .await
+                    .context(format!(r#"could not open "{path}""#))
+            }
+            Self::Memory => SqlitePool::connect(":memory:")
+                .await
+                .context("could not connect to memory db"),
+        }
+    }
+}
+
+impl<'a> From<&'a dyn AsRef<str>> for DB<'a> {
+    fn from(value: &'a dyn AsRef<str>) -> Self {
+        Self::Path(value.as_ref())
+    }
+}
+
 impl Dao {
-    pub async fn new<P: AsRef<str>>(path: P) -> Result<Self> {
-        let path = path.as_ref();
-        let pool = SqlitePool::connect(path)
-            .await
-            .context(format!(r#"could not open "{path}""#))?;
+    pub async fn new(db: DB<'_>) -> Result<Self> {
+        let pool = db.connect().await?;
         Ok(Self { pool })
     }
 
@@ -90,4 +123,11 @@ impl Dao {
         let schema = TableSchema { cols };
         Ok(schema)
     }
+
+    async fn records<P: AsRef<str>>(&self, table_name: P, schema: &TableSchema) -> Result<Records> {
+        todo!()
+    }
 }
+
+#[cfg(test)]
+mod tests {}

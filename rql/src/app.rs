@@ -1,6 +1,10 @@
 use std::{io::Stdout, time::Duration};
 
-use crate::{dao::BlockingDao, table::Table, tables::Tables};
+use crate::{
+    dao::{BlockingDao, DB},
+    table::Table,
+    tables::Tables,
+};
 use anyhow::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
@@ -23,8 +27,8 @@ pub struct App {
 }
 
 impl App {
-    pub fn new<P: AsRef<str>>(path: P) -> Result<Self> {
-        let dao = BlockingDao::new(path)?;
+    pub fn new(db: DB) -> Result<Self> {
+        let dao = BlockingDao::new(db)?;
         let tables = Tables::new(dao.tables()?);
         let mut table = None;
         if let Some(name) = tables.selected() {

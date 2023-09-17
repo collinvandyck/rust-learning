@@ -5,7 +5,10 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::prelude::*;
-use rql::app::{App, Tick};
+use rql::{
+    app::{App, Tick},
+    dao::DB,
+};
 use std::{
     io::{self, Stdout},
     process,
@@ -35,7 +38,8 @@ fn setup_and_run() -> Result<()> {
 }
 
 fn run(args: &Args, term: &mut Term) -> Result<()> {
-    let mut app = App::new(&args.db_path)?;
+    let db: DB = DB::Path(args.db_path.as_str());
+    let mut app = App::new(db)?;
     loop {
         app.draw(term)?;
         match app.tick()? {
