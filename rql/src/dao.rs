@@ -96,18 +96,19 @@ pub enum FieldType {
 
 impl FieldType {
     fn decode(&self, row: &SqliteRow, idx: usize) -> Result<FieldValue> {
-        match self {
-            FieldType::Null => Ok(FieldValue::Null),
-            FieldType::Text => Ok(FieldValue::Text(self.decode_string(row, idx)?)),
-            FieldType::Real => Ok(FieldValue::Real(self.decode_f64(row, idx)?)),
-            FieldType::Blob => Ok(FieldValue::Blob(self.decode_bytes(row, idx)?)),
-            FieldType::Integer => Ok(FieldValue::Integer(self.decode_i64(row, idx)?)),
-            FieldType::Numeric => Ok(FieldValue::Numeric(self.decode_f64(row, idx)?)),
-            FieldType::Boolean => Ok(FieldValue::Boolean(self.decode_bool(row, idx)?)),
-            FieldType::Date => Ok(FieldValue::Date(self.decode_instant(row, idx)?)),
-            FieldType::Time => Ok(FieldValue::Time(self.decode_instant(row, idx)?)),
-            FieldType::DateTime => Ok(FieldValue::DateTime(self.decode_instant(row, idx)?)),
-        }
+        let val = match self {
+            FieldType::Null => FieldValue::Null,
+            FieldType::Text => FieldValue::Text(self.decode_string(row, idx)?),
+            FieldType::Real => FieldValue::Real(self.decode_f64(row, idx)?),
+            FieldType::Blob => FieldValue::Blob(self.decode_bytes(row, idx)?),
+            FieldType::Integer => FieldValue::Integer(self.decode_i64(row, idx)?),
+            FieldType::Numeric => FieldValue::Numeric(self.decode_f64(row, idx)?),
+            FieldType::Boolean => FieldValue::Boolean(self.decode_bool(row, idx)?),
+            FieldType::Date => FieldValue::Date(self.decode_instant(row, idx)?),
+            FieldType::Time => FieldValue::Time(self.decode_instant(row, idx)?),
+            FieldType::DateTime => FieldValue::DateTime(self.decode_instant(row, idx)?),
+        };
+        Ok(val)
     }
 
     fn decode_instant(&self, row: &SqliteRow, idx: usize) -> Result<Instant> {
@@ -262,6 +263,7 @@ mod tests {
             .await?;
         let records = dao.records("foo", &schema).await?;
         assert_eq!(records.len(), 1);
+        assert_eq!(records[0].fields.len(), 1);
         Ok(())
     }
 }
