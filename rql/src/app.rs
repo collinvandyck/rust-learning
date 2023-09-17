@@ -1,14 +1,14 @@
 use std::{io::Stdout, time::Duration};
 
 use crate::{
-    dao::{BlockingDao, DB},
+    dao::{BlockingDao, Field, Record, DB},
     table::Table,
     tables::Tables,
 };
 use anyhow::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
-    prelude::CrosstermBackend,
+    prelude::{Constraint, CrosstermBackend, Direction, Layout},
     style::{Color, Modifier, Style},
     widgets::{Block, Borders, List, ListItem},
 };
@@ -39,6 +39,10 @@ impl App {
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
         term.draw(move |frame| {
+            let chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+                .split(frame.size());
             let items: Vec<ListItem> = self
                 .tables
                 .names
@@ -54,7 +58,26 @@ impl App {
                         .add_modifier(Modifier::BOLD),
                 );
             let state = &mut self.tables.state;
-            frame.render_stateful_widget(list, frame.size(), state);
+            frame.render_stateful_widget(list, chunks[0], state);
+            if let Some(table) = &self.table {
+                let max = frame.size().height as usize;
+                let items: Vec<ListItem> = table
+                    .records
+                    .iter()
+                    .take(max)
+                    .map(|record| {
+                        record
+                            .fields
+                            .iter()
+                            .map(|field| format!("{:?}", field.val))
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    })
+                    .map(|s| ListItem::new(s))
+                    .collect();
+                let list = List::new(items);
+                frame.render_widget(list, chunks[1]);
+            }
         })?;
         Ok(())
     }

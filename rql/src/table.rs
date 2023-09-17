@@ -7,7 +7,7 @@ pub struct Table {
     dao: BlockingDao,
     name: String,
     schema: TableSchema,
-    records: Records,
+    pub records: Records,
 }
 
 impl Table {

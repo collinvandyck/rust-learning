@@ -63,13 +63,13 @@ pub struct TableColumn {
 /// A row in the table
 #[derive(Default)]
 pub struct Record {
-    fields: Vec<Field>,
+    pub fields: Vec<Field>,
 }
 
 pub struct Field {
-    name: String,
-    typ: FieldType,
-    val: FieldValue,
+    pub name: String,
+    pub typ: FieldType,
+    pub val: FieldValue,
 }
 
 #[derive(Debug, PartialEq)]
@@ -150,9 +150,10 @@ impl From<&str> for FieldType {
             return FieldType::Text;
         }
         match value {
-            "string" | "text" => FieldType::Text,
-            "integer" => FieldType::Integer,
+            "string" | "text" | "timestamp" => FieldType::Text,
+            "integer" | "bigint" => FieldType::Integer,
             "blob" => FieldType::Blob,
+            "boolean" => FieldType::Boolean,
 
             "NULL" => FieldType::Null,
             "TEXT" => FieldType::Text,
