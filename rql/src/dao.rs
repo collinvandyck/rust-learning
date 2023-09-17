@@ -33,10 +33,15 @@ impl BlockingDao {
             .rt
             .block_on(self.inner.dao.table_schema(table_name))
     }
+
     pub fn records<P: AsRef<str>>(&self, table_name: P, schema: &TableSchema) -> Result<Records> {
         self.inner
             .rt
             .block_on(self.inner.dao.records(table_name, schema))
+    }
+
+    pub fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
+        self.inner.rt.block_on(self.inner.dao.count(table_name))
     }
 }
 
@@ -254,9 +259,22 @@ impl Dao {
         Ok(schema)
     }
 
+    async fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
+        #[derive(sqlx::FromRow)]
+        struct Record {
+            count: i64,
+        }
+        let mut conn = self.pool.acquire().await?;
+        let query = format!("select count(*) as count from {}", table_name.as_ref());
+        let record = sqlx::query_as::<_, Record>(&query)
+            .fetch_one(&mut *conn)
+            .await?;
+        Ok(record.count as u64)
+    }
+
     async fn records<P: AsRef<str>>(&self, table_name: P, schema: &TableSchema) -> Result<Records> {
         let mut conn = self.pool.acquire().await?;
-        let query = format!("select * from {} limit 100", table_name.as_ref());
+        let query = format!("select * from {} limit 20", table_name.as_ref());
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = Records::default();
         for row in rows {

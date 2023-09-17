@@ -10,10 +10,12 @@ pub struct DbTable {
     pub schema: TableSchema,
     pub records: Records,
     pub state: TableState,
+    pub count: u64,
 }
 
 impl DbTable {
     pub fn new(dao: BlockingDao, name: String) -> Result<Self> {
+        let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
         let records = dao.records(&name, &schema)?;
         let state = TableState::default();
@@ -23,6 +25,7 @@ impl DbTable {
             schema,
             records,
             state,
+            count,
         };
         Ok(table)
     }
@@ -32,6 +35,9 @@ impl DbTable {
             .state
             .selected()
             .map(|i| {
+                if self.records.is_empty() {
+                    return 0;
+                }
                 if i >= self.records.len() - 1 {
                     0
                 } else {
@@ -47,12 +53,11 @@ impl DbTable {
             .state
             .selected()
             .map(|i| {
+                if self.records.is_empty() {
+                    return 0;
+                }
                 if i == 0 {
-                    if self.records.is_empty() {
-                        0
-                    } else {
-                        self.records.len() - 1
-                    }
+                    self.records.len() - 1
                 } else {
                     i - 1
                 }

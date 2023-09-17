@@ -20,7 +20,7 @@ pub enum Tick {
     Continue,
 }
 
-#[derive(Default)]
+#[derive(Default, PartialEq)]
 enum Focus {
     #[default]
     Tables,
@@ -71,11 +71,15 @@ impl App {
                 .map(|n| n.clone())
                 .map(|n| ListItem::new(n).style(Style::default().fg(Color::Cyan)))
                 .collect();
+            let mut title_style = Style::default();
+            if self.focus == Focus::Tables {
+                title_style = title_style.fg(Color::LightGreen);
+            }
             let list = List::new(items)
                 .block(
                     Block::default()
                         .title("[ tables ]")
-                        .title_style(Style::default().fg(Color::LightGreen))
+                        .title_style(title_style)
                         .borders(Borders::ALL),
                 )
                 .highlight_style(
@@ -106,7 +110,7 @@ impl App {
                             .iter()
                             .map(|field| format!("{}", field.val))
                             .map(|s| Cell::from(s).style(Style::default()));
-                        Row::new(cells)
+                        Row::new(cells).height(1)
                     });
                 let num_cols = selected_table.schema.cols.len();
                 let pct = (100.0 / num_cols as f64) as u16;
@@ -116,12 +120,19 @@ impl App {
                     .iter()
                     .map(|_| Constraint::Percentage(pct))
                     .collect::<Vec<_>>();
+                let mut title_style = Style::default();
+                if self.focus == Focus::Table {
+                    title_style = title_style.fg(Color::LightGreen);
+                }
                 let table: Table = Table::new(rows)
                     .header(header)
                     .block(
                         Block::default()
-                            .title(format!("[ Table: {} ]", selected_table.name))
-                            .title_style(Style::default().fg(Color::LightGreen))
+                            .title(format!(
+                                "[ Table: {} ({} records) ]",
+                                selected_table.name, selected_table.count
+                            ))
+                            .title_style(title_style)
                             .borders(Borders::ALL),
                     )
                     .highlight_style(Style::default().fg(Color::LightGreen))
@@ -142,8 +153,11 @@ impl App {
                 }
                 match self.focus {
                     Focus::Tables => match key.code {
-                        KeyCode::Char('j') | KeyCode::Char('k') => {
-                            if key.code == KeyCode::Char('j') {
+                        KeyCode::Char('j')
+                        | KeyCode::Char('k')
+                        | KeyCode::Char('J')
+                        | KeyCode::Char('K') => {
+                            if key.code == KeyCode::Char('j') || key.code == KeyCode::Char('J') {
                                 self.tables.next();
                             } else {
                                 self.tables.previous();
@@ -152,15 +166,32 @@ impl App {
                                 self.table.replace(DbTable::new(self.dao.clone(), name)?);
                             }
                         }
-                        KeyCode::Char('l') => {
+                        KeyCode::Char('l') | KeyCode::Enter | KeyCode::Char('o') => {
                             if let Some(table) = &mut self.table {
-                                self.focus = Focus::Table;
-                                table.select_first();
+                                if table.count > 0 {
+                                    self.focus = Focus::Table;
+                                    table.select_first();
+                                }
                             }
+                        }
+                        KeyCode::Char('q') => {
+                            return Ok(Tick::Quit);
                         }
                         _ => {}
                     },
                     Focus::Table => match key.code {
+                        KeyCode::Char('J') | KeyCode::Char('K') => {
+                            if key.code == KeyCode::Char('J') {
+                                self.tables.next();
+                            } else {
+                                self.tables.previous();
+                            }
+                            if let Some(name) = self.tables.selected() {
+                                let mut table = DbTable::new(self.dao.clone(), name)?;
+                                table.select_first();
+                                self.table.replace(table);
+                            }
+                        }
                         KeyCode::Char('j') | KeyCode::Char('k') => {
                             if let Some(table) = &mut self.table {
                                 if key.code == KeyCode::Char('j') {
@@ -170,7 +201,7 @@ impl App {
                                 }
                             }
                         }
-                        KeyCode::Char('h') => {
+                        KeyCode::Char('h') | KeyCode::Char('q') => {
                             self.focus = Focus::Tables;
                             if let Some(table) = &mut self.table {
                                 table.unselect();
@@ -187,7 +218,6 @@ impl App {
     fn should_quit(key: KeyEvent) -> bool {
         match key.code {
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => return true,
-            KeyCode::Char('q') => return true,
             _ => false,
         }
     }
