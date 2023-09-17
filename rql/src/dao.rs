@@ -257,6 +257,10 @@ mod tests {
         dao.execute("create table foo (name string)").await?;
         let schema = dao.table_schema("foo").await?;
         let records = dao.records("foo", &schema).await?;
+        assert_eq!(records.len(), 0);
+        dao.execute("insert into foo (name) values ('collin')")
+            .await?;
+        let records = dao.records("foo", &schema).await?;
         assert_eq!(records.len(), 1);
         Ok(())
     }
