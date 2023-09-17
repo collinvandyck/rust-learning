@@ -5,7 +5,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::prelude::*;
-use ratatui_1::app::{App, Tick};
+use rql::app::{App, Tick};
 use std::{
     io::{self, Stdout},
     process,
@@ -13,9 +13,6 @@ use std::{
 
 #[derive(clap::Parser)]
 struct Args {
-    #[arg(long)]
-    table: bool,
-
     #[arg(env)]
     db_path: String,
 }

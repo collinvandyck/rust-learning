@@ -1,15 +1,18 @@
 use std::{io::Stdout, time::Duration};
 
-use crate::dao::BlockingDao;
+use crate::{dao::BlockingDao, widgets::Tables};
 use anyhow::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
-use ratatui::{prelude::CrosstermBackend, widgets::Paragraph};
+use ratatui::{
+    prelude::CrosstermBackend,
+    widgets::{List, ListItem},
+};
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 
 pub enum Tick {
     Quit,
-    Nothing,
+    Continue,
 }
 
 pub struct App {
@@ -23,10 +26,16 @@ impl App {
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
-        let tables = self.dao.tables()?.join("\n");
+        let mut tables = Tables::new(self.dao.tables()?);
         term.draw(move |frame| {
-            let greeting = Paragraph::new(format!("{tables}"));
-            frame.render_widget(greeting, frame.size());
+            let items: Vec<ListItem> = tables
+                .names
+                .iter()
+                .map(|n| ListItem::new(n.as_str()))
+                .collect();
+            let list = List::new(items);
+            let state = &mut tables.state;
+            frame.render_stateful_widget(list, frame.size(), state);
         })?;
         Ok(())
     }
@@ -42,6 +51,6 @@ impl App {
                 }
             }
         }
-        Ok(Tick::Nothing)
+        Ok(Tick::Continue)
     }
 }
