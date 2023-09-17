@@ -1,4 +1,4 @@
-use std::{io::Stdout, time::Duration};
+use std::{default, io::Stdout, time::Duration};
 
 use crate::{
     dao::{BlockingDao, DbType},
@@ -20,10 +20,18 @@ pub enum Tick {
     Continue,
 }
 
+#[derive(Default)]
+enum Focus {
+    #[default]
+    Tables,
+    Table,
+}
+
 pub struct App {
     dao: BlockingDao,       // db handle
     tables: DbTables,       // the list of tables
     table: Option<DbTable>, // the selected table
+    focus: Focus,
 }
 
 impl App {
@@ -34,7 +42,13 @@ impl App {
         if let Some(name) = tables.selected() {
             table.replace(DbTable::new(dao.clone(), name)?);
         }
-        Ok(Self { dao, tables, table })
+        let focus = Focus::default();
+        Ok(Self {
+            dao,
+            tables,
+            table,
+            focus,
+        })
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
@@ -111,7 +125,7 @@ impl App {
                             .borders(Borders::ALL),
                     )
                     .highlight_style(Style::default().fg(Color::LightGreen))
-                    .highlight_symbol(">>")
+                    .highlight_symbol("")
                     .widths(&widths);
                 let state = &mut selected_table.state;
                 frame.render_stateful_widget(table, chunks[1], state);
@@ -126,18 +140,44 @@ impl App {
                 if Self::should_quit(key) {
                     return Ok(Tick::Quit);
                 }
-                match key.code {
-                    KeyCode::Char('j') | KeyCode::Char('k') => {
-                        if key.code == KeyCode::Char('j') {
-                            self.tables.next();
-                        } else {
-                            self.tables.previous();
+                match self.focus {
+                    Focus::Tables => match key.code {
+                        KeyCode::Char('j') | KeyCode::Char('k') => {
+                            if key.code == KeyCode::Char('j') {
+                                self.tables.next();
+                            } else {
+                                self.tables.previous();
+                            }
+                            if let Some(name) = self.tables.selected() {
+                                self.table.replace(DbTable::new(self.dao.clone(), name)?);
+                            }
                         }
-                        if let Some(name) = self.tables.selected() {
-                            self.table.replace(DbTable::new(self.dao.clone(), name)?);
+                        KeyCode::Char('l') => {
+                            if let Some(table) = &mut self.table {
+                                self.focus = Focus::Table;
+                                table.select_first();
+                            }
                         }
-                    }
-                    _ => {}
+                        _ => {}
+                    },
+                    Focus::Table => match key.code {
+                        KeyCode::Char('j') | KeyCode::Char('k') => {
+                            if let Some(table) = &mut self.table {
+                                if key.code == KeyCode::Char('j') {
+                                    table.next();
+                                } else {
+                                    table.previous();
+                                }
+                            }
+                        }
+                        KeyCode::Char('h') => {
+                            self.focus = Focus::Tables;
+                            if let Some(table) = &mut self.table {
+                                table.unselect();
+                            }
+                        }
+                        _ => {}
+                    },
                 }
             }
         }

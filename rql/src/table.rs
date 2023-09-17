@@ -48,13 +48,24 @@ impl DbTable {
             .selected()
             .map(|i| {
                 if i == 0 {
-                    self.records.len() - 1
+                    if self.records.is_empty() {
+                        0
+                    } else {
+                        self.records.len() - 1
+                    }
                 } else {
                     i - 1
                 }
             })
             .unwrap_or(0);
         self.state.select(Some(i));
+    }
+
+    pub fn select_first(&mut self) {
+        if self.records.is_empty() {
+            return;
+        }
+        self.state.select(Some(0));
     }
 
     pub fn selected(&self) -> Option<&Record> {
