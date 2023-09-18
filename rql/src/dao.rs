@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool};
 use std::{fmt::Display, ops::Deref, sync::Arc, time::Instant};
 use tokio::runtime::Runtime;
+use tracing::warn;
 
 #[derive(Clone)]
 pub struct BlockingDao {
@@ -140,7 +141,8 @@ impl FieldType {
     }
 
     fn decode_instant(&self, row: &SqliteRow, idx: usize) -> Result<Option<Instant>> {
-        todo!()
+        warn!("decode instant not implemented yet");
+        Ok(None)
     }
 
     fn decode_bool(&self, row: &SqliteRow, idx: usize) -> Result<Option<bool>> {
@@ -173,9 +175,12 @@ impl From<&str> for FieldType {
         }
         match value {
             "string" | "text" | "timestamp" => FieldType::Text,
-            "integer" | "bigint" => FieldType::Integer,
+            "int" | "integer" | "bigint" | "uint64" => FieldType::Integer,
             "blob" => FieldType::Blob,
-            "boolean" => FieldType::Boolean,
+            "boolean" | "bool" => FieldType::Boolean,
+            "datetime" => FieldType::DateTime,
+            "date" => FieldType::Date,
+            "time" => FieldType::Time,
 
             "NULL" => FieldType::Null,
             "TEXT" => FieldType::Text,
