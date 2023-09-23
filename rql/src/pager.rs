@@ -33,6 +33,13 @@ impl<T> Pager<T> {
     fn next(&mut self) {}
 
     fn prev(&mut self) {}
+
+    fn snapshot(&self) -> Snapshot<T> {
+        Snapshot {
+            pager: self,
+            table_state: self.table_state.clone(),
+        }
+    }
 }
 
 struct Snapshot<'a, T> {
@@ -60,15 +67,22 @@ where
     }
 }
 
+fn table_state(val: Option<usize>) -> TableState {
+    let mut state = TableState::default();
+    state.select(val);
+    state
+}
 mod tests {
     use super::*;
     #[test]
     fn test_pager() {
         let nums: Vec<_> = (0..10).collect();
         let mut p = Pager::from(nums).viewport_rows(5);
-        assert_eq!(p.pos, Some(0));
-        assert_eq!(p.viewport_rows, 5);
-        assert_eq!(p.top, 0);
+        let s = p.snapshot();
+        assert_eq!(s.pager.pos, Some(0));
+        assert_eq!(s.pager.viewport_rows, 5);
+        assert_eq!(s.pager.top, 0);
+        assert_eq!(s.table_state, table_state(None));
 
         p.next();
     }
