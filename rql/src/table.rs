@@ -14,16 +14,25 @@ impl DbTable {
         info!(name, "Building db table");
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
-        let records = dao.records(&schema, GetRecords::new(&name))?;
+        let records = Records::default();
         let state = TableState::default();
-        let table = Self {
+        let mut table = Self {
             dao,
             schema,
             records,
             state,
             count,
         };
+        table.fetch()?;
         Ok(table)
+    }
+
+    fn fetch(&mut self) -> Result<()> {
+        let records = self
+            .dao
+            .records(&self.schema, GetRecords::new(&self.schema.name))?;
+        self.records = records;
+        Ok(())
     }
 
     pub fn records<'a>(&'a self) -> &[Record] {
