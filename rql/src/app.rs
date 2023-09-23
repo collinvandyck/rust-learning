@@ -79,11 +79,15 @@ impl App {
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, chunks[0], state);
             if let Some(selected_table) = &mut self.table {
-                let header_cells = selected_table
+                let header_names = selected_table
                     .schema
                     .cols
                     .iter()
-                    .map(|col| Cell::from(col.name().clone()).style(Style::default()));
+                    .map(|col| col.name().to_string())
+                    .collect::<Vec<_>>();
+                let header_cells = header_names
+                    .iter()
+                    .map(|name| Cell::from(name.clone()).style(Style::default()));
                 let header = Row::new(header_cells)
                     .style(Style::default())
                     .height(1)
@@ -100,9 +104,11 @@ impl App {
                     .schema
                     .cols
                     .iter()
-                    .map(|c| {
-                        //
-                        let len = selected_table.max_len(c, 10);
+                    .enumerate()
+                    .map(|(idx, col)| {
+                        let header_len = header_names[idx].len();
+                        let col_len = selected_table.max_len(col, header_len);
+                        let len = std::cmp::max(col_len, header_len);
                         Constraint::Min(len.try_into().unwrap())
                     })
                     .collect::<Vec<_>>();
@@ -135,7 +141,7 @@ impl App {
     }
 
     pub fn tick(&mut self) -> Result<Tick> {
-        let poll_time = Duration::from_millis(1000 * 60);
+        let poll_time = Duration::from_secs(24 * 3600);
         if event::poll(poll_time).context("event poll failed")? {
             if let Event::Key(key) = event::read().context("event read failed")? {
                 let start = Instant::now();
