@@ -1,3 +1,5 @@
+// https://developerlife.com/2023/02/20/guide-to-nom-parsing/
+//
 use nom::{bytes::complete::take_while_m_n, combinator::map_res, sequence::tuple, IResult};
 
 fn main() {
