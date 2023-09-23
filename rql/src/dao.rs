@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool};
 use std::{fmt::Display, ops::Deref, sync::Arc, time::Instant};
 use tokio::runtime::Runtime;
-use tracing::warn;
+use tracing::{info, warn};
 
 #[derive(Clone)]
 pub struct BlockingDao {
@@ -80,6 +80,7 @@ pub struct Field {
 
 #[derive(Debug, PartialEq)]
 pub enum FieldValue {
+    RowID(i64),
     Null,
     Text(Option<String>),
     Real(Option<f64>),
@@ -269,6 +270,7 @@ impl Dao {
 
     async fn table_schema<P: AsRef<str>>(&self, name: P) -> Result<TableSchema> {
         let name = name.as_ref().to_string();
+        info!(name, "Getting table schema");
         let mut conn = self.pool.acquire().await?;
         let query = format!("pragma table_info({})", &name);
         let cols = sqlx::query_as::<_, TableColumn>(&query)
@@ -293,22 +295,35 @@ impl Dao {
 
     async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Records> {
         let table_name = req.table_name.as_str();
+        info!(table_name, "Fetching records");
         let mut conn = self.pool.acquire().await?;
         let limit = req.limit.map(|v| v.to_string()).unwrap_or_default();
         let offset = req.offset.map(|v| v.to_string()).unwrap_or_default();
-        let query = format!("select * from {} {} {}", table_name, limit, offset);
+        let query = format!("select rowid, * from {} {} {}", table_name, limit, offset);
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = Records::default();
         for row in rows {
             let mut record = Record::default();
-            for column in row.columns() {
-                let name = column.name().to_string();
-                let ord = column.ordinal();
-                let col = &schema.cols[ord];
-                let typ = FieldType::from(col.typ.as_ref());
-                let val = typ.decode(&row, ord)?;
-                let field = Field { name, typ, val };
-                record.fields.push(field);
+            for (cidx, column) in row.columns().into_iter().enumerate() {
+                if cidx == 0 {
+                    // rowid
+                    let name = String::from("rid");
+                    let typ = FieldType::from("integer");
+                    let val = row
+                        .try_get::<Option<i64>, _>(0_usize)?
+                        .expect("could not get rowid");
+                    let val = FieldValue::RowID(val);
+                    let field = Field { name, typ, val };
+                    record.fields.push(field);
+                } else {
+                    let name = column.name().to_string();
+                    let ord = column.ordinal();
+                    let col = &schema.cols[ord - 1]; // account for rowid
+                    let typ = FieldType::from(col.typ.as_ref());
+                    let val = typ.decode(&row, ord)?;
+                    let field = Field { name, typ, val };
+                    record.fields.push(field);
+                }
             }
             records.records.push(record);
         }
