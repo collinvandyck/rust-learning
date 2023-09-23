@@ -41,7 +41,7 @@ impl<T> Pager<T> {
             // bump forward
             self.pos += 1;
             if self.pos - self.top > self.viewport_rows {
-                self.pos = self.top - self.viewport_rows;
+                self.top = self.pos - self.viewport_rows;
             }
         }
     }
@@ -85,6 +85,17 @@ mod tests {
         assert_eq!(p.top_pos(), (0, 0));
 
         p.next();
+        assert_eq!(p.top_pos(), (0, 1));
+        p.next();
+        assert_eq!(p.top_pos(), (0, 2));
+        p.next();
+        assert_eq!(p.top_pos(), (0, 3));
+        p.next();
+        assert_eq!(p.top_pos(), (0, 4));
+        p.next();
+        assert_eq!(p.top_pos(), (0, 5));
+        p.next();
+        assert_eq!(p.top_pos(), (1, 6));
     }
 
     #[test]
