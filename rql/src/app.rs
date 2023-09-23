@@ -85,21 +85,30 @@ impl App {
                     .iter()
                     .map(|col| col.name().to_string())
                     .collect::<Vec<_>>();
+                let header_style = Style::default().fg(Color::LightBlue).bold();
                 let header_cells = header_names
                     .iter()
-                    .map(|name| Cell::from(name.clone()).style(Style::default()));
+                    .map(|name| Cell::from(name.clone()).style(header_style));
                 let header = Row::new(header_cells)
                     .style(Style::default())
                     .height(1)
-                    .bottom_margin(1);
-                let rows = selected_table.records().iter().map(|record| {
-                    let cells = record
-                        .fields
-                        .iter()
-                        .map(|field| format!("{}", field.val))
-                        .map(|s| Cell::from(s).style(Style::default()));
-                    Row::new(cells).height(1)
-                });
+                    .bottom_margin(0);
+                let rows = selected_table
+                    .records()
+                    .iter()
+                    .enumerate()
+                    .map(|(row_idx, record)| {
+                        let mut row_style = Style::default();
+                        if row_idx % 2 == 0 {
+                            row_style = row_style.bg(Color::Indexed(234));
+                        }
+                        let cells = record
+                            .fields
+                            .iter()
+                            .map(|field| format!("{}", field.val))
+                            .map(|s| Cell::from(s).style(row_style));
+                        Row::new(cells).height(1)
+                    });
                 let widths = selected_table
                     .schema
                     .cols
@@ -107,9 +116,9 @@ impl App {
                     .enumerate()
                     .map(|(idx, col)| {
                         let header_len = header_names[idx].len();
-                        let col_len = selected_table.max_len(col, header_len);
+                        let col_len = selected_table.max_len(col, 4);
                         let len = std::cmp::max(col_len, header_len);
-                        Constraint::Min(len.try_into().unwrap())
+                        Constraint::Max(len.try_into().unwrap())
                     })
                     .collect::<Vec<_>>();
                 let mut title_style = Style::default();
