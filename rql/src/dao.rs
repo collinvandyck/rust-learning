@@ -400,13 +400,6 @@ mod tests {
                 FieldValue::Integer(Some(46)),
             ]
         );
-        assert_eq!(records[0].fields.len(), 3); // row id is first field
-        assert_eq!(records[0].fields[0].val, FieldValue::RowID(1),);
-        assert_eq!(
-            records[0].fields[1].val,
-            FieldValue::Text(Some("collin".to_string()))
-        );
-        assert_eq!(records[0].fields[2].val, FieldValue::Integer(Some(46)),);
         Ok(())
     }
 }
