@@ -88,7 +88,7 @@ impl App {
                     .style(Style::default())
                     .height(1)
                     .bottom_margin(1);
-                let rows = selected_table.records.iter().map(|record| {
+                let rows = selected_table.records().iter().map(|record| {
                     let cells = record
                         .fields
                         .iter()

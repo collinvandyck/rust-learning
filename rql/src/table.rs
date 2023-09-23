@@ -8,7 +8,7 @@ use crate::dao::{BlockingDao, GetRecords, Record, Records, TableSchema};
 pub struct DbTable {
     dao: BlockingDao,
     pub schema: TableSchema,
-    pub records: Records,
+    records: Records,
     pub state: TableState,
     pub count: u64,
 }
@@ -28,6 +28,10 @@ impl DbTable {
             count,
         };
         Ok(table)
+    }
+
+    pub fn records<'a>(&'a self) -> &[Record] {
+        return &self.records;
     }
 
     pub fn name<'a>(&'a self) -> &'a str {
