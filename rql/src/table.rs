@@ -35,6 +35,26 @@ impl DbTable {
         return &self.schema.name;
     }
 
+    pub fn next(&mut self) {
+        self.incr(1);
+    }
+
+    pub fn previous(&mut self) {
+        self.incr(-1);
+    }
+
+    pub fn select_first(&mut self) {
+        self.state.select(if self.records.is_empty() {
+            None
+        } else {
+            Some(0)
+        });
+    }
+
+    pub fn unselect(&mut self) {
+        self.state.select(None);
+    }
+
     fn incr(&mut self, amt: i64) {
         if self.records.is_empty() {
             self.state.select(Some(0));
@@ -55,24 +75,5 @@ impl DbTable {
             selected as usize
         };
         self.state.select(Some(selected));
-    }
-
-    pub fn next(&mut self) {
-        self.incr(1);
-    }
-
-    pub fn previous(&mut self) {
-        self.incr(-1);
-    }
-
-    pub fn select_first(&mut self) {
-        if self.records.is_empty() {
-            return;
-        }
-        self.state.select(Some(0));
-    }
-
-    pub fn unselect(&mut self) {
-        self.state.select(None);
     }
 }
