@@ -59,10 +59,21 @@ impl DbTable {
     }
 
     pub fn records<'a>(&'a self, count: usize) -> (&[Record], TableState) {
-        info!(?self.state, count, "Records");
-        let recs = &self.records[..count.min(self.records.len())];
-        let state = self.state.clone();
-        (recs, state)
+        let Some(selected) = self.state.selected() else {
+            return (&self.records, TableState::default());
+        };
+        if selected >= count {
+            let start_idx = selected - count + 1;
+            let end_idx = (start_idx + count).min(self.records.len());
+            let recs = &self.records[start_idx..end_idx];
+            let mut state = self.state.clone();
+            state.select(Some(count - 1));
+            (recs, state)
+        } else {
+            let recs = &self.records[..count.min(self.records.len())];
+            let state = self.state.clone();
+            (recs, state)
+        }
     }
 
     pub fn name<'a>(&'a self) -> &'a str {
