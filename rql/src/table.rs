@@ -31,6 +31,11 @@ impl DbTable {
         self.records = self
             .dao
             .records(&self.schema, GetRecords::new(&self.schema.name))?;
+        let Some(fields) = self.records.first().map(|f| &f.fields) else {
+            return Ok(());
+        };
+        let cols = &self.schema.cols;
+        assert_eq!(fields.len(), cols.len());
         Ok(())
     }
 
