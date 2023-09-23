@@ -58,9 +58,11 @@ impl DbTable {
         Ok(())
     }
 
-    pub fn records<'a>(&'a self) -> &[Record] {
-        info!(?self.state, "Records");
-        return &self.records;
+    pub fn records<'a>(&'a self, count: usize) -> (&[Record], TableState) {
+        info!(?self.state, count, "Records");
+        let recs = &self.records[..count.min(self.records.len())];
+        let state = self.state.clone();
+        (recs, state)
     }
 
     pub fn name<'a>(&'a self) -> &'a str {

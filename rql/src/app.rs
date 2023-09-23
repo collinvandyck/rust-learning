@@ -47,7 +47,7 @@ impl App {
                 .direction(Direction::Horizontal)
                 .constraints(
                     [
-                        Constraint::Length(self.tables.max_len() + 3), // padding
+                        Constraint::Length(self.tables.max_len() + 1), // 2 border, 1 padding
                         Constraint::Max(size.width),
                     ]
                     .as_ref(),
@@ -93,22 +93,20 @@ impl App {
                     .style(Style::default())
                     .height(1)
                     .bottom_margin(0);
-                let rows = selected_table
-                    .records()
-                    .iter()
-                    .enumerate()
-                    .map(|(row_idx, record)| {
-                        let mut row_style = Style::default();
-                        if row_idx % 2 == 0 {
-                            row_style = row_style.bg(Color::Indexed(234));
-                        }
-                        let cells = record
-                            .fields
-                            .iter()
-                            .map(|field| format!("{}", field.val))
-                            .map(|s| Cell::from(s).style(row_style));
-                        Row::new(cells).height(1)
-                    });
+                let num_rows = chunks[1].height - 3; // 2 border, 1 headers
+                let (records, mut state) = selected_table.records(num_rows as usize);
+                let rows = records.iter().enumerate().map(|(row_idx, record)| {
+                    let mut row_style = Style::default();
+                    if row_idx % 2 == 0 {
+                        row_style = row_style.bg(Color::Indexed(234));
+                    }
+                    let cells = record
+                        .fields
+                        .iter()
+                        .map(|field| format!("{}", field.val))
+                        .map(|s| Cell::from(s).style(row_style));
+                    Row::new(cells).height(1)
+                });
                 let widths = selected_table
                     .schema
                     .cols
@@ -140,8 +138,7 @@ impl App {
                     .highlight_style(Style::default().fg(Color::LightGreen))
                     .highlight_symbol("")
                     .widths(&widths);
-                let state = &mut selected_table.state;
-                frame.render_stateful_widget(table, chunks[1], state);
+                frame.render_stateful_widget(table, chunks[1], &mut state);
             }
         })?;
         let elapsed = start.elapsed();
