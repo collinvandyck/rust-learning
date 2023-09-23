@@ -27,9 +27,11 @@ where
 mod tests {
     use super::*;
     #[test]
-    fn test_pager() {
-        let p: Pager<i32> = [1, 2, 3, 4, 5].into();
+    fn test_pager_from() {
+        let mut p: Pager<i32> = [1, 2, 3, 4, 5].into();
         assert_eq!(p.top, 0);
         assert_eq!(p.size, 0);
+        p.size(100);
+        assert_eq!(p.size, 100);
     }
 }
