@@ -97,7 +97,7 @@ impl App {
                     .style(Style::default())
                     .height(1)
                     .bottom_margin(0);
-                let (records, mut state) = selected_table.records(table_rows as usize);
+                let (records, mut state) = selected_table.records(table_rows);
                 let rows = records.iter().enumerate().map(|(row_idx, record)| {
                     let mut row_style = Style::default();
                     if row_idx % 2 == 0 {
@@ -149,8 +149,8 @@ impl App {
         Ok(())
     }
 
-    fn table_rows(&mut self) -> u16 {
-        self.dims.height - 3 // 2 border, 1 header
+    fn table_rows(&mut self) -> usize {
+        (self.dims.height - 3) as usize // 2 border, 1 header
     }
 
     pub fn tick(&mut self) -> Result<Tick> {
@@ -203,11 +203,12 @@ impl App {
                             }
                         }
                         KeyCode::Char('j') | KeyCode::Char('k') => {
+                            let table_rows = self.table_rows();
                             if let Some(table) = &mut self.table {
                                 if key.code == KeyCode::Char('j') {
-                                    table.next();
+                                    table.next(table_rows);
                                 } else {
-                                    table.previous();
+                                    table.previous(table_rows);
                                 }
                             }
                         }

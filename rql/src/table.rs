@@ -83,12 +83,12 @@ impl DbTable {
         return &self.schema.name;
     }
 
-    pub fn next(&mut self) {
-        self.incr(1);
+    pub fn next(&mut self, rows: usize) {
+        self.incr(1, rows);
     }
 
-    pub fn previous(&mut self) {
-        self.incr(-1);
+    pub fn previous(&mut self, rows: usize) {
+        self.incr(-1, rows);
     }
 
     pub fn select_first(&mut self) {
@@ -103,7 +103,8 @@ impl DbTable {
         self.state.select(None);
     }
 
-    fn incr(&mut self, amt: i64) {
+    fn incr(&mut self, amt: i64, rows: usize) {
+        debug!(amt, rows, "incr");
         if self.records.is_empty() {
             self.state.select(Some(0));
             return;
