@@ -329,7 +329,7 @@ impl Dao {
         let mut records = Records::default();
         for row in rows {
             let mut record = Record::default();
-            for (_cidx, column) in row.columns().into_iter().enumerate() {
+            for column in row.columns() {
                 let name = column.name().to_string();
                 let ord = column.ordinal();
                 let col = &schema.cols[ord]; // account for rowid
