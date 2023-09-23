@@ -34,11 +34,6 @@ impl<T> Pager<T> {
     fn prev(&mut self) {}
 }
 
-struct Snapshot<'a, T> {
-    pager: &'a Pager<T>,
-    table_state: TableState,
-}
-
 impl<T, I> From<I> for Pager<T>
 where
     I: IntoIterator<Item = T>,
