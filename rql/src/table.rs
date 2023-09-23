@@ -28,10 +28,9 @@ impl DbTable {
     }
 
     fn fetch(&mut self) -> Result<()> {
-        let records = self
+        self.records = self
             .dao
             .records(&self.schema, GetRecords::new(&self.schema.name))?;
-        self.records = records;
         Ok(())
     }
 
