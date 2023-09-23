@@ -1,10 +1,11 @@
 use crate::prelude::*;
 
-struct Pager<T> {
-    items: Vec<T>,
-    top: usize,
-    viewport_rows: usize,
-    pos: usize,
+#[derive(Default)]
+pub struct Pager<T> {
+    pub items: Vec<T>,
+    pub top: usize,
+    pub viewport_rows: usize,
+    pub pos: Option<usize>,
 }
 
 impl<T> Pager<T> {
@@ -14,7 +15,7 @@ impl<T> Pager<T> {
         self
     }
 
-    fn set_viewport_rows(&mut self, rows: usize) {
+    pub fn set_viewport_rows(&mut self, rows: usize) {
         self.viewport_rows = rows;
     }
 
@@ -29,42 +30,52 @@ impl<T> Pager<T> {
         self.items = items;
     }
 
-    fn next(&mut self) {
+    pub fn select(&mut self, pos: usize) {
+        if self.items.is_empty() {
+            return;
+        }
+        if let Some(p) = &mut self.pos {
+            *p = pos;
+        }
+    }
+
+    pub fn unselect(&mut self) {
+        self.pos = None;
+    }
+
+    pub fn next(&mut self) {
+        let Some(pos) = self.pos.as_mut() else { return };
         if self.items.is_empty() {
             return;
         };
-        if self.pos >= self.items.len() - 1 {
+        if *pos >= self.items.len() - 1 {
             // start at the beginning
             self.top = 0;
-            self.pos = 0;
+            *pos = 0;
         } else {
             // bump forward
-            self.pos += 1;
-            if self.pos - self.top >= self.viewport_rows {
-                self.top = self.pos - self.viewport_rows + 1;
+            *pos += 1;
+            if *pos - self.top >= self.viewport_rows {
+                self.top = *pos - self.viewport_rows + 1;
             }
         }
     }
 
-    fn prev(&mut self) {
-        if self.items.is_empty() {
-            return;
-        };
-        if self.pos == 0 {
+    pub fn prev(&mut self) {
+        let Some(pos) = self.pos.as_mut() else { return };
+        if *pos == 0 {
             // start at the end
-            println!("rewind");
-            self.pos = self.items.len() - 1;
-            if self.pos >= self.viewport_rows {
-                self.top = self.pos - self.viewport_rows + 1;
+            *pos = self.items.len() - 1;
+            if *pos >= self.viewport_rows {
+                self.top = *pos - self.viewport_rows + 1;
             } else {
                 self.top = 0;
             }
         } else {
             // bump backward
-            println!("bump back");
-            self.pos -= 1;
-            if self.pos < self.top {
-                self.top = self.pos;
+            *pos -= 1;
+            if *pos < self.top {
+                self.top = *pos;
             }
         }
     }
@@ -80,11 +91,11 @@ impl<T> Pager<T> {
     /// The records we send back will be [2..4]
     /// Our pos returned will need to be 2 (last minus start)
     fn relative_pos(&self) -> usize {
-        self.pos - self.top
+        self.pos.unwrap_or(0) - self.top
     }
 
     fn top_pos_rel(&self) -> (usize, usize, usize) {
-        (self.top, self.pos, self.relative_pos())
+        (self.top, self.pos.unwrap_or(0), self.relative_pos())
     }
 }
 
@@ -96,7 +107,7 @@ where
         let top = 0;
         let viewport_rows = 0;
         let items: Vec<T> = items.into_iter().collect();
-        let pos = 0;
+        let pos = None;
         Self {
             items,
             top,
