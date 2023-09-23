@@ -97,6 +97,7 @@ impl Display for FieldValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use FieldValue::*;
         match self {
+            RowID(val) => write!(f, "{val}"),
             Text(Some(val)) => write!(f, "{val}"),
             Real(Some(val)) => write!(f, "{val}"),
             Blob(Some(val)) => write!(f, "bytes {{ len = {}}}", val.len()),
