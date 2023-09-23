@@ -1,8 +1,4 @@
-use anyhow::Result;
-use ratatui::widgets::{ListState, TableState};
-use tracing::info;
-
-use crate::dao::{BlockingDao, GetRecords, Record, Records, TableSchema};
+use crate::prelude::*;
 
 /// Enables the display of a table's contents
 pub struct DbTable {
@@ -31,6 +27,7 @@ impl DbTable {
     }
 
     pub fn records<'a>(&'a self) -> &[Record] {
+        info!(?self.state, "Records");
         return &self.records;
     }
 
@@ -38,40 +35,34 @@ impl DbTable {
         return &self.schema.name;
     }
 
+    fn incr(&mut self, amt: i64) {
+        if self.records.is_empty() {
+            self.state.select(Some(0));
+            return;
+        }
+        if self.state.selected().is_none() {
+            self.state.select(Some(0));
+            return;
+        }
+        let selected = self.state.selected().unwrap_or_default();
+        let selected: i64 = selected.try_into().unwrap();
+        let selected = selected + amt;
+        let selected = if selected < 0 {
+            self.records.len() - 1
+        } else if selected >= self.records.len().try_into().unwrap() {
+            0
+        } else {
+            selected as usize
+        };
+        self.state.select(Some(selected));
+    }
+
     pub fn next(&mut self) {
-        let i = self
-            .state
-            .selected()
-            .map(|i| {
-                if self.records.is_empty() {
-                    return 0;
-                }
-                if i >= self.records.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            })
-            .unwrap_or(0);
-        self.state.select(Some(i));
+        self.incr(1);
     }
 
     pub fn previous(&mut self) {
-        let i = self
-            .state
-            .selected()
-            .map(|i| {
-                if self.records.is_empty() {
-                    return 0;
-                }
-                if i == 0 {
-                    self.records.len() - 1
-                } else {
-                    i - 1
-                }
-            })
-            .unwrap_or(0);
-        self.state.select(Some(i));
+        self.incr(-1);
     }
 
     pub fn select_first(&mut self) {
@@ -79,13 +70,6 @@ impl DbTable {
             return;
         }
         self.state.select(Some(0));
-    }
-
-    pub fn selected(&self) -> Option<&Record> {
-        self.state
-            .selected()
-            .map(|i| self.records.get(i).map(|s| s.clone()))
-            .flatten()
     }
 
     pub fn unselect(&mut self) {
