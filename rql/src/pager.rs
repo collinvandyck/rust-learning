@@ -50,6 +50,21 @@ impl<T> Pager<T> {
         if self.items.is_empty() {
             return;
         };
+        if self.pos == 0 {
+            // start at the end
+            self.pos = self.items.len() - 1;
+            if self.pos >= self.viewport_rows {
+                self.top = self.pos - self.viewport_rows;
+            } else {
+                self.top = 0;
+            }
+        } else {
+            // bump backward
+            self.pos -= 1;
+            if self.pos < self.top {
+                self.top = self.pos;
+            }
+        }
     }
 
     fn top_pos(&self) -> (usize, usize) {
