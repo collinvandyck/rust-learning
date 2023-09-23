@@ -181,16 +181,6 @@ impl From<&str> for FieldType {
             "datetime" => FieldType::DateTime,
             "date" => FieldType::Date,
             "time" => FieldType::Time,
-
-            "NULL" => FieldType::Null,
-            "TEXT" => FieldType::Text,
-            "REAL" => FieldType::Real,
-            "INTEGER" => FieldType::Integer,
-            "NUMERIC" => FieldType::Numeric,
-            "BOOLEAN" => FieldType::Boolean,
-            "DATE" => FieldType::Date,
-            "TIME" => FieldType::Time,
-            "DATETIME" => FieldType::DateTime,
             _ => panic!("unknown type: {}", value),
         }
     }

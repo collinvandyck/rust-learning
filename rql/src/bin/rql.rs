@@ -13,8 +13,8 @@ use std::{
     io::{self, Stdout},
     process,
 };
-use tracing::{debug, error, info};
-use tracing_subscriber::{filter::Directive, fmt::format::FmtSpan, EnvFilter};
+use tracing::{error, info};
+use tracing_subscriber::{filter::Directive, EnvFilter};
 
 #[derive(clap::Parser, Debug)]
 struct Args {
@@ -30,7 +30,7 @@ type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 fn main() {
     let args = Args::parse();
     if let Err(err) = setup_and_run(&args) {
-        eprintln!("{err:?}");
+        error!("{err:?}");
         process::exit(1);
     }
 }
@@ -44,9 +44,8 @@ fn init_tracing(args: &Args) -> Result<()> {
         filter = filter.add_directive(directive);
     }
     tracing_subscriber::fmt()
+        .without_time()
         .with_writer(log_file)
-        .with_level(true)
-        .with_target(true)
         .with_env_filter(filter)
         .init();
     Ok(())
