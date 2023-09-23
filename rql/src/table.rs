@@ -70,7 +70,7 @@ impl DbTable {
         let num_records = self.records.len();
         let start_idx = self.top;
         let end_idx = (count + start_idx + 1).min(num_records);
-        debug!(count, num_records, start_idx, end_idx, "Records");
+        debug!(self.top, count, num_records, start_idx, end_idx, "Records");
         let records = &self.records[start_idx..end_idx];
         let mut state = self.state.clone();
         state.select(Some(selected - self.top));
@@ -124,6 +124,7 @@ impl DbTable {
                 self.top = if selected > rows { selected - rows } else { 0 };
                 self.state.select(Some(selected));
             } else {
+                debug!("bump up incr");
                 // we can bump up
                 let selected: usize = selected.try_into().unwrap();
                 if self.top >= selected {
