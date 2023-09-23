@@ -118,17 +118,18 @@ mod tests {
         p.next();
         assert_eq!(p.top_pos_rel(), (0, 2, 2));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, 3, 2));
+        // failing here with (0, 3, 3)
+        assert_eq!(p.top_pos_rel(), (1, 3, 2));
         p.next();
-        assert_eq!(p.top_pos_rel(), (1, 4, 2));
+        assert_eq!(p.top_pos_rel(), (2, 4, 2));
         p.next();
-        assert_eq!(p.top_pos_rel(), (2, 5, 2));
+        assert_eq!(p.top_pos_rel(), (3, 5, 2));
         p.next();
-        assert_eq!(p.top_pos_rel(), (3, 6, 2));
+        assert_eq!(p.top_pos_rel(), (4, 6, 2));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, 0, 2));
+        assert_eq!(p.top_pos_rel(), (5, 7, 2));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, 1, 2));
+        assert_eq!(p.top_pos_rel(), (6, 8, 2));
 
         // move backwards a bit.
     }
