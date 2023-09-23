@@ -36,8 +36,13 @@ impl<T> Pager<T> {
         if self.pos >= self.items.len() - 1 {
             // start at the beginning
             self.top = 0;
+            self.pos = 0;
         } else {
             // bump forward
+            self.pos += 1;
+            if self.pos - self.top > self.viewport_rows {
+                self.pos = self.top - self.viewport_rows;
+            }
         }
     }
 
@@ -45,6 +50,10 @@ impl<T> Pager<T> {
         if self.items.is_empty() {
             return;
         };
+    }
+
+    fn top_pos(&self) -> (usize, usize) {
+        (self.top, self.pos)
     }
 }
 
@@ -72,9 +81,8 @@ mod tests {
     fn test_pager() {
         let nums: Vec<_> = (0..10).collect();
         let mut p = Pager::from(nums).viewport_rows(5);
-        assert_eq!(p.pos, 0);
         assert_eq!(p.viewport_rows, 5);
-        assert_eq!(p.top, 0);
+        assert_eq!(p.top_pos(), (0, 0));
 
         p.next();
     }
