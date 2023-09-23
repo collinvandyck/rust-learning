@@ -5,7 +5,6 @@ struct Pager<T> {
     top: usize,
     viewport_rows: usize,
     pos: Option<usize>,
-    table_state: TableState,
 }
 
 impl<T> Pager<T> {
@@ -33,13 +32,6 @@ impl<T> Pager<T> {
     fn next(&mut self) {}
 
     fn prev(&mut self) {}
-
-    fn snapshot(&self) -> Snapshot<T> {
-        Snapshot {
-            pager: self,
-            table_state: self.table_state.clone(),
-        }
-    }
 }
 
 struct Snapshot<'a, T> {
@@ -55,34 +47,26 @@ where
         let top = 0;
         let viewport_rows = 0;
         let items: Vec<T> = items.into_iter().collect();
-        let pos = if items.is_empty() { None } else { Some(0) };
-        let table_state = TableState::default();
+        let pos = None;
         Self {
             items,
             top,
             viewport_rows,
             pos,
-            table_state,
         }
     }
 }
 
-fn table_state(val: Option<usize>) -> TableState {
-    let mut state = TableState::default();
-    state.select(val);
-    state
-}
 mod tests {
     use super::*;
     #[test]
     fn test_pager() {
         let nums: Vec<_> = (0..10).collect();
         let mut p = Pager::from(nums).viewport_rows(5);
-        let s = p.snapshot();
-        assert_eq!(s.pager.pos, Some(0));
-        assert_eq!(s.pager.viewport_rows, 5);
-        assert_eq!(s.pager.top, 0);
-        assert_eq!(s.table_state, table_state(None));
+        assert_eq!(p.pos, Some(0));
+        assert_eq!(p.viewport_rows, 5);
+        assert_eq!(p.top, 0);
+        assert_eq!(p.pos, None);
 
         p.next();
     }
