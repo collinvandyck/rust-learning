@@ -54,6 +54,7 @@ pub struct TableSchema {
     pub cols: Vec<TableColumn>,
 }
 
+#[derive(Hash, PartialEq, Eq)]
 pub enum TableColumn {
     RowId,
     Spec(TableColumnSpec),
@@ -74,7 +75,7 @@ impl TableColumn {
     }
 }
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, Hash, PartialEq, Eq)]
 pub struct TableColumnSpec {
     pub name: String,
     #[sqlx(rename = "type")]
@@ -111,6 +112,28 @@ pub enum FieldValue {
     Date(Option<Instant>),
     Time(Option<Instant>),
     DateTime(Option<Instant>),
+}
+
+impl FieldValue {
+    fn len(&self) -> usize {
+        use FieldValue::*;
+        match self {
+            RowID(val) => count_digits(*val),
+            Null => 4,
+            _ => 10,
+        }
+    }
+}
+
+fn count_digits(v: i64) -> usize {
+    let mut v_copy = v;
+    let mut res = 0;
+    while v_copy > 0 {
+        let n = v_copy % 10;
+        v_copy = v_copy / 10;
+        res += 1;
+    }
+    res
 }
 
 impl Display for FieldValue {

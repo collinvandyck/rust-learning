@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::prelude::*;
 
 /// Enables the display of a table's contents
@@ -7,6 +9,7 @@ pub struct DbTable {
     records: Records,
     pub state: TableState,
     pub count: u64,
+    max_lens: HashMap<TableColumn, usize>,
 }
 
 impl DbTable {
@@ -16,26 +19,35 @@ impl DbTable {
         let schema = dao.table_schema(&name)?;
         let records = Records::default();
         let state = TableState::default();
+        let max_lens = HashMap::default();
         let mut table = Self {
             dao,
             schema,
             records,
             state,
             count,
+            max_lens,
         };
         table.fetch()?;
         Ok(table)
+    }
+
+    fn max_len(&self, col: &TableColumn, dfvalue: usize) -> usize {
+        *self.max_lens.get(col).unwrap_or(&dfvalue)
     }
 
     fn fetch(&mut self) -> Result<()> {
         self.records = self
             .dao
             .records(&self.schema, GetRecords::new(&self.schema.name))?;
-        let Some(fields) = self.records.first().map(|f| &f.fields) else {
-            return Ok(());
-        };
         let cols = &self.schema.cols;
-        assert_eq!(fields.len(), cols.len());
+        for record in self.records.iter() {
+            for (field_idx, field) in record.fields.iter().enumerate() {
+                let col = &cols[field_idx];
+                let _val = &field.val;
+                let _typ = &field.typ;
+            }
+        }
         Ok(())
     }
 
