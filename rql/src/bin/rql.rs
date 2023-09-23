@@ -1,20 +1,4 @@
-use anyhow::{Context, Result};
-use clap::Parser;
-use crossterm::{
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
-use ratatui::prelude::*;
-use rql::{
-    app::{App, Tick},
-    dao::DbType,
-};
-use std::{
-    io::{self, Stdout},
-    process,
-};
-use tracing::{error, info};
-use tracing_subscriber::{filter::Directive, EnvFilter};
+use rql::prelude::*;
 
 #[derive(clap::Parser, Debug)]
 struct Args {

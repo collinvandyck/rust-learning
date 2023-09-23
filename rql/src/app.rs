@@ -1,20 +1,4 @@
-use crate::{
-    dao::{BlockingDao, DbType},
-    table::DbTable,
-    tables::DbTables,
-};
-use anyhow::{Context, Result};
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
-use ratatui::{
-    prelude::{Constraint, CrosstermBackend, Direction, Layout},
-    style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, List, ListItem, Row, Table},
-};
-use std::{
-    io::Stdout,
-    time::{Duration, Instant},
-};
-use tracing::{debug, instrument, trace};
+use crate::prelude::*;
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 
