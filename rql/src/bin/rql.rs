@@ -9,8 +9,6 @@ struct Args {
     db_path: String,
 }
 
-type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
-
 fn main() {
     let args = Args::parse();
     if let Err(err) = setup_and_run(&args) {

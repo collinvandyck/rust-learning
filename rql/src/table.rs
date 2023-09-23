@@ -1,5 +1,6 @@
 use anyhow::Result;
 use ratatui::widgets::{ListState, TableState};
+use tracing::info;
 
 use crate::dao::{BlockingDao, GetRecords, Record, Records, TableSchema};
 
@@ -15,16 +16,10 @@ pub struct DbTable {
 
 impl DbTable {
     pub fn new(dao: BlockingDao, name: String) -> Result<Self> {
+        info!(name, "Building db table");
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
-        let records = dao.records(
-            &schema,
-            GetRecords {
-                table_name: name.clone(),
-                offset: 0,
-                limit: 100000,
-            },
-        )?;
+        let records = dao.records(&schema, GetRecords::new(&name))?;
         let state = TableState::default();
         let table = Self {
             dao,

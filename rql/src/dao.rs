@@ -205,8 +205,26 @@ pub enum DbType<'a> {
 
 pub struct GetRecords {
     pub table_name: String,
-    pub limit: usize,
-    pub offset: usize,
+    pub limit: Option<usize>,
+    pub offset: Option<usize>,
+}
+
+impl GetRecords {
+    pub fn new<S: Into<String>>(table_name: S) -> Self {
+        GetRecords {
+            table_name: table_name.into(),
+            limit: None,
+            offset: None,
+        }
+    }
+    pub fn limit(mut self, limit: usize) -> Self {
+        self.limit = Some(limit);
+        self
+    }
+    pub fn offset(mut self, offset: usize) -> Self {
+        self.offset = Some(offset);
+        self
+    }
 }
 
 impl<'a> DbType<'a> {
@@ -274,7 +292,9 @@ impl Dao {
     async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Records> {
         let table_name = req.table_name.as_str();
         let mut conn = self.pool.acquire().await?;
-        let query = format!("select * from {}", table_name);
+        let limit = req.limit.map(|v| v.to_string()).unwrap_or_default();
+        let offset = req.offset.map(|v| v.to_string()).unwrap_or_default();
+        let query = format!("select * from {} {} {}", table_name, limit, offset);
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = Records::default();
         for row in rows {
@@ -312,27 +332,13 @@ mod tests {
             .await?;
         let schema = dao.table_schema("foo").await?;
         let records = dao
-            .records(
-                &schema,
-                GetRecords {
-                    table_name: "foo".to_string(),
-                    limit: 100,
-                    offset: 0,
-                },
-            )
+            .records(&schema, GetRecords::new("foo").limit(100))
             .await?;
         assert_eq!(records.len(), 0);
         dao.execute("insert into foo (name, age) values ('collin', 46)")
             .await?;
         let records = dao
-            .records(
-                &schema,
-                GetRecords {
-                    table_name: "foo".to_string(),
-                    limit: 100,
-                    offset: 0,
-                },
-            )
+            .records(&schema, GetRecords::new("foo").limit(100))
             .await?;
         assert_eq!(records.len(), 1);
         assert_eq!(records[0].fields.len(), 2);

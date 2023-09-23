@@ -26,4 +26,6 @@ pub mod prelude {
     pub use tracing::{instrument, trace_span, Instrument};
     pub use tracing_subscriber::filter::{Directive, LevelFilter};
     pub use tracing_subscriber::EnvFilter;
+
+    pub type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
 }
