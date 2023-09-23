@@ -67,8 +67,22 @@ impl<T> Pager<T> {
         }
     }
 
-    fn top_pos(&self) -> (usize, usize) {
-        (self.top, self.pos)
+    /// Returns the relative position to the total stream.
+    ///
+    /// So, if we have:
+    /// - 10 element vec
+    /// - viewport_rows: 3
+    /// - top: 2
+    /// - pos: 4
+    ///
+    /// The records we send back will be [2..4]
+    /// Our pos returned will need to be 2 (last minus start)
+    fn relative_pos(&self) -> usize {
+        self.pos - self.top
+    }
+
+    fn top_pos_rel(&self) -> (usize, usize, usize) {
+        (self.top, self.pos, self.relative_pos())
     }
 }
 
@@ -96,23 +110,27 @@ mod tests {
     fn test_pager() {
         let nums: Vec<_> = (0..7).collect();
         let mut p = Pager::from(nums).viewport_rows(3);
-        assert_eq!(p.top_pos(), (0, 0));
+
+        // verify that top keeps up as we move forward
+        assert_eq!(p.top_pos_rel(), (0, 0, 0));
         p.next();
-        assert_eq!(p.top_pos(), (0, 1));
+        assert_eq!(p.top_pos_rel(), (0, 1, 1));
         p.next();
-        assert_eq!(p.top_pos(), (0, 2));
+        assert_eq!(p.top_pos_rel(), (0, 2, 2));
         p.next();
-        assert_eq!(p.top_pos(), (0, 3));
+        assert_eq!(p.top_pos_rel(), (0, 3, 2));
         p.next();
-        assert_eq!(p.top_pos(), (1, 4));
+        assert_eq!(p.top_pos_rel(), (1, 4, 2));
         p.next();
-        assert_eq!(p.top_pos(), (2, 5));
+        assert_eq!(p.top_pos_rel(), (2, 5, 2));
         p.next();
-        assert_eq!(p.top_pos(), (3, 6));
+        assert_eq!(p.top_pos_rel(), (3, 6, 2));
         p.next();
-        assert_eq!(p.top_pos(), (0, 0));
+        assert_eq!(p.top_pos_rel(), (0, 0, 2));
         p.next();
-        assert_eq!(p.top_pos(), (0, 1));
+        assert_eq!(p.top_pos_rel(), (0, 1, 2));
+
+        // move backwards a bit.
     }
 
     #[test]
