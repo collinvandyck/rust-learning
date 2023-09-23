@@ -40,8 +40,8 @@ impl<T> Pager<T> {
         } else {
             // bump forward
             self.pos += 1;
-            if self.pos - self.top > self.viewport_rows {
-                self.top = self.pos - self.viewport_rows;
+            if self.pos - self.top >= self.viewport_rows {
+                self.top = self.pos - self.viewport_rows + 1;
             }
         }
     }
