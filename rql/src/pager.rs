@@ -4,7 +4,7 @@ struct Pager<T> {
     items: Vec<T>,
     top: usize,
     viewport_rows: usize,
-    pos: Option<usize>,
+    pos: usize,
 }
 
 impl<T> Pager<T> {
@@ -29,9 +29,23 @@ impl<T> Pager<T> {
         self.items = items;
     }
 
-    fn next(&mut self) {}
+    fn next(&mut self) {
+        if self.items.is_empty() {
+            return;
+        };
+        if self.pos >= self.items.len() - 1 {
+            // start at the beginning
+            self.top = 0;
+        } else {
+            // bump forward
+        }
+    }
 
-    fn prev(&mut self) {}
+    fn prev(&mut self) {
+        if self.items.is_empty() {
+            return;
+        };
+    }
 }
 
 impl<T, I> From<I> for Pager<T>
@@ -42,7 +56,7 @@ where
         let top = 0;
         let viewport_rows = 0;
         let items: Vec<T> = items.into_iter().collect();
-        let pos = if items.is_empty() { None } else { Some(0) };
+        let pos = 0;
         Self {
             items,
             top,
@@ -58,7 +72,7 @@ mod tests {
     fn test_pager() {
         let nums: Vec<_> = (0..10).collect();
         let mut p = Pager::from(nums).viewport_rows(5);
-        assert_eq!(p.pos, Some(0));
+        assert_eq!(p.pos, 0);
         assert_eq!(p.viewport_rows, 5);
         assert_eq!(p.top, 0);
 
