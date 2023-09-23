@@ -35,7 +35,7 @@ impl BlockingDao {
             .block_on(self.inner.dao.table_schema(table_name))
     }
 
-    pub fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Records> {
+    pub fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Vec<Record>> {
         self.inner.rt.block_on(self.inner.dao.records(schema, req))
     }
 
@@ -88,19 +88,19 @@ pub struct TableColumnSpec {
 }
 
 /// A row in the table
-#[derive(Default)]
+#[derive(Default, Debug, PartialEq)]
 pub struct Record {
     pub fields: Vec<Field>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Field {
     pub name: String,
     pub typ: FieldType,
     pub val: FieldValue,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum FieldValue {
     RowID(i64),
     Null,
@@ -156,7 +156,7 @@ impl Display for FieldValue {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum FieldType {
     RowId,
     Null,
@@ -232,18 +232,6 @@ impl From<&str> for FieldType {
             "time" => FieldType::Time,
             _ => panic!("unknown type: {}", value),
         }
-    }
-}
-
-#[derive(Default)]
-pub struct Records {
-    records: Vec<Record>,
-}
-
-impl Deref for Records {
-    type Target = Vec<Record>;
-    fn deref(&self) -> &Self::Target {
-        &self.records
     }
 }
 
@@ -344,15 +332,18 @@ impl Dao {
         Ok(record.count as u64)
     }
 
-    async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Records> {
+    async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Vec<Record>> {
         let table_name = req.table_name.as_str();
         info!(table_name, "Fetching records");
         let mut conn = self.pool.acquire().await?;
-        let limit = req.limit.map(|v| v.to_string()).unwrap_or_default();
-        let offset = req.offset.map(|v| v.to_string()).unwrap_or_default();
+        let limit = req.limit.map(|v| format!("limit {v}")).unwrap_or_default();
+        let offset = req
+            .offset
+            .map(|v| format!("offset {v}"))
+            .unwrap_or_default();
         let query = format!("select rowid, * from {} {} {}", table_name, limit, offset);
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
-        let mut records = Records::default();
+        let mut records = vec![];
         for row in rows {
             let mut record = Record::default();
             for column in row.columns() {
@@ -364,7 +355,7 @@ impl Dao {
                 let field = Field { name, typ, val };
                 record.fields.push(field);
             }
-            records.records.push(record);
+            records.push(record);
         }
         Ok(records)
     }
@@ -397,12 +388,25 @@ mod tests {
             .records(&schema, GetRecords::new("foo").limit(100))
             .await?;
         assert_eq!(records.len(), 1);
-        assert_eq!(records[0].fields.len(), 2);
         assert_eq!(
-            records[0].fields[0].val,
+            records[0]
+                .fields
+                .iter()
+                .map(|f| f.val.clone())
+                .collect::<Vec<_>>(),
+            vec![
+                FieldValue::RowID(1),
+                FieldValue::Text(Some("collin".to_string())),
+                FieldValue::Integer(Some(46)),
+            ]
+        );
+        assert_eq!(records[0].fields.len(), 3); // row id is first field
+        assert_eq!(records[0].fields[0].val, FieldValue::RowID(1),);
+        assert_eq!(
+            records[0].fields[1].val,
             FieldValue::Text(Some("collin".to_string()))
         );
-        assert_eq!(records[0].fields[1].val, FieldValue::Integer(Some(46)),);
+        assert_eq!(records[0].fields[2].val, FieldValue::Integer(Some(46)),);
         Ok(())
     }
 }

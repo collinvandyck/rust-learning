@@ -1,5 +1,7 @@
+#![allow(dead_code, unused)]
 pub mod app;
 pub mod dao;
+mod pager;
 pub mod table;
 pub mod tables;
 pub mod prelude {

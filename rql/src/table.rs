@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub struct DbTable {
     dao: BlockingDao,
     pub schema: TableSchema,
-    records: Records,
+    records: Vec<Record>,
     pub state: TableState,
     pub count: u64,
     max_lens: HashMap<TableColumn, usize>,
@@ -18,7 +18,7 @@ impl DbTable {
         info!(name, "Building db table");
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
-        let records = Records::default();
+        let records = vec![];
         let state = TableState::default();
         let max_lens = HashMap::default();
         let top = 0;
