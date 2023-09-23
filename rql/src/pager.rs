@@ -5,6 +5,7 @@ struct Pager<T> {
     top: usize,
     viewport_rows: usize,
     pos: Option<usize>,
+    table_state: TableState,
 }
 
 impl<T> Pager<T> {
@@ -28,6 +29,15 @@ impl<T> Pager<T> {
         let items = items.into_iter().collect::<Vec<_>>();
         self.items = items;
     }
+
+    fn next(&mut self) {}
+
+    fn prev(&mut self) {}
+}
+
+struct Snapshot<'a, T> {
+    pager: &'a Pager<T>,
+    table_state: TableState,
 }
 
 impl<T, I> From<I> for Pager<T>
@@ -39,11 +49,13 @@ where
         let viewport_rows = 0;
         let items: Vec<T> = items.into_iter().collect();
         let pos = if items.is_empty() { None } else { Some(0) };
+        let table_state = TableState::default();
         Self {
             items,
             top,
             viewport_rows,
             pos,
+            table_state,
         }
     }
 }
@@ -53,10 +65,12 @@ mod tests {
     #[test]
     fn test_pager() {
         let nums: Vec<_> = (0..10).collect();
-        let p = Pager::from(nums).viewport_rows(5);
+        let mut p = Pager::from(nums).viewport_rows(5);
         assert_eq!(p.pos, Some(0));
         assert_eq!(p.viewport_rows, 5);
         assert_eq!(p.top, 0);
+
+        p.next();
     }
 
     #[test]
