@@ -42,7 +42,6 @@ impl DbTable {
             .records(&self.schema, GetRecords::new(&self.schema.name))?;
         let cols = &self.schema.cols;
         for record in self.records.iter() {
-            debug!(?record.fields, "Record");
             for (field_idx, field) in record.fields.iter().enumerate() {
                 let col = &cols[field_idx];
                 let val = &field.val;

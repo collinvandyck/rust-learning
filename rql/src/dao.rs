@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool};
 use std::{fmt::Display, ops::Deref, sync::Arc, time::Instant};
 use tokio::runtime::Runtime;
-use tracing::{debug, field::debug, info, warn};
+use tracing::{debug, info, warn};
 
 #[derive(Clone)]
 pub struct BlockingDao {
@@ -69,7 +69,7 @@ impl TableColumn {
     }
     pub fn field_type(&self) -> FieldType {
         match self {
-            TableColumn::RowId => FieldType::Integer,
+            TableColumn::RowId => FieldType::RowId,
             TableColumn::Spec(spec) => FieldType::from(spec.typ.as_ref()),
         }
     }
@@ -119,11 +119,8 @@ impl FieldValue {
     pub fn len(&self) -> usize {
         use FieldValue::*;
         match self {
-            RowID(val) => {
-                let res = count_digits(*val);
-                debug!("len for {val} is {res}");
-                res
-            }
+            RowID(val) => count_digits(*val),
+            Text(Some(s)) => s.len(),
             Null => 4,
             _ => 10,
         }
@@ -161,6 +158,7 @@ impl Display for FieldValue {
 
 #[derive(Debug)]
 pub enum FieldType {
+    RowId,
     Null,
     Text,
     Real,
@@ -177,6 +175,7 @@ impl FieldType {
     fn decode(&self, row: &SqliteRow, idx: usize) -> Result<FieldValue> {
         let val = match self {
             FieldType::Null => FieldValue::Null,
+            FieldType::RowId => FieldValue::RowID(self.decode_i64(row, idx)?.unwrap()),
             FieldType::Text => FieldValue::Text(self.decode_string(row, idx)?),
             FieldType::Real => FieldValue::Real(self.decode_f64(row, idx)?),
             FieldType::Blob => FieldValue::Blob(self.decode_bytes(row, idx)?),
