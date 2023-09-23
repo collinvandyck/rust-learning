@@ -54,16 +54,36 @@ pub struct TableSchema {
     pub cols: Vec<TableColumn>,
 }
 
+pub enum TableColumn {
+    RowId,
+    Spec(TableColumnSpec),
+}
+
+impl TableColumn {
+    pub fn name<'a>(&'a self) -> &'a str {
+        match self {
+            TableColumn::RowId => "rid",
+            TableColumn::Spec(spec) => &spec.name,
+        }
+    }
+    pub fn field_type(&self) -> FieldType {
+        match self {
+            TableColumn::RowId => FieldType::Integer,
+            TableColumn::Spec(spec) => FieldType::from(spec.typ.as_ref()),
+        }
+    }
+}
+
 #[derive(sqlx::FromRow)]
-#[allow(dead_code)]
-pub struct TableColumn {
-    cid: u32,
+pub struct TableColumnSpec {
     pub name: String,
     #[sqlx(rename = "type")]
     typ: String,
-    notnull: bool,
-    dflt_value: String,
-    pk: bool,
+    // not used
+    //cid: u32,
+    //notnull: bool,
+    //dflt_value: String,
+    //pk: bool,
 }
 
 /// A row in the table
@@ -274,9 +294,13 @@ impl Dao {
         info!(name, "Getting table schema");
         let mut conn = self.pool.acquire().await?;
         let query = format!("pragma table_info({})", &name);
-        let cols = sqlx::query_as::<_, TableColumn>(&query)
+        let mut cols = sqlx::query_as::<_, TableColumnSpec>(&query)
             .fetch_all(&mut *conn)
-            .await?;
+            .await?
+            .into_iter()
+            .map(|c| TableColumn::Spec(c))
+            .collect::<Vec<_>>();
+        cols.insert(0, TableColumn::RowId);
         let schema = TableSchema { name, cols };
         Ok(schema)
     }
@@ -320,7 +344,7 @@ impl Dao {
                     let name = column.name().to_string();
                     let ord = column.ordinal();
                     let col = &schema.cols[ord - 1]; // account for rowid
-                    let typ = FieldType::from(col.typ.as_ref());
+                    let typ = col.field_type();
                     let val = typ.decode(&row, ord)?;
                     let field = Field { name, typ, val };
                     record.fields.push(field);

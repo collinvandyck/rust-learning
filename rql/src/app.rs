@@ -83,7 +83,7 @@ impl App {
                     .schema
                     .cols
                     .iter()
-                    .map(|col| Cell::from(col.name.clone()).style(Style::default()));
+                    .map(|col| Cell::from(col.name().clone()).style(Style::default()));
                 let header = Row::new(header_cells)
                     .style(Style::default())
                     .height(1)
