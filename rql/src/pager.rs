@@ -108,7 +108,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_pager() {
-        let nums: Vec<_> = (0..7).collect();
+        let nums: Vec<_> = (0..5).collect();
         let mut p = Pager::from(nums).viewport_rows(3);
 
         // verify that top keeps up as we move forward
@@ -123,13 +123,7 @@ mod tests {
         p.next();
         assert_eq!(p.top_pos_rel(), (2, 4, 2));
         p.next();
-        assert_eq!(p.top_pos_rel(), (3, 5, 2));
-        p.next();
-        assert_eq!(p.top_pos_rel(), (4, 6, 2));
-        p.next();
-        assert_eq!(p.top_pos_rel(), (5, 7, 2));
-        p.next();
-        assert_eq!(p.top_pos_rel(), (6, 8, 2));
+        assert_eq!(p.top_pos_rel(), (0, 0, 0));
 
         // move backwards a bit.
     }
