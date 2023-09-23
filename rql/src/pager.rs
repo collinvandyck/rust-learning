@@ -80,9 +80,7 @@ mod tests {
     #[test]
     fn test_pager() {
         let nums: Vec<_> = (0..10).collect();
-        let mut p = Pager::from(nums).viewport_rows(5);
-        assert_eq!(p.viewport_rows, 5);
-
+        let mut p = Pager::from(nums).viewport_rows(3);
         assert_eq!(p.top_pos(), (0, 0));
         p.next();
         assert_eq!(p.top_pos(), (0, 1));
@@ -91,19 +89,21 @@ mod tests {
         p.next();
         assert_eq!(p.top_pos(), (0, 3));
         p.next();
-        assert_eq!(p.top_pos(), (0, 4));
+        assert_eq!(p.top_pos(), (1, 4));
         p.next();
-        assert_eq!(p.top_pos(), (0, 5));
+        assert_eq!(p.top_pos(), (2, 5));
         p.next();
-        assert_eq!(p.top_pos(), (1, 6));
+        assert_eq!(p.top_pos(), (3, 6));
         p.next();
-        assert_eq!(p.top_pos(), (2, 7));
+        assert_eq!(p.top_pos(), (4, 7));
         p.next();
-        assert_eq!(p.top_pos(), (3, 8));
+        assert_eq!(p.top_pos(), (5, 8));
         p.next();
-        assert_eq!(p.top_pos(), (4, 9));
+        assert_eq!(p.top_pos(), (6, 9));
         p.next();
         assert_eq!(p.top_pos(), (0, 0));
+        p.next();
+        assert_eq!(p.top_pos(), (0, 1));
     }
 
     #[test]
