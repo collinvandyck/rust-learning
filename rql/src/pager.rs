@@ -52,14 +52,16 @@ impl<T> Pager<T> {
         };
         if self.pos == 0 {
             // start at the end
+            println!("rewind");
             self.pos = self.items.len() - 1;
             if self.pos >= self.viewport_rows {
-                self.top = self.pos - self.viewport_rows;
+                self.top = self.pos - self.viewport_rows + 1;
             } else {
                 self.top = 0;
             }
         } else {
             // bump backward
+            println!("bump back");
             self.pos -= 1;
             if self.pos < self.top {
                 self.top = self.pos;
@@ -129,13 +131,11 @@ mod tests {
         // failing with (1,4,3)
         assert_eq!(p.top_pos_rel(), (2, 4, 2));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (2, 4, 2));
+        assert_eq!(p.top_pos_rel(), (2, 3, 1));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (1, 3, 2));
+        assert_eq!(p.top_pos_rel(), (2, 2, 0));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (0, 2, 2));
-        p.prev();
-        assert_eq!(p.top_pos_rel(), (0, 1, 1));
+        assert_eq!(p.top_pos_rel(), (1, 1, 0));
         p.prev();
         assert_eq!(p.top_pos_rel(), (0, 0, 0));
         p.prev();
