@@ -39,7 +39,6 @@ impl App {
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
-        debug!("Draw");
         let start = Instant::now();
         let size = term.size()?;
         term.draw(move |frame| {
