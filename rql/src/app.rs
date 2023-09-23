@@ -39,6 +39,7 @@ impl App {
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
+        debug!("Draw");
         let start = Instant::now();
         let size = term.size()?;
         term.draw(move |frame| {
@@ -113,7 +114,8 @@ impl App {
                         Block::default()
                             .title(format!(
                                 "[ Table: {} ({} records) ]",
-                                selected_table.name, selected_table.count
+                                selected_table.name(),
+                                selected_table.count
                             ))
                             .title_style(title_style)
                             .borders(Borders::ALL),
@@ -131,7 +133,8 @@ impl App {
     }
 
     pub fn tick(&mut self) -> Result<Tick> {
-        if event::poll(Duration::from_millis(250)).context("event poll failed")? {
+        let poll_time = Duration::from_millis(1000 * 60);
+        if event::poll(poll_time).context("event poll failed")? {
             if let Event::Key(key) = event::read().context("event read failed")? {
                 let start = Instant::now();
                 if Self::should_quit(key) {

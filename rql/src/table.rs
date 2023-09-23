@@ -7,7 +7,6 @@ use crate::dao::{BlockingDao, GetRecords, Record, Records, TableSchema};
 /// Enables the display of a table's contents
 pub struct DbTable {
     dao: BlockingDao,
-    pub name: String,
     pub schema: TableSchema,
     pub records: Records,
     pub state: TableState,
@@ -23,13 +22,16 @@ impl DbTable {
         let state = TableState::default();
         let table = Self {
             dao,
-            name,
             schema,
             records,
             state,
             count,
         };
         Ok(table)
+    }
+
+    pub fn name<'a>(&'a self) -> &'a str {
+        return &self.schema.name;
     }
 
     pub fn next(&mut self) {

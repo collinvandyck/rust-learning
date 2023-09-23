@@ -1,12 +1,28 @@
+use std::{fmt::Debug, path::Path};
+
 use rql::prelude::*;
 
-#[derive(clap::Parser, Debug)]
+#[derive(clap::Parser)]
 struct Args {
     #[arg(long, env, default_value = "rql.log")]
     log: String,
 
     #[arg(env)]
     db_path: String,
+}
+
+impl Debug for Args {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let db_path = Path::new(&self.db_path);
+        let db_name = db_path
+            .file_name()
+            .map(|s| s.to_os_string())
+            .unwrap_or_default();
+        f.debug_struct("args")
+            .field("db_name", &db_name)
+            .field("log", &self.log)
+            .finish()
+    }
 }
 
 fn main() {
@@ -26,7 +42,6 @@ fn init_tracing(args: &Args) -> Result<()> {
         filter = filter.add_directive(directive);
     }
     tracing_subscriber::fmt()
-        .without_time()
         .with_writer(log_file)
         .with_env_filter(filter)
         .init();

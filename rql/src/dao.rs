@@ -50,6 +50,7 @@ struct Dao {
 }
 
 pub struct TableSchema {
+    pub name: String,
     pub cols: Vec<TableColumn>,
 }
 
@@ -266,13 +267,14 @@ impl Dao {
         Ok(res)
     }
 
-    async fn table_schema<P: AsRef<str>>(&self, table_name: P) -> Result<TableSchema> {
+    async fn table_schema<P: AsRef<str>>(&self, name: P) -> Result<TableSchema> {
+        let name = name.as_ref().to_string();
         let mut conn = self.pool.acquire().await?;
-        let query = format!("pragma table_info({})", table_name.as_ref());
+        let query = format!("pragma table_info({})", &name);
         let cols = sqlx::query_as::<_, TableColumn>(&query)
             .fetch_all(&mut *conn)
             .await?;
-        let schema = TableSchema { cols };
+        let schema = TableSchema { name, cols };
         Ok(schema)
     }
 
