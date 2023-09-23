@@ -10,6 +10,7 @@ pub struct DbTable {
     pub state: TableState,
     pub count: u64,
     max_lens: HashMap<TableColumn, usize>,
+    rows: u16,
 }
 
 impl DbTable {
@@ -20,6 +21,7 @@ impl DbTable {
         let records = Records::default();
         let state = TableState::default();
         let max_lens = HashMap::default();
+        let rows = 0;
         let mut table = Self {
             dao,
             schema,
@@ -27,6 +29,7 @@ impl DbTable {
             state,
             count,
             max_lens,
+            rows,
         };
         table.fetch()?;
         Ok(table)

@@ -19,6 +19,7 @@ pub struct App {
     tables: DbTables,       // the list of tables
     table: Option<DbTable>, // the selected table
     focus: Focus,           // what ui element has focus
+    dims: Rect,             // how large the frame is
 }
 
 impl App {
@@ -30,17 +31,20 @@ impl App {
             table.replace(DbTable::new(dao.clone(), name)?);
         }
         let focus = Focus::default();
+        let dims = Rect::default();
         Ok(Self {
             dao,
             tables,
             table,
             focus,
+            dims,
         })
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
         let start = Instant::now();
         let size = term.size()?;
+        self.dims = size;
         term.draw(move |frame| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
@@ -77,6 +81,7 @@ impl App {
                 );
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, chunks[0], state);
+            let table_rows = self.table_rows();
             if let Some(selected_table) = &mut self.table {
                 let header_names = selected_table
                     .schema
@@ -92,8 +97,7 @@ impl App {
                     .style(Style::default())
                     .height(1)
                     .bottom_margin(0);
-                let num_rows = chunks[1].height - 3; // 2 border, 1 headers
-                let (records, mut state) = selected_table.records(num_rows as usize);
+                let (records, mut state) = selected_table.records(table_rows as usize);
                 let rows = records.iter().enumerate().map(|(row_idx, record)| {
                     let mut row_style = Style::default();
                     if row_idx % 2 == 0 {
@@ -143,6 +147,10 @@ impl App {
         let elapsed = start.elapsed();
         trace!(?elapsed, "Draw");
         Ok(())
+    }
+
+    fn table_rows(&mut self) -> u16 {
+        self.dims.height - 3 // 2 border, 1 header
     }
 
     pub fn tick(&mut self) -> Result<Tick> {
