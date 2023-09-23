@@ -329,26 +329,14 @@ impl Dao {
         let mut records = Records::default();
         for row in rows {
             let mut record = Record::default();
-            for (cidx, column) in row.columns().into_iter().enumerate() {
-                if cidx == 0 {
-                    // rowid
-                    let name = String::from("rid");
-                    let typ = FieldType::from("integer");
-                    let val = row
-                        .try_get::<Option<i64>, _>(0_usize)?
-                        .expect("could not get rowid");
-                    let val = FieldValue::RowID(val);
-                    let field = Field { name, typ, val };
-                    record.fields.push(field);
-                } else {
-                    let name = column.name().to_string();
-                    let ord = column.ordinal();
-                    let col = &schema.cols[ord - 1]; // account for rowid
-                    let typ = col.field_type();
-                    let val = typ.decode(&row, ord)?;
-                    let field = Field { name, typ, val };
-                    record.fields.push(field);
-                }
+            for (_cidx, column) in row.columns().into_iter().enumerate() {
+                let name = column.name().to_string();
+                let ord = column.ordinal();
+                let col = &schema.cols[ord]; // account for rowid
+                let typ = col.field_type();
+                let val = typ.decode(&row, ord)?;
+                let field = Field { name, typ, val };
+                record.fields.push(field);
             }
             records.records.push(record);
         }
