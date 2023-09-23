@@ -32,7 +32,7 @@ impl DbTable {
         Ok(table)
     }
 
-    fn max_len(&self, col: &TableColumn, dfvalue: usize) -> usize {
+    pub fn max_len(&self, col: &TableColumn, dfvalue: usize) -> usize {
         *self.max_lens.get(col).unwrap_or(&dfvalue)
     }
 
@@ -42,10 +42,18 @@ impl DbTable {
             .records(&self.schema, GetRecords::new(&self.schema.name))?;
         let cols = &self.schema.cols;
         for record in self.records.iter() {
+            debug!(?record.fields, "Record");
             for (field_idx, field) in record.fields.iter().enumerate() {
                 let col = &cols[field_idx];
-                let _val = &field.val;
-                let _typ = &field.typ;
+                let val = &field.val;
+                let len = val.len();
+                let insert = match self.max_lens.get(col) {
+                    Some(l) if &len < l => false,
+                    _ => true,
+                };
+                if insert {
+                    self.max_lens.insert(col.clone(), len);
+                }
             }
         }
         Ok(())

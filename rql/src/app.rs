@@ -96,13 +96,15 @@ impl App {
                         .map(|s| Cell::from(s).style(Style::default()));
                     Row::new(cells).height(1)
                 });
-                let num_cols = selected_table.schema.cols.len();
-                let pct = (100.0 / num_cols as f64) as u16;
                 let widths = selected_table
                     .schema
                     .cols
                     .iter()
-                    .map(|_| Constraint::Percentage(pct))
+                    .map(|c| {
+                        //
+                        let len = selected_table.max_len(c, 10);
+                        Constraint::Min(len.try_into().unwrap())
+                    })
                     .collect::<Vec<_>>();
                 let mut title_style = Style::default();
                 if self.focus == Focus::Table {

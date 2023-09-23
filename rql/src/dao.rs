@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use sqlx::{sqlite::SqliteRow, Column, Pool, Row, Sqlite, SqlitePool};
 use std::{fmt::Display, ops::Deref, sync::Arc, time::Instant};
 use tokio::runtime::Runtime;
-use tracing::{info, warn};
+use tracing::{debug, field::debug, info, warn};
 
 #[derive(Clone)]
 pub struct BlockingDao {
@@ -54,7 +54,7 @@ pub struct TableSchema {
     pub cols: Vec<TableColumn>,
 }
 
-#[derive(Hash, PartialEq, Eq)]
+#[derive(Hash, PartialEq, Eq, Clone)]
 pub enum TableColumn {
     RowId,
     Spec(TableColumnSpec),
@@ -75,7 +75,7 @@ impl TableColumn {
     }
 }
 
-#[derive(sqlx::FromRow, Hash, PartialEq, Eq)]
+#[derive(sqlx::FromRow, Hash, PartialEq, Eq, Clone)]
 pub struct TableColumnSpec {
     pub name: String,
     #[sqlx(rename = "type")]
@@ -93,6 +93,7 @@ pub struct Record {
     pub fields: Vec<Field>,
 }
 
+#[derive(Debug)]
 pub struct Field {
     pub name: String,
     pub typ: FieldType,
@@ -115,10 +116,14 @@ pub enum FieldValue {
 }
 
 impl FieldValue {
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         use FieldValue::*;
         match self {
-            RowID(val) => count_digits(*val),
+            RowID(val) => {
+                let res = count_digits(*val);
+                debug!("len for {val} is {res}");
+                res
+            }
             Null => 4,
             _ => 10,
         }
@@ -129,7 +134,6 @@ fn count_digits(v: i64) -> usize {
     let mut v_copy = v;
     let mut res = 0;
     while v_copy > 0 {
-        let n = v_copy % 10;
         v_copy = v_copy / 10;
         res += 1;
     }
@@ -355,7 +359,7 @@ impl Dao {
             for column in row.columns() {
                 let name = column.name().to_string();
                 let ord = column.ordinal();
-                let col = &schema.cols[ord]; // account for rowid
+                let col = &schema.cols[ord];
                 let typ = col.field_type();
                 let val = typ.decode(&row, ord)?;
                 let field = Field { name, typ, val };
