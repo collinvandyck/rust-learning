@@ -95,7 +95,8 @@ impl DbTable {
     */
 
     pub fn records(&mut self) -> (Vec<Record>, TableState) {
-        return (vec![], TableState::default());
+        let (top, pos, rel) = self.pager.top_pos_rel();
+        todo!()
     }
 
     pub fn name<'a>(&'a self) -> &'a str {
