@@ -41,6 +41,12 @@ impl IndexedRecords {
         }
         None
     }
+
+    fn contains(&self, first: usize, last: usize) -> bool {
+        self.index()
+            .map(|(f, l)| f >= first && l <= last)
+            .unwrap_or(false)
+    }
 }
 
 impl DbTable {
@@ -95,8 +101,12 @@ impl DbTable {
     */
 
     pub fn records(&mut self) -> (Vec<Record>, TableState) {
-        let (top, pos, rel) = self.pager.top_pos_rel();
-        todo!()
+        let view_rows = self.pager.viewport_rows;
+        let (start, pos, rel) = self.pager.top_pos_rel();
+        let end = (start + view_rows).min(self.pager.count);
+        let contains = self.indexed.contains(start, end);
+        info!(start, end, contains, "loaded set");
+        (vec![], TableState::default())
     }
 
     pub fn name<'a>(&'a self) -> &'a str {

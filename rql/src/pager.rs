@@ -5,7 +5,7 @@ pub struct Pager {
     pub top: usize,
     pub viewport_rows: usize,
     pub pos: Option<usize>,
-    count: usize,
+    pub count: usize,
 }
 
 impl Pager {
