@@ -87,13 +87,10 @@ impl DbTable {
         *self.max_lens.get(col).unwrap_or(&dfvalue)
     }
 
-    /*
-    fn fetch(&mut self) -> Result<()> {
-        self.pager.items = self
-            .dao
-            .records(&self.schema, GetRecords::new(&self.schema.name))?;
+    fn set_max_lens(&mut self, records: &[Record]) {
         let cols = &self.schema.cols;
-        for record in self.pager.items.iter() {
+        self.max_lens.clear();
+        for record in records.iter() {
             for (field_idx, field) in record.fields.iter().enumerate() {
                 let col = &cols[field_idx];
                 let val = &field.val;
@@ -107,9 +104,7 @@ impl DbTable {
                 }
             }
         }
-        Ok(())
     }
-    */
 
     pub fn records(&mut self) -> Result<(Vec<Record>, TableState)> {
         let view_rows = self.pager.viewport_rows;
@@ -117,7 +112,7 @@ impl DbTable {
         let end = (start + view_rows).min(self.pager.count);
         let index = self.indexed.index();
 
-        debug!(start, end, pos, rel, ?index, "Loading records");
+        debug!(start, end, pos, rel, ?index, "Records");
 
         // fetch a new window if necessary
         let contains = self.indexed.contains(start, end);
@@ -140,6 +135,7 @@ impl DbTable {
             self.indexed = IndexedRecords(irs);
         }
         let records = self.indexed.range(start, end);
+        self.set_max_lens(&records);
         let mut state = TableState::default();
         state.select(Some(rel));
         Ok((records, state))
