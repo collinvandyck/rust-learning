@@ -45,7 +45,18 @@ impl IndexedRecords {
     fn contains(&self, first: usize, last: usize) -> bool {
         self.index()
             .map(|(f, l)| f >= first && l <= last)
-            .unwrap_or(false)
+            .unwrap_or_default()
+    }
+
+    fn range(&self, first: usize, last: usize) -> Vec<Record> {
+        self.0
+            .iter()
+            .filter(|r| {
+                let idx = r.index();
+                idx >= first && idx < last
+            })
+            .map(|r| r.1.clone())
+            .collect()
     }
 }
 
@@ -100,25 +111,35 @@ impl DbTable {
     }
     */
 
-    pub fn records(&mut self) -> (Vec<Record>, TableState) {
+    pub fn records(&mut self) -> Result<(Vec<Record>, TableState)> {
         let view_rows = self.pager.viewport_rows;
         let (start, pos, rel) = self.pager.top_pos_rel();
         let end = (start + view_rows).min(self.pager.count);
 
-        let has_first = self
-            .indexed
-            .first_index()
-            .map(|i| i >= start)
-            .unwrap_or_default();
-
-        let has_last = self
-            .indexed
-            .last_index()
-            .map(|i| i < end)
-            .unwrap_or_default();
-
-        info!(start, end, has_first, has_last, "loaded set");
-        (vec![], TableState::default())
+        // fetch a new window if necessary
+        let contains = self.indexed.contains(start, end);
+        if !contains {
+            let offset = if start >= view_rows {
+                start - view_rows
+            } else {
+                0
+            };
+            let limit = view_rows * 3;
+            let spec = GetRecords::new(&self.schema.name)
+                .offset(start)
+                .limit(limit);
+            info!(limit, offset, "Fetched new page set");
+            let records = self.dao.records(&self.schema, spec)?;
+            let irs = (offset..limit)
+                .zip(records.into_iter())
+                .map(|(idx, record)| IndexedRecord(idx, record))
+                .collect::<Vec<_>>();
+            self.indexed = IndexedRecords(irs);
+        }
+        let records = self.indexed.range(start, end);
+        let mut state = TableState::default();
+        state.select(Some(rel));
+        Ok((records, state))
     }
 
     pub fn name<'a>(&'a self) -> &'a str {

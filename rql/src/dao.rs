@@ -88,12 +88,12 @@ pub struct TableColumnSpec {
 }
 
 /// A row in the table
-#[derive(Default, Debug, PartialEq)]
+#[derive(Default, Debug, PartialEq, Clone)]
 pub struct Record {
     pub fields: Vec<Field>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Field {
     pub name: String,
     pub typ: FieldType,
@@ -156,7 +156,7 @@ impl Display for FieldValue {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum FieldType {
     RowId,
     Null,
