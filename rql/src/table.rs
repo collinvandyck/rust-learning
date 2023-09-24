@@ -7,7 +7,7 @@ pub struct DbTable {
     dao: BlockingDao,
     pub schema: TableSchema,
     max_lens: HashMap<TableColumn, usize>,
-    pub pager: Pager<Record>,
+    pub pager: Pager,
     pub count: u64,
 }
 
@@ -36,6 +36,7 @@ impl DbTable {
         *self.max_lens.get(col).unwrap_or(&dfvalue)
     }
 
+    /*
     fn fetch(&mut self) -> Result<()> {
         self.pager.items = self
             .dao
@@ -57,9 +58,10 @@ impl DbTable {
         }
         Ok(())
     }
+    */
 
-    pub fn records<'a>(&'a self) -> (&[Record], TableState) {
-        self.pager.state()
+    pub fn records<'a>(&'a self) -> (Vec<Record>, TableState) {
+        return (vec![], TableState::default());
     }
 
     pub fn name<'a>(&'a self) -> &'a str {

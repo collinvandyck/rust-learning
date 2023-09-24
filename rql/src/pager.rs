@@ -1,15 +1,14 @@
 use crate::prelude::*;
 
 #[derive(Default)]
-pub struct Pager<T> {
-    pub items: Vec<T>,
+pub struct Pager {
     pub top: usize,
     pub viewport_rows: usize,
     pub pos: Option<usize>,
     count: usize,
 }
 
-impl<T> Pager<T> {
+impl Pager {
     pub fn count(mut self, v: u64) -> Self {
         self.count = v.try_into().unwrap();
         self
@@ -25,19 +24,12 @@ impl<T> Pager<T> {
         self.viewport_rows = rows;
     }
 
-    #[must_use]
-    fn items<I: IntoIterator<Item = T>>(mut self, items: I) -> Self {
-        self.set_items(items);
-        self
-    }
-
-    fn set_items<I: IntoIterator<Item = T>>(&mut self, items: I) {
-        let items = items.into_iter().collect::<Vec<_>>();
-        self.items = items;
+    fn is_empty(&self) -> bool {
+        self.count == 0
     }
 
     pub fn select(&mut self, pos: usize) {
-        if self.items.is_empty() {
+        if self.is_empty() {
             return;
         }
         if let Some(p) = &mut self.pos {
@@ -52,11 +44,11 @@ impl<T> Pager<T> {
     }
 
     pub fn next(&mut self) {
-        let Some(pos) = self.pos.as_mut() else { return };
-        if self.items.is_empty() {
+        if self.is_empty() {
             return;
-        };
-        if *pos >= self.items.len() - 1 {
+        }
+        let Some(pos) = self.pos.as_mut() else { return };
+        if *pos >= self.count - 1 {
             // start at the beginning
             self.top = 0;
             *pos = 0;
@@ -73,7 +65,7 @@ impl<T> Pager<T> {
         let Some(pos) = self.pos.as_mut() else { return };
         if *pos == 0 {
             // start at the end
-            *pos = self.items.len() - 1;
+            *pos = self.count - 1;
             if *pos >= self.viewport_rows {
                 self.top = *pos - self.viewport_rows + 1;
             } else {
@@ -96,6 +88,7 @@ impl<T> Pager<T> {
         (self.top, self.pos.unwrap_or(0), self.relative_pos())
     }
 
+    /*
     pub fn state<'a>(&'a self) -> (&'a [T], TableState) {
         if self.items.is_empty() {
             return (&self.items, TableState::default());
@@ -110,34 +103,14 @@ impl<T> Pager<T> {
         state.select(Some(rel));
         (items, state)
     }
-}
-
-impl<T, I> From<I> for Pager<T>
-where
-    I: IntoIterator<Item = T>,
-{
-    fn from(items: I) -> Self {
-        let top = 0;
-        let viewport_rows = 0;
-        let items: Vec<T> = items.into_iter().collect();
-        let pos = if items.is_empty() { None } else { Some(0) };
-        let count = items.len();
-        Self {
-            items,
-            top,
-            viewport_rows,
-            pos,
-            count,
-        }
-    }
+    */
 }
 
 mod tests {
     use super::*;
     #[test]
     fn test_pager() {
-        let nums: Vec<_> = (0..5).collect();
-        let mut p = Pager::from(nums).viewport_rows(3);
+        let mut p = Pager::default().count(5).viewport_rows(3);
 
         // verify that top keeps up as we move forward
         assert_eq!(p.top_pos_rel(), (0, 0, 0));
@@ -166,14 +139,5 @@ mod tests {
         assert_eq!(p.top_pos_rel(), (0, 0, 0));
         p.prev();
         assert_eq!(p.top_pos_rel(), (2, 4, 2));
-    }
-
-    #[test]
-    fn test_pager_from() {
-        let mut p: Pager<i32> = [1, 2, 3, 4, 5].into();
-        assert_eq!(p.top, 0);
-        assert_eq!(p.viewport_rows, 0);
-        p.set_viewport_rows(100);
-        assert_eq!(p.viewport_rows, 100);
     }
 }
