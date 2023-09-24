@@ -9,6 +9,9 @@ struct Args {
 
     #[arg(env)]
     db_path: String,
+
+    #[arg(long, default_value_t = false)]
+    quit: bool,
 }
 
 impl Debug for Args {
@@ -57,6 +60,9 @@ fn setup_and_run(args: &Args) -> Result<()> {
 }
 
 fn run(args: &Args, term: &mut Term) -> Result<()> {
+    if args.quit {
+        return Ok(());
+    }
     info!(?args, "Running");
     let db: DbType = DbType::Path(args.db_path.as_str());
     let mut app = App::new(db)?;

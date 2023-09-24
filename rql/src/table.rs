@@ -17,7 +17,7 @@ impl DbTable {
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
         let max_lens = HashMap::default();
-        let pager = Pager::default();
+        let mut pager = Pager::default();
         let mut table = Self {
             dao,
             schema,
@@ -67,13 +67,11 @@ impl DbTable {
         return &self.schema.name;
     }
 
-    pub fn next(&mut self, rows: usize) {
-        self.pager.set_viewport_rows(rows);
+    pub fn next(&mut self) {
         self.pager.next();
     }
 
-    pub fn previous(&mut self, rows: usize) {
-        self.pager.set_viewport_rows(rows);
+    pub fn previous(&mut self) {
         self.pager.prev();
     }
 

@@ -115,14 +115,15 @@ impl App {
         let focus = Focus::default();
         let dims = Rect::default();
         let bindings = KeyBindSet::default();
-        Ok(Self {
+        let mut app = Self {
             dao,
             tables,
             table,
             focus,
             dims,
             bindings,
-        })
+        };
+        Ok(app)
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
@@ -266,13 +267,13 @@ impl App {
                         Action::TableNext => {
                             let table_rows = self.table_rows();
                             if let Some(table) = &mut self.table {
-                                table.next(table_rows);
+                                table.next();
                             }
                         }
                         Action::TablePrev => {
                             let table_rows = self.table_rows();
                             if let Some(table) = &mut self.table {
-                                table.previous(table_rows);
+                                table.previous();
                             }
                         }
                         Action::ChangeFocus(focus) => match focus {
