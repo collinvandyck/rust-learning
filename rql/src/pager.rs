@@ -121,7 +121,7 @@ where
         let top = 0;
         let viewport_rows = 0;
         let items: Vec<T> = items.into_iter().collect();
-        let pos = None;
+        let pos = if items.is_empty() { None } else { Some(0) };
         Self {
             items,
             top,
