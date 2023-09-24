@@ -178,6 +178,7 @@ impl App {
             let num_table_rows = self.num_table_rows();
             if let Some(selected_table) = &mut self.table {
                 let Some((records, mut state)) = table_records else {
+                    warn!("no records");
                     return;
                 };
                 let header_names = selected_table
