@@ -167,9 +167,9 @@ impl App {
                 );
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, chunks[0], state);
-            let table_rows = self.table_rows();
+            let num_table_rows = self.num_table_rows();
             if let Some(selected_table) = &mut self.table {
-                selected_table.set_viewport_rows(table_rows);
+                selected_table.set_viewport_rows(num_table_rows);
                 let header_names = selected_table
                     .schema
                     .cols
@@ -234,7 +234,7 @@ impl App {
         Ok(())
     }
 
-    fn table_rows(&mut self) -> usize {
+    fn num_table_rows(&mut self) -> usize {
         (self.dims.height - 3) as usize // 2 border, 1 header
     }
 
@@ -268,11 +268,11 @@ impl App {
                             self.open_table();
                         }
                         Action::TableNext => {
-                            let table_rows = self.table_rows();
+                            let table_rows = self.num_table_rows();
                             self.table.iter_mut().for_each(DbTable::next);
                         }
                         Action::TablePrev => {
-                            let table_rows = self.table_rows();
+                            let table_rows = self.num_table_rows();
                             self.table.iter_mut().for_each(DbTable::previous);
                         }
                         Action::ChangeFocus(focus) => match focus {
