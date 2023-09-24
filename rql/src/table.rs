@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
+
+use tracing_subscriber::field::debug;
 
 use crate::{pager::Pager, prelude::*};
 
@@ -14,6 +16,12 @@ pub struct DbTable {
 
 #[derive(Default)]
 pub struct IndexedRecord(usize, pub Record);
+
+impl Debug for IndexedRecord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("IndexedRecord").field(&self.0).finish()
+    }
+}
 
 impl IndexedRecord {
     fn index(&self) -> usize {
@@ -49,9 +57,12 @@ impl IndexedRecords {
     }
 
     fn range(&self, first: usize, last: usize) -> Vec<Record> {
+        trace!(first, last, "IndexedRecords::range");
+        assert!(first <= last);
         self.0
             .iter()
             .filter(|r| {
+                trace!(?r, "IndexedRecords::range::filter");
                 let idx = r.index();
                 idx >= first && idx < last
             })
@@ -111,8 +122,7 @@ impl DbTable {
         let (start, pos, rel) = self.pager.top_pos_rel();
         let end = (start + view_rows).min(self.pager.count);
         let index = self.indexed.index();
-
-        debug!(start, end, pos, rel, ?index, "Records");
+        trace!(start, end, pos, rel, ?index, "Records");
 
         // fetch a new window if necessary
         let contains = self.indexed.contains(start, end);
@@ -126,15 +136,28 @@ impl DbTable {
             let spec = GetRecords::new(&self.schema.name)
                 .offset(start)
                 .limit(limit);
-            info!(limit, offset, "Fetched new page set");
             let records = self.dao.records(&self.schema, spec)?;
-            let irs = (offset..limit)
+            let irs = (start..start + limit)
                 .zip(records.into_iter())
                 .map(|(idx, record)| IndexedRecord(idx, record))
                 .collect::<Vec<_>>();
+            trace!(?irs, "irs");
             self.indexed = IndexedRecords(irs);
+            let index = self.indexed.index();
+            trace!(
+                limit,
+                offset,
+                start,
+                end,
+                pos,
+                rel,
+                ?index,
+                "Fetched {} records",
+                self.indexed.0.len(),
+            );
         }
         let records = self.indexed.range(start, end);
+        trace!("Indexed Records: {}", records.len());
         self.set_max_lens(&records);
         let mut state = TableState::default();
         state.select(Some(rel));

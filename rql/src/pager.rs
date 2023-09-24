@@ -58,8 +58,8 @@ impl Pager {
         } else {
             // bump forward
             *pos += 1;
-            if *pos - self.top >= self.viewport_rows {
-                self.top = *pos - self.viewport_rows + 1;
+            if *pos - self.top >= self.viewport_rows + 1 {
+                self.top = *pos - (self.viewport_rows + 1);
             }
         }
     }

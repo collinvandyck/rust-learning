@@ -334,7 +334,6 @@ impl Dao {
 
     async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Vec<Record>> {
         let table_name = req.table_name.as_str();
-        info!(table_name, "Fetching records");
         let mut conn = self.pool.acquire().await?;
         let limit = req.limit.map(|v| format!("limit {v}")).unwrap_or_default();
         let offset = req
@@ -342,6 +341,7 @@ impl Dao {
             .map(|v| format!("offset {v}"))
             .unwrap_or_default();
         let query = format!("select rowid, * from {} {} {}", table_name, limit, offset);
+        debug!(query, "Fetching records");
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = vec![];
         for row in rows {
