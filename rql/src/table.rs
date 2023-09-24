@@ -7,7 +7,7 @@ pub struct DbTable {
     dao: BlockingDao,
     pub schema: TableSchema,
     max_lens: HashMap<TableColumn, usize>,
-    pager: Pager<Record>,
+    pub pager: Pager<Record>,
     pub count: u64,
 }
 
@@ -55,7 +55,7 @@ impl DbTable {
         Ok(())
     }
 
-    pub fn records<'a>(&'a self, count: usize) -> (&[Record], TableState) {
+    pub fn records<'a>(&'a self) -> (&[Record], TableState) {
         self.pager.state()
     }
 

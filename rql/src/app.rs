@@ -83,6 +83,7 @@ impl App {
             frame.render_stateful_widget(list, chunks[0], state);
             let table_rows = self.table_rows();
             if let Some(selected_table) = &mut self.table {
+                selected_table.pager.set_viewport_rows(table_rows);
                 let header_names = selected_table
                     .schema
                     .cols
@@ -97,7 +98,7 @@ impl App {
                     .style(Style::default())
                     .height(1)
                     .bottom_margin(0);
-                let (records, mut state) = selected_table.records(table_rows);
+                let (records, mut state) = selected_table.records();
                 let rows = records.iter().enumerate().map(|(row_idx, record)| {
                     let mut row_style = Style::default();
                     if row_idx % 2 == 0 {

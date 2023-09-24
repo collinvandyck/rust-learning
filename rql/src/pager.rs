@@ -36,6 +36,8 @@ impl<T> Pager<T> {
         }
         if let Some(p) = &mut self.pos {
             *p = pos;
+        } else {
+            self.pos = Some(pos);
         }
     }
 
@@ -106,7 +108,8 @@ impl<T> Pager<T> {
             return (&self.items, TableState::default());
         };
         let (top, pos, rel) = self.top_pos_rel();
-        let items = &self.items[self.top..pos];
+        let end_idx = (self.top + self.viewport_rows).min(self.items.len());
+        let items = &self.items[self.top..end_idx];
         let mut state = TableState::default();
         state.select(Some(rel));
         (items, state)
