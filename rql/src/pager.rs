@@ -11,6 +11,9 @@ pub struct Pager {
 impl Pager {
     pub fn count(mut self, v: u64) -> Self {
         self.count = v.try_into().unwrap();
+        if v > 0 {
+            self.pos = Some(0);
+        }
         self
     }
 
@@ -62,6 +65,9 @@ impl Pager {
     }
 
     pub fn prev(&mut self) {
+        if self.is_empty() {
+            return;
+        }
         let Some(pos) = self.pos.as_mut() else { return };
         if *pos == 0 {
             // start at the end
@@ -115,6 +121,7 @@ mod tests {
         // verify that top keeps up as we move forward
         assert_eq!(p.top_pos_rel(), (0, 0, 0));
         p.next();
+        //   left: `(0, 0, 0)`,
         assert_eq!(p.top_pos_rel(), (0, 1, 1));
         p.next();
         assert_eq!(p.top_pos_rel(), (0, 2, 2));
