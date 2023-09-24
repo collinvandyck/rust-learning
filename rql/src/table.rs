@@ -104,8 +104,20 @@ impl DbTable {
         let view_rows = self.pager.viewport_rows;
         let (start, pos, rel) = self.pager.top_pos_rel();
         let end = (start + view_rows).min(self.pager.count);
-        let contains = self.indexed.contains(start, end);
-        info!(start, end, contains, "loaded set");
+
+        let has_first = self
+            .indexed
+            .first_index()
+            .map(|i| i >= start)
+            .unwrap_or_default();
+
+        let has_last = self
+            .indexed
+            .last_index()
+            .map(|i| i < end)
+            .unwrap_or_default();
+
+        info!(start, end, has_first, has_last, "loaded set");
         (vec![], TableState::default())
     }
 
