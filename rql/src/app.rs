@@ -121,11 +121,6 @@ enum Action {
     Quit,
 }
 
-enum Move {
-    Up,
-    Down,
-}
-
 impl App {
     pub fn new(db: DbType) -> Result<Self> {
         let dao = BlockingDao::new(db)?;
