@@ -97,6 +97,20 @@ impl<T> Pager<T> {
     fn top_pos_rel(&self) -> (usize, usize, usize) {
         (self.top, self.pos.unwrap_or(0), self.relative_pos())
     }
+
+    pub fn state<'a>(&'a self) -> (&'a [T], TableState) {
+        if self.items.is_empty() {
+            return (&self.items, TableState::default());
+        }
+        let Some(pos) = self.pos else {
+            return (&self.items, TableState::default());
+        };
+        let (top, pos, rel) = self.top_pos_rel();
+        let items = &self.items[self.top..pos];
+        let mut state = TableState::default();
+        state.select(Some(rel));
+        (items, state)
+    }
 }
 
 impl<T, I> From<I> for Pager<T>

@@ -55,7 +55,9 @@ impl DbTable {
         Ok(())
     }
 
-    pub fn records<'a>(&'a self, count: usize) -> (&[Record], TableState) {}
+    pub fn records<'a>(&'a self, count: usize) -> (&[Record], TableState) {
+        self.pager.state()
+    }
 
     pub fn name<'a>(&'a self) -> &'a str {
         return &self.schema.name;
