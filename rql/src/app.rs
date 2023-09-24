@@ -1,3 +1,5 @@
+use ratatui::text::Spans;
+
 use crate::prelude::*;
 use core::num;
 use std::{
@@ -140,6 +142,36 @@ impl App {
             None
         };
         term.draw(move |frame| {
+            let mut chrome = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Min(0), Constraint::Length(1)].as_ref())
+                .split(frame.size());
+            let help = {
+                let no_style = Style::default();
+                let key_style = Style::default().fg(Color::LightCyan);
+                let mut nav = ["j", "k", "h", "l", "arrows"]
+                    .iter()
+                    .zip(std::iter::repeat(Span::styled(",", no_style)))
+                    .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
+                    .flatten()
+                    .skip(1)
+                    .collect::<Vec<_>>();
+                nav.push(Span::raw(": navigate | "));
+                nav.append(
+                    &mut ["q", "esc"]
+                        .iter()
+                        .zip(std::iter::repeat(Span::styled(",", no_style)))
+                        .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
+                        .flatten()
+                        .skip(1)
+                        .collect::<Vec<_>>(),
+                );
+                nav.push(Span::raw(": back/quit "));
+                nav
+            };
+            let help = text::Line::from(help);
+            let help = Paragraph::new(help);
+            frame.render_widget(help, chrome[1]);
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(
@@ -149,7 +181,7 @@ impl App {
                     ]
                     .as_ref(),
                 )
-                .split(frame.size());
+                .split(chrome[0]);
             let items: Vec<ListItem> = self
                 .tables
                 .names
@@ -245,7 +277,7 @@ impl App {
     }
 
     fn num_table_rows(&mut self) -> usize {
-        (self.dims.height - 3) as usize // 2 border, 1 header
+        (self.dims.height - 4) as usize // 2 border, 1 header
     }
 
     fn open_table(&mut self) -> Result<()> {
