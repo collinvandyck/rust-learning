@@ -234,6 +234,17 @@ impl App {
         (self.dims.height - 3) as usize // 2 border, 1 header
     }
 
+    fn open_table(&mut self) -> Result<()> {
+        if let Some(name) = self.tables.selected() {
+            let mut table = DbTable::new(self.dao.clone(), name)?;
+            if self.focus == Focus::Table {
+                table.select_first();
+            }
+            self.table.replace(table);
+        }
+        Ok(())
+    }
+
     pub fn tick(&mut self) -> Result<Tick> {
         let poll_time = Duration::from_secs(24 * 3600);
         if event::poll(poll_time).context("event poll failed")? {
@@ -246,25 +257,11 @@ impl App {
                     match action {
                         Action::TablesNext => {
                             self.tables.next();
-                            if let Some(name) = self.tables.selected() {
-                                self.table.replace(DbTable::new(self.dao.clone(), name)?);
-                            }
-                            if self.focus == Focus::Table {
-                                if let Some(table) = self.table.as_mut() {
-                                    table.select_first();
-                                }
-                            }
+                            self.open_table();
                         }
                         Action::TablesPrev => {
                             self.tables.previous();
-                            if let Some(name) = self.tables.selected() {
-                                self.table.replace(DbTable::new(self.dao.clone(), name)?);
-                            }
-                            if self.focus == Focus::Table {
-                                if let Some(table) = self.table.as_mut() {
-                                    table.select_first();
-                                }
-                            }
+                            self.open_table();
                         }
                         Action::TableNext => {
                             let table_rows = self.table_rows();
