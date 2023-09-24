@@ -1,5 +1,8 @@
 use crate::prelude::*;
-use std::collections::{HashMap, HashSet};
+use std::{
+    borrow::BorrowMut,
+    collections::{HashMap, HashSet},
+};
 
 pub enum Tick {
     Quit,
@@ -266,30 +269,20 @@ impl App {
                         }
                         Action::TableNext => {
                             let table_rows = self.table_rows();
-                            if let Some(table) = &mut self.table {
-                                table.next();
-                            }
+                            self.table.iter_mut().for_each(DbTable::next);
                         }
                         Action::TablePrev => {
                             let table_rows = self.table_rows();
-                            if let Some(table) = &mut self.table {
-                                table.previous();
-                            }
+                            self.table.iter_mut().for_each(DbTable::previous);
                         }
                         Action::ChangeFocus(focus) => match focus {
                             Focus::Tables => {
                                 self.focus = Focus::Tables;
-                                if let Some(table) = &mut self.table {
-                                    table.unselect();
-                                }
+                                self.table.iter_mut().for_each(DbTable::unselect);
                             }
                             Focus::Table => {
-                                if let Some(table) = &mut self.table {
-                                    if table.count > 0 {
-                                        self.focus = Focus::Table;
-                                        table.select_first();
-                                    }
-                                }
+                                self.focus = Focus::Table;
+                                self.table.iter_mut().for_each(DbTable::select_first);
                             }
                         },
                         Action::PageUp => {}
