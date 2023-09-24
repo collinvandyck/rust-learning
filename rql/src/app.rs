@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use core::num;
 use std::{
     borrow::BorrowMut,
     collections::{HashMap, HashSet},
@@ -131,6 +132,13 @@ impl App {
         if self.table.is_none() && self.tables.selected().is_some() {
             self.open_table()?;
         }
+        let num_table_rows = self.num_table_rows();
+        let table_records = if let Some(table) = self.table.as_mut() {
+            table.set_viewport_rows(num_table_rows);
+            Some(table.records()?)
+        } else {
+            None
+        };
         term.draw(move |frame| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
@@ -169,7 +177,9 @@ impl App {
             frame.render_stateful_widget(list, chunks[0], state);
             let num_table_rows = self.num_table_rows();
             if let Some(selected_table) = &mut self.table {
-                selected_table.set_viewport_rows(num_table_rows);
+                let Some((records, mut state)) = table_records else {
+                    return;
+                };
                 let header_names = selected_table
                     .schema
                     .cols
@@ -184,7 +194,6 @@ impl App {
                     .style(Style::default())
                     .height(1)
                     .bottom_margin(0);
-                let (records, mut state) = selected_table.records();
                 let rows = records.iter().enumerate().map(|(row_idx, record)| {
                     let mut row_style = Style::default();
                     if row_idx % 2 == 0 {
