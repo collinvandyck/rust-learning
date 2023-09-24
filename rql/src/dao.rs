@@ -42,6 +42,10 @@ impl BlockingDao {
     pub fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
         self.inner.rt.block_on(self.inner.dao.count(table_name))
     }
+
+    pub fn max_lens(&self, schema: &TableSchema) -> Result<Vec<usize>> {
+        self.inner.rt.block_on(self.inner.dao.max_lens(schema))
+    }
 }
 
 #[derive(Clone)]
@@ -76,15 +80,15 @@ impl TableColumn {
 }
 
 #[derive(sqlx::FromRow, Hash, PartialEq, Eq, Clone)]
+#[allow(dead_code)]
 pub struct TableColumnSpec {
     pub name: String,
     #[sqlx(rename = "type")]
     typ: String,
-    // not used
-    //cid: u32,
-    //notnull: bool,
-    //dflt_value: String,
-    //pk: bool,
+    cid: u32,
+    notnull: bool,
+    dflt_value: String,
+    pk: bool,
 }
 
 /// A row in the table
@@ -317,6 +321,24 @@ impl Dao {
         cols.insert(0, TableColumn::RowId);
         let schema = TableSchema { name, cols };
         Ok(schema)
+    }
+
+    async fn max_lens(&self, schema: &TableSchema) -> Result<Vec<usize>> {
+        let mut conn = self.pool.acquire().await?;
+        let query_parts = &schema
+            .cols
+            .iter()
+            .map(|c| format!("max(length({}))", c.name()))
+            .collect::<Vec<_>>()
+            .join(",");
+        let query = format!("select {} from {}", query_parts, schema.name);
+        let row = sqlx::query(&query).fetch_one(&mut *conn).await?;
+        let mut res = vec![];
+        for col in &schema.cols {
+            let len = row.get::<i64, _>(col.name());
+            res.push(len.try_into().unwrap_or_default());
+        }
+        Ok(res)
     }
 
     async fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
