@@ -4,8 +4,8 @@ use rql::prelude::*;
 
 #[derive(clap::Parser)]
 struct Args {
-    #[arg(long, env, default_value = "rql.log")]
-    log: String,
+    #[arg(long, env)]
+    log: Option<String>,
 
     #[arg(env)]
     db_path: String,
@@ -37,17 +37,18 @@ fn main() {
 }
 
 fn init_tracing(args: &Args) -> Result<()> {
-    let log_file = args.log.clone();
-    let log_file = std::fs::File::create(&log_file)?;
-    let mut filter = EnvFilter::default();
-    for directive in &["rql=debug", "main=debug", "error"] {
-        let directive: Directive = directive.parse()?;
-        filter = filter.add_directive(directive);
+    if let Some(log_file) = &args.log {
+        let log_file = std::fs::File::create(&log_file)?;
+        let mut filter = EnvFilter::default();
+        for directive in &["rql=debug", "main=debug", "error"] {
+            let directive: Directive = directive.parse()?;
+            filter = filter.add_directive(directive);
+        }
+        tracing_subscriber::fmt()
+            .with_writer(log_file)
+            .with_env_filter(filter)
+            .init();
     }
-    tracing_subscriber::fmt()
-        .with_writer(log_file)
-        .with_env_filter(filter)
-        .init();
     Ok(())
 }
 
