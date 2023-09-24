@@ -9,6 +9,38 @@ pub struct DbTable {
     max_lens: HashMap<TableColumn, usize>,
     pub pager: Pager,
     pub count: u64,
+    pub indexed: IndexedRecords,
+}
+
+#[derive(Default)]
+pub struct IndexedRecord(usize, pub Record);
+
+impl IndexedRecord {
+    fn index(&self) -> usize {
+        self.0
+    }
+}
+
+#[derive(Default)]
+pub struct IndexedRecords(Vec<IndexedRecord>);
+
+impl IndexedRecords {
+    fn first_index(&self) -> Option<usize> {
+        self.0.first().map(|r| r.index())
+    }
+
+    fn last_index(&self) -> Option<usize> {
+        self.0.last().map(|r| r.index())
+    }
+
+    fn index(&self) -> Option<(usize, usize)> {
+        if let Some(first) = self.first_index() {
+            if let Some(last) = self.last_index() {
+                return Some((first, last));
+            }
+        }
+        None
+    }
 }
 
 impl DbTable {
@@ -18,12 +50,14 @@ impl DbTable {
         let schema = dao.table_schema(&name)?;
         let max_lens = HashMap::default();
         let mut pager = Pager::default().count(count);
+        let indexed = IndexedRecords::default();
         let mut table = Self {
             dao,
             schema,
             max_lens,
             pager,
             count,
+            indexed,
         };
         Ok(table)
     }

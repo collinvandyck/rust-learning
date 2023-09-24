@@ -90,7 +90,7 @@ impl Pager {
         self.pos.unwrap_or(0) - self.top
     }
 
-    fn top_pos_rel(&self) -> (usize, usize, usize) {
+    pub fn top_pos_rel(&self) -> (usize, usize, usize) {
         (self.top, self.pos.unwrap_or(0), self.relative_pos())
     }
 
@@ -116,12 +116,16 @@ mod tests {
     use super::*;
     #[test]
     fn test_pager() {
+        let mut p = Pager::default().count(0).viewport_rows(5);
+        assert_eq!(p.top_pos_rel(), (0, 0, 0));
+        p.next();
+        assert_eq!(p.top_pos_rel(), (0, 0, 0));
+
         let mut p = Pager::default().count(5).viewport_rows(3);
 
         // verify that top keeps up as we move forward
         assert_eq!(p.top_pos_rel(), (0, 0, 0));
         p.next();
-        //   left: `(0, 0, 0)`,
         assert_eq!(p.top_pos_rel(), (0, 1, 1));
         p.next();
         assert_eq!(p.top_pos_rel(), (0, 2, 2));
