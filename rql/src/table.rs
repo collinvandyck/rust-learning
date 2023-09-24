@@ -60,7 +60,7 @@ impl DbTable {
     }
     */
 
-    pub fn records<'a>(&'a self) -> (Vec<Record>, TableState) {
+    pub fn records(&mut self) -> (Vec<Record>, TableState) {
         return (vec![], TableState::default());
     }
 
