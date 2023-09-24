@@ -58,8 +58,10 @@ impl Pager {
         } else {
             // bump forward
             *pos += 1;
-            if *pos - self.top >= self.viewport_rows + 1 {
-                self.top = *pos - (self.viewport_rows + 1);
+            if *pos >= self.viewport_rows + self.top {
+                self.top = (*pos)
+                    .checked_sub(self.viewport_rows - 1)
+                    .unwrap_or_default();
             }
         }
     }
@@ -96,23 +98,6 @@ impl Pager {
     pub fn top_pos_rel(&self) -> (usize, usize, usize) {
         (self.top, self.pos.unwrap_or(0), self.relative_pos())
     }
-
-    /*
-    pub fn state<'a>(&'a self) -> (&'a [T], TableState) {
-        if self.items.is_empty() {
-            return (&self.items, TableState::default());
-        }
-        let Some(pos) = self.pos else {
-            return (&self.items, TableState::default());
-        };
-        let (top, pos, rel) = self.top_pos_rel();
-        let end_idx = (self.top + self.viewport_rows).min(self.items.len());
-        let items = &self.items[self.top..end_idx];
-        let mut state = TableState::default();
-        state.select(Some(rel));
-        (items, state)
-    }
-    */
 }
 
 mod tests {
@@ -133,6 +118,7 @@ mod tests {
         p.next();
         assert_eq!(p.top_pos_rel(), (0, 2, 2));
         p.next();
+        // (0, 3, 3)
         assert_eq!(p.top_pos_rel(), (1, 3, 2));
         p.next();
         assert_eq!(p.top_pos_rel(), (2, 4, 2));
