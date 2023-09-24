@@ -46,10 +46,19 @@ impl Default for KeyBindSet {
         let mut bindings = HashMap::default();
         bindings.insert(Focus::Tables, {
             HashMap::from([
+                // tablesnext
+                (plain_event(KeyCode::Down), Action::TablesNext),
                 (plain_event(KeyCode::Char('J')), Action::TablesNext),
-                (plain_event(KeyCode::Char('K')), Action::TablesPrev),
                 (plain_event(KeyCode::Char('j')), Action::TablesNext),
+                /// tablesprev
+                (plain_event(KeyCode::Up), Action::TablesPrev),
+                (plain_event(KeyCode::Char('K')), Action::TablesPrev),
                 (plain_event(KeyCode::Char('k')), Action::TablesPrev),
+                // focustable
+                (
+                    plain_event(KeyCode::Right),
+                    Action::ChangeFocus(Focus::Table),
+                ),
                 (
                     plain_event(KeyCode::Char('l')),
                     Action::ChangeFocus(Focus::Table),
@@ -62,16 +71,28 @@ impl Default for KeyBindSet {
                     plain_event(KeyCode::Enter),
                     Action::ChangeFocus(Focus::Table),
                 ),
+                // quit
                 (plain_event(KeyCode::Char('q')), Action::Quit),
                 (plain_event(KeyCode::Esc), Action::Quit),
             ])
         });
         bindings.insert(Focus::Table, {
             HashMap::from([
+                // tablesnext
                 (plain_event(KeyCode::Char('J')), Action::TablesNext),
+                // tablesprev
                 (plain_event(KeyCode::Char('K')), Action::TablesPrev),
+                // tablenext
+                (plain_event(KeyCode::Down), Action::TableNext),
                 (plain_event(KeyCode::Char('j')), Action::TableNext),
+                // tableprev
+                (plain_event(KeyCode::Up), Action::TablePrev),
                 (plain_event(KeyCode::Char('k')), Action::TablePrev),
+                // focustables
+                (
+                    plain_event(KeyCode::Left),
+                    Action::ChangeFocus(Focus::Tables),
+                ),
                 (
                     plain_event(KeyCode::Char('h')),
                     Action::ChangeFocus(Focus::Tables),
