@@ -184,7 +184,7 @@ impl App {
             frame.render_stateful_widget(list, chunks[0], state);
             let table_rows = self.table_rows();
             if let Some(selected_table) = &mut self.table {
-                selected_table.pager.set_viewport_rows(table_rows);
+                selected_table.set_viewport_rows(table_rows);
                 let header_names = selected_table
                     .schema
                     .cols
@@ -270,11 +270,21 @@ impl App {
                             if let Some(name) = self.tables.selected() {
                                 self.table.replace(DbTable::new(self.dao.clone(), name)?);
                             }
+                            if self.focus == Focus::Table {
+                                if let Some(table) = self.table.as_mut() {
+                                    table.select_first();
+                                }
+                            }
                         }
                         Action::TablesPrev => {
                             self.tables.previous();
                             if let Some(name) = self.tables.selected() {
                                 self.table.replace(DbTable::new(self.dao.clone(), name)?);
+                            }
+                            if self.focus == Focus::Table {
+                                if let Some(table) = self.table.as_mut() {
+                                    table.select_first();
+                                }
                             }
                         }
                         Action::TableNext => {

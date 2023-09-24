@@ -29,6 +29,10 @@ impl DbTable {
         Ok(table)
     }
 
+    pub fn set_viewport_rows(&mut self, rows: usize) {
+        self.pager.set_viewport_rows(rows);
+    }
+
     pub fn max_len(&self, col: &TableColumn, dfvalue: usize) -> usize {
         *self.max_lens.get(col).unwrap_or(&dfvalue)
     }

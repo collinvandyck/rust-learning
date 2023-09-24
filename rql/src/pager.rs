@@ -82,16 +82,6 @@ impl<T> Pager<T> {
         }
     }
 
-    /// Returns the relative position to the total stream.
-    ///
-    /// So, if we have:
-    /// - 10 element vec
-    /// - viewport_rows: 3
-    /// - top: 2
-    /// - pos: 4
-    ///
-    /// The records we send back will be [2..4]
-    /// Our pos returned will need to be 2 (last minus start)
     fn relative_pos(&self) -> usize {
         self.pos.unwrap_or(0) - self.top
     }
