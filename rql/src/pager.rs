@@ -11,9 +11,6 @@ pub struct Pager {
 impl Pager {
     pub fn count(mut self, v: u64) -> Self {
         self.count = v.try_into().unwrap();
-        if v > 0 {
-            self.pos = Some(0);
-        }
         self
     }
 
@@ -88,15 +85,15 @@ impl Pager {
         }
     }
 
-    fn relative_pos(&self) -> usize {
+    fn relative_pos(&self) -> Option<usize> {
         match self.pos {
-            Some(pos) if pos >= self.top => pos - self.top,
-            _ => 0,
+            Some(pos) if pos >= self.top => Some(pos - self.top),
+            _ => None,
         }
     }
 
-    pub fn top_pos_rel(&self) -> (usize, usize, usize) {
-        (self.top, self.pos.unwrap_or(0), self.relative_pos())
+    pub fn top_pos_rel(&self) -> (usize, Option<usize>, Option<usize>) {
+        (self.top, self.pos, self.relative_pos())
     }
 }
 
@@ -105,37 +102,37 @@ mod tests {
     #[test]
     fn test_pager() {
         let mut p = Pager::default().count(0).viewport_rows(5);
-        assert_eq!(p.top_pos_rel(), (0, 0, 0));
+        assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, 0, 0));
+        assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
 
         let mut p = Pager::default().count(5).viewport_rows(3);
 
         // verify that top keeps up as we move forward
-        assert_eq!(p.top_pos_rel(), (0, 0, 0));
+        assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, 1, 1));
+        assert_eq!(p.top_pos_rel(), (0, Some(1), Some(1)));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, 2, 2));
+        assert_eq!(p.top_pos_rel(), (0, Some(2), Some(2)));
         p.next();
-        assert_eq!(p.top_pos_rel(), (1, 3, 2));
+        assert_eq!(p.top_pos_rel(), (1, Some(3), Some(2)));
         p.next();
-        assert_eq!(p.top_pos_rel(), (2, 4, 2));
+        assert_eq!(p.top_pos_rel(), (2, Some(4), Some(2)));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, 0, 0));
+        assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
 
         // move backwards a bit.
         p.prev();
-        assert_eq!(p.top_pos_rel(), (2, 4, 2));
+        assert_eq!(p.top_pos_rel(), (2, Some(4), Some(2)));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (2, 3, 1));
+        assert_eq!(p.top_pos_rel(), (2, Some(3), Some(1)));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (2, 2, 0));
+        assert_eq!(p.top_pos_rel(), (2, Some(2), Some(0)));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (1, 1, 0));
+        assert_eq!(p.top_pos_rel(), (1, Some(1), Some(0)));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (0, 0, 0));
+        assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
         p.prev();
-        assert_eq!(p.top_pos_rel(), (2, 4, 2));
+        assert_eq!(p.top_pos_rel(), (2, Some(4), Some(2)));
     }
 }

@@ -228,7 +228,8 @@ impl From<&str> for FieldType {
         }
         match value {
             "string" | "text" | "timestamp" => FieldType::Text,
-            "int" | "integer" | "bigint" | "uint64" => FieldType::Integer,
+            "int" | "integer" | "bigint" | "uint64" | "numeric" => FieldType::Integer,
+            "float" => FieldType::Real,
             "blob" => FieldType::Blob,
             "boolean" | "bool" => FieldType::Boolean,
             "datetime" => FieldType::DateTime,

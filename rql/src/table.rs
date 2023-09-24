@@ -149,7 +149,7 @@ impl DbTable {
         let records = self.indexed.range(start, end);
         trace!("Indexed Records: {}", records.len());
         let mut state = TableState::default();
-        state.select(Some(rel));
+        state.select(rel);
         Ok((records, state))
     }
 
