@@ -1,8 +1,5 @@
-use std::collections::{HashMap, HashSet};
-
 use crate::prelude::*;
-
-type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
+use std::collections::{HashMap, HashSet};
 
 pub enum Tick {
     Quit,
@@ -42,45 +39,53 @@ impl KeyBindSet {
 impl Default for KeyBindSet {
     fn default() -> Self {
         use Action::*;
-        let kev = |code: KeyCode| -> KeyEvent { KeyEvent::new(code, KeyModifiers::NONE) };
+        let kevent = |code: KeyCode, m: KeyModifiers| -> KeyEvent { KeyEvent::new(code, m) };
+        let key = |code: KeyCode| -> KeyEvent { kevent(code, KeyModifiers::NONE) };
+        let ctrl_key = |code: KeyCode| -> KeyEvent { kevent(code, KeyModifiers::CONTROL) };
         let mut bindings = HashMap::default();
         bindings.insert(Focus::Tables, {
             HashMap::from([
                 // tablesnext
-                (kev(KeyCode::Down), TablesNext),
-                (kev(KeyCode::Char('J')), TablesNext),
-                (kev(KeyCode::Char('j')), TablesNext),
+                (key(KeyCode::Down), TablesNext),
+                (key(KeyCode::Char('J')), TablesNext),
+                (key(KeyCode::Char('j')), TablesNext),
                 /// tablesprev
-                (kev(KeyCode::Up), TablesPrev),
-                (kev(KeyCode::Char('K')), TablesPrev),
-                (kev(KeyCode::Char('k')), TablesPrev),
+                (key(KeyCode::Up), TablesPrev),
+                (key(KeyCode::Char('K')), TablesPrev),
+                (key(KeyCode::Char('k')), TablesPrev),
                 // focustable
-                (kev(KeyCode::Right), ChangeFocus(Focus::Table)),
-                (kev(KeyCode::Char('l')), ChangeFocus(Focus::Table)),
-                (kev(KeyCode::Char('o')), ChangeFocus(Focus::Table)),
-                (kev(KeyCode::Enter), ChangeFocus(Focus::Table)),
+                (key(KeyCode::Right), ChangeFocus(Focus::Table)),
+                (key(KeyCode::Char('l')), ChangeFocus(Focus::Table)),
+                (key(KeyCode::Char('o')), ChangeFocus(Focus::Table)),
+                (key(KeyCode::Enter), ChangeFocus(Focus::Table)),
                 // quit
-                (kev(KeyCode::Char('q')), Quit),
-                (kev(KeyCode::Esc), Quit),
+                (key(KeyCode::Char('q')), Quit),
+                (key(KeyCode::Esc), Quit),
             ])
         });
         bindings.insert(Focus::Table, {
             HashMap::from([
                 // tablesnext
-                (kev(KeyCode::Char('J')), TablesNext),
+                (key(KeyCode::Char('J')), TablesNext),
                 // tablesprev
-                (kev(KeyCode::Char('K')), TablesPrev),
+                (key(KeyCode::Char('K')), TablesPrev),
                 // tablenext
-                (kev(KeyCode::Down), TableNext),
-                (kev(KeyCode::Char('j')), TableNext),
+                (key(KeyCode::Down), TableNext),
+                (key(KeyCode::Char('j')), TableNext),
                 // tableprev
-                (kev(KeyCode::Up), TablePrev),
-                (kev(KeyCode::Char('k')), TablePrev),
+                (key(KeyCode::Up), TablePrev),
+                (key(KeyCode::Char('k')), TablePrev),
                 // focustables
-                (kev(KeyCode::Left), ChangeFocus(Focus::Tables)),
-                (kev(KeyCode::Char('h')), ChangeFocus(Focus::Tables)),
-                (kev(KeyCode::Char('q')), ChangeFocus(Focus::Tables)),
-                (kev(KeyCode::Esc), ChangeFocus(Focus::Tables)),
+                (key(KeyCode::Left), ChangeFocus(Focus::Tables)),
+                (key(KeyCode::Char('h')), ChangeFocus(Focus::Tables)),
+                (key(KeyCode::Char('q')), ChangeFocus(Focus::Tables)),
+                (key(KeyCode::Esc), ChangeFocus(Focus::Tables)),
+                // pageup
+                (key(KeyCode::PageUp), PageUp),
+                (ctrl_key(KeyCode::Char('u')), PageUp),
+                // pagedown
+                (key(KeyCode::PageDown), PageDown),
+                (ctrl_key(KeyCode::Char('d')), PageDown),
             ])
         });
         Self { bindings }
@@ -93,6 +98,8 @@ enum Action {
     TablesPrev,
     TableNext,
     TablePrev,
+    PageUp,
+    PageDown,
     ChangeFocus(Focus),
     Quit,
 }
@@ -291,6 +298,8 @@ impl App {
                                 }
                             }
                         },
+                        Action::PageUp => {}
+                        Action::PageDown => {}
                         Action::Quit => return Ok(Tick::Quit),
                     }
                 }
