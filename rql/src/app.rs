@@ -126,16 +126,14 @@ impl App {
     }
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
-        let start = Instant::now();
-        let size = term.size()?;
-        self.dims = size;
+        self.dims = term.size()?;
         term.draw(move |frame| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(
                     [
                         Constraint::Length(self.tables.max_len() + 1), // 2 border, 1 padding
-                        Constraint::Max(size.width),
+                        Constraint::Max(self.dims.width),
                     ]
                     .as_ref(),
                 )
@@ -229,8 +227,6 @@ impl App {
                 frame.render_stateful_widget(table, chunks[1], &mut state);
             }
         })?;
-        let elapsed = start.elapsed();
-        trace!(?elapsed, "Draw");
         Ok(())
     }
 
