@@ -67,7 +67,7 @@ pub enum TableColumn {
 impl TableColumn {
     pub fn name<'a>(&'a self) -> &'a str {
         match self {
-            TableColumn::RowId => "rid",
+            TableColumn::RowId => "rowid",
             TableColumn::Spec(spec) => &spec.name,
         }
     }
@@ -334,8 +334,8 @@ impl Dao {
         let query = format!("select {} from {}", query_parts, schema.name);
         let row = sqlx::query(&query).fetch_one(&mut *conn).await?;
         let mut res = vec![];
-        for col in &schema.cols {
-            let len = row.get::<i64, _>(col.name());
+        for (idx, col) in schema.cols.iter().enumerate() {
+            let len = row.get::<i64, _>(idx);
             res.push(len.try_into().unwrap_or_default());
         }
         Ok(res)

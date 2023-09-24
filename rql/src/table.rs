@@ -76,7 +76,16 @@ impl DbTable {
         info!(name, "Building db table");
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
-        let max_lens = HashMap::default();
+        let max_lens = dao.max_lens(&schema)?;
+        let max_lens: HashMap<TableColumn, usize> = schema
+            .cols
+            .iter()
+            .zip(max_lens.iter())
+            .map(|f| {
+                let (col, len) = f;
+                (col.clone(), *len)
+            })
+            .collect();
         let mut pager = Pager::default().count(count);
         let indexed = IndexedRecords::default();
         let mut table = Self {
@@ -96,25 +105,6 @@ impl DbTable {
 
     pub fn max_len(&self, col: &TableColumn, dfvalue: usize) -> usize {
         *self.max_lens.get(col).unwrap_or(&dfvalue)
-    }
-
-    fn set_max_lens(&mut self, records: &[Record]) {
-        let cols = &self.schema.cols;
-        self.max_lens.clear();
-        for record in records.iter() {
-            for (field_idx, field) in record.fields.iter().enumerate() {
-                let col = &cols[field_idx];
-                let val = &field.val;
-                let len = val.len();
-                let insert = match self.max_lens.get(col) {
-                    Some(l) if &len < l => false,
-                    _ => true,
-                };
-                if insert {
-                    self.max_lens.insert(col.clone(), len);
-                }
-            }
-        }
     }
 
     pub fn records(&mut self) -> Result<(Vec<Record>, TableState)> {
@@ -158,7 +148,6 @@ impl DbTable {
         }
         let records = self.indexed.range(start, end);
         trace!("Indexed Records: {}", records.len());
-        self.set_max_lens(&records);
         let mut state = TableState::default();
         state.select(Some(rel));
         Ok((records, state))
