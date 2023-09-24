@@ -41,70 +41,46 @@ impl KeyBindSet {
 
 impl Default for KeyBindSet {
     fn default() -> Self {
-        let plain_event = |code: KeyCode| -> KeyEvent { KeyEvent::new(code, KeyModifiers::NONE) };
-
+        use Action::*;
+        let kev = |code: KeyCode| -> KeyEvent { KeyEvent::new(code, KeyModifiers::NONE) };
         let mut bindings = HashMap::default();
         bindings.insert(Focus::Tables, {
             HashMap::from([
                 // tablesnext
-                (plain_event(KeyCode::Down), Action::TablesNext),
-                (plain_event(KeyCode::Char('J')), Action::TablesNext),
-                (plain_event(KeyCode::Char('j')), Action::TablesNext),
+                (kev(KeyCode::Down), TablesNext),
+                (kev(KeyCode::Char('J')), TablesNext),
+                (kev(KeyCode::Char('j')), TablesNext),
                 /// tablesprev
-                (plain_event(KeyCode::Up), Action::TablesPrev),
-                (plain_event(KeyCode::Char('K')), Action::TablesPrev),
-                (plain_event(KeyCode::Char('k')), Action::TablesPrev),
+                (kev(KeyCode::Up), TablesPrev),
+                (kev(KeyCode::Char('K')), TablesPrev),
+                (kev(KeyCode::Char('k')), TablesPrev),
                 // focustable
-                (
-                    plain_event(KeyCode::Right),
-                    Action::ChangeFocus(Focus::Table),
-                ),
-                (
-                    plain_event(KeyCode::Char('l')),
-                    Action::ChangeFocus(Focus::Table),
-                ),
-                (
-                    plain_event(KeyCode::Char('o')),
-                    Action::ChangeFocus(Focus::Table),
-                ),
-                (
-                    plain_event(KeyCode::Enter),
-                    Action::ChangeFocus(Focus::Table),
-                ),
+                (kev(KeyCode::Right), ChangeFocus(Focus::Table)),
+                (kev(KeyCode::Char('l')), ChangeFocus(Focus::Table)),
+                (kev(KeyCode::Char('o')), ChangeFocus(Focus::Table)),
+                (kev(KeyCode::Enter), ChangeFocus(Focus::Table)),
                 // quit
-                (plain_event(KeyCode::Char('q')), Action::Quit),
-                (plain_event(KeyCode::Esc), Action::Quit),
+                (kev(KeyCode::Char('q')), Quit),
+                (kev(KeyCode::Esc), Quit),
             ])
         });
         bindings.insert(Focus::Table, {
             HashMap::from([
                 // tablesnext
-                (plain_event(KeyCode::Char('J')), Action::TablesNext),
+                (kev(KeyCode::Char('J')), TablesNext),
                 // tablesprev
-                (plain_event(KeyCode::Char('K')), Action::TablesPrev),
+                (kev(KeyCode::Char('K')), TablesPrev),
                 // tablenext
-                (plain_event(KeyCode::Down), Action::TableNext),
-                (plain_event(KeyCode::Char('j')), Action::TableNext),
+                (kev(KeyCode::Down), TableNext),
+                (kev(KeyCode::Char('j')), TableNext),
                 // tableprev
-                (plain_event(KeyCode::Up), Action::TablePrev),
-                (plain_event(KeyCode::Char('k')), Action::TablePrev),
+                (kev(KeyCode::Up), TablePrev),
+                (kev(KeyCode::Char('k')), TablePrev),
                 // focustables
-                (
-                    plain_event(KeyCode::Left),
-                    Action::ChangeFocus(Focus::Tables),
-                ),
-                (
-                    plain_event(KeyCode::Char('h')),
-                    Action::ChangeFocus(Focus::Tables),
-                ),
-                (
-                    plain_event(KeyCode::Char('q')),
-                    Action::ChangeFocus(Focus::Tables),
-                ),
-                (
-                    plain_event(KeyCode::Esc),
-                    Action::ChangeFocus(Focus::Tables),
-                ),
+                (kev(KeyCode::Left), ChangeFocus(Focus::Tables)),
+                (kev(KeyCode::Char('h')), ChangeFocus(Focus::Tables)),
+                (kev(KeyCode::Char('q')), ChangeFocus(Focus::Tables)),
+                (kev(KeyCode::Esc), ChangeFocus(Focus::Tables)),
             ])
         });
         Self { bindings }
