@@ -25,7 +25,6 @@ impl DbTable {
             pager,
             count,
         };
-        table.fetch()?;
         Ok(table)
     }
 

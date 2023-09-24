@@ -22,7 +22,7 @@ pub struct App {
     table: Option<DbTable>, // the selected table
     focus: Focus,           // what ui element has focus
     dims: Rect,             // how large the frame is
-    bindings: KeyBindSet,
+    bindings: KeyBindSet,   // keybindings
 }
 
 struct KeyBindSet {
