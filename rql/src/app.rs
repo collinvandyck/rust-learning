@@ -109,9 +109,6 @@ impl App {
         let dao = BlockingDao::new(db)?;
         let tables = DbTables::new(dao.tables()?);
         let mut table = None;
-        if let Some(name) = tables.selected() {
-            table.replace(DbTable::new(dao.clone(), name)?);
-        }
         let focus = Focus::default();
         let dims = Rect::default();
         let bindings = KeyBindSet::default();
@@ -128,6 +125,9 @@ impl App {
 
     pub fn draw(&mut self, term: &mut Term) -> Result<()> {
         self.dims = term.size()?;
+        if self.table.is_none() && self.tables.selected().is_some() {
+            self.open_table()?;
+        }
         term.draw(move |frame| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
