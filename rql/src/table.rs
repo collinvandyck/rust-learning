@@ -134,10 +134,10 @@ impl DbTable {
             };
             let limit = view_rows * 3;
             let spec = GetRecords::new(&self.schema.name)
-                .offset(start)
+                .offset(offset)
                 .limit(limit);
             let records = self.dao.records(&self.schema, spec)?;
-            let irs = (start..start + limit)
+            let irs = (offset..offset + limit)
                 .zip(records.into_iter())
                 .map(|(idx, record)| IndexedRecord(idx, record))
                 .collect::<Vec<_>>();
