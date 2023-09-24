@@ -87,7 +87,10 @@ impl Pager {
     }
 
     fn relative_pos(&self) -> usize {
-        self.pos.unwrap_or(0) - self.top
+        match self.pos {
+            Some(pos) if pos >= self.top => pos - self.top,
+            _ => 0,
+        }
     }
 
     pub fn top_pos_rel(&self) -> (usize, usize, usize) {
