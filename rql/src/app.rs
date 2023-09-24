@@ -1,3 +1,5 @@
+use std::collections::{HashMap, HashSet};
+
 use crate::prelude::*;
 
 type Term = ratatui::Terminal<CrosstermBackend<Stdout>>;
@@ -7,7 +9,7 @@ pub enum Tick {
     Continue,
 }
 
-#[derive(Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Eq, Hash, Clone, Copy)]
 enum Focus {
     #[default]
     Tables,
@@ -20,6 +22,87 @@ pub struct App {
     table: Option<DbTable>, // the selected table
     focus: Focus,           // what ui element has focus
     dims: Rect,             // how large the frame is
+    bindings: KeyBindSet,
+}
+
+struct KeyBindSet {
+    bindings: HashMap<Focus, HashMap<KeyEvent, Action>>,
+}
+
+impl KeyBindSet {
+    fn matches(&self, focus: Focus, event: KeyEvent) -> Option<Action> {
+        self.bindings
+            .get(&focus)
+            .map(|b| b.get(&event))
+            .flatten()
+            .cloned()
+    }
+}
+
+impl Default for KeyBindSet {
+    fn default() -> Self {
+        let plain_event = |code: KeyCode| -> KeyEvent { KeyEvent::new(code, KeyModifiers::NONE) };
+
+        let mut bindings = HashMap::default();
+        bindings.insert(Focus::Tables, {
+            HashMap::from([
+                (plain_event(KeyCode::Char('J')), Action::TablesNext),
+                (plain_event(KeyCode::Char('K')), Action::TablesPrev),
+                (plain_event(KeyCode::Char('j')), Action::TablesNext),
+                (plain_event(KeyCode::Char('k')), Action::TablesPrev),
+                (
+                    plain_event(KeyCode::Char('l')),
+                    Action::ChangeFocus(Focus::Table),
+                ),
+                (
+                    plain_event(KeyCode::Char('o')),
+                    Action::ChangeFocus(Focus::Table),
+                ),
+                (
+                    plain_event(KeyCode::Enter),
+                    Action::ChangeFocus(Focus::Table),
+                ),
+                (plain_event(KeyCode::Char('q')), Action::Quit),
+                (plain_event(KeyCode::Esc), Action::Quit),
+            ])
+        });
+        bindings.insert(Focus::Table, {
+            HashMap::from([
+                (plain_event(KeyCode::Char('J')), Action::TablesNext),
+                (plain_event(KeyCode::Char('K')), Action::TablesPrev),
+                (plain_event(KeyCode::Char('j')), Action::TableNext),
+                (plain_event(KeyCode::Char('k')), Action::TablePrev),
+                (
+                    plain_event(KeyCode::Char('h')),
+                    Action::ChangeFocus(Focus::Tables),
+                ),
+                (
+                    plain_event(KeyCode::Char('q')),
+                    Action::ChangeFocus(Focus::Tables),
+                ),
+                (
+                    plain_event(KeyCode::Esc),
+                    Action::ChangeFocus(Focus::Tables),
+                ),
+            ])
+        });
+        Self { bindings }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Action {
+    TablesNext,
+    TablesPrev,
+    TableNext,
+    TablePrev,
+    ChangeFocus(Focus),
+    Quit,
+}
+
+enum Move {
+    Up,
+    Down,
 }
 
 impl App {
@@ -32,12 +115,14 @@ impl App {
         }
         let focus = Focus::default();
         let dims = Rect::default();
+        let bindings = KeyBindSet::default();
         Ok(Self {
             dao,
             tables,
             table,
             focus,
             dims,
+            bindings,
         })
     }
 
@@ -162,68 +247,51 @@ impl App {
                 if Self::should_quit(key) {
                     return Ok(Tick::Quit);
                 }
-                match self.focus {
-                    Focus::Tables => match key.code {
-                        KeyCode::Char('j')
-                        | KeyCode::Char('k')
-                        | KeyCode::Char('J')
-                        | KeyCode::Char('K') => {
-                            if key.code == KeyCode::Char('j') || key.code == KeyCode::Char('J') {
-                                self.tables.next();
-                            } else {
-                                self.tables.previous();
-                            }
+                if let Some(action) = self.bindings.matches(self.focus, key) {
+                    match action {
+                        Action::TablesNext => {
+                            self.tables.next();
                             if let Some(name) = self.tables.selected() {
                                 self.table.replace(DbTable::new(self.dao.clone(), name)?);
                             }
                         }
-                        KeyCode::Char('l') | KeyCode::Enter | KeyCode::Char('o') => {
-                            if let Some(table) = &mut self.table {
-                                if table.count > 0 {
-                                    self.focus = Focus::Table;
-                                    table.select_first();
-                                }
-                            }
-                        }
-                        KeyCode::Char('q') | KeyCode::Esc => {
-                            return Ok(Tick::Quit);
-                        }
-                        _ => {}
-                    },
-                    Focus::Table => match key.code {
-                        KeyCode::Char('J') | KeyCode::Char('K') => {
-                            if key.code == KeyCode::Char('J') {
-                                self.tables.next();
-                            } else {
-                                self.tables.previous();
-                            }
+                        Action::TablesPrev => {
+                            self.tables.previous();
                             if let Some(name) = self.tables.selected() {
-                                let mut table = DbTable::new(self.dao.clone(), name)?;
-                                table.select_first();
-                                self.table.replace(table);
+                                self.table.replace(DbTable::new(self.dao.clone(), name)?);
                             }
                         }
-                        KeyCode::Char('j') | KeyCode::Char('k') => {
+                        Action::TableNext => {
                             let table_rows = self.table_rows();
                             if let Some(table) = &mut self.table {
-                                if key.code == KeyCode::Char('j') {
-                                    table.next(table_rows);
-                                } else {
-                                    table.previous(table_rows);
+                                table.next(table_rows);
+                            }
+                        }
+                        Action::TablePrev => {
+                            let table_rows = self.table_rows();
+                            if let Some(table) = &mut self.table {
+                                table.previous(table_rows);
+                            }
+                        }
+                        Action::ChangeFocus(focus) => match focus {
+                            Focus::Tables => {
+                                self.focus = Focus::Tables;
+                                if let Some(table) = &mut self.table {
+                                    table.unselect();
                                 }
                             }
-                        }
-                        KeyCode::Char('h') | KeyCode::Char('q') | KeyCode::Esc => {
-                            self.focus = Focus::Tables;
-                            if let Some(table) = &mut self.table {
-                                table.unselect();
+                            Focus::Table => {
+                                if let Some(table) = &mut self.table {
+                                    if table.count > 0 {
+                                        self.focus = Focus::Table;
+                                        table.select_first();
+                                    }
+                                }
                             }
-                        }
-                        _ => {}
-                    },
+                        },
+                        Action::Quit => return Ok(Tick::Quit),
+                    }
                 }
-                let elapsed = start.elapsed();
-                trace!(?elapsed, "Tick");
             }
         }
         Ok(Tick::Continue)
