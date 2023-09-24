@@ -118,7 +118,6 @@ mod tests {
         p.next();
         assert_eq!(p.top_pos_rel(), (0, 2, 2));
         p.next();
-        // (0, 3, 3)
         assert_eq!(p.top_pos_rel(), (1, 3, 2));
         p.next();
         assert_eq!(p.top_pos_rel(), (2, 4, 2));
@@ -127,7 +126,6 @@ mod tests {
 
         // move backwards a bit.
         p.prev();
-        // failing with (1,4,3)
         assert_eq!(p.top_pos_rel(), (2, 4, 2));
         p.prev();
         assert_eq!(p.top_pos_rel(), (2, 3, 1));
