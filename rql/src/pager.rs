@@ -6,9 +6,15 @@ pub struct Pager<T> {
     pub top: usize,
     pub viewport_rows: usize,
     pub pos: Option<usize>,
+    count: usize,
 }
 
 impl<T> Pager<T> {
+    pub fn count(mut self, v: u64) -> Self {
+        self.count = v.try_into().unwrap();
+        self
+    }
+
     #[must_use]
     fn viewport_rows(mut self, rows: usize) -> Self {
         self.set_viewport_rows(rows);
@@ -115,11 +121,13 @@ where
         let viewport_rows = 0;
         let items: Vec<T> = items.into_iter().collect();
         let pos = if items.is_empty() { None } else { Some(0) };
+        let count = items.len();
         Self {
             items,
             top,
             viewport_rows,
             pos,
+            count,
         }
     }
 }

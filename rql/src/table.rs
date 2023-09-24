@@ -17,7 +17,7 @@ impl DbTable {
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
         let max_lens = HashMap::default();
-        let mut pager = Pager::default();
+        let mut pager = Pager::default().count(count);
         let mut table = Self {
             dao,
             schema,
