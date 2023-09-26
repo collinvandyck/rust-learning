@@ -149,7 +149,7 @@ impl App {
             let help = {
                 let no_style = Style::default();
                 let key_style = Style::default().fg(Color::LightCyan);
-                let mut nav = ["j", "k", "h", "l", "arrows"]
+                let mut nav = ["j", "k", "h", "l", "↓", "↑", "←", "→"]
                     .iter()
                     .zip(std::iter::repeat(Span::styled(",", no_style)))
                     .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
