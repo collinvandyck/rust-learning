@@ -41,6 +41,7 @@ impl Pager {
 
     pub fn unselect(&mut self) {
         self.pos = None;
+        self.top = 0;
     }
 
     pub fn next(&mut self) {
