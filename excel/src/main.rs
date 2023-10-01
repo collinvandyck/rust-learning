@@ -5,6 +5,7 @@ fn main() {
     ss.set("A1", "");
     ss.set("B1", "foobar");
     ss.set("A2", "A1");
+    ss.display();
 }
 
 #[derive(Default)]
@@ -21,6 +22,14 @@ impl Spreadsheet {
         let key = key.into();
         let val = val.into();
         self.vals.insert(key, val);
+    }
+
+    fn display(&self) {
+        let mut keys: Vec<&Key> = self.vals.keys().collect();
+        keys.sort();
+        for key in keys {
+            println!("key: {key}");
+        }
     }
 }
 
