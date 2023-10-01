@@ -51,7 +51,7 @@ impl Spreadsheet {
                         [first, second] => {
                             let first = self.evaluate(&first.to_string(), visited);
                             let second = self.evaluate(&second.to_string(), visited);
-                            Self::add(first, second)
+                            Self::add(first, second).unwrap_or(val.clone())
                         }
                         _ => val.clone(),
                     }
@@ -60,8 +60,14 @@ impl Spreadsheet {
             .unwrap_or_default()
     }
 
-    fn add(o1: String, o2: String) -> String {
-        String::from("add result")
+    fn add(o1: String, o2: String) -> Option<String> {
+        if let Ok(o1) = o1.parse::<i64>() {
+            if let Ok(o2) = o2.parse::<i64>() {
+                let sum = o1 + o2;
+                return Some(format!("{sum}"));
+            }
+        }
+        None
     }
 }
 
