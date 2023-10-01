@@ -35,17 +35,17 @@ impl Spreadsheet {
         let mut keys: Vec<&Key> = self.vals.keys().collect();
         keys.sort();
         for key in keys {
-            let val = self.evaluate(key);
+            let val = self.get(key);
             println!("{key}: {val}");
         }
     }
 
-    fn evaluate(&self, key: &Key) -> String {
+    fn get(&self, key: &Key) -> String {
         let mut visited = HashSet::default();
-        self.do_evaluate(key, &mut visited)
+        self.eval(key, &mut visited)
     }
 
-    fn do_evaluate(&self, key: &Key, visited: &mut HashSet<Key>) -> String {
+    fn eval(&self, key: &Key, visited: &mut HashSet<Key>) -> String {
         if let Ok(v) = key.parse::<i64>() {
             return format!("{v}");
         }
@@ -61,13 +61,13 @@ impl Spreadsheet {
             .get(key)
             .map(|val| match val {
                 Val::Literal(val) => val.clone(),
-                Val::Reference(val) => self.do_evaluate(&val, visited),
+                Val::Reference(val) => self.eval(&val, visited),
                 Val::Formula(val) => {
                     let parts: Vec<&str> = val.split('+').collect();
                     if let [first, second] = parts[..] {
                         let (first, second) = (first.to_string(), second.to_string());
-                        let first = self.do_evaluate(&first, visited);
-                        let second = self.do_evaluate(&second, visited);
+                        let first = self.eval(&first, visited);
+                        let second = self.eval(&second, visited);
                         if let Some(val) = Self::add(first, second) {
                             return val;
                         }
@@ -146,7 +146,7 @@ mod tests {
         ss.set("N5", "=N5+1");
 
         let check = |k: &str, v: &str| {
-            let res = ss.evaluate(&k.to_string());
+            let res = ss.get(&k.to_string());
             assert_eq!(res, v, "expected {k}={v} but got {res}");
         };
 
