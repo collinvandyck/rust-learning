@@ -35,17 +35,18 @@ impl Spreadsheet {
     }
 
     fn evaluate<'a>(&'a self, key: &'a Key, visited: &mut HashSet<&'a Key>) -> String {
-        match self.vals.get(key) {
-            Some(val) => match val {
-                Val::Literal(val) => val.clone(),
-                Val::Reference(val) => {
-                    visited.insert(key);
-                    self.evaluate(&val, visited)
-                }
-                Val::Formula(val) => val.clone(),
-            },
-            None => String::new(),
+        if visited.contains(key) {
+            return String::new();
         }
+        visited.insert(key);
+        self.vals
+            .get(key)
+            .map(|val| match val {
+                Val::Literal(val) => val.clone(),
+                Val::Reference(val) => self.evaluate(&val, visited),
+                Val::Formula(val) => val.clone(),
+            })
+            .unwrap_or_default()
     }
 }
 
