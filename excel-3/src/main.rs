@@ -37,9 +37,6 @@ impl Spreadsheet {
                 if visited.contains(s) {
                     return format!("ERROR");
                 }
-                if s.is_empty() {
-                    return String::new();
-                }
                 if s.chars().nth(0).is_some_and(|t| t.is_alphabetic()) {
                     visited.insert(s.clone());
                     return self.eval(key, visited);
