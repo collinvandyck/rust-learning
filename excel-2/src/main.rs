@@ -1,4 +1,4 @@
-#![allow(dead_code, unused)]
+#![allow(dead_code)]
 use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
@@ -132,5 +132,7 @@ mod tests {
         assert_eq!(ss.set("a2", "a1"), "32");
         assert_eq!(ss.set("a3", "=a1+a2"), "64");
         assert_eq!(ss.set("a4", "=a1+5"), "37");
+        assert_eq!(ss.set("a5", "=a5+5"), "");
+        assert_eq!(ss.set("a6", "=a5+5"), "");
     }
 }
