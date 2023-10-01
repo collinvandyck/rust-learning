@@ -1,5 +1,3 @@
-use ratatui::text::Spans;
-
 use crate::prelude::*;
 use core::num;
 use std::{
