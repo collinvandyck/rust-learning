@@ -65,8 +65,9 @@ impl Spreadsheet {
                 Val::Formula(val) => {
                     let parts: Vec<&str> = val.split('+').collect();
                     if let [first, second] = parts[..] {
-                        let first = self.do_evaluate(&first.to_string(), visited);
-                        let second = self.do_evaluate(&second.to_string(), visited);
+                        let (first, second) = (first.to_string(), second.to_string());
+                        let first = self.do_evaluate(&first, visited);
+                        let second = self.do_evaluate(&second, visited);
                         if let Some(val) = Self::add(first, second) {
                             return val;
                         }
@@ -126,5 +127,36 @@ impl From<&str> for Val {
     fn from(value: &str) -> Self {
         let value = value.to_string();
         Val::from(value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_spreadsheet() {
+        let mut ss = Spreadsheet::default();
+        ss.set("A1", "32");
+        ss.set("B1", "44");
+        ss.set("A2", "A1");
+        ss.set("N1", "=A1+B1");
+        ss.set("N2", "=A1+B4");
+        ss.set("N3", "=N1+B1");
+        ss.set("N4", "=N3+1");
+        ss.set("N5", "=N5+1");
+
+        let check = |k: &str, v: &str| {
+            let res = ss.evaluate(&k.to_string());
+            assert_eq!(res, v, "expected {k}={v} but got {res}");
+        };
+
+        check("A1", "32");
+        check("B1", "44");
+        check("A2", "32");
+        check("N1", "76");
+        check("N2", "=A1+B4"); // b4 does not exist
+        check("N3", "120");
+        check("N4", "121");
+        check("N5", "=N5+1"); // cycle detect
     }
 }
