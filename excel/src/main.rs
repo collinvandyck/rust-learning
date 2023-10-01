@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 fn main() {
     let mut ss = Spreadsheet::default();
-    ss.set("A1", "");
-    ss.set("B1", "foobar");
+    ss.set("A1", "32");
+    ss.set("B1", "44");
     ss.set("A2", "A1");
     ss.display();
 }
@@ -28,13 +28,24 @@ impl Spreadsheet {
         let mut keys: Vec<&Key> = self.vals.keys().collect();
         keys.sort();
         for key in keys {
-            let val = self.value(key);
+            let mut visited = HashSet::default();
+            let val = self.evaluate(key, &mut visited);
             println!("{key}={val}");
         }
     }
 
-    fn value(&self, key: &Key) -> String {
-        String::from("todo")
+    fn evaluate<'a>(&'a self, key: &'a Key, visited: &mut HashSet<&'a Key>) -> String {
+        match self.vals.get(key) {
+            Some(val) => match val {
+                Val::Literal(val) => val.clone(),
+                Val::Reference(val) => {
+                    visited.insert(key);
+                    self.evaluate(&val, visited)
+                }
+                Val::Formula(val) => val.clone(),
+            },
+            None => String::new(),
+        }
     }
 }
 
