@@ -47,13 +47,12 @@ impl Spreadsheet {
                 Val::Reference(val) => self.evaluate(&val, visited),
                 Val::Formula(val) => {
                     let parts: Vec<&str> = val.split('+').collect();
-                    match parts[..] {
-                        [first, second] => {
-                            let first = self.evaluate(&first.to_string(), visited);
-                            let second = self.evaluate(&second.to_string(), visited);
-                            Self::add(first, second).unwrap_or(val.clone())
-                        }
-                        _ => val.clone(),
+                    if let [first, second] = parts[..] {
+                        let first = self.evaluate(&first.to_string(), visited);
+                        let second = self.evaluate(&second.to_string(), visited);
+                        Self::add(first, second).unwrap_or(val.clone())
+                    } else {
+                        val.clone()
                     }
                 }
             })
