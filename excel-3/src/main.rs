@@ -5,9 +5,7 @@ use std::{
     rc::Rc,
 };
 
-fn main() {
-    println!("Hello, world!");
-}
+fn main() {}
 
 #[derive(Default)]
 struct Spreadsheet {
@@ -104,5 +102,6 @@ mod tests {
         assert_eq!(ss.get("a2"), "ERROR");
         assert_eq!(ss.set("a3", "=a1+a1"), "106");
         assert_eq!(ss.set("a4", "=a1+5"), "58");
+        assert_eq!(ss.set("a5", "=a4+5"), "63");
     }
 }
