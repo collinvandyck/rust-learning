@@ -1,8 +1,5 @@
+use crate::prelude::*;
 use std::{collections::HashMap, fmt::Debug};
-
-use tracing_subscriber::field::debug;
-
-use crate::{pager::Pager, prelude::*};
 
 /// Enables the display of a table's contents
 pub struct DbTable {
@@ -12,6 +9,7 @@ pub struct DbTable {
     pub pager: Pager,
     pub count: u64,
     pub indexed: IndexedRecords,
+    search: Search,
 }
 
 #[derive(Default)]
@@ -72,7 +70,7 @@ impl IndexedRecords {
 }
 
 impl DbTable {
-    pub fn new(dao: BlockingDao, name: String) -> Result<Self> {
+    pub fn new(dao: BlockingDao, name: String, search: Search) -> Result<Self> {
         info!(name, "Building db table");
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
@@ -95,6 +93,7 @@ impl DbTable {
             pager,
             count,
             indexed,
+            search,
         };
         Ok(table)
     }

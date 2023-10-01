@@ -7,6 +7,7 @@ pub mod tables;
 pub mod prelude {
     pub use crate::app::*;
     pub use crate::dao::*;
+    pub use crate::pager::*;
     pub use crate::table::*;
     pub use crate::tables::*;
     pub use anyhow::{Context, Error, Result};

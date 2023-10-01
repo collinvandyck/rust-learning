@@ -24,6 +24,13 @@ pub struct App {
     focus: Focus,           // what ui element has focus
     dims: Rect,             // how large the frame is
     bindings: KeyBindSet,   // keybindings
+    search: Search,
+}
+
+#[derive(Clone, Default)]
+pub struct Search {
+    pub value: Option<String>,
+    pub focused: bool,
 }
 
 struct KeyBindSet {
@@ -116,6 +123,7 @@ impl App {
         let focus = Focus::default();
         let dims = Rect::default();
         let bindings = KeyBindSet::default();
+        let search = Search::default();
         let mut app = Self {
             dao,
             tables,
@@ -123,6 +131,7 @@ impl App {
             focus,
             dims,
             bindings,
+            search,
         };
         Ok(app)
     }
@@ -164,7 +173,17 @@ impl App {
                         .skip(1)
                         .collect::<Vec<_>>(),
                 );
-                nav.push(Span::raw(": back/quit "));
+                nav.push(Span::raw(": back/quit | "));
+                nav.append(
+                    &mut ["/"]
+                        .iter()
+                        .zip(std::iter::repeat(Span::styled(",", no_style)))
+                        .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
+                        .flatten()
+                        .skip(1)
+                        .collect::<Vec<_>>(),
+                );
+                nav.push(Span::raw(": Search "));
                 nav
             };
             let help = text::Line::from(help);
@@ -280,7 +299,7 @@ impl App {
 
     fn open_table(&mut self) -> Result<()> {
         if let Some(name) = self.tables.selected() {
-            let mut table = DbTable::new(self.dao.clone(), name)?;
+            let mut table = DbTable::new(self.dao.clone(), name, self.search.clone())?;
             if self.focus == Focus::Table {
                 table.select_first();
             }
