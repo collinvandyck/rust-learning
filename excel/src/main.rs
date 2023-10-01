@@ -5,6 +5,7 @@ fn main() {
     ss.set("A1", "32");
     ss.set("B1", "44");
     ss.set("A2", "A1");
+    ss.set("N1", "=A1+B1");
     ss.display();
 }
 
@@ -34,19 +35,33 @@ impl Spreadsheet {
         }
     }
 
-    fn evaluate<'a>(&'a self, key: &'a Key, visited: &mut HashSet<&'a Key>) -> String {
+    fn evaluate(&self, key: &Key, visited: &mut HashSet<Key>) -> String {
         if visited.contains(key) {
             return String::new();
         }
-        visited.insert(key);
+        visited.insert(key.to_string());
         self.vals
             .get(key)
             .map(|val| match val {
                 Val::Literal(val) => val.clone(),
                 Val::Reference(val) => self.evaluate(&val, visited),
-                Val::Formula(val) => val.clone(),
+                Val::Formula(val) => {
+                    let parts: Vec<&str> = val.split('+').collect();
+                    match parts[..] {
+                        [first, second] => {
+                            let first = self.evaluate(&first.to_string(), visited);
+                            let second = self.evaluate(&second.to_string(), visited);
+                            Self::add(first, second)
+                        }
+                        _ => val.clone(),
+                    }
+                }
             })
             .unwrap_or_default()
+    }
+
+    fn add(o1: String, o2: String) -> String {
+        String::from("add result")
     }
 }
 
