@@ -30,19 +30,40 @@ impl Spreadsheet {
     }
 
     fn eval(&self, key: &Key, visited: &mut HashSet<Rc<str>>) -> String {
+        if let Ok(v) = key.0.parse::<i64>() {
+            return format!("{v}");
+        }
         let val = self.vals.get(key);
         match val {
             Some(Value(s)) => {
-                if let Ok(v) = s.parse::<i64>() {
-                    return format!("{v}");
-                }
                 if visited.contains(s) {
                     return format!("ERROR");
                 }
-                let ident = s.chars().take(1).all(|f| f.is_alphabetic());
-                if ident {
+                if s.is_empty() {
+                    return String::new();
+                }
+                if s.chars().take(1).all(|f| f.is_alphabetic()) {
                     visited.insert(s.clone());
                     return self.eval(key, visited);
+                }
+                if s.chars().take(1).all(|f| f == '=') {
+                    // formula
+                    let rest = &s[1..];
+                    match rest.split_once('+') {
+                        Some((left, right)) => {
+                            visited.insert(s.clone());
+                            let (left, right) = (Key(left.into()), Key(right.into()));
+                            let left = self.eval(&left, visited);
+                            let right = self.eval(&right, visited);
+                            if let Ok(left) = left.parse::<i64>() {
+                                if let Ok(right) = right.parse::<i64>() {
+                                    let sum = left + right;
+                                    return format!("{sum}");
+                                }
+                            }
+                        }
+                        None => {}
+                    }
                 }
                 s.to_string()
             }
@@ -81,5 +102,7 @@ mod tests {
         assert_eq!(ss.set("a1", "53"), "53");
         assert_eq!(ss.set("a2", "a2"), "ERROR");
         assert_eq!(ss.get("a2"), "ERROR");
+        assert_eq!(ss.set("a3", "=a1+a1"), "106");
+        assert_eq!(ss.set("a4", "=a1+5"), "58");
     }
 }
