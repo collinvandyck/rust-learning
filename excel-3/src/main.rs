@@ -40,11 +40,11 @@ impl Spreadsheet {
                 if s.is_empty() {
                     return String::new();
                 }
-                if s.chars().take(1).all(|f| f.is_alphabetic()) {
+                if s.chars().nth(0).is_some_and(|t| t.is_alphabetic()) {
                     visited.insert(s.clone());
                     return self.eval(key, visited);
                 }
-                if s.chars().take(1).all(|f| f == '=') {
+                if s.chars().nth(0) == Some('=') {
                     let rest = &s[1..];
                     match rest.split_once('+') {
                         Some((left, right)) => {
