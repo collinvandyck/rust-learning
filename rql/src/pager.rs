@@ -102,11 +102,13 @@ mod tests {
     #[test]
     fn test_pager() {
         let mut p = Pager::default().count(0).viewport_rows(5);
-        assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
+        p.select(0);
+        assert_eq!(p.top_pos_rel(), (0, None, None));
         p.next();
-        assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
+        assert_eq!(p.top_pos_rel(), (0, None, None));
 
         let mut p = Pager::default().count(5).viewport_rows(3);
+        p.select(0);
 
         // verify that top keeps up as we move forward
         assert_eq!(p.top_pos_rel(), (0, Some(0), Some(0)));
