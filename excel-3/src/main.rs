@@ -15,10 +15,12 @@ struct Spreadsheet {
 }
 
 impl Spreadsheet {
-    fn set(&mut self, key: impl Into<Rc<str>>, val: impl Into<Rc<str>>) {
-        let key = Key(key.into());
+    fn set(&mut self, key: impl Into<Rc<str>>, val: impl Into<Rc<str>>) -> String {
+        let key: Rc<str> = key.into();
+        let key = Key(key.clone());
         let val = Value(val.into());
-        self.vals.insert(key, val);
+        self.vals.insert(key.clone(), val);
+        self.get(key.0)
     }
 
     fn get(&self, key: impl Into<Rc<str>>) -> String {
@@ -30,7 +32,20 @@ impl Spreadsheet {
     fn eval(&self, key: &Key, visited: &mut HashSet<Rc<str>>) -> String {
         let val = self.vals.get(key);
         match val {
-            Some(val) => val.to_string(),
+            Some(Value(s)) => {
+                if let Ok(v) = s.parse::<i64>() {
+                    return format!("{v}");
+                }
+                if visited.contains(s) {
+                    return format!("ERROR");
+                }
+                let ident = s.chars().take(1).all(|f| f.is_alphabetic());
+                if ident {
+                    visited.insert(s.clone());
+                    return self.eval(key, visited);
+                }
+                s.to_string()
+            }
             None => String::new(),
         }
     }
@@ -63,7 +78,8 @@ mod tests {
     #[test]
     fn test_ss() {
         let mut ss = Spreadsheet::default();
-        ss.set("a1", "53");
-        assert_eq!(ss.get("a1"), "53");
+        assert_eq!(ss.set("a1", "53"), "53");
+        assert_eq!(ss.set("a2", "a2"), "ERROR");
+        assert_eq!(ss.get("a2"), "ERROR");
     }
 }
