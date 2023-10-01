@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
 fn main() {
     let mut ss = Spreadsheet::default();
@@ -6,6 +9,9 @@ fn main() {
     ss.set("B1", "44");
     ss.set("A2", "A1");
     ss.set("N1", "=A1+B1");
+    ss.set("N2", "=A1+B4");
+    ss.set("N3", "=N1+B1");
+    ss.set("N4", "=N3+1");
     ss.display();
 }
 
@@ -29,31 +35,43 @@ impl Spreadsheet {
         let mut keys: Vec<&Key> = self.vals.keys().collect();
         keys.sort();
         for key in keys {
-            let mut visited = HashSet::default();
-            let val = self.evaluate(key, &mut visited);
-            println!("{key}={val}");
+            let val = self.evaluate(key);
+            println!("{key}: {val}");
         }
     }
 
-    fn evaluate(&self, key: &Key, visited: &mut HashSet<Key>) -> String {
+    fn evaluate(&self, key: &Key) -> String {
+        let mut visited = HashSet::default();
+        self.do_evaluate(key, &mut visited)
+    }
+
+    fn do_evaluate(&self, key: &Key, visited: &mut HashSet<Key>) -> String {
+        if let Ok(v) = key.parse::<i64>() {
+            return format!("{v}");
+        }
         if visited.contains(key) {
-            return String::new();
+            return self
+                .vals
+                .get(key)
+                .map(|v| v.to_string())
+                .unwrap_or_default();
         }
         visited.insert(key.to_string());
         self.vals
             .get(key)
             .map(|val| match val {
                 Val::Literal(val) => val.clone(),
-                Val::Reference(val) => self.evaluate(&val, visited),
+                Val::Reference(val) => self.do_evaluate(&val, visited),
                 Val::Formula(val) => {
                     let parts: Vec<&str> = val.split('+').collect();
                     if let [first, second] = parts[..] {
-                        let first = self.evaluate(&first.to_string(), visited);
-                        let second = self.evaluate(&second.to_string(), visited);
-                        Self::add(first, second).unwrap_or(val.clone())
-                    } else {
-                        val.clone()
+                        let first = self.do_evaluate(&first.to_string(), visited);
+                        let second = self.do_evaluate(&second.to_string(), visited);
+                        if let Some(val) = Self::add(first, second) {
+                            return val;
+                        }
                     }
+                    format!("={val}")
                 }
             })
             .unwrap_or_default()
@@ -76,6 +94,17 @@ enum Val {
     Literal(String),
     Reference(String),
     Formula(String),
+}
+
+impl Display for Val {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Val::Literal(v) => v,
+            Val::Reference(v) => v,
+            Val::Formula(v) => v,
+        };
+        write!(f, "{s}")
+    }
 }
 
 impl From<String> for Val {
