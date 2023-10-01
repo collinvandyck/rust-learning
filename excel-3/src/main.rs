@@ -45,7 +45,6 @@ impl Spreadsheet {
                     return self.eval(key, visited);
                 }
                 if s.chars().take(1).all(|f| f == '=') {
-                    // formula
                     let rest = &s[1..];
                     match rest.split_once('+') {
                         Some((left, right)) => {
