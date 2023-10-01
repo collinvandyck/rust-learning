@@ -35,7 +35,7 @@ impl Spreadsheet {
         match val {
             Some(Value(s)) => {
                 if visited.contains(s) {
-                    return format!("ERROR");
+                    return String::from("ERROR");
                 }
                 if s.chars().nth(0).is_some_and(|t| t.is_alphabetic()) {
                     visited.insert(s.clone());
@@ -43,20 +43,17 @@ impl Spreadsheet {
                 }
                 if s.chars().nth(0) == Some('=') {
                     let rest = &s[1..];
-                    match rest.split_once('+') {
-                        Some((left, right)) => {
-                            visited.insert(s.clone());
-                            let (left, right) = (Key(left.into()), Key(right.into()));
-                            let left = self.eval(&left, visited);
-                            let right = self.eval(&right, visited);
-                            if let Ok(left) = left.parse::<i64>() {
-                                if let Ok(right) = right.parse::<i64>() {
-                                    let sum = left + right;
-                                    return format!("{sum}");
-                                }
+                    if let Some((left, right)) = rest.split_once('+') {
+                        visited.insert(s.clone());
+                        let (left, right) = (Key(left.into()), Key(right.into()));
+                        let left = self.eval(&left, visited);
+                        let right = self.eval(&right, visited);
+                        if let Ok(left) = left.parse::<i64>() {
+                            if let Ok(right) = right.parse::<i64>() {
+                                let sum = left + right;
+                                return format!("{sum}");
                             }
                         }
-                        None => {}
                     }
                 }
                 s.to_string()
