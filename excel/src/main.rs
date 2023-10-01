@@ -28,8 +28,13 @@ impl Spreadsheet {
         let mut keys: Vec<&Key> = self.vals.keys().collect();
         keys.sort();
         for key in keys {
-            println!("key: {key}");
+            let val = self.value(key);
+            println!("{key}={val}");
         }
+    }
+
+    fn value(&self, key: &Key) -> String {
+        String::from("todo")
     }
 }
 
