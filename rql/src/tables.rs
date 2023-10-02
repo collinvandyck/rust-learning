@@ -19,22 +19,30 @@ impl DbTables {
         self.names.iter().map(|s| s.len() as u16).max().unwrap_or(0)
     }
 
-    pub fn next(&mut self) {
+    /// next selects the subsequent table in the list, returning whether it changed
+    pub fn next(&mut self) -> bool {
         let i = self
             .state
             .selected()
             .map(|i| if i >= self.names.len() - 1 { 0 } else { i + 1 })
             .unwrap_or(0);
+        let changed = !self.state.selected().is_some_and(|last| last == i);
         self.state.select(Some(i));
+
+        changed
     }
 
-    pub fn previous(&mut self) {
+    /// previous returns the prior table in the list, returning whether it changed
+    pub fn previous(&mut self) -> bool {
         let i = self
             .state
             .selected()
             .map(|i| if i == 0 { self.names.len() - 1 } else { i - 1 })
             .unwrap_or(0);
+        let changed = !self.state.selected().is_some_and(|last| last == i);
         self.state.select(Some(i));
+
+        changed
     }
 
     pub fn selected(&self) -> Option<String> {

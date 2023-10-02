@@ -319,12 +319,14 @@ impl App {
                 if let Some(action) = self.bindings.matches(self.focus, key) {
                     match action {
                         Action::TablesNext => {
-                            self.tables.next();
-                            self.open_table();
+                            if self.tables.next() {
+                                self.open_table();
+                            }
                         }
                         Action::TablesPrev => {
-                            self.tables.previous();
-                            self.open_table();
+                            if self.tables.previous() {
+                                self.open_table();
+                            }
                         }
                         Action::TableNext => {
                             let table_rows = self.num_table_rows();
