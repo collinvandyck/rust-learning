@@ -34,7 +34,8 @@ async fn run() -> Result<()> {
         .next()
         .ok_or(anyhow!("no ipv4 addrs found"))?;
     let socket = TcpSocket::new_v4()?;
-    socket.connect(addr).await.context("could not connect")?;
+    let tcp_stream = socket.connect(addr).await.context("could not connect")?;
+    let (rx, tx) = tcp_stream.into_split();
     Ok(())
 }
 
