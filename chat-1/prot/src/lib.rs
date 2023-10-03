@@ -1,4 +1,5 @@
 pub mod prelude {
+    pub use clap::Parser;
     pub use serde::{Deserialize, Serialize};
     pub use std::ops::{Deref, DerefMut};
     pub use std::time::Instant;
@@ -6,8 +7,8 @@ pub mod prelude {
 }
 use prelude::*;
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct ServerConfig {
+#[derive(Serialize, Deserialize, Clone, Parser)]
+pub struct Config {
     pub addr: String,
 }
 

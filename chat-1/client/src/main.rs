@@ -1,3 +1,6 @@
+use prot;
+use prot::prelude::*;
+
 fn main() {
-    println!("Hello, client!");
+    let config = prot::Config::parse();
 }
