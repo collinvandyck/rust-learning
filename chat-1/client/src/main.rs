@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use protocol::prelude::*;
 use std::{
     io::{self, Write},
@@ -14,10 +14,8 @@ async fn main() {
 }
 
 async fn run() -> Result<()> {
-    let config = protocol::Config::parse();
-    println!("Got addr: {}", &config.addr);
-    let name = get_name()?;
-    println!("hi {name}.");
+    let _config = protocol::Config::parse();
+    let _name = get_name()?;
     Ok(())
 }
 
@@ -27,5 +25,8 @@ fn get_name() -> Result<String> {
     io::stdout().flush().unwrap();
     io::stdin().read_line(&mut name).unwrap();
     name = name.trim().to_string();
+    if name.is_empty() {
+        bail!("empty name not allowed");
+    }
     Ok(name)
 }
