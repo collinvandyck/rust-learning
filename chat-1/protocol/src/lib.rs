@@ -6,6 +6,11 @@ pub mod prelude {
 }
 use prelude::*;
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ServerConfig {
+    pub addr: String,
+}
+
 /// The client/server protocol consists of sending events
 #[derive(Serialize, Deserialize, Clone)]
 pub enum Event {
