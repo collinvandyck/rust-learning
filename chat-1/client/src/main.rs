@@ -1,5 +1,6 @@
 use protocol::prelude::*;
 
 fn main() {
-    let _config = protocol::Config::parse();
+    let config = protocol::Config::parse();
+    println!("Got addr: {}", &config.addr);
 }
