@@ -1,4 +1,5 @@
-use anyhow::{anyhow, bail, Context, Result};
+#![allow(dead_code)]
+use anyhow::Result;
 use protocol::prelude::*;
 use std::{
     io::{self, Write},
@@ -6,12 +7,6 @@ use std::{
     process,
 };
 use tokio::net::TcpSocket;
-
-#[allow(dead_code)]
-struct Config {
-    protocol: protocol::Config,
-    name: String,
-}
 
 #[tokio::main]
 async fn main() {
@@ -21,21 +16,40 @@ async fn main() {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
+enum ClientError {
+    #[error("Could not parse {0}: {1}")]
+    AddrParseFailure(String, io::Error),
+
+    #[error("no ipv4 addrs found")]
+    NoIpV4Addrs,
+
+    #[error("could not connect to {0}: {1}")]
+    CouldNotConnect(String, io::Error),
+
+    #[error("Could not create socket: {0}")]
+    SocketCreate(io::Error),
+
+    #[error("Empty name not allowed")]
+    EmptyName,
+}
+
 async fn run() -> Result<()> {
-    let config = Config {
-        protocol: protocol::Config::parse(),
-        name: get_name()?,
-    };
-    let addr = &config.protocol.addr;
-    let addr = addr
+    let config = protocol::Config::parse();
+    let name = get_name()?;
+    let addr = &config.addr;
+    let socket_addr = addr
         .to_socket_addrs()
-        .context(format!("could not parse {addr}"))?
+        .map_err(|e| ClientError::AddrParseFailure(addr.to_string(), e))?
         .filter(|f| f.is_ipv4())
         .next()
-        .ok_or(anyhow!("no ipv4 addrs found"))?;
-    let socket = TcpSocket::new_v4()?;
-    let tcp_stream = socket.connect(addr).await.context("could not connect")?;
-    let (rx, tx) = tcp_stream.into_split();
+        .ok_or(ClientError::NoIpV4Addrs)?;
+    let socket = TcpSocket::new_v4().map_err(ClientError::SocketCreate)?;
+    let tcp_stream = socket
+        .connect(socket_addr)
+        .await
+        .map_err(|e| ClientError::CouldNotConnect(addr.into(), e))?;
+    let (_rx, _tx) = tcp_stream.into_split();
     Ok(())
 }
 
@@ -46,7 +60,7 @@ fn get_name() -> Result<String> {
     io::stdin().read_line(&mut name)?;
     name = name.trim().to_string();
     if name.is_empty() {
-        bail!("empty name not allowed");
+        return Err(ClientError::EmptyName.into());
     }
     Ok(name)
 }
