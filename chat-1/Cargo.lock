@@ -106,7 +106,7 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "clap",
- "prot",
+ "protocol",
 ]
 
 [[package]]
@@ -140,7 +140,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "prot"
+name = "protocol"
 version = "0.1.0"
 dependencies = [
  "async-trait",
@@ -181,9 +181,6 @@ dependencies = [
 [[package]]
 name = "server"
 version = "0.1.0"
-dependencies = [
- "prot",
-]
 
 [[package]]
 name = "strsim"

@@ -1,6 +1,5 @@
-use prot;
-use prot::prelude::*;
+use protocol::prelude::*;
 
 fn main() {
-    let config = prot::Config::parse();
+    let _config = protocol::Config::parse();
 }
