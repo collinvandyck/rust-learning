@@ -7,6 +7,7 @@ pub mod prelude {
 }
 use prelude::*;
 
+/// Both the client and server can use this Clap config when starting
 #[derive(Serialize, Deserialize, Clone, Parser)]
 pub struct Config {
     pub addr: String,
