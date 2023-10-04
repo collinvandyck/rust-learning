@@ -45,15 +45,24 @@ enum ClientError {
 
 struct Client {
     config: protocol::Config,
+    name: Option<String>,
 }
 
 impl Client {
     fn new(config: protocol::Config) -> Self {
-        Self { config }
+        Self { config, name: None }
+    }
+
+    fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = Some(name.into());
+        self
     }
 
     async fn run(&self) -> Result<()> {
-        let name = get_name()?;
+        let name = match self.name.clone() {
+            Some(name) => name,
+            None => get_name()?,
+        };
         let addr = &self.config.addr;
         let socket_addr = addr
             .to_socket_addrs()
@@ -144,15 +153,20 @@ fn get_name() -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use std::net::SocketAddr;
-
     use tokio::net::TcpListener;
 
     #[tokio::test]
     async fn test_client() {
-        //
         let server = Server::new().await;
-        println!("Addr: {:?}", &server.addr);
+        let addr = format!("{:?}", &server.addr);
+        let config = protocol::Config { addr };
+        let client = Client::new(config).name("test-name");
+        let client = tokio::spawn(async move {
+            client.run().await.unwrap();
+        });
+        client.await.unwrap();
     }
 
     struct Server {
