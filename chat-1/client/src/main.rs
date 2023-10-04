@@ -7,7 +7,7 @@ use std::{
     process, thread,
 };
 use tokio::{
-    io::BufReader,
+    io::{AsyncBufReadExt, BufReader},
     net::{tcp::OwnedReadHalf, TcpSocket, TcpStream},
     sync::mpsc::{self, Receiver, Sender},
 };
@@ -71,8 +71,17 @@ async fn run() -> Result<()> {
 async fn read_server_input(server: OwnedReadHalf) -> Receiver<String> {
     let (tx, rx) = mpsc::channel(1024);
     tokio::spawn(async move {
-        let reader = BufReader::new(server);
-        let tx = tx;
+        let mut reader = BufReader::new(server);
+        loop {
+            let mut buf = String::new();
+            if reader.read_line(&mut buf).await.is_err() {
+                break;
+            }
+            let buf = buf.trim().to_string();
+            if tx.send(buf).await.is_err() {
+                break;
+            }
+        }
     });
     rx
 }
