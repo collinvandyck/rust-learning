@@ -5,6 +5,11 @@ pub mod prelude {
     pub use std::time::Instant;
     pub use time::OffsetDateTime;
 }
+use std::{
+    io::Write,
+    sync::{Arc, Mutex},
+};
+
 use prelude::*;
 
 /// Both the client and server can use this Clap config when starting
@@ -13,11 +18,35 @@ pub struct Config {
     pub addr: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Parser)]
+#[derive(Default)]
+pub struct Stdout(Arc<Mutex<Option<Box<dyn Write + Send>>>>);
+
+impl From<Vec<u8>> for Stdout {
+    fn from(value: Vec<u8>) -> Self {
+        Stdout(Arc::new(Mutex::new(Some(Box::new(value)))))
+    }
+}
+
+impl From<Box<dyn Write + Send>> for Stdout {
+    fn from(value: Box<dyn Write + Send>) -> Self {
+        Stdout(Arc::new(Mutex::new(Some(value))))
+    }
+}
+
+impl Stdout {
+    pub fn take(self) -> Option<Box<dyn Write + Send>> {
+        self.0.lock().unwrap().take()
+    }
+}
+
+#[derive(Parser)]
 pub struct ClientConfig {
     #[arg(long)]
     pub name: Option<String>,
     pub addr: String,
+
+    #[clap(skip)]
+    pub stdout: Stdout,
 }
 
 /// The client/server protocol consists of sending events

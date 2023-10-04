@@ -160,7 +160,8 @@ mod tests {
         let server = Server::new().await;
         let addr = format!("{:?}", &server.addr);
         let name = Some(String::from("test-name"));
-        let config = protocol::ClientConfig { addr, name };
+        let stdout = protocol::Stdout::from(vec![]);
+        let config = protocol::ClientConfig { addr, name, stdout };
         let client = Client::new(config);
         tokio::spawn(async move {
             client.run().await.unwrap();
