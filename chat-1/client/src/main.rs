@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 use anyhow::Result;
+use async_trait::async_trait;
 use protocol::{prelude::*, ClientEvent};
 use std::{
     io::{self, Write},
@@ -17,7 +18,7 @@ use tokio::{
 
 #[tokio::main]
 async fn main() {
-    let config = protocol::Config::parse();
+    let config = protocol::ClientConfig::parse();
     let client = Client::new(config);
     if let Err(err) = client.run().await {
         eprintln!("{err:?}");
@@ -43,23 +44,20 @@ enum ClientError {
     EmptyName,
 }
 
+#[async_trait]
+trait IClient {}
+
 struct Client {
-    config: protocol::Config,
-    name: Option<String>,
+    config: protocol::ClientConfig,
 }
 
 impl Client {
-    fn new(config: protocol::Config) -> Self {
-        Self { config, name: None }
-    }
-
-    fn name(mut self, name: impl Into<String>) -> Self {
-        self.name = Some(name.into());
-        self
+    fn new(config: protocol::ClientConfig) -> Self {
+        Self { config }
     }
 
     async fn run(&self) -> Result<()> {
-        let name = match self.name.clone() {
+        let name = match self.config.name.clone() {
             Some(name) => name,
             None => get_name()?,
         };
@@ -161,12 +159,14 @@ mod tests {
     async fn test_client() {
         let server = Server::new().await;
         let addr = format!("{:?}", &server.addr);
-        let config = protocol::Config { addr };
-        let client = Client::new(config).name("test-name");
-        let client = tokio::spawn(async move {
+        let name = Some(String::from("test-name"));
+        let config = protocol::ClientConfig { addr, name };
+        let client = Client::new(config);
+        tokio::spawn(async move {
             client.run().await.unwrap();
         });
-        client.await.unwrap();
+        let _accept = server.listener.accept().await.unwrap();
+        println!("Accept!");
     }
 
     struct Server {

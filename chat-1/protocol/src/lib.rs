@@ -13,6 +13,13 @@ pub struct Config {
     pub addr: String,
 }
 
+#[derive(Serialize, Deserialize, Clone, Parser)]
+pub struct ClientConfig {
+    #[arg(long)]
+    pub name: Option<String>,
+    pub addr: String,
+}
+
 /// The client/server protocol consists of sending events
 #[derive(Serialize, Deserialize, Clone)]
 pub enum Event {
