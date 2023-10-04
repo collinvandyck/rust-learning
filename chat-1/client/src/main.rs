@@ -9,7 +9,8 @@ use std::{
 use tokio::{
     fs,
     net::TcpSocket,
-    sync::mpsc::{self, Receiver},
+    sync::mpsc::{self, Receiver, Sender},
+    task::spawn_blocking,
 };
 
 #[tokio::main]
@@ -70,10 +71,21 @@ async fn run() -> Result<()> {
 fn read_user_input() -> Receiver<String> {
     let (tx, rx) = mpsc::channel(1024);
     thread::spawn(move || {
-        let mut buf = String::new();
-        io::stdin().read_line(&mut buf)
+        let _ = read_stdin_lines(tx);
     });
     rx
+}
+
+fn read_stdin_lines(tx: Sender<String>) -> Result<()> {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?;
+    loop {
+        let mut buf = String::new();
+        io::stdin().read_line(&mut buf)?;
+        let buf = buf.trim().to_string();
+        let _ = rt.block_on(tx.send(buf));
+    }
 }
 
 fn get_name() -> Result<String> {
