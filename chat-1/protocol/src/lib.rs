@@ -1,4 +1,6 @@
+pub mod verify;
 pub mod prelude {
+    pub use async_trait::async_trait;
     pub use clap::Parser;
     pub use serde::{Deserialize, Serialize};
     pub use std::ops::{Deref, DerefMut};
@@ -10,12 +12,32 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use anyhow::Result;
 use prelude::*;
 
-/// Both the client and server can use this Clap config when starting
 #[derive(Serialize, Deserialize, Clone, Parser)]
-pub struct Config {
+pub struct ServerConfig {
     pub addr: String,
+}
+
+#[async_trait]
+pub trait IClient {
+    async fn run(&mut self) -> Result<()>;
+}
+
+#[derive(Parser)]
+pub struct ClientConfig {
+    /// the name of the user. if empty, the client will need to ask the user.
+    #[arg(long)]
+    pub name: Option<String>,
+
+    /// the address to which to connect (e.g. localhost:8000).
+    pub addr: String,
+
+    /// clients should write to Stdout. you can use the write! macro to do this. the verifier will
+    /// look at the output written to this to verify the output.
+    #[clap(skip)]
+    pub stdout: Stdout,
 }
 
 #[derive(Default, Clone)]
@@ -63,16 +85,6 @@ impl DerefMut for Stdout {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
-}
-
-#[derive(Parser)]
-pub struct ClientConfig {
-    #[arg(long)]
-    pub name: Option<String>,
-    pub addr: String,
-
-    #[clap(skip)]
-    pub stdout: Stdout,
 }
 
 #[test]
