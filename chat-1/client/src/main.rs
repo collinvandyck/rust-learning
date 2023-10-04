@@ -6,7 +6,10 @@ use std::{
     net::ToSocketAddrs,
     process,
 };
-use tokio::net::TcpSocket;
+use tokio::{
+    net::TcpSocket,
+    sync::mpsc::{self, Receiver},
+};
 
 #[tokio::main]
 async fn main() {
@@ -49,8 +52,28 @@ async fn run() -> Result<()> {
         .connect(socket_addr)
         .await
         .map_err(|e| ClientError::CouldNotConnect(addr.into(), e))?;
+    let mut user_input = read_user_input().await;
+    loop {
+        tokio::select! {
+            input = user_input.recv() => {
+                if let Some(input) = input {
+                    println!("User input: {input}");
+                } else { break };
+            }
+        }
+    }
     let (_rx, _tx) = tcp_stream.into_split();
     Ok(())
+}
+
+async fn read_user_input() -> Receiver<String> {
+    let (tx, rx) = mpsc::channel(1024);
+    tokio::spawn(async move {
+        if tx.send(String::from("foo")).await.is_err() {
+            return;
+        }
+    });
+    rx
 }
 
 fn get_name() -> Result<String> {
