@@ -7,10 +7,9 @@ use std::{
     process, thread,
 };
 use tokio::{
-    fs,
-    net::TcpSocket,
+    io::BufReader,
+    net::{tcp::OwnedReadHalf, TcpSocket, TcpStream},
     sync::mpsc::{self, Receiver, Sender},
-    task::spawn_blocking,
 };
 
 #[tokio::main]
@@ -55,17 +54,27 @@ async fn run() -> Result<()> {
         .await
         .map_err(|e| ClientError::CouldNotConnect(addr.into(), e))?;
     let mut user_input = read_user_input();
+    let (rx, _tx) = tcp_stream.into_split();
+    let mut server_input = read_server_input(rx).await;
     loop {
         tokio::select! {
-            input = user_input.recv() => {
-                if let Some(input) = input {
-                    println!("User input: {input}");
-                } else { break };
+            Some(input) = server_input.recv() => {
+                println!("Server input: {input}");
+            }
+            Some(input) = user_input.recv() => {
+                println!("User input: {input}");
             }
         }
     }
-    let (_rx, _tx) = tcp_stream.into_split();
-    Ok(())
+}
+
+async fn read_server_input(server: OwnedReadHalf) -> Receiver<String> {
+    let (tx, rx) = mpsc::channel(1024);
+    tokio::spawn(async move {
+        let reader = BufReader::new(server);
+        let tx = tx;
+    });
+    rx
 }
 
 fn read_user_input() -> Receiver<String> {
