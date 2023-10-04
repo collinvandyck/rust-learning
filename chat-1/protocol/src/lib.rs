@@ -6,7 +6,7 @@ pub mod prelude {
     pub use time::OffsetDateTime;
 }
 use std::{
-    io::Write,
+    io::{self, Write},
     sync::{Arc, Mutex},
 };
 
@@ -33,9 +33,35 @@ impl From<Box<dyn Write + Send>> for Stdout {
     }
 }
 
-impl Stdout {
-    pub fn take(self) -> Option<Box<dyn Write + Send>> {
-        self.0.lock().unwrap().take()
+impl Write for Stdout {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let mut opt = self.lock().expect("lock fail");
+        if let Some(opt) = opt.as_mut() {
+            opt.write(buf)
+        } else {
+            io::stdout().write(buf)
+        }
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        let mut opt = self.lock().expect("lock fail");
+        if let Some(opt) = opt.as_mut() {
+            opt.flush()
+        } else {
+            io::stdout().flush()
+        }
+    }
+}
+
+impl Deref for Stdout {
+    type Target = Arc<Mutex<Option<Box<dyn Write + Send>>>>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Stdout {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -97,6 +123,13 @@ pub struct User {
 /// A wrapper around time crate so we can attach methods
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Timestamp(OffsetDateTime);
+
+impl Default for Timestamp {
+    fn default() -> Self {
+        let time = OffsetDateTime::now_utc();
+        Self(time)
+    }
+}
 
 impl Deref for Timestamp {
     type Target = OffsetDateTime;

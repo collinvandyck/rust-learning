@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 use anyhow::Result;
-use async_trait::async_trait;
-use protocol::{prelude::*, ClientEvent};
+use protocol::{prelude::*, ClientEvent, Message, ServerEvent};
 use std::{
     io::{self, Write},
     net::ToSocketAddrs,
@@ -19,7 +18,7 @@ use tokio::{
 #[tokio::main]
 async fn main() {
     let config = protocol::ClientConfig::parse();
-    let client = Client::new(config);
+    let mut client = Client::new(config);
     if let Err(err) = client.run().await {
         eprintln!("{err:?}");
         process::exit(1);
@@ -44,9 +43,6 @@ enum ClientError {
     EmptyName,
 }
 
-#[async_trait]
-trait IClient {}
-
 struct Client {
     config: protocol::ClientConfig,
 }
@@ -56,7 +52,7 @@ impl Client {
         Self { config }
     }
 
-    async fn run(&self) -> Result<()> {
+    async fn run(&mut self) -> Result<()> {
         let name = match self.config.name.clone() {
             Some(name) => name,
             None => get_name()?,
@@ -81,13 +77,31 @@ impl Client {
         let mut server_rx = read_server(server_rx).await;
         loop {
             tokio::select! {
-                Some(input) = server_rx.recv() => {
-                    println!("Server input: {input}");
+                Some(event) = server_rx.recv() => {
+                    self.server_event(&event).await?;
                 }
                 Some(input) = user_rx.recv() => {
                     println!("User input: {input}");
                 }
                 else => break,
+            }
+        }
+        println!("Quitting");
+        Ok(())
+    }
+
+    async fn server_event(&mut self, input: &str) -> Result<()> {
+        let event = serde_json::from_str::<ServerEvent>(input)?;
+        match event {
+            ServerEvent::Message(message) => {
+                let Message {
+                    from,
+                    text,
+                    time: _time,
+                } = message;
+                let name = from.name;
+                let out = format!("{name}: {text}\n");
+                write!(&mut self.config.stdout, "{out}")?;
             }
         }
         Ok(())
@@ -154,10 +168,11 @@ fn get_name() -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use protocol::User;
+    use protocol::{ServerEvent, Timestamp, User};
     use std::{
         net::SocketAddr,
         sync::{Arc, Mutex},
+        time::Duration,
     };
     use tokio::net::TcpListener;
 
@@ -170,12 +185,14 @@ mod tests {
         let stdout: Box<dyn io::Write + Send> = Box::new(output.clone());
         let stdout = protocol::Stdout::from(stdout);
         let config = protocol::ClientConfig { addr, name, stdout };
-        let client = Client::new(config);
+        let mut client = Client::new(config);
         tokio::spawn(async move {
             client.run().await.unwrap();
         });
         let (stream, _addr) = server.listener.accept().await.unwrap();
-        let mut reader = BufReader::new(stream);
+        let (stream_rx, stream_tx) = stream.into_split();
+        let mut reader = BufReader::new(stream_rx);
+        let mut writer = BufWriter::new(stream_tx);
         let mut buf = String::new();
         reader.read_line(&mut buf).await.unwrap();
         let event = serde_json::from_str::<ClientEvent>(&buf).unwrap();
@@ -183,6 +200,19 @@ mod tests {
             ClientEvent::Ident(User { name }) => assert_eq!(name, "test-name"),
             _ => panic!("bad event: {event:?}"),
         }
+        let event = ServerEvent::Message(protocol::Message {
+            from: User {
+                name: String::from("other-user"),
+            },
+            text: String::from("hi there"),
+            time: Timestamp::default(),
+        });
+        let event = serde_json::to_string(&event).unwrap();
+        let event = format!("{event}\n");
+        writer.write_all(event.as_bytes()).await.unwrap();
+        writer.flush().await.unwrap();
+        drop(writer);
+        tokio::time::sleep(Duration::from_secs(1)).await;
     }
 
     struct Server {
