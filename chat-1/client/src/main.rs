@@ -163,8 +163,8 @@ mod tests {
         let server = Server::new().await;
         let addr = format!("{:?}", &server.addr);
         let name = Some(String::from("test-name"));
-        let cap = Stdout::default();
-        let stdout: Box<dyn io::Write + Send> = Box::new(cap.clone());
+        let output = Stdout::default();
+        let stdout: Box<dyn io::Write + Send> = Box::new(output.clone());
         let stdout = protocol::Stdout::from(stdout);
         let config = protocol::ClientConfig { addr, name, stdout };
         let client = Client::new(config);
@@ -194,11 +194,13 @@ mod tests {
     }
 
     impl Write for Stdout {
-        fn write(&mut self, _buf: &[u8]) -> io::Result<usize> {
-            todo!()
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+            let mut b = self.buf.lock().unwrap();
+            std::io::Write::write(&mut *b, buf)
         }
         fn flush(&mut self) -> io::Result<()> {
-            todo!()
+            let mut b = self.buf.lock().unwrap();
+            std::io::Write::flush(&mut *b)
         }
     }
 }
