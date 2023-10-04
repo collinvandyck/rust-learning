@@ -141,3 +141,30 @@ fn get_name() -> Result<String> {
     }
     Ok(name)
 }
+
+#[cfg(test)]
+mod tests {
+    use std::net::SocketAddr;
+
+    use tokio::net::TcpListener;
+
+    #[tokio::test]
+    async fn test_client() {
+        //
+        let server = Server::new().await;
+        println!("Addr: {:?}", &server.addr);
+    }
+
+    struct Server {
+        listener: TcpListener,
+        addr: SocketAddr,
+    }
+
+    impl Server {
+        async fn new() -> Self {
+            let listener = TcpListener::bind("0.0.0.0:0").await.unwrap();
+            let addr = listener.local_addr().unwrap();
+            Self { listener, addr }
+        }
+    }
+}
