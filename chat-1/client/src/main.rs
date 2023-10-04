@@ -4,9 +4,10 @@ use protocol::prelude::*;
 use std::{
     io::{self, Write},
     net::ToSocketAddrs,
-    process,
+    process, thread,
 };
 use tokio::{
+    fs,
     net::TcpSocket,
     sync::mpsc::{self, Receiver},
 };
@@ -52,7 +53,7 @@ async fn run() -> Result<()> {
         .connect(socket_addr)
         .await
         .map_err(|e| ClientError::CouldNotConnect(addr.into(), e))?;
-    let mut user_input = read_user_input().await;
+    let mut user_input = read_user_input();
     loop {
         tokio::select! {
             input = user_input.recv() => {
@@ -66,12 +67,11 @@ async fn run() -> Result<()> {
     Ok(())
 }
 
-async fn read_user_input() -> Receiver<String> {
+fn read_user_input() -> Receiver<String> {
     let (tx, rx) = mpsc::channel(1024);
-    tokio::spawn(async move {
-        if tx.send(String::from("foo")).await.is_err() {
-            return;
-        }
+    thread::spawn(move || {
+        let mut buf = String::new();
+        io::stdin().read_line(&mut buf)
     });
     rx
 }
