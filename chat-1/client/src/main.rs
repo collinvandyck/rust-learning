@@ -194,7 +194,7 @@ mod tests {
                 eprintln!("Client exit: {err:?}");
             }
         });
-        let (stream, _addr) = server.listener.accept().await.unwrap();
+        let (stream, _) = server.listener.accept().await.unwrap();
         let (stream_rx, mut stream_tx) = stream.into_split();
         let mut reader = BufReader::new(stream_rx);
         let mut buf = String::new();
