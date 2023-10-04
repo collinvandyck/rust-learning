@@ -152,7 +152,10 @@ fn get_name() -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::net::SocketAddr;
+    use std::{
+        net::SocketAddr,
+        sync::{Arc, Mutex},
+    };
     use tokio::net::TcpListener;
 
     #[tokio::test]
@@ -160,7 +163,9 @@ mod tests {
         let server = Server::new().await;
         let addr = format!("{:?}", &server.addr);
         let name = Some(String::from("test-name"));
-        let stdout = protocol::Stdout::from(vec![]);
+        let cap = Stdout::default();
+        let stdout: Box<dyn io::Write + Send> = Box::new(cap.clone());
+        let stdout = protocol::Stdout::from(stdout);
         let config = protocol::ClientConfig { addr, name, stdout };
         let client = Client::new(config);
         tokio::spawn(async move {
@@ -180,6 +185,20 @@ mod tests {
             let listener = TcpListener::bind("0.0.0.0:0").await.unwrap();
             let addr = listener.local_addr().unwrap();
             Self { listener, addr }
+        }
+    }
+
+    #[derive(Default, Clone)]
+    struct Stdout {
+        buf: Arc<Mutex<Vec<u8>>>,
+    }
+
+    impl Write for Stdout {
+        fn write(&mut self, _buf: &[u8]) -> io::Result<usize> {
+            todo!()
+        }
+        fn flush(&mut self) -> io::Result<()> {
+            todo!()
         }
     }
 }

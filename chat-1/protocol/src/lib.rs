@@ -18,7 +18,7 @@ pub struct Config {
     pub addr: String,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Stdout(Arc<Mutex<Option<Box<dyn Write + Send>>>>);
 
 impl From<Vec<u8>> for Stdout {
@@ -47,6 +47,12 @@ pub struct ClientConfig {
 
     #[clap(skip)]
     pub stdout: Stdout,
+}
+
+#[test]
+fn test_client_config() {
+    fn is_send_sync<T: Send + Sync>() {}
+    is_send_sync::<ClientConfig>()
 }
 
 /// The client/server protocol consists of sending events
