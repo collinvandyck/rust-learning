@@ -63,7 +63,7 @@ pub enum Event {
 }
 
 /// ClientEvent is sent by the client
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ClientEvent {
     /// The client has identified themselves. This ident remains valid for the duration of the
     /// connection.
@@ -81,7 +81,7 @@ pub enum ServerEvent {
 }
 
 /// Represents a message in the chat
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Message {
     pub from: User,
     pub text: String,
@@ -89,13 +89,13 @@ pub struct Message {
 }
 
 /// Identifies a user
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct User {
     pub name: String,
 }
 
 /// A wrapper around time crate so we can attach methods
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Timestamp(OffsetDateTime);
 
 impl Deref for Timestamp {

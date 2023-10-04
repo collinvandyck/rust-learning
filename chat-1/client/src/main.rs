@@ -97,6 +97,8 @@ impl Client {
 async fn send_server(event: ClientEvent, writer: &mut BufWriter<OwnedWriteHalf>) -> Result<()> {
     let event = serde_json::to_string(&event)?;
     writer.write_all(event.as_bytes()).await?;
+    writer.write_all("\n".as_bytes()).await?;
+    writer.flush().await?;
     Ok(())
 }
 
@@ -152,6 +154,7 @@ fn get_name() -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use protocol::User;
     use std::{
         net::SocketAddr,
         sync::{Arc, Mutex},
@@ -171,8 +174,15 @@ mod tests {
         tokio::spawn(async move {
             client.run().await.unwrap();
         });
-        let _accept = server.listener.accept().await.unwrap();
-        println!("Accept!");
+        let (stream, _addr) = server.listener.accept().await.unwrap();
+        let mut reader = BufReader::new(stream);
+        let mut buf = String::new();
+        reader.read_line(&mut buf).await.unwrap();
+        let event = serde_json::from_str::<ClientEvent>(&buf).unwrap();
+        match event {
+            ClientEvent::Ident(User { name }) => assert_eq!(name, "test-name"),
+            _ => panic!("bad event: {event:?}"),
+        }
     }
 
     struct Server {
