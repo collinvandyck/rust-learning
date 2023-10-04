@@ -58,6 +58,7 @@ async fn run() -> Result<()> {
         .map_err(|e| ClientError::CouldNotConnect(addr.into(), e))?;
     let mut user_input = read_user_input();
     let (rx, tx) = tcp_stream.into_split();
+    let rx = BufReader::new(rx);
     let mut tx = BufWriter::new(tx);
     send_server(ClientEvent::Ident(protocol::User { name }), &mut tx).await?;
     let mut server_input = read_server_input(rx).await;
@@ -69,8 +70,10 @@ async fn run() -> Result<()> {
             Some(input) = user_input.recv() => {
                 println!("User input: {input}");
             }
+            else => break,
         }
     }
+    Ok(())
 }
 
 async fn send_server(event: ClientEvent, writer: &mut BufWriter<OwnedWriteHalf>) -> Result<()> {
@@ -79,10 +82,9 @@ async fn send_server(event: ClientEvent, writer: &mut BufWriter<OwnedWriteHalf>)
     Ok(())
 }
 
-async fn read_server_input(server: OwnedReadHalf) -> Receiver<String> {
+async fn read_server_input(mut reader: BufReader<OwnedReadHalf>) -> Receiver<String> {
     let (tx, rx) = mpsc::channel(1024);
     tokio::spawn(async move {
-        let mut reader = BufReader::new(server);
         loop {
             let mut buf = String::new();
             if reader.read_line(&mut buf).await.is_err() {
