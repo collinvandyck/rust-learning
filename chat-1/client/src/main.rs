@@ -1,14 +1,17 @@
 #![allow(dead_code)]
 use anyhow::Result;
-use protocol::prelude::*;
+use protocol::{prelude::*, ClientEvent};
 use std::{
     io::{self, Write},
     net::ToSocketAddrs,
     process, thread,
 };
 use tokio::{
-    io::{AsyncBufReadExt, BufReader},
-    net::{tcp::OwnedReadHalf, TcpSocket, TcpStream},
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter},
+    net::{
+        tcp::{OwnedReadHalf, OwnedWriteHalf},
+        TcpSocket,
+    },
     sync::mpsc::{self, Receiver, Sender},
 };
 
@@ -54,7 +57,9 @@ async fn run() -> Result<()> {
         .await
         .map_err(|e| ClientError::CouldNotConnect(addr.into(), e))?;
     let mut user_input = read_user_input();
-    let (rx, _tx) = tcp_stream.into_split();
+    let (rx, tx) = tcp_stream.into_split();
+    let mut tx = BufWriter::new(tx);
+    send_server(ClientEvent::Ident(protocol::User { name }), &mut tx).await?;
     let mut server_input = read_server_input(rx).await;
     loop {
         tokio::select! {
@@ -66,6 +71,12 @@ async fn run() -> Result<()> {
             }
         }
     }
+}
+
+async fn send_server(event: ClientEvent, writer: &mut BufWriter<OwnedWriteHalf>) -> Result<()> {
+    let event = serde_json::to_string(&event)?;
+    writer.write_all(event.as_bytes()).await?;
+    Ok(())
 }
 
 async fn read_server_input(server: OwnedReadHalf) -> Receiver<String> {
