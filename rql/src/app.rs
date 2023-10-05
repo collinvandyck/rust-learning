@@ -156,38 +156,60 @@ impl App {
                 .direction(Direction::Vertical)
                 .constraints([Constraint::Min(0), Constraint::Length(1)].as_ref())
                 .split(frame.size());
+
+            let mut tables_title_style = Style::default();
+            let mut table_title_style = Style::default();
+            let mut search_title_style = Style::default();
+            match self.focus {
+                Focus::Tables => {
+                    tables_title_style = tables_title_style.fg(Color::LightGreen);
+                }
+                Focus::Table => {
+                    table_title_style = table_title_style.fg(Color::LightGreen);
+                }
+                Focus::Search => {
+                    search_title_style = table_title_style.fg(Color::LightGreen);
+                }
+            }
+
             let help = {
                 let no_style = Style::default();
                 let key_style = Style::default().fg(Color::LightCyan);
-                let mut nav = ["j", "k", "h", "l", "↓", "↑", "←", "→"]
-                    .iter()
-                    .zip(std::iter::repeat(Span::styled(",", no_style)))
-                    .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                    .flatten()
-                    .skip(1)
-                    .collect::<Vec<_>>();
-                nav.push(Span::raw(": navigate | "));
-                nav.append(
-                    &mut ["q", "esc"]
+
+                if self.focus == Focus::Search {
+                    let mut nav = vec![
+                        Span::styled("Esc", key_style),
+                        Span::raw(": Exit Search | "),
+                        Span::styled("Enter", key_style),
+                        Span::raw(": Navigate Results || Current Query: "),
+                    ];
+                    if let Some(q) = self.search.value.as_ref() {
+                        nav.push(Span::styled(q, search_title_style));
+                    }
+                    nav
+                } else {
+                    let mut nav = ["j", "k", "h", "l", "↓", "↑", "←", "→"]
                         .iter()
                         .zip(std::iter::repeat(Span::styled(",", no_style)))
                         .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
                         .flatten()
                         .skip(1)
-                        .collect::<Vec<_>>(),
-                );
-                nav.push(Span::raw(": back/quit | "));
-                nav.append(
-                    &mut ["/"]
-                        .iter()
-                        .zip(std::iter::repeat(Span::styled(",", no_style)))
-                        .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                        .flatten()
-                        .skip(1)
-                        .collect::<Vec<_>>(),
-                );
-                nav.push(Span::raw(": Search "));
-                nav
+                        .collect::<Vec<_>>();
+                    nav.push(Span::raw(": navigate | "));
+                    nav.append(
+                        &mut ["q", "esc"]
+                            .iter()
+                            .zip(std::iter::repeat(Span::styled(",", no_style)))
+                            .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
+                            .flatten()
+                            .skip(1)
+                            .collect::<Vec<_>>(),
+                    );
+                    nav.push(Span::raw(": back/quit | "));
+                    nav.push(Span::styled("/", key_style));
+                    nav.push(Span::raw(": Search"));
+                    nav
+                }
             };
             let help = text::Line::from(help);
             let help = Paragraph::new(help);
@@ -207,22 +229,18 @@ impl App {
                 .names
                 .iter()
                 .map(|n| n.clone())
-                .map(|n| ListItem::new(n).style(Style::default().fg(Color::Cyan)))
+                .map(|n| ListItem::new(n).style(Style::default()))
                 .collect();
-            let mut title_style = Style::default();
-            if self.focus == Focus::Tables {
-                title_style = title_style.fg(Color::LightGreen);
-            }
             let list = List::new(items)
                 .block(
                     Block::default()
                         .title("[ tables ]")
-                        .title_style(title_style)
+                        .title_style(tables_title_style)
                         .borders(Borders::ALL),
                 )
                 .highlight_style(
                     Style::default()
-                        .fg(Color::LightGreen)
+                        .fg(Color::Cyan)
                         .add_modifier(Modifier::BOLD),
                 );
             let state = &mut self.tables.state;
@@ -271,10 +289,6 @@ impl App {
                         Constraint::Max(len.try_into().unwrap())
                     })
                     .collect::<Vec<_>>();
-                let mut title_style = Style::default();
-                if self.focus == Focus::Table {
-                    title_style = title_style.fg(Color::LightGreen);
-                }
                 let table: Table = Table::new(rows)
                     .header(header)
                     .block(
@@ -284,7 +298,7 @@ impl App {
                                 selected_table.name(),
                                 selected_table.count
                             ))
-                            .title_style(title_style)
+                            .title_style(table_title_style)
                             .borders(Borders::ALL),
                     )
                     .highlight_style(Style::default().fg(Color::LightGreen))
@@ -371,7 +385,6 @@ impl App {
             Action::Search => {
                 // User is searching live, return to search prompt
                 self.open_table();
-                info!("search hit with query: {:?}, reopening", self.search.value);
             }
             Action::Quit => return Tick::Quit,
         }
