@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "excel"
+name = "excel-1"
 version = "0.1.0"
