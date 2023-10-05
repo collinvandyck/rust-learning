@@ -411,6 +411,8 @@ impl Dao {
     // A better query would allow per-column constraints and be
     // SQL type aware.
     fn where_clause(&self, schema: &TableSchema, query: &str) -> Option<String> {
+        let numeric = query.parse::<i64>().is_ok() || query.parse::<f64>().is_ok();
+
         let constraints: Vec<String> = schema
             .cols
             .iter()
@@ -421,12 +423,14 @@ impl Dao {
                 };
 
                 warn!("constraints type: {}", spec.typ);
-                if spec.typ != "TEXT" {
-                    warn!("fyi, not string: {:?}", spec);
-                    return None;
+                if (spec.typ == "NUMERIC" || spec.typ == "FLOAT") && numeric {
+                    return Some(format!(r#"{} = {}"#, spec.name, query));
+                }
+                if spec.typ == "TEXT" {
+                    return Some(format!(r#"{} LIKE '%{}%'"#, spec.name, query));
                 }
 
-                Some(format!(r#"{} LIKE '%{}%'"#, spec.name, query))
+                None
             })
             .collect();
 
