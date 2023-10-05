@@ -4,6 +4,23 @@ use std::net::SocketAddr;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpListener;
 
+/// Verifies that the supplied client implements the protocol correctly.
+///
+/// Expected usage:
+///
+/// ```no_run
+/// struct Client {
+///     async fn start(config: ClientConfig) -> Result<()> {
+///         todo()!
+///     }
+/// }
+///
+/// #[tokio::test]
+/// async fn verify_client() {
+///     protocol::verify(Client::start).await
+/// }
+///
+/// ```
 pub async fn verify_client<Fut>(client: impl Fn(ClientConfig) -> Fut)
 where
     Fut: Future<Output = Result<()>> + Send + 'static,

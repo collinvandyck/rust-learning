@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use anyhow::Result;
 use protocol::{prelude::*, ClientEvent, Message, ServerEvent};
 use std::{
@@ -18,8 +17,7 @@ use tokio::{
 #[tokio::main]
 async fn main() {
     let config = protocol::ClientConfig::parse();
-    let mut client = Client::new(config);
-    if let Err(err) = client.run().await {
+    if let Err(err) = Client::start(config).await {
         eprintln!("{err:?}");
         process::exit(1);
     }
@@ -48,13 +46,13 @@ struct Client {
 }
 
 impl Client {
-    fn new(config: protocol::ClientConfig) -> Self {
-        Self { config }
-    }
-
     async fn start(config: protocol::ClientConfig) -> Result<()> {
         let mut client = Self::new(config);
         client.run().await
+    }
+
+    fn new(config: protocol::ClientConfig) -> Self {
+        Self { config }
     }
 
     async fn run(&mut self) -> Result<()> {

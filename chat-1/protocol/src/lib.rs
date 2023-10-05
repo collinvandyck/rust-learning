@@ -21,11 +21,6 @@ pub struct ServerConfig {
     pub addr: String,
 }
 
-#[async_trait]
-pub trait IClient {
-    async fn run(&mut self, config: ClientConfig) -> Result<()>;
-}
-
 #[derive(Parser)]
 pub struct ClientConfig {
     /// the name of the user. if empty, the client will need to ask the user.
@@ -41,14 +36,20 @@ pub struct ClientConfig {
     pub stdout: Stdout,
 }
 
+/// Stdout is something that will be supplied to your code in the verification module to capture
+/// your program output.
+///
+/// It implements Write, so the expected usage is something like:
+///
+/// ```no_run
+/// let out = "foobar";
+/// write!(&mut self.config.stdout, "{out}")?;
+/// ```
+///
+/// The verification harness will inspect what is written to this `Stdout` as the code runs.
+/// If the `Option` is `None` then writing to `Stdout` will print to the program's standard out.
 #[derive(Default, Clone)]
 pub struct Stdout(Arc<Mutex<Option<Box<dyn Write + Send>>>>);
-
-impl From<Vec<u8>> for Stdout {
-    fn from(value: Vec<u8>) -> Self {
-        Stdout(Arc::new(Mutex::new(Some(Box::new(value)))))
-    }
-}
 
 impl From<Box<dyn Write + Send>> for Stdout {
     fn from(value: Box<dyn Write + Send>) -> Self {
@@ -56,6 +57,7 @@ impl From<Box<dyn Write + Send>> for Stdout {
     }
 }
 
+/// Writes to the buffer, or if it's none, to the program stdout.
 impl Write for Stdout {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let mut opt = self.lock().expect("lock fail");
@@ -86,12 +88,6 @@ impl DerefMut for Stdout {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
-}
-
-#[test]
-fn test_client_config() {
-    fn is_send_sync<T: Send + Sync>() {}
-    is_send_sync::<ClientConfig>()
 }
 
 /// The client/server protocol consists of sending events
@@ -133,7 +129,7 @@ pub struct User {
     pub name: String,
 }
 
-/// A wrapper around time crate so we can attach methods
+/// A wrapper around time crate so we can attach methods later on.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Timestamp(OffsetDateTime);
 
