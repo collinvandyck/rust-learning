@@ -52,6 +52,11 @@ impl Client {
         Self { config }
     }
 
+    async fn start(config: protocol::ClientConfig) -> Result<()> {
+        let mut client = Self::new(config);
+        client.run().await
+    }
+
     async fn run(&mut self) -> Result<()> {
         let name = match self.config.name.clone() {
             Some(name) => name,
@@ -172,90 +177,9 @@ fn get_name() -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use protocol::{ServerEvent, Timestamp, User};
-    use std::{
-        net::SocketAddr,
-        sync::{Arc, Mutex},
-    };
-    use tokio::net::TcpListener;
 
     #[tokio::test]
-    async fn test_client() {
-        let server = Server::new().await;
-        let addr = format!("{:?}", &server.addr);
-        let name = Some(String::from("test-name"));
-        let buffer = Stdout::default();
-        let stdout: Box<dyn io::Write + Send> = Box::new(buffer.clone());
-        let stdout = protocol::Stdout::from(stdout);
-        let config = protocol::ClientConfig { addr, name, stdout };
-        let mut client = Client::new(config);
-        let client = tokio::spawn(async move {
-            if let Err(err) = client.run().await {
-                eprintln!("Client exit: {err:?}");
-            }
-        });
-        let (stream, _) = server.listener.accept().await.unwrap();
-        let (stream_rx, mut stream_tx) = stream.into_split();
-        let mut reader = BufReader::new(stream_rx);
-        let mut buf = String::new();
-        reader.read_line(&mut buf).await.unwrap();
-        let event = serde_json::from_str::<ClientEvent>(&buf).unwrap();
-        match event {
-            ClientEvent::Ident(User { name }) => assert_eq!(name, "test-name"),
-            _ => panic!("bad event: {event:?}"),
-        }
-        let event = ServerEvent::Message(protocol::Message {
-            from: User {
-                name: String::from("other-user"),
-            },
-            text: String::from("hi there"),
-            time: Timestamp::default(),
-        });
-        let event = serde_json::to_string(&event).unwrap();
-        let event = format!("{event}\n");
-        stream_tx.write_all(event.as_bytes()).await.unwrap();
-        stream_tx.flush().await.unwrap();
-        drop(stream_tx);
-        client.await.unwrap();
-        let out = buffer.output();
-        assert_eq!(out, "other-user: hi there\n");
-    }
-
-    struct Server {
-        listener: TcpListener,
-        addr: SocketAddr,
-    }
-
-    impl Server {
-        async fn new() -> Self {
-            let listener = TcpListener::bind("0.0.0.0:0").await.unwrap();
-            let addr = listener.local_addr().unwrap();
-            Self { listener, addr }
-        }
-    }
-
-    #[derive(Default, Clone)]
-    struct Stdout {
-        buf: Arc<Mutex<Vec<u8>>>,
-    }
-
-    impl Stdout {
-        fn output(&self) -> String {
-            let b = self.buf.lock().expect("lock fail");
-            let b = b.clone();
-            use std::str;
-            str::from_utf8(&b).expect("not valid utf8").to_string()
-        }
-    }
-
-    impl Write for Stdout {
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            let mut b = self.buf.lock().unwrap();
-            std::io::Write::write(&mut *b, buf)
-        }
-        fn flush(&mut self) -> io::Result<()> {
-            let mut b = self.buf.lock().unwrap();
-            std::io::Write::flush(&mut *b)
-        }
+    async fn test_harness() {
+        protocol::verify_client(Client::start).await;
     }
 }

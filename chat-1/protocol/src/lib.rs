@@ -1,4 +1,5 @@
 pub mod verify;
+pub use verify::verify_client;
 pub mod prelude {
     pub use async_trait::async_trait;
     pub use clap::Parser;
@@ -22,7 +23,7 @@ pub struct ServerConfig {
 
 #[async_trait]
 pub trait IClient {
-    async fn run(&mut self) -> Result<()>;
+    async fn run(&mut self, config: ClientConfig) -> Result<()>;
 }
 
 #[derive(Parser)]

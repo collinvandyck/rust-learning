@@ -4,14 +4,18 @@ use std::net::SocketAddr;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpListener;
 
-pub async fn verify(client: impl Future<Output = ()> + Send + 'static) {
+pub async fn verify_client<Fut>(client: impl Fn(ClientConfig) -> Fut)
+where
+    Fut: Future<Output = Result<()>> + Send + 'static,
+{
     let server = Server::new().await;
     let addr = format!("{:?}", &server.addr);
     let name = Some(String::from("test-name"));
     let buffer = Stdout::default();
     let stdout: Box<dyn io::Write + Send> = Box::new(buffer.clone());
     let stdout = super::Stdout::from(stdout);
-    let _config = ClientConfig { addr, name, stdout };
+    let config = ClientConfig { addr, name, stdout };
+    let client = client(config);
     let client = tokio::spawn(async move { client.await });
     let (stream, _) = server.listener.accept().await.unwrap();
     let (stream_rx, mut stream_tx) = stream.into_split();
@@ -35,7 +39,7 @@ pub async fn verify(client: impl Future<Output = ()> + Send + 'static) {
     stream_tx.write_all(event.as_bytes()).await.unwrap();
     stream_tx.flush().await.unwrap();
     drop(stream_tx);
-    client.await.unwrap();
+    client.await.unwrap().unwrap();
     let out = buffer.output();
     assert_eq!(out, "other-user: hi there\n");
 }
