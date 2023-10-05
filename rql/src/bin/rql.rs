@@ -1,4 +1,5 @@
 use std::{fmt::Debug, path::Path};
+use tracing_subscriber::{filter::LevelFilter, prelude::*};
 
 use rql::prelude::*;
 
@@ -48,7 +49,13 @@ fn init_tracing(args: &Args) -> Result<()> {
             .with_writer(log_file)
             .with_env_filter(filter)
             .init();
+    } else {
+        // provide users something when a fatal error occurs
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::fmt::layer().with_filter(LevelFilter::ERROR))
+            .init();
     }
+
     Ok(())
 }
 
