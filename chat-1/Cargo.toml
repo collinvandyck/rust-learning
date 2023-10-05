@@ -1,5 +1,5 @@
 [workspace]
-members = ["protocol", "client", "server"]
+members = ["protocol", "client"]
 
 [workspace.dependencies]
 anyhow = "1.0.75"
