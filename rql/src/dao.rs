@@ -79,7 +79,7 @@ impl TableColumn {
     }
 }
 
-#[derive(sqlx::FromRow, Hash, PartialEq, Eq, Clone)]
+#[derive(sqlx::FromRow, Hash, PartialEq, Eq, Clone, Debug)]
 #[allow(dead_code)]
 pub struct TableColumnSpec {
     pub name: String,
@@ -249,6 +249,7 @@ pub struct GetRecords {
     pub table_name: String,
     pub limit: Option<usize>,
     pub offset: Option<usize>,
+    pub query: Option<String>,
 }
 
 impl GetRecords {
@@ -257,6 +258,7 @@ impl GetRecords {
             table_name: table_name.into(),
             limit: None,
             offset: None,
+            query: None,
         }
     }
     pub fn limit(mut self, limit: usize) -> Self {
@@ -265,6 +267,10 @@ impl GetRecords {
     }
     pub fn offset(mut self, offset: usize) -> Self {
         self.offset = Some(offset);
+        self
+    }
+    pub fn search(mut self, query: &str) -> Self {
+        self.query = Some(query.to_string());
         self
     }
 }
@@ -357,14 +363,29 @@ impl Dao {
 
     async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Vec<Record>> {
         let table_name = req.table_name.as_str();
+        let schema = self.table_schema(table_name).await?; // TODO: cache?
         let mut conn = self.pool.acquire().await?;
         let limit = req.limit.map(|v| format!("limit {v}")).unwrap_or_default();
         let offset = req
             .offset
             .map(|v| format!("offset {v}"))
             .unwrap_or_default();
-        let query = format!("select rowid, * from {} {} {}", table_name, limit, offset);
+        let where_clause = req
+            .query
+            .as_ref()
+            .and_then(|q| self.where_clause(&schema, q));
+
+        info!("query: {:?}\twhere clause: {:?}", req.query, where_clause);
+        let query = if let Some(wher) = where_clause {
+            format!(
+                "select rowid, * from {} WHERE {} {} {}",
+                table_name, wher, limit, offset
+            )
+        } else {
+            format!("select rowid, * from {} {} {}", table_name, limit, offset)
+        };
         debug!(query, "Fetching records");
+
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = vec![];
         for row in rows {
@@ -381,6 +402,39 @@ impl Dao {
             records.push(record);
         }
         Ok(records)
+    }
+
+    // returns a where clause against all string columns, OR'd,
+    // with the provided query. None is returned if no columns
+    // can be queried against.
+    //
+    // A better query would allow per-column constraints and be
+    // SQL type aware.
+    fn where_clause(&self, schema: &TableSchema, query: &str) -> Option<String> {
+        let constraints: Vec<String> = schema
+            .cols
+            .iter()
+            .filter_map(|c| {
+                let spec = match c {
+                    TableColumn::Spec(spec) => spec,
+                    _ => return None,
+                };
+
+                warn!("constraints type: {}", spec.typ);
+                if spec.typ != "TEXT" {
+                    warn!("fyi, not string: {:?}", spec);
+                    return None;
+                }
+
+                Some(format!(r#"{} LIKE '%{}%'"#, spec.name, query))
+            })
+            .collect();
+
+        if constraints.len() > 0 {
+            Some(constraints.join(" OR "))
+        } else {
+            None
+        }
     }
 
     #[cfg(test)]

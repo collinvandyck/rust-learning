@@ -122,9 +122,13 @@ impl DbTable {
                 0
             };
             let limit = view_rows * 3;
-            let spec = GetRecords::new(&self.schema.name)
+            let mut spec = GetRecords::new(&self.schema.name)
                 .offset(offset)
                 .limit(limit);
+            if let Some(q) = self.search.value.as_ref() {
+                warn!("adding search to spec: {}", q);
+                spec = spec.search(q);
+            }
             let records = self.dao.records(&self.schema, spec)?;
             let irs = (offset..offset + limit)
                 .zip(records.into_iter())

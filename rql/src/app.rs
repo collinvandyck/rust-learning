@@ -15,6 +15,7 @@ enum Focus {
     #[default]
     Tables,
     Table,
+    Search,
 }
 
 pub struct App {
@@ -30,7 +31,6 @@ pub struct App {
 #[derive(Clone, Default)]
 pub struct Search {
     pub value: Option<String>,
-    pub focused: bool,
 }
 
 struct KeyBindSet {
@@ -97,6 +97,8 @@ impl Default for KeyBindSet {
                 // pagedown
                 (key(KeyCode::PageDown), PageDown),
                 (ctrl_key(KeyCode::Char('d')), PageDown),
+                (key(KeyCode::Char('/')), ChangeFocus(Focus::Search)),
+                (key(KeyCode::Char('?')), ChangeFocus(Focus::Search)),
             ])
         });
         Self { bindings }
@@ -112,6 +114,7 @@ enum Action {
     PageUp,
     PageDown,
     ChangeFocus(Focus),
+    Search,
     Quit,
 }
 
@@ -316,44 +319,96 @@ impl App {
                 if Self::should_quit(key) {
                     return Ok(Tick::Quit);
                 }
-                if let Some(action) = self.bindings.matches(self.focus, key) {
-                    match action {
-                        Action::TablesNext => {
-                            if self.tables.next() {
-                                self.open_table();
-                            }
-                        }
-                        Action::TablesPrev => {
-                            if self.tables.previous() {
-                                self.open_table();
-                            }
-                        }
-                        Action::TableNext => {
-                            let table_rows = self.num_table_rows();
-                            self.table.iter_mut().for_each(DbTable::next);
-                        }
-                        Action::TablePrev => {
-                            let table_rows = self.num_table_rows();
-                            self.table.iter_mut().for_each(DbTable::previous);
-                        }
-                        Action::ChangeFocus(focus) => match focus {
-                            Focus::Tables => {
-                                self.focus = Focus::Tables;
-                                self.table.iter_mut().for_each(DbTable::unselect);
-                            }
-                            Focus::Table => {
-                                self.focus = Focus::Table;
-                                self.table.iter_mut().for_each(DbTable::select_first);
-                            }
-                        },
-                        Action::PageUp => {}
-                        Action::PageDown => {}
-                        Action::Quit => return Ok(Tick::Quit),
+                if self.focus == Focus::Search {
+                    if let Some(action) = self.search(key) {
+                        return Ok(self.process_action(action));
                     }
+                } else if let Some(action) = self.bindings.matches(self.focus, key) {
+                    return Ok(self.process_action(action));
                 }
             }
         }
         Ok(Tick::Continue)
+    }
+
+    fn process_action(&mut self, action: Action) -> Tick {
+        match action {
+            Action::TablesNext => {
+                if self.tables.next() {
+                    self.open_table();
+                }
+            }
+            Action::TablesPrev => {
+                if self.tables.previous() {
+                    self.open_table();
+                }
+            }
+            Action::TableNext => {
+                let table_rows = self.num_table_rows();
+                self.table.iter_mut().for_each(DbTable::next);
+            }
+            Action::TablePrev => {
+                let table_rows = self.num_table_rows();
+                self.table.iter_mut().for_each(DbTable::previous);
+            }
+            Action::ChangeFocus(focus) => {
+                self.focus = focus;
+
+                match focus {
+                    Focus::Tables => {
+                        self.table.iter_mut().for_each(DbTable::unselect);
+                    }
+                    Focus::Table => {
+                        self.table.iter_mut().for_each(DbTable::select_first);
+                    }
+                    Focus::Search => {
+                        self.search = Search::default();
+                    }
+                }
+            }
+            Action::PageUp => {}
+            Action::PageDown => {}
+            Action::Search => {
+                // User is searching live, return to search prompt
+                self.open_table();
+                info!("search hit with query: {:?}, reopening", self.search.value);
+            }
+            Action::Quit => return Tick::Quit,
+        }
+
+        Tick::Continue
+    }
+
+    fn search(&mut self, k: KeyEvent) -> Option<Action> {
+        let kevent = |code: KeyCode, m: KeyModifiers| -> KeyEvent { KeyEvent::new(code, m) };
+        let key = |code: KeyCode| -> KeyEvent { kevent(code, KeyModifiers::NONE) };
+
+        match k.code {
+            KeyCode::Esc => {
+                // flush any previous results
+                self.search.value = None;
+                Some(Action::ChangeFocus(Focus::Table))
+            }
+            KeyCode::Enter => Some(Action::ChangeFocus(Focus::Table)),
+            KeyCode::Backspace => {
+                if let Some(mut q) = self.search.value.as_mut() {
+                    q.pop();
+                }
+                if self.search.value.as_ref().is_some_and(|q| q == "") {
+                    self.search.value = None;
+                }
+                // display intermediate results as they type
+                Some(Action::Search)
+            }
+            KeyCode::Char(c) => {
+                let mut new_query = self.search.value.take().unwrap_or_default();
+                new_query.push(c);
+                self.search.value = Some(new_query);
+                // display intermediate results as they type
+                Some(Action::Search)
+            }
+            _ => None,
+        }
     }
 
     fn should_quit(key: KeyEvent) -> bool {
