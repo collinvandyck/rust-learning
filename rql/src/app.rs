@@ -173,7 +173,7 @@ impl App {
                 Focus::Search => (),
             }
 
-            frame.render_widget(self.render_help_nav(), chrome[1]);
+            frame.render_widget(self.draw_help(), chrome[1]);
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(
@@ -266,6 +266,38 @@ impl App {
         Ok(())
     }
 
+    fn draw_help(&mut self) -> Paragraph {
+        let no_style = Style::default();
+        let key_style = Style::default().fg(Color::LightCyan);
+        let help = match self.focus {
+            Focus::Tables | Focus::Table => {
+                Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
+                    .chain(vec![Span::raw(": navigate | ")])
+                    .chain(Self::intersperse_keys(&["q", "esc"], key_style))
+                    .chain(vec![
+                        Span::raw(": back/quit | "),
+                        Span::styled("/", key_style),
+                        Span::raw(": search"),
+                    ])
+                    .collect()
+            }
+            Focus::Search => {
+                let mut nav = vec![
+                    Span::styled("Esc", key_style),
+                    Span::raw(": exit search | "),
+                    Span::styled("Enter", key_style),
+                    Span::raw(": navigate results || current query: "),
+                ];
+                if let Some(q) = self.search.value.as_ref() {
+                    nav.push(Span::styled(q, Style::default().fg(Color::Green)));
+                }
+                nav
+            }
+        };
+
+        Paragraph::new(text::Line::from(help))
+    }
+
     fn num_table_rows(&mut self) -> usize {
         (self.dims.height - 4) as usize // 2 border, 1 header
     }
@@ -289,12 +321,13 @@ impl App {
                 if Self::should_quit(key) {
                     return Ok(Tick::Quit);
                 }
-                if self.focus == Focus::Search {
-                    if let Some(action) = self.search(key) {
-                        return Ok(self.process_action(action));
-                    }
-                } else if let Some(action) = self.bindings.matches(self.focus, key) {
-                    return Ok(self.process_action(action));
+                let action = match self.focus {
+                    Focus::Search => self.search(key),
+                    Focus::Tables | Focus::Table => self.bindings.matches(self.focus, key),
+                };
+
+                if let Some(a) = action {
+                    return Ok(self.process_action(a));
                 }
             }
         }
@@ -348,50 +381,6 @@ impl App {
         Tick::Continue
     }
 
-    fn render_help_nav(&mut self) -> Paragraph {
-        let no_style = Style::default();
-        let key_style = Style::default().fg(Color::LightCyan);
-        let help = match self.focus {
-            Focus::Tables | Focus::Table => {
-                let mut nav = ["j", "k", "h", "l", "↓", "↑", "←", "→"]
-                    .iter()
-                    .zip(std::iter::repeat(Span::styled(",", no_style)))
-                    .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                    .flatten()
-                    .skip(1)
-                    .collect::<Vec<_>>();
-                nav.push(Span::raw(": navigate | "));
-                nav.append(
-                    &mut ["q", "esc"]
-                        .iter()
-                        .zip(std::iter::repeat(Span::styled(",", no_style)))
-                        .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                        .flatten()
-                        .skip(1)
-                        .collect::<Vec<_>>(),
-                );
-                nav.push(Span::raw(": back/quit | "));
-                nav.push(Span::styled("/", key_style));
-                nav.push(Span::raw(": search"));
-                nav
-            }
-            Focus::Search => {
-                let mut nav = vec![
-                    Span::styled("Esc", key_style),
-                    Span::raw(": exit search | "),
-                    Span::styled("Enter", key_style),
-                    Span::raw(": navigate results || current query: "),
-                ];
-                if let Some(q) = self.search.value.as_ref() {
-                    nav.push(Span::styled(q, Style::default().fg(Color::Green)));
-                }
-                nav
-            }
-        };
-
-        Paragraph::new(text::Line::from(help))
-    }
-
     fn search(&mut self, k: KeyEvent) -> Option<Action> {
         let kevent = |code: KeyCode, m: KeyModifiers| -> KeyEvent { KeyEvent::new(code, m) };
         let key = |code: KeyCode| -> KeyEvent { kevent(code, KeyModifiers::NONE) };
@@ -429,5 +418,16 @@ impl App {
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => return true,
             _ => false,
         }
+    }
+
+    fn intersperse_keys<'a, 'b>(
+        keys: &'a [&'b str],
+        key_style: Style,
+    ) -> impl Iterator<Item = Span<'b>> + 'a {
+        keys.iter()
+            .zip(std::iter::repeat(Span::styled(",", Style::default())))
+            .map(move |(s, sep)| [sep, Span::styled(*s, key_style)])
+            .flatten()
+            .skip(1)
     }
 }
