@@ -72,9 +72,9 @@ impl IndexedRecords {
 impl DbTable {
     pub fn new(dao: BlockingDao, name: String, search: Option<String>) -> Result<Self> {
         info!(name, "Building db table");
-        let count = dao.count(&name)?;
+        let count = dao.count(Count::new(&name).maybe_search(&search))?;
         let schema = dao.table_schema(&name)?;
-        let max_lens = dao.max_lens(&schema)?;
+        let max_lens = dao.max_lens(&schema, MaxLens::new(&name).maybe_search(&search))?;
         let max_lens: HashMap<TableColumn, usize> = schema
             .cols
             .iter()

@@ -39,12 +39,12 @@ impl BlockingDao {
         self.inner.rt.block_on(self.inner.dao.records(schema, req))
     }
 
-    pub fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
-        self.inner.rt.block_on(self.inner.dao.count(table_name))
+    pub fn count(&self, req: Count) -> Result<u64> {
+        self.inner.rt.block_on(self.inner.dao.count(req))
     }
 
-    pub fn max_lens(&self, schema: &TableSchema) -> Result<Vec<usize>> {
-        self.inner.rt.block_on(self.inner.dao.max_lens(schema))
+    pub fn max_lens(&self, schema: &TableSchema, req: MaxLens) -> Result<Vec<usize>> {
+        self.inner.rt.block_on(self.inner.dao.max_lens(schema, req))
     }
 }
 
@@ -246,6 +246,7 @@ pub enum DbType<'a> {
     Memory,
 }
 
+#[derive(Default, Debug)]
 pub struct GetRecords {
     pub table_name: String,
     pub limit: Option<usize>,
@@ -257,9 +258,7 @@ impl GetRecords {
     pub fn new<S: Into<String>>(table_name: S) -> Self {
         GetRecords {
             table_name: table_name.into(),
-            limit: None,
-            offset: None,
-            query: None,
+            ..Default::default()
         }
     }
     pub fn limit(mut self, limit: usize) -> Self {
@@ -272,6 +271,56 @@ impl GetRecords {
     }
     pub fn search(mut self, query: &str) -> Self {
         self.query = Some(query.to_string());
+        self
+    }
+    pub fn maybe_search(mut self, query: &Option<String>) -> Self {
+        self.query = query.to_owned();
+        self
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct Count {
+    pub table_name: String,
+    pub query: Option<String>,
+}
+
+impl Count {
+    pub fn new<S: Into<String>>(table_name: S) -> Self {
+        Self {
+            table_name: table_name.into(),
+            ..Default::default()
+        }
+    }
+    pub fn search(mut self, query: &str) -> Self {
+        self.query = Some(query.to_string());
+        self
+    }
+    pub fn maybe_search(mut self, query: &Option<String>) -> Self {
+        self.query = query.to_owned();
+        self
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct MaxLens {
+    pub table_name: String,
+    pub query: Option<String>,
+}
+
+impl MaxLens {
+    pub fn new<S: Into<String>>(table_name: S) -> Self {
+        Self {
+            table_name: table_name.into(),
+            ..Default::default()
+        }
+    }
+    pub fn search(mut self, query: &str) -> Self {
+        self.query = Some(query.to_string());
+        self
+    }
+    pub fn maybe_search(mut self, query: &Option<String>) -> Self {
+        self.query = query.to_owned();
         self
     }
 }
@@ -331,7 +380,7 @@ impl Dao {
         Ok(schema)
     }
 
-    async fn max_lens(&self, schema: &TableSchema) -> Result<Vec<usize>> {
+    async fn max_lens(&self, schema: &TableSchema, req: MaxLens) -> Result<Vec<usize>> {
         let mut conn = self.pool.acquire().await?;
         let query_parts = &schema
             .cols
@@ -339,7 +388,15 @@ impl Dao {
             .map(|c| format!("max(length({}))", c.name()))
             .collect::<Vec<_>>()
             .join(",");
-        let query = format!("select {} from {}", query_parts, schema.name);
+        let mut query = format!("select {} from {}", query_parts, schema.name);
+        let where_clause = req
+            .query
+            .as_ref()
+            .and_then(|q| build_where_clause(&schema, q));
+        if let Some(wher) = where_clause {
+            query.push_str(&format!(" WHERE {}", wher));
+        }
+        debug!("max lens query: {}", query);
         let row = sqlx::query(&query).fetch_one(&mut *conn).await?;
         let mut res = vec![];
         for (idx, col) in schema.cols.iter().enumerate() {
@@ -349,13 +406,23 @@ impl Dao {
         Ok(res)
     }
 
-    async fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
+    async fn count(&self, req: Count) -> Result<u64> {
         #[derive(sqlx::FromRow)]
         struct Record {
             count: i64,
         }
+        let schema = self.table_schema(&req.table_name).await?;
         let mut conn = self.pool.acquire().await?;
-        let query = format!("select count(*) as count from {}", table_name.as_ref());
+        let mut query = format!("select count(*) as count from {}", &req.table_name);
+        let where_clause = req
+            .query
+            .as_ref()
+            .and_then(|q| build_where_clause(&schema, q));
+        if let Some(wher) = where_clause {
+            query.push_str(&format!(" WHERE {}", wher));
+        }
+
+        debug!("count query: {}", query);
         let record = sqlx::query_as::<_, Record>(&query)
             .fetch_one(&mut *conn)
             .await?;
@@ -376,7 +443,6 @@ impl Dao {
             .as_ref()
             .and_then(|q| build_where_clause(&schema, q));
 
-        debug!("query: {:?}\twhere clause: {:?}", req.query, where_clause);
         let query = if let Some(wher) = where_clause {
             format!(
                 "select rowid, * from {} WHERE {} {} {}",
@@ -385,7 +451,7 @@ impl Dao {
         } else {
             format!("select rowid, * from {} {} {}", table_name, limit, offset)
         };
-        debug!(query, "Fetching records");
+        debug!(query, "records query: {}", query);
 
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = vec![];
@@ -429,7 +495,6 @@ fn build_where_clause(schema: &TableSchema, query: &str) -> Option<String> {
             TableColumn::Spec(spec)
                 if spec.typ.to_lowercase() == "text" || spec.typ.to_lowercase() == "string" =>
             {
-                debug!("text column: {:?}", spec);
                 Some(format!("{} LIKE '%{}%'", spec.name, query))
             }
             TableColumn::Spec(spec)
@@ -445,7 +510,6 @@ fn build_where_clause(schema: &TableSchema, query: &str) -> Option<String> {
         })
         .collect();
 
-    debug!("where clause constraints: {:?}", constraints);
     if constraints.len() > 0 {
         Some(constraints.join(" OR "))
     } else {
