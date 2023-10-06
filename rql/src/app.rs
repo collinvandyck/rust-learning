@@ -55,7 +55,7 @@ impl Default for KeyBindSet {
                 (key(KeyCode::Down), TablesNext),
                 (key(KeyCode::Char('J')), TablesNext),
                 (key(KeyCode::Char('j')), TablesNext),
-                /// tablesprev
+                // tablesprev
                 (key(KeyCode::Up), TablesPrev),
                 (key(KeyCode::Char('K')), TablesPrev),
                 (key(KeyCode::Char('k')), TablesPrev),
@@ -94,6 +94,7 @@ impl Default for KeyBindSet {
                 (ctrl_key(KeyCode::Char('d')), PageDown),
                 (key(KeyCode::Char('/')), ChangeFocus(Focus::Search)),
                 (key(KeyCode::Char('?')), ChangeFocus(Focus::Search)),
+                (ctrl_key(KeyCode::Char('f')), ChangeFocus(Focus::Search)),
             ])
         });
         Self { bindings }
@@ -269,16 +270,20 @@ impl App {
             no_style
         };
         let help = match self.focus {
-            Focus::Tables | Focus::Table => {
+            Focus::Tables => {
                 Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
                     .chain(vec![Span::raw(": navigate | ")])
                     .chain(Self::intersperse_keys(&["q", "esc"], key_style))
-                    .chain(vec![
-                        Span::raw(": back/quit | "),
-                        Span::styled("/", key_style),
-                        Span::raw(": "),
-                        Span::styled("search", search_style),
-                    ])
+                    .chain(vec![Span::raw(": back/quit")])
+                    .collect()
+            }
+            Focus::Table => {
+                Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
+                    .chain(vec![Span::raw(": navigate | ")])
+                    .chain(Self::intersperse_keys(&["q", "esc"], key_style))
+                    .chain(vec![Span::raw(": back/quit | ")])
+                    .chain(Self::intersperse_keys(&["/", "C-f"], key_style))
+                    .chain(vec![Span::raw(": "), Span::styled("search", search_style)])
                     .collect()
             }
             Focus::Search => {
