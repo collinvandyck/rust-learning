@@ -9,7 +9,7 @@ pub struct DbTable {
     pub pager: Pager,
     pub count: u64,
     pub indexed: IndexedRecords,
-    search: Search,
+    search: Option<String>,
 }
 
 #[derive(Default)]
@@ -70,7 +70,7 @@ impl IndexedRecords {
 }
 
 impl DbTable {
-    pub fn new(dao: BlockingDao, name: String, search: Search) -> Result<Self> {
+    pub fn new(dao: BlockingDao, name: String, search: Option<String>) -> Result<Self> {
         info!(name, "Building db table");
         let count = dao.count(&name)?;
         let schema = dao.table_schema(&name)?;
@@ -125,8 +125,7 @@ impl DbTable {
             let mut spec = GetRecords::new(&self.schema.name)
                 .offset(offset)
                 .limit(limit);
-            if let Some(q) = self.search.value.as_ref() {
-                warn!("adding search to spec: {}", q);
+            if let Some(q) = self.search.as_ref() {
                 spec = spec.search(q);
             }
             let records = self.dao.records(&self.schema, spec)?;

@@ -25,12 +25,7 @@ pub struct App {
     focus: Focus,           // what ui element has focus
     dims: Rect,             // how large the frame is
     bindings: KeyBindSet,   // keybindings
-    search: Search,
-}
-
-#[derive(Clone, Default)]
-pub struct Search {
-    pub value: Option<String>,
+    search: Option<String>, // filter query
 }
 
 struct KeyBindSet {
@@ -126,7 +121,6 @@ impl App {
         let focus = Focus::default();
         let dims = Rect::default();
         let bindings = KeyBindSet::default();
-        let search = Search::default();
         let mut app = Self {
             dao,
             tables,
@@ -134,7 +128,7 @@ impl App {
             focus,
             dims,
             bindings,
-            search,
+            search: None,
         };
         Ok(app)
     }
@@ -288,7 +282,7 @@ impl App {
                     Span::styled("Enter", key_style),
                     Span::raw(": navigate results || current query: "),
                 ];
-                if let Some(q) = self.search.value.as_ref() {
+                if let Some(q) = self.search.as_ref() {
                     nav.push(Span::styled(q, Style::default().fg(Color::Green)));
                 }
                 nav
@@ -365,7 +359,7 @@ impl App {
                         self.table.iter_mut().for_each(DbTable::select_first);
                     }
                     Focus::Search => {
-                        self.search = Search::default();
+                        self.search = None;
                     }
                 }
             }
@@ -388,24 +382,24 @@ impl App {
         match k.code {
             KeyCode::Esc => {
                 // flush any previous results
-                self.search.value = None;
+                self.search = None;
                 Some(Action::ChangeFocus(Focus::Table))
             }
             KeyCode::Enter => Some(Action::ChangeFocus(Focus::Table)),
             KeyCode::Backspace => {
-                if let Some(mut q) = self.search.value.as_mut() {
+                if let Some(mut q) = self.search.as_mut() {
                     q.pop();
                 }
-                if self.search.value.as_ref().is_some_and(|q| q == "") {
-                    self.search.value = None;
+                if self.search.as_ref().is_some_and(|q| q == "") {
+                    self.search = None;
                 }
                 // display intermediate results as they type
                 Some(Action::Search)
             }
             KeyCode::Char(c) => {
-                let mut new_query = self.search.value.take().unwrap_or_default();
+                let mut new_query = self.search.take().unwrap_or_default();
                 new_query.push(c);
-                self.search.value = Some(new_query);
+                self.search = Some(new_query);
                 // display intermediate results as they type
                 Some(Action::Search)
             }
