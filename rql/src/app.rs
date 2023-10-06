@@ -161,7 +161,6 @@ impl App {
             let mut tables_title_style = Style::default();
             let mut table_entry_highlight_style = Style::default().fg(Color::Cyan);
             let mut table_title_style = Style::default();
-            let mut search_style = Style::default();
             match self.focus {
                 Focus::Tables => {
                     tables_entry_highlight_style = Style::default().fg(Color::LightGreen);
@@ -171,55 +170,10 @@ impl App {
                     table_entry_highlight_style = Style::default().fg(Color::LightGreen);
                     table_title_style = Style::default().fg(Color::LightGreen);
                 }
-                Focus::Search => {
-                    search_style = Style::default().fg(Color::LightGreen);
-                }
+                Focus::Search => (),
             }
 
-            let help = {
-                let no_style = Style::default();
-                let key_style = Style::default().fg(Color::LightCyan);
-                match self.focus {
-                    Focus::Tables | Focus::Table => {
-                        let mut nav = ["j", "k", "h", "l", "↓", "↑", "←", "→"]
-                            .iter()
-                            .zip(std::iter::repeat(Span::styled(",", no_style)))
-                            .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                            .flatten()
-                            .skip(1)
-                            .collect::<Vec<_>>();
-                        nav.push(Span::raw(": navigate | "));
-                        nav.append(
-                            &mut ["q", "esc"]
-                                .iter()
-                                .zip(std::iter::repeat(Span::styled(",", no_style)))
-                                .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                                .flatten()
-                                .skip(1)
-                                .collect::<Vec<_>>(),
-                        );
-                        nav.push(Span::raw(": back/quit | "));
-                        nav.push(Span::styled("/", key_style));
-                        nav.push(Span::raw(": search"));
-                        nav
-                    }
-                    Focus::Search => {
-                        let mut nav = vec![
-                            Span::styled("Esc", key_style),
-                            Span::raw(": exit search | "),
-                            Span::styled("Enter", key_style),
-                            Span::raw(": navigate results || current query: "),
-                        ];
-                        if let Some(q) = self.search.value.as_ref() {
-                            nav.push(Span::styled(q, search_style));
-                        }
-                        nav
-                    }
-                }
-            };
-            let help = text::Line::from(help);
-            let help = Paragraph::new(help);
-            frame.render_widget(help, chrome[1]);
+            frame.render_widget(self.render_help_nav(), chrome[1]);
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(
@@ -392,6 +346,50 @@ impl App {
         }
 
         Tick::Continue
+    }
+
+    fn render_help_nav(&mut self) -> Paragraph {
+        let no_style = Style::default();
+        let key_style = Style::default().fg(Color::LightCyan);
+        let help = match self.focus {
+            Focus::Tables | Focus::Table => {
+                let mut nav = ["j", "k", "h", "l", "↓", "↑", "←", "→"]
+                    .iter()
+                    .zip(std::iter::repeat(Span::styled(",", no_style)))
+                    .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
+                    .flatten()
+                    .skip(1)
+                    .collect::<Vec<_>>();
+                nav.push(Span::raw(": navigate | "));
+                nav.append(
+                    &mut ["q", "esc"]
+                        .iter()
+                        .zip(std::iter::repeat(Span::styled(",", no_style)))
+                        .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
+                        .flatten()
+                        .skip(1)
+                        .collect::<Vec<_>>(),
+                );
+                nav.push(Span::raw(": back/quit | "));
+                nav.push(Span::styled("/", key_style));
+                nav.push(Span::raw(": search"));
+                nav
+            }
+            Focus::Search => {
+                let mut nav = vec![
+                    Span::styled("Esc", key_style),
+                    Span::raw(": exit search | "),
+                    Span::styled("Enter", key_style),
+                    Span::raw(": navigate results || current query: "),
+                ];
+                if let Some(q) = self.search.value.as_ref() {
+                    nav.push(Span::styled(q, Style::default().fg(Color::Green)));
+                }
+                nav
+            }
+        };
+
+        Paragraph::new(text::Line::from(help))
     }
 
     fn search(&mut self, k: KeyEvent) -> Option<Action> {
