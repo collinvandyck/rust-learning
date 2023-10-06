@@ -179,9 +179,9 @@ impl App {
                 if self.focus == Focus::Search {
                     let mut nav = vec![
                         Span::styled("Esc", key_style),
-                        Span::raw(": Exit Search | "),
+                        Span::raw(": exit search | "),
                         Span::styled("Enter", key_style),
-                        Span::raw(": Navigate Results || Current Query: "),
+                        Span::raw(": navigate results || current query: "),
                     ];
                     if let Some(q) = self.search.value.as_ref() {
                         nav.push(Span::styled(q, search_title_style));
@@ -207,7 +207,7 @@ impl App {
                     );
                     nav.push(Span::raw(": back/quit | "));
                     nav.push(Span::styled("/", key_style));
-                    nav.push(Span::raw(": Search"));
+                    nav.push(Span::raw(": search"));
                     nav
                 }
             };
