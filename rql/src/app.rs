@@ -263,6 +263,11 @@ impl App {
     fn draw_help(&mut self) -> Paragraph {
         let no_style = Style::default();
         let key_style = Style::default().fg(Color::LightCyan);
+        let search_style = if self.search.is_some() {
+            Style::default().fg(Color::Green)
+        } else {
+            no_style
+        };
         let help = match self.focus {
             Focus::Tables | Focus::Table => {
                 Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
@@ -271,7 +276,8 @@ impl App {
                     .chain(vec![
                         Span::raw(": back/quit | "),
                         Span::styled("/", key_style),
-                        Span::raw(": search"),
+                        Span::raw(": "),
+                        Span::styled("search", search_style),
                     ])
                     .collect()
             }
