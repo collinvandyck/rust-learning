@@ -157,18 +157,22 @@ impl App {
                 .constraints([Constraint::Min(0), Constraint::Length(1)].as_ref())
                 .split(frame.size());
 
+            let mut tables_entry_highlight_style = Style::default().fg(Color::Cyan);
             let mut tables_title_style = Style::default();
+            let mut table_entry_highlight_style = Style::default().fg(Color::Cyan);
             let mut table_title_style = Style::default();
-            let mut search_title_style = Style::default();
+            let mut search_style = Style::default();
             match self.focus {
                 Focus::Tables => {
-                    tables_title_style = tables_title_style.fg(Color::LightGreen);
+                    tables_entry_highlight_style = Style::default().fg(Color::LightGreen);
+                    tables_title_style = Style::default().fg(Color::LightGreen);
                 }
                 Focus::Table => {
-                    table_title_style = table_title_style.fg(Color::LightGreen);
+                    table_entry_highlight_style = Style::default().fg(Color::LightGreen);
+                    table_title_style = Style::default().fg(Color::LightGreen);
                 }
                 Focus::Search => {
-                    search_title_style = table_title_style.fg(Color::LightGreen);
+                    search_style = Style::default().fg(Color::LightGreen);
                 }
             }
 
@@ -207,7 +211,7 @@ impl App {
                             Span::raw(": navigate results || current query: "),
                         ];
                         if let Some(q) = self.search.value.as_ref() {
-                            nav.push(Span::styled(q, search_title_style));
+                            nav.push(Span::styled(q, search_style));
                         }
                         nav
                     }
@@ -240,11 +244,7 @@ impl App {
                         .title_style(tables_title_style)
                         .borders(Borders::ALL),
                 )
-                .highlight_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                );
+                .highlight_style(tables_entry_highlight_style);
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, chunks[0], state);
             let num_table_rows = self.num_table_rows();
