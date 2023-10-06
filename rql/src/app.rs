@@ -425,10 +425,7 @@ impl App {
         }
     }
 
-    fn intersperse_keys<'a, 'b>(
-        keys: &'a [&'b str],
-        key_style: Style,
-    ) -> impl Iterator<Item = Span<'b>> + 'a {
+    fn intersperse_keys<'a>(keys: &'a [&'a str], key_style: Style) -> impl Iterator<Item = Span<'a>> + 'a {
         keys.iter()
             .zip(std::iter::repeat(Span::styled(",", Style::default())))
             .map(move |(s, sep)| [sep, Span::styled(*s, key_style)])
