@@ -53,12 +53,13 @@ struct Dao {
     pool: Pool<Sqlite>,
 }
 
+#[derive(Debug, Clone)]
 pub struct TableSchema {
     pub name: String,
     pub cols: Vec<TableColumn>,
 }
 
-#[derive(Hash, PartialEq, Eq, Clone)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum TableColumn {
     RowId,
     Spec(TableColumnSpec),
@@ -373,9 +374,9 @@ impl Dao {
         let where_clause = req
             .query
             .as_ref()
-            .and_then(|q| self.where_clause(&schema, q));
+            .and_then(|q| build_where_clause(&schema, q));
 
-        info!("query: {:?}\twhere clause: {:?}", req.query, where_clause);
+        debug!("query: {:?}\twhere clause: {:?}", req.query, where_clause);
         let query = if let Some(wher) = where_clause {
             format!(
                 "select rowid, * from {} WHERE {} {} {}",
@@ -404,43 +405,6 @@ impl Dao {
         Ok(records)
     }
 
-    // returns a where clause against all string columns, OR'd,
-    // with the provided query. None is returned if no columns
-    // can be queried against.
-    //
-    // A better query would allow per-column constraints and be
-    // SQL type aware.
-    fn where_clause(&self, schema: &TableSchema, query: &str) -> Option<String> {
-        let numeric = query.parse::<i64>().is_ok() || query.parse::<f64>().is_ok();
-
-        let constraints: Vec<String> = schema
-            .cols
-            .iter()
-            .filter_map(|c| {
-                let spec = match c {
-                    TableColumn::Spec(spec) => spec,
-                    _ => return None,
-                };
-
-                warn!("constraints type: {}", spec.typ);
-                if (spec.typ == "NUMERIC" || spec.typ == "FLOAT") && numeric {
-                    return Some(format!(r#"{} = {}"#, spec.name, query));
-                }
-                if spec.typ == "TEXT" {
-                    return Some(format!(r#"{} LIKE '%{}%'"#, spec.name, query));
-                }
-
-                None
-            })
-            .collect();
-
-        if constraints.len() > 0 {
-            Some(constraints.join(" OR "))
-        } else {
-            None
-        }
-    }
-
     #[cfg(test)]
     async fn execute(&self, sql: &'static str) -> Result<()> {
         let mut conn = self.pool.acquire().await?;
@@ -449,11 +413,53 @@ impl Dao {
     }
 }
 
+// returns a where clause against all string columns, OR'd,
+// with the provided query. None is returned if no columns
+// can be queried against.
+//
+// A better query would allow per-column constraints and be
+// SQL type aware.
+fn build_where_clause(schema: &TableSchema, query: &str) -> Option<String> {
+    let numeric = query.parse::<f64>().is_ok();
+    let constraints: Vec<String> = schema
+        .cols
+        .iter()
+        .filter_map(|c| match c {
+            TableColumn::RowId if numeric => Some(format!("rowid = {}", query)),
+            TableColumn::Spec(spec)
+                if spec.typ.to_lowercase() == "text" || spec.typ.to_lowercase() == "string" =>
+            {
+                debug!("text column: {:?}", spec);
+                Some(format!("{} LIKE '%{}%'", spec.name, query))
+            }
+            TableColumn::Spec(spec)
+                if numeric
+                    && (spec.typ.to_lowercase() == "numeric"
+                        || spec.typ.to_lowercase() == "float"
+                        || spec.typ.to_lowercase() == "double"
+                        || spec.typ.to_lowercase() == "integer") =>
+            {
+                Some(format!("{} = {}", spec.name, query))
+            }
+            _ => return None,
+        })
+        .collect();
+
+    debug!("where clause constraints: {:?}", constraints);
+    if constraints.len() > 0 {
+        Some(constraints.join(" OR "))
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing_test::traced_test;
 
     #[tokio::test]
+    #[traced_test]
     async fn test_decode() -> Result<()> {
         let dao = Dao::new(DbType::Memory).await?;
         dao.execute("create table foo (name string, age integer)")
@@ -481,6 +487,73 @@ mod tests {
                 FieldValue::Integer(Some(46)),
             ]
         );
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[traced_test]
+    async fn test_where_clause() -> Result<()> {
+        let dao = Dao::new(DbType::Memory).await?;
+        dao.execute("create table foo (name TEXT, age INTEGER)")
+            .await?;
+        let schema = dao.table_schema("foo").await?;
+
+        let clause = build_where_clause(&schema, "collin");
+        assert_eq!(Some("name LIKE '%collin%'"), clause.as_deref());
+
+        let clause = build_where_clause(&schema, "1").unwrap();
+        assert!(clause.contains("name LIKE '%1%'"));
+        assert!(clause.contains("rowid = 1"));
+        assert!(clause.contains("age = 1"));
+        assert_eq!(3, clause.split(" OR ").collect::<Vec<_>>().len());
+
+        let clause = build_where_clause(&schema, "1").unwrap();
+
+        // no where clause
+        let dao = Dao::new(DbType::Memory).await?;
+        dao.execute("create table foo (buzz INTEGER)").await?;
+        let schema = dao.table_schema("foo").await?;
+
+        let clause = build_where_clause(&schema, "text search");
+        assert!(clause.is_none());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[traced_test]
+    async fn test_search() -> Result<()> {
+        let dao = Dao::new(DbType::Memory).await?;
+        dao.execute("create table foo (name TEXT, age INTEGER)")
+            .await?;
+        let schema = dao.table_schema("foo").await?;
+
+        dao.execute("insert into foo (name, age) values ('collin', 46)")
+            .await?;
+
+        let matches = dao
+            .records(&schema, GetRecords::new("foo").limit(100).search("1000"))
+            .await?;
+        assert_eq!(0, matches.len());
+        let matches = dao
+            .records(&schema, GetRecords::new("foo").limit(100).search("nomatch"))
+            .await?;
+        assert_eq!(0, matches.len());
+
+        let matches = dao
+            .records(&schema, GetRecords::new("foo").limit(100).search("collin"))
+            .await?;
+        assert_eq!(1, matches.len());
+        assert_eq!(
+            FieldValue::Text(Some("collin".to_string())),
+            matches[0]
+                .fields
+                .iter()
+                .find(|f| f.name == "name")
+                .unwrap()
+                .val
+        );
+
         Ok(())
     }
 }
