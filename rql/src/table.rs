@@ -9,7 +9,7 @@ pub struct DbTable {
     pub pager: Pager,
     pub count: u64,
     pub indexed: IndexedRecords,
-    search: Search,
+    search: Option<String>,
 }
 
 #[derive(Default)]
@@ -70,11 +70,11 @@ impl IndexedRecords {
 }
 
 impl DbTable {
-    pub fn new(dao: BlockingDao, name: String, search: Search) -> Result<Self> {
+    pub fn new(dao: BlockingDao, name: String, search: Option<String>) -> Result<Self> {
         info!(name, "Building db table");
-        let count = dao.count(&name)?;
+        let count = dao.count(Count::new(&name).maybe_search(&search))?;
         let schema = dao.table_schema(&name)?;
-        let max_lens = dao.max_lens(&schema)?;
+        let max_lens = dao.max_lens(&schema, MaxLens::new(&name).maybe_search(&search))?;
         let max_lens: HashMap<TableColumn, usize> = schema
             .cols
             .iter()
@@ -122,9 +122,12 @@ impl DbTable {
                 0
             };
             let limit = view_rows * 3;
-            let spec = GetRecords::new(&self.schema.name)
+            let mut spec = GetRecords::new(&self.schema.name)
                 .offset(offset)
                 .limit(limit);
+            if let Some(q) = self.search.as_ref() {
+                spec = spec.search(q);
+            }
             let records = self.dao.records(&self.schema, spec)?;
             let irs = (offset..offset + limit)
                 .zip(records.into_iter())

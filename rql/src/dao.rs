@@ -39,12 +39,12 @@ impl BlockingDao {
         self.inner.rt.block_on(self.inner.dao.records(schema, req))
     }
 
-    pub fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
-        self.inner.rt.block_on(self.inner.dao.count(table_name))
+    pub fn count(&self, req: Count) -> Result<u64> {
+        self.inner.rt.block_on(self.inner.dao.count(req))
     }
 
-    pub fn max_lens(&self, schema: &TableSchema) -> Result<Vec<usize>> {
-        self.inner.rt.block_on(self.inner.dao.max_lens(schema))
+    pub fn max_lens(&self, schema: &TableSchema, req: MaxLens) -> Result<Vec<usize>> {
+        self.inner.rt.block_on(self.inner.dao.max_lens(schema, req))
     }
 }
 
@@ -53,12 +53,13 @@ struct Dao {
     pool: Pool<Sqlite>,
 }
 
+#[derive(Debug, Clone)]
 pub struct TableSchema {
     pub name: String,
     pub cols: Vec<TableColumn>,
 }
 
-#[derive(Hash, PartialEq, Eq, Clone)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum TableColumn {
     RowId,
     Spec(TableColumnSpec),
@@ -79,7 +80,7 @@ impl TableColumn {
     }
 }
 
-#[derive(sqlx::FromRow, Hash, PartialEq, Eq, Clone)]
+#[derive(sqlx::FromRow, Hash, PartialEq, Eq, Clone, Debug)]
 #[allow(dead_code)]
 pub struct TableColumnSpec {
     pub name: String,
@@ -245,18 +246,19 @@ pub enum DbType<'a> {
     Memory,
 }
 
+#[derive(Default, Debug)]
 pub struct GetRecords {
     pub table_name: String,
     pub limit: Option<usize>,
     pub offset: Option<usize>,
+    pub query: Option<String>,
 }
 
 impl GetRecords {
     pub fn new<S: Into<String>>(table_name: S) -> Self {
         GetRecords {
             table_name: table_name.into(),
-            limit: None,
-            offset: None,
+            ..Default::default()
         }
     }
     pub fn limit(mut self, limit: usize) -> Self {
@@ -265,6 +267,60 @@ impl GetRecords {
     }
     pub fn offset(mut self, offset: usize) -> Self {
         self.offset = Some(offset);
+        self
+    }
+    pub fn search(mut self, query: &str) -> Self {
+        self.query = Some(query.to_string());
+        self
+    }
+    pub fn maybe_search(mut self, query: &Option<String>) -> Self {
+        self.query = query.to_owned();
+        self
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct Count {
+    pub table_name: String,
+    pub query: Option<String>,
+}
+
+impl Count {
+    pub fn new<S: Into<String>>(table_name: S) -> Self {
+        Self {
+            table_name: table_name.into(),
+            ..Default::default()
+        }
+    }
+    pub fn search(mut self, query: &str) -> Self {
+        self.query = Some(query.to_string());
+        self
+    }
+    pub fn maybe_search(mut self, query: &Option<String>) -> Self {
+        self.query = query.to_owned();
+        self
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct MaxLens {
+    pub table_name: String,
+    pub query: Option<String>,
+}
+
+impl MaxLens {
+    pub fn new<S: Into<String>>(table_name: S) -> Self {
+        Self {
+            table_name: table_name.into(),
+            ..Default::default()
+        }
+    }
+    pub fn search(mut self, query: &str) -> Self {
+        self.query = Some(query.to_string());
+        self
+    }
+    pub fn maybe_search(mut self, query: &Option<String>) -> Self {
+        self.query = query.to_owned();
         self
     }
 }
@@ -324,7 +380,7 @@ impl Dao {
         Ok(schema)
     }
 
-    async fn max_lens(&self, schema: &TableSchema) -> Result<Vec<usize>> {
+    async fn max_lens(&self, schema: &TableSchema, req: MaxLens) -> Result<Vec<usize>> {
         let mut conn = self.pool.acquire().await?;
         let query_parts = &schema
             .cols
@@ -332,7 +388,15 @@ impl Dao {
             .map(|c| format!("max(length({}))", c.name()))
             .collect::<Vec<_>>()
             .join(",");
-        let query = format!("select {} from {}", query_parts, schema.name);
+        let mut query = format!("select {} from {}", query_parts, schema.name);
+        let where_clause = req
+            .query
+            .as_ref()
+            .and_then(|q| build_where_clause(&schema, q));
+        if let Some(wher) = where_clause {
+            query.push_str(&format!(" WHERE {}", wher));
+        }
+        debug!("max lens query: {}", query);
         let row = sqlx::query(&query).fetch_one(&mut *conn).await?;
         let mut res = vec![];
         for (idx, col) in schema.cols.iter().enumerate() {
@@ -342,13 +406,23 @@ impl Dao {
         Ok(res)
     }
 
-    async fn count<P: AsRef<str>>(&self, table_name: P) -> Result<u64> {
+    async fn count(&self, req: Count) -> Result<u64> {
         #[derive(sqlx::FromRow)]
         struct Record {
             count: i64,
         }
+        let schema = self.table_schema(&req.table_name).await?;
         let mut conn = self.pool.acquire().await?;
-        let query = format!("select count(*) as count from {}", table_name.as_ref());
+        let mut query = format!("select count(*) as count from {}", &req.table_name);
+        let where_clause = req
+            .query
+            .as_ref()
+            .and_then(|q| build_where_clause(&schema, q));
+        if let Some(wher) = where_clause {
+            query.push_str(&format!(" WHERE {}", wher));
+        }
+
+        debug!("count query: {}", query);
         let record = sqlx::query_as::<_, Record>(&query)
             .fetch_one(&mut *conn)
             .await?;
@@ -357,14 +431,28 @@ impl Dao {
 
     async fn records(&self, schema: &TableSchema, req: GetRecords) -> Result<Vec<Record>> {
         let table_name = req.table_name.as_str();
+        let schema = self.table_schema(table_name).await?;
         let mut conn = self.pool.acquire().await?;
         let limit = req.limit.map(|v| format!("limit {v}")).unwrap_or_default();
         let offset = req
             .offset
             .map(|v| format!("offset {v}"))
             .unwrap_or_default();
-        let query = format!("select rowid, * from {} {} {}", table_name, limit, offset);
-        debug!(query, "Fetching records");
+        let where_clause = req
+            .query
+            .as_ref()
+            .and_then(|q| build_where_clause(&schema, q));
+
+        let query = if let Some(wher) = where_clause {
+            format!(
+                "select rowid, * from {} WHERE {} {} {}",
+                table_name, wher, limit, offset
+            )
+        } else {
+            format!("select rowid, * from {} {} {}", table_name, limit, offset)
+        };
+        debug!(query, "records query: {}", query);
+
         let rows = sqlx::query(&query).fetch_all(&mut *conn).await?;
         let mut records = vec![];
         for row in rows {
@@ -391,11 +479,51 @@ impl Dao {
     }
 }
 
+// returns a where clause against all string columns, OR'd,
+// with the provided query. None is returned if no columns
+// can be queried against.
+//
+// A better query would allow per-column constraints and be
+// SQL type aware.
+fn build_where_clause(schema: &TableSchema, query: &str) -> Option<String> {
+    let numeric = query.parse::<f64>().is_ok();
+    let constraints: Vec<String> = schema
+        .cols
+        .iter()
+        .filter_map(|c| match c {
+            TableColumn::RowId if numeric => Some(format!("rowid = {}", query)),
+            TableColumn::Spec(spec)
+                if spec.typ.to_lowercase() == "text" || spec.typ.to_lowercase() == "string" =>
+            {
+                Some(format!("{} LIKE '%{}%'", spec.name, query))
+            }
+            TableColumn::Spec(spec)
+                if numeric
+                    && (spec.typ.to_lowercase() == "numeric"
+                        || spec.typ.to_lowercase() == "float"
+                        || spec.typ.to_lowercase() == "double"
+                        || spec.typ.to_lowercase() == "integer") =>
+            {
+                Some(format!("{} = {}", spec.name, query))
+            }
+            _ => return None,
+        })
+        .collect();
+
+    if constraints.len() > 0 {
+        Some(constraints.join(" OR "))
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing_test::traced_test;
 
     #[tokio::test]
+    #[traced_test]
     async fn test_decode() -> Result<()> {
         let dao = Dao::new(DbType::Memory).await?;
         dao.execute("create table foo (name string, age integer)")
@@ -423,6 +551,73 @@ mod tests {
                 FieldValue::Integer(Some(46)),
             ]
         );
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[traced_test]
+    async fn test_where_clause() -> Result<()> {
+        let dao = Dao::new(DbType::Memory).await?;
+        dao.execute("create table foo (name TEXT, age INTEGER)")
+            .await?;
+        let schema = dao.table_schema("foo").await?;
+
+        let clause = build_where_clause(&schema, "collin");
+        assert_eq!(Some("name LIKE '%collin%'"), clause.as_deref());
+
+        let clause = build_where_clause(&schema, "1").unwrap();
+        assert!(clause.contains("name LIKE '%1%'"));
+        assert!(clause.contains("rowid = 1"));
+        assert!(clause.contains("age = 1"));
+        assert_eq!(3, clause.split(" OR ").collect::<Vec<_>>().len());
+
+        let clause = build_where_clause(&schema, "1").unwrap();
+
+        // no where clause
+        let dao = Dao::new(DbType::Memory).await?;
+        dao.execute("create table foo (buzz INTEGER)").await?;
+        let schema = dao.table_schema("foo").await?;
+
+        let clause = build_where_clause(&schema, "text search");
+        assert!(clause.is_none());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[traced_test]
+    async fn test_search() -> Result<()> {
+        let dao = Dao::new(DbType::Memory).await?;
+        dao.execute("create table foo (name TEXT, age INTEGER)")
+            .await?;
+        let schema = dao.table_schema("foo").await?;
+
+        dao.execute("insert into foo (name, age) values ('collin', 46)")
+            .await?;
+
+        let matches = dao
+            .records(&schema, GetRecords::new("foo").limit(100).search("1000"))
+            .await?;
+        assert_eq!(0, matches.len());
+        let matches = dao
+            .records(&schema, GetRecords::new("foo").limit(100).search("nomatch"))
+            .await?;
+        assert_eq!(0, matches.len());
+
+        let matches = dao
+            .records(&schema, GetRecords::new("foo").limit(100).search("collin"))
+            .await?;
+        assert_eq!(1, matches.len());
+        assert_eq!(
+            FieldValue::Text(Some("collin".to_string())),
+            matches[0]
+                .fields
+                .iter()
+                .find(|f| f.name == "name")
+                .unwrap()
+                .val
+        );
+
         Ok(())
     }
 }

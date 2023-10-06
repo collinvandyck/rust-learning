@@ -15,6 +15,7 @@ enum Focus {
     #[default]
     Tables,
     Table,
+    Search,
 }
 
 pub struct App {
@@ -24,13 +25,7 @@ pub struct App {
     focus: Focus,           // what ui element has focus
     dims: Rect,             // how large the frame is
     bindings: KeyBindSet,   // keybindings
-    search: Search,
-}
-
-#[derive(Clone, Default)]
-pub struct Search {
-    pub value: Option<String>,
-    pub focused: bool,
+    search: Option<String>, // filter query
 }
 
 struct KeyBindSet {
@@ -60,7 +55,7 @@ impl Default for KeyBindSet {
                 (key(KeyCode::Down), TablesNext),
                 (key(KeyCode::Char('J')), TablesNext),
                 (key(KeyCode::Char('j')), TablesNext),
-                /// tablesprev
+                // tablesprev
                 (key(KeyCode::Up), TablesPrev),
                 (key(KeyCode::Char('K')), TablesPrev),
                 (key(KeyCode::Char('k')), TablesPrev),
@@ -97,6 +92,9 @@ impl Default for KeyBindSet {
                 // pagedown
                 (key(KeyCode::PageDown), PageDown),
                 (ctrl_key(KeyCode::Char('d')), PageDown),
+                (key(KeyCode::Char('/')), ChangeFocus(Focus::Search)),
+                (key(KeyCode::Char('?')), ChangeFocus(Focus::Search)),
+                (ctrl_key(KeyCode::Char('f')), ChangeFocus(Focus::Search)),
             ])
         });
         Self { bindings }
@@ -112,6 +110,7 @@ enum Action {
     PageUp,
     PageDown,
     ChangeFocus(Focus),
+    Search,
     Quit,
 }
 
@@ -123,7 +122,6 @@ impl App {
         let focus = Focus::default();
         let dims = Rect::default();
         let bindings = KeyBindSet::default();
-        let search = Search::default();
         let mut app = Self {
             dao,
             tables,
@@ -131,7 +129,7 @@ impl App {
             focus,
             dims,
             bindings,
-            search,
+            search: None,
         };
         Ok(app)
     }
@@ -153,42 +151,24 @@ impl App {
                 .direction(Direction::Vertical)
                 .constraints([Constraint::Min(0), Constraint::Length(1)].as_ref())
                 .split(frame.size());
-            let help = {
-                let no_style = Style::default();
-                let key_style = Style::default().fg(Color::LightCyan);
-                let mut nav = ["j", "k", "h", "l", "↓", "↑", "←", "→"]
-                    .iter()
-                    .zip(std::iter::repeat(Span::styled(",", no_style)))
-                    .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                    .flatten()
-                    .skip(1)
-                    .collect::<Vec<_>>();
-                nav.push(Span::raw(": navigate | "));
-                nav.append(
-                    &mut ["q", "esc"]
-                        .iter()
-                        .zip(std::iter::repeat(Span::styled(",", no_style)))
-                        .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                        .flatten()
-                        .skip(1)
-                        .collect::<Vec<_>>(),
-                );
-                nav.push(Span::raw(": back/quit | "));
-                nav.append(
-                    &mut ["/"]
-                        .iter()
-                        .zip(std::iter::repeat(Span::styled(",", no_style)))
-                        .map(|(s, sep)| [sep, Span::styled(*s, key_style)])
-                        .flatten()
-                        .skip(1)
-                        .collect::<Vec<_>>(),
-                );
-                nav.push(Span::raw(": Search "));
-                nav
-            };
-            let help = text::Line::from(help);
-            let help = Paragraph::new(help);
-            frame.render_widget(help, chrome[1]);
+
+            let mut tables_entry_highlight_style = Style::default().fg(Color::Cyan);
+            let mut tables_title_style = Style::default();
+            let mut table_entry_highlight_style = Style::default().fg(Color::Cyan);
+            let mut table_title_style = Style::default();
+            match self.focus {
+                Focus::Tables => {
+                    tables_entry_highlight_style = Style::default().fg(Color::LightGreen);
+                    tables_title_style = Style::default().fg(Color::LightGreen);
+                }
+                Focus::Table => {
+                    table_entry_highlight_style = Style::default().fg(Color::LightGreen);
+                    table_title_style = Style::default().fg(Color::LightGreen);
+                }
+                Focus::Search => (),
+            }
+
+            frame.render_widget(self.draw_help(), chrome[1]);
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(
@@ -204,24 +184,16 @@ impl App {
                 .names
                 .iter()
                 .map(|n| n.clone())
-                .map(|n| ListItem::new(n).style(Style::default().fg(Color::Cyan)))
+                .map(|n| ListItem::new(n).style(Style::default()))
                 .collect();
-            let mut title_style = Style::default();
-            if self.focus == Focus::Tables {
-                title_style = title_style.fg(Color::LightGreen);
-            }
             let list = List::new(items)
                 .block(
                     Block::default()
                         .title("[ tables ]")
-                        .title_style(title_style)
+                        .title_style(tables_title_style)
                         .borders(Borders::ALL),
                 )
-                .highlight_style(
-                    Style::default()
-                        .fg(Color::LightGreen)
-                        .add_modifier(Modifier::BOLD),
-                );
+                .highlight_style(tables_entry_highlight_style);
             let state = &mut self.tables.state;
             frame.render_stateful_widget(list, chunks[0], state);
             let num_table_rows = self.num_table_rows();
@@ -268,10 +240,6 @@ impl App {
                         Constraint::Max(len.try_into().unwrap())
                     })
                     .collect::<Vec<_>>();
-                let mut title_style = Style::default();
-                if self.focus == Focus::Table {
-                    title_style = title_style.fg(Color::LightGreen);
-                }
                 let table: Table = Table::new(rows)
                     .header(header)
                     .block(
@@ -281,7 +249,7 @@ impl App {
                                 selected_table.name(),
                                 selected_table.count
                             ))
-                            .title_style(title_style)
+                            .title_style(table_title_style)
                             .borders(Borders::ALL),
                     )
                     .highlight_style(Style::default().fg(Color::LightGreen))
@@ -291,6 +259,48 @@ impl App {
             }
         })?;
         Ok(())
+    }
+
+    fn draw_help(&mut self) -> Paragraph {
+        let no_style = Style::default();
+        let key_style = Style::default().fg(Color::LightCyan);
+        let search_style = if self.search.is_some() {
+            Style::default().fg(Color::Green)
+        } else {
+            no_style
+        };
+        let help = match self.focus {
+            Focus::Tables => {
+                Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
+                    .chain(vec![Span::raw(": navigate | ")])
+                    .chain(Self::intersperse_keys(&["q", "esc"], key_style))
+                    .chain(vec![Span::raw(": back/quit")])
+                    .collect()
+            }
+            Focus::Table => {
+                Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
+                    .chain(vec![Span::raw(": navigate | ")])
+                    .chain(Self::intersperse_keys(&["q", "esc"], key_style))
+                    .chain(vec![Span::raw(": back/quit | ")])
+                    .chain(Self::intersperse_keys(&["/", "C-f"], key_style))
+                    .chain(vec![Span::raw(": "), Span::styled("search", search_style)])
+                    .collect()
+            }
+            Focus::Search => {
+                let mut nav = vec![
+                    Span::styled("Esc", key_style),
+                    Span::raw(": exit search | "),
+                    Span::styled("Enter", key_style),
+                    Span::raw(": navigate results || current query: "),
+                ];
+                if let Some(q) = self.search.as_ref() {
+                    nav.push(Span::styled(q, Style::default().fg(Color::Green)));
+                }
+                nav
+            }
+        };
+
+        Paragraph::new(text::Line::from(help))
     }
 
     fn num_table_rows(&mut self) -> usize {
@@ -316,44 +326,96 @@ impl App {
                 if Self::should_quit(key) {
                     return Ok(Tick::Quit);
                 }
-                if let Some(action) = self.bindings.matches(self.focus, key) {
-                    match action {
-                        Action::TablesNext => {
-                            if self.tables.next() {
-                                self.open_table();
-                            }
-                        }
-                        Action::TablesPrev => {
-                            if self.tables.previous() {
-                                self.open_table();
-                            }
-                        }
-                        Action::TableNext => {
-                            let table_rows = self.num_table_rows();
-                            self.table.iter_mut().for_each(DbTable::next);
-                        }
-                        Action::TablePrev => {
-                            let table_rows = self.num_table_rows();
-                            self.table.iter_mut().for_each(DbTable::previous);
-                        }
-                        Action::ChangeFocus(focus) => match focus {
-                            Focus::Tables => {
-                                self.focus = Focus::Tables;
-                                self.table.iter_mut().for_each(DbTable::unselect);
-                            }
-                            Focus::Table => {
-                                self.focus = Focus::Table;
-                                self.table.iter_mut().for_each(DbTable::select_first);
-                            }
-                        },
-                        Action::PageUp => {}
-                        Action::PageDown => {}
-                        Action::Quit => return Ok(Tick::Quit),
-                    }
+                let action = match self.focus {
+                    Focus::Search => self.search(key),
+                    Focus::Tables | Focus::Table => self.bindings.matches(self.focus, key),
+                };
+
+                if let Some(a) = action {
+                    return Ok(self.process_action(a));
                 }
             }
         }
         Ok(Tick::Continue)
+    }
+
+    fn process_action(&mut self, action: Action) -> Tick {
+        match action {
+            Action::TablesNext => {
+                if self.tables.next() {
+                    self.open_table();
+                }
+            }
+            Action::TablesPrev => {
+                if self.tables.previous() {
+                    self.open_table();
+                }
+            }
+            Action::TableNext => {
+                let table_rows = self.num_table_rows();
+                self.table.iter_mut().for_each(DbTable::next);
+            }
+            Action::TablePrev => {
+                let table_rows = self.num_table_rows();
+                self.table.iter_mut().for_each(DbTable::previous);
+            }
+            Action::ChangeFocus(focus) => {
+                self.focus = focus;
+
+                match focus {
+                    Focus::Tables => {
+                        self.table.iter_mut().for_each(DbTable::unselect);
+                    }
+                    Focus::Table => {
+                        self.table.iter_mut().for_each(DbTable::select_first);
+                    }
+                    Focus::Search => {
+                        self.search = None;
+                    }
+                }
+            }
+            Action::PageUp => {}
+            Action::PageDown => {}
+            Action::Search => {
+                // User is searching live, return to search prompt
+                self.open_table();
+            }
+            Action::Quit => return Tick::Quit,
+        }
+
+        Tick::Continue
+    }
+
+    fn search(&mut self, k: KeyEvent) -> Option<Action> {
+        let kevent = |code: KeyCode, m: KeyModifiers| -> KeyEvent { KeyEvent::new(code, m) };
+        let key = |code: KeyCode| -> KeyEvent { kevent(code, KeyModifiers::NONE) };
+
+        match k.code {
+            KeyCode::Esc => {
+                // flush any previous results
+                self.search = None;
+                Some(Action::ChangeFocus(Focus::Table))
+            }
+            KeyCode::Enter => Some(Action::ChangeFocus(Focus::Table)),
+            KeyCode::Backspace => {
+                if let Some(mut q) = self.search.as_mut() {
+                    q.pop();
+                }
+                if self.search.as_ref().is_some_and(|q| q == "") {
+                    self.search = None;
+                }
+                // display intermediate results as they type
+                Some(Action::Search)
+            }
+            KeyCode::Char(c) => {
+                let mut new_query = self.search.take().unwrap_or_default();
+                new_query.push(c);
+                self.search = Some(new_query);
+                // display intermediate results as they type
+                Some(Action::Search)
+            }
+            _ => None,
+        }
     }
 
     fn should_quit(key: KeyEvent) -> bool {
@@ -361,5 +423,13 @@ impl App {
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => return true,
             _ => false,
         }
+    }
+
+    fn intersperse_keys<'a>(keys: &'a [&'a str], key_style: Style) -> impl Iterator<Item = Span<'a>> + 'a {
+        keys.iter()
+            .zip(std::iter::repeat(Span::styled(",", Style::default())))
+            .map(move |(s, sep)| [sep, Span::styled(*s, key_style)])
+            .flatten()
+            .skip(1)
     }
 }
