@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use core::num;
 use std::{
-    borrow::BorrowMut,
+    borrow::{BorrowMut, Cow},
     collections::{HashMap, HashSet},
 };
 
@@ -92,6 +92,7 @@ impl Default for KeyBindSet {
                 // pagedown
                 (key(KeyCode::PageDown), PageDown),
                 (ctrl_key(KeyCode::Char('d')), PageDown),
+                // search
                 (key(KeyCode::Char('/')), ChangeFocus(Focus::Search)),
                 (key(KeyCode::Char('?')), ChangeFocus(Focus::Search)),
                 (ctrl_key(KeyCode::Char('f')), ChangeFocus(Focus::Search)),
@@ -140,6 +141,7 @@ impl App {
             self.open_table()?;
         }
         let num_table_rows = self.num_table_rows();
+
         let table_records = if let Some(table) = self.table.as_mut() {
             table.set_viewport_rows(num_table_rows);
             Some(table.records()?)
@@ -271,19 +273,19 @@ impl App {
         };
         let help = match self.focus {
             Focus::Tables => {
-                Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
-                    .chain(vec![Span::raw(": navigate | ")])
-                    .chain(Self::intersperse_keys(&["q", "esc"], key_style))
-                    .chain(vec![Span::raw(": back/quit")])
+                Self::intersperse_keys(["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
+                    .chain([Span::raw(": navigate | ")])
+                    .chain(Self::intersperse_keys(["q", "esc"], key_style))
+                    .chain([Span::raw(": back/quit")])
                     .collect()
             }
             Focus::Table => {
-                Self::intersperse_keys(&["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
-                    .chain(vec![Span::raw(": navigate | ")])
-                    .chain(Self::intersperse_keys(&["q", "esc"], key_style))
-                    .chain(vec![Span::raw(": back/quit | ")])
-                    .chain(Self::intersperse_keys(&["/", "C-f"], key_style))
-                    .chain(vec![Span::raw(": "), Span::styled("search", search_style)])
+                Self::intersperse_keys(["j", "k", "h", "l", "↓", "↑", "←", "→"], key_style)
+                    .chain([Span::raw(": navigate | ")])
+                    .chain(Self::intersperse_keys(["q", "esc"], key_style))
+                    .chain([Span::raw(": back/quit | ")])
+                    .chain(Self::intersperse_keys(["/", "C-f"], key_style))
+                    .chain([Span::raw(": "), Span::styled("search", search_style)])
                     .collect()
             }
             Focus::Search => {
@@ -425,10 +427,14 @@ impl App {
         }
     }
 
-    fn intersperse_keys<'a>(keys: &'a [&'a str], key_style: Style) -> impl Iterator<Item = Span<'a>> + 'a {
-        keys.iter()
+    fn intersperse_keys<'a, K, T>(keys: K, style: Style) -> impl Iterator<Item = Span<'a>> + 'a
+    where
+        K: IntoIterator<Item = T> + 'a,
+        T: Into<Cow<'a, str>>,
+    {
+        keys.into_iter()
             .zip(std::iter::repeat(Span::styled(",", Style::default())))
-            .map(move |(s, sep)| [sep, Span::styled(*s, key_style)])
+            .map(move |(s, sep)| [sep, Span::styled(s, style)])
             .flatten()
             .skip(1)
     }

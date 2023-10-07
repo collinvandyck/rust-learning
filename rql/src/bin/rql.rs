@@ -40,11 +40,11 @@ fn main() {
 fn init_tracing(args: &Args) -> Result<()> {
     if let Some(log_file) = &args.log {
         let log_file = std::fs::File::create(&log_file)?;
-        let mut filter = EnvFilter::default();
-        for directive in &["rql=debug", "main=debug", "error"] {
-            let directive: Directive = directive.parse()?;
-            filter = filter.add_directive(directive);
-        }
+        let filter = ["rql=debug", "main=debug", "error"]
+            .iter()
+            .try_fold(EnvFilter::default(), |fil, d| -> Result<_> {
+                Ok(fil.add_directive(d.parse()?))
+            })?;
         tracing_subscriber::fmt()
             .with_writer(log_file)
             .with_env_filter(filter)
