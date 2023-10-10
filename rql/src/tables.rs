@@ -19,7 +19,8 @@ impl DbTables {
         self.names.iter().map(|s| s.len() as u16).max().unwrap_or(0)
     }
 
-    /// next selects the subsequent table in the list, returning whether it changed
+    /// next selects the subsequent table in the list, returning whether it
+    /// changed
     pub fn next(&mut self) -> bool {
         let i = self
             .state
@@ -32,7 +33,8 @@ impl DbTables {
         changed
     }
 
-    /// previous returns the prior table in the list, returning whether it changed
+    /// previous returns the prior table in the list, returning whether it
+    /// changed
     pub fn previous(&mut self) -> bool {
         let i = self
             .state

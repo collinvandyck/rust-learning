@@ -288,20 +288,20 @@ impl App {
                     .chain([Span::raw(": "), Span::styled("search", search_style)])
                     .collect()
             }
-            Focus::Search => {
-                let mut nav = vec![
-                    Span::styled("Esc", key_style),
-                    Span::raw(": exit search | "),
-                    Span::styled("Enter", key_style),
-                    Span::raw(": navigate results || current query: "),
-                ];
-                if let Some(q) = self.search.as_ref() {
-                    nav.push(Span::styled(q, Style::default().fg(Color::Green)));
-                }
-                nav
-            }
-        };
 
+            Focus::Search => Self::intersperse_keys(["Esc"], key_style)
+                .chain([Span::raw(": exit search | ")])
+                .chain(Self::intersperse_keys(["Enter"], key_style))
+                .chain([Span::raw(": navigate results || current query: ")])
+                .map(|f| Some(f))
+                .chain(Some(
+                    self.search
+                        .as_ref()
+                        .map(|s| Span::styled(s, Style::default().fg(Color::Green))),
+                ))
+                .flatten()
+                .collect::<Vec<_>>(),
+        };
         Paragraph::new(text::Line::from(help))
     }
 

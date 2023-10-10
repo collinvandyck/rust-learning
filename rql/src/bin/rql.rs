@@ -1,7 +1,6 @@
+use rql::prelude::*;
 use std::{fmt::Debug, path::Path};
 use tracing_subscriber::{filter::LevelFilter, prelude::*};
-
-use rql::prelude::*;
 
 #[derive(clap::Parser)]
 struct Args {

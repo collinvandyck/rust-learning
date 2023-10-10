@@ -1,0 +1,5 @@
+group_imports = "One"
+imports_granularity = "Crate"
+use_field_init_shorthand = true
+use_small_heuristics = "Default"
+wrap_comments = true
