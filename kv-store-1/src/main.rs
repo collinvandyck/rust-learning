@@ -176,14 +176,11 @@ struct Storage {
 impl Storage {
     fn merge(&mut self, other: Storage) {
         for (k, v) in other.vals.into_iter() {
-            match v {
-                Record::Tombstone => {
-                    self.vals.remove(&k);
-                }
-                _ => {
-                    self.vals.insert(k, v);
-                }
-            };
+            if let Record::Tombstone = v {
+                self.vals.remove(&k);
+            } else {
+                self.vals.insert(k, v);
+            }
         }
     }
 
