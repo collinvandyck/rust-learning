@@ -48,6 +48,18 @@ fn test_tx_3() {
     assert_eq!(db.get("key3"), Some(Value::from("val3")).as_ref());
 }
 
+#[test]
+fn test_tx_4() {
+    let mut db = Db::default();
+    db.set("key3", "val3");
+    assert_eq!(db.get("key3"), Some(Value::from("val3")).as_ref());
+    db.begin();
+    db.delete("key3");
+    assert_eq!(db.get("key3"), None);
+    db.commit();
+    assert_eq!(db.get("key3"), None);
+}
+
 struct Db {
     stack: Vec<Storage>,
 }
