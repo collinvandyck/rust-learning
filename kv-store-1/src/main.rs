@@ -111,7 +111,7 @@ impl Db {
         self.stack.pop();
     }
 
-    fn get<'a>(&self, key: impl Into<Key>) -> Option<&str> {
+    fn get(&self, key: impl Into<Key>) -> Option<&str> {
         let key = key.into();
         for stack in self.stack.iter().rev() {
             if let Some(record) = stack.get(&key) {
