@@ -1,48 +1,72 @@
+#![allow(dead_code)]
 use std::{collections::HashMap, rc::Rc};
 
-fn main() {
+fn main() {}
+
+#[test]
+fn test_db() {
     let mut db = Db::default();
     db.set("key1", "val1");
-    println!("{:?}", db.get("key1"));
+    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
     db.delete("key1");
-    println!("{:?}", db.get("key1"));
-    println!("{:?}", db.get("key_ne"));
+    assert_eq!(db.get("key1"), None);
+    assert_eq!(db.get("key_ne"), None);
+}
+
+#[test]
+fn test_tx() {
+    let mut db = Db::default();
+    db.set("key0", "val0");
+    assert_eq!(db.get("key0"), Some(Value::from("val0")).as_ref());
+    db.begin();
+    assert_eq!(db.get("key0"), Some(Value::from("val0")).as_ref());
+    db.commit();
 }
 
 struct Db {
-    parent: Option<Storage>,
-    vals: Option<Storage>,
+    stack: Vec<Storage>,
 }
 
 impl Default for Db {
     fn default() -> Self {
         Self {
-            parent: None,
-            vals: Some(Storage::default()),
+            stack: vec![Storage::default()],
         }
     }
 }
 
 impl Db {
-    fn begin(&mut self) {}
+    fn begin(&mut self) {
+        self.stack.push(Storage {
+            tx: true,
+            vals: Default::default(),
+        });
+    }
+
+    fn commit(&mut self) {
+        let storage = self.stack.pop().unwrap();
+        let store = self.stack.last_mut().unwrap();
+        store.merge(storage);
+    }
 
     fn get(&self, key: impl Into<Key>) -> Option<&Value> {
-        let Some(vals) = &self.vals else { return None };
-        vals.get(key)
+        let key = key.into();
+        for stack in self.stack.iter().rev() {
+            if let Some(record) = stack.get(&key) {
+                return record.to_val();
+            }
+        }
+        None
     }
 
     fn set(&mut self, key: impl Into<Key>, val: impl Into<Value>) {
-        let Some(vals) = self.vals.as_mut() else {
-            return;
-        };
-        vals.set(key, val);
+        let storage = self.stack.last_mut().unwrap();
+        storage.set(key, val);
     }
 
     fn delete(&mut self, key: impl Into<Key>) {
-        let Some(vals) = self.vals.as_mut() else {
-            return;
-        };
-        vals.delete(key);
+        let storage = self.stack.last_mut().unwrap();
+        storage.delete(key);
     }
 }
 
@@ -60,7 +84,16 @@ enum Record {
     Tombstone,
 }
 
-#[derive(Debug)]
+impl Record {
+    fn to_val(&self) -> Option<&Value> {
+        match self {
+            Record::Value(val) => Some(val),
+            Record::Tombstone => None,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 struct Value(Rc<str>);
 
 impl From<&str> for Value {
@@ -76,15 +109,21 @@ struct Storage {
 }
 
 impl Storage {
-    fn get(&self, key: impl Into<Key>) -> Option<&Value> {
-        let key = key.into();
-        self.vals
-            .get(&key)
-            .map(|r| match r {
-                Record::Value(val) => Some(val),
-                Record::Tombstone => None,
-            })
-            .flatten()
+    fn merge(&mut self, other: Storage) {
+        for (k, v) in other.vals.into_iter() {
+            match v {
+                Record::Tombstone => {
+                    self.vals.remove(&k);
+                }
+                _ => {
+                    self.vals.insert(k, v);
+                }
+            };
+        }
+    }
+
+    fn get(&self, key: &Key) -> Option<&Record> {
+        self.vals.get(&key)
     }
 
     fn set(&mut self, key: impl Into<Key>, val: impl Into<Value>) {
