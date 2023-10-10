@@ -26,6 +26,16 @@ fn test_tx() {
     assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
 }
 
+#[test]
+fn test_tx_2() {
+    let mut db = Db::default();
+    db.begin();
+    db.set("key2", "val2");
+    assert_eq!(db.get("key2"), Some(Value::from("val2")).as_ref());
+    db.rollback();
+    assert_eq!(db.get("key2"), None);
+}
+
 struct Db {
     stack: Vec<Storage>,
 }
@@ -50,6 +60,10 @@ impl Db {
         let storage = self.stack.pop().unwrap();
         let store = self.stack.last_mut().unwrap();
         store.merge(storage);
+    }
+
+    fn rollback(&mut self) {
+        self.stack.pop();
     }
 
     fn get(&self, key: impl Into<Key>) -> Option<&Value> {
