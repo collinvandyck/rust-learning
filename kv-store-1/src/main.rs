@@ -79,6 +79,7 @@ fn test_tx_6() {
     assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
     db.begin();
     db.delete("key1");
+    assert_eq!(db.get("key1"), None);
     db.rollback();
     assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
 }
