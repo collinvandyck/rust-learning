@@ -9,16 +9,27 @@ fn main() {
     println!("{:?}", db.get("key_ne"));
 }
 
-#[derive(Default)]
 struct Db {
-    vals: HashMap<Key, Record>,
+    parent: Option<Box<Db>>,
+    vals: Option<HashMap<Key, Record>>,
+}
+
+impl Default for Db {
+    fn default() -> Self {
+        Self {
+            parent: None,
+            vals: Some(HashMap::default()),
+        }
+    }
 }
 
 impl Db {
+    fn begin(&mut self) {}
+
     fn get(&self, key: impl Into<Key>) -> Option<&Value> {
         let key = key.into();
-        self.vals
-            .get(&key)
+        let Some(vals) = &self.vals else { return None };
+        vals.get(&key)
             .map(|r| match r {
                 Record::Value(val) => Some(val),
                 Record::Tombstone => None,
@@ -30,12 +41,24 @@ impl Db {
         let key = key.into();
         let val = val.into();
         let val = Record::Value(val);
-        self.vals.insert(key, val);
+        let Some(vals) = self.vals.as_mut() else {
+            return;
+        };
+        vals.insert(key, val);
     }
 
     fn delete(&mut self, key: impl Into<Key>) {
         let key = key.into();
-        self.vals.remove(&key);
+        let Some(vals) = self.vals.as_mut() else {
+            return;
+        };
+        if self.parent.is_some() {
+            // we are in a tx.
+            vals.insert(key, Record::Tombstone);
+        } else {
+            // we can just deleted.
+            vals.remove(&key);
+        }
     }
 }
 
