@@ -20,7 +20,10 @@ fn test_tx() {
     assert_eq!(db.get("key0"), Some(Value::from("val0")).as_ref());
     db.begin();
     assert_eq!(db.get("key0"), Some(Value::from("val0")).as_ref());
+    db.set("key1", "val1");
+    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
     db.commit();
+    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
 }
 
 struct Db {
