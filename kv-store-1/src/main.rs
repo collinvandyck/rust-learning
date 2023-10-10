@@ -7,7 +7,7 @@ fn main() {}
 fn test_db() {
     let mut db = Db::default();
     db.set("key1", "val1");
-    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
+    assert_eq!(db.get("key1"), Some("val1"));
     db.delete("key1");
     assert_eq!(db.get("key1"), None);
     assert_eq!(db.get("key_ne"), None);
@@ -17,13 +17,13 @@ fn test_db() {
 fn test_tx() {
     let mut db = Db::default();
     db.set("key0", "val0");
-    assert_eq!(db.get("key0"), Some(Value::from("val0")).as_ref());
+    assert_eq!(db.get("key0"), Some("val0"));
     db.begin();
-    assert_eq!(db.get("key0"), Some(Value::from("val0")).as_ref());
+    assert_eq!(db.get("key0"), Some("val0"));
     db.set("key1", "val1");
-    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
+    assert_eq!(db.get("key1"), Some("val1"));
     db.commit();
-    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
+    assert_eq!(db.get("key1"), Some("val1"));
 }
 
 #[test]
@@ -31,7 +31,7 @@ fn test_tx_2() {
     let mut db = Db::default();
     db.begin();
     db.set("key2", "val2");
-    assert_eq!(db.get("key2"), Some(Value::from("val2")).as_ref());
+    assert_eq!(db.get("key2"), Some("val2"));
     db.rollback();
     assert_eq!(db.get("key2"), None);
 }
@@ -40,19 +40,19 @@ fn test_tx_2() {
 fn test_tx_3() {
     let mut db = Db::default();
     db.set("key3", "val3");
-    assert_eq!(db.get("key3"), Some(Value::from("val3")).as_ref());
+    assert_eq!(db.get("key3"), Some("val3"));
     db.begin();
     db.delete("key3");
     assert_eq!(db.get("key3"), None);
     db.rollback();
-    assert_eq!(db.get("key3"), Some(Value::from("val3")).as_ref());
+    assert_eq!(db.get("key3"), Some("val3"));
 }
 
 #[test]
 fn test_tx_4() {
     let mut db = Db::default();
     db.set("key3", "val3");
-    assert_eq!(db.get("key3"), Some(Value::from("val3")).as_ref());
+    assert_eq!(db.get("key3"), Some("val3"));
     db.begin();
     db.delete("key3");
     assert_eq!(db.get("key3"), None);
@@ -66,7 +66,7 @@ fn test_tx_5() {
     db.begin();
     db.begin();
     db.set("key1", "val1");
-    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
+    assert_eq!(db.get("key1"), Some("val1"));
     db.commit();
     db.rollback();
     assert_eq!(db.get("key1"), None);
@@ -76,12 +76,12 @@ fn test_tx_5() {
 fn test_tx_6() {
     let mut db = Db::default();
     db.set("key1", "val1");
-    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
+    assert_eq!(db.get("key1"), Some("val1"));
     db.begin();
     db.delete("key1");
     assert_eq!(db.get("key1"), None);
     db.rollback();
-    assert_eq!(db.get("key1"), Some(Value::from("val1")).as_ref());
+    assert_eq!(db.get("key1"), Some("val1"));
 }
 
 struct Db {
@@ -111,11 +111,14 @@ impl Db {
         self.stack.pop();
     }
 
-    fn get(&self, key: impl Into<Key>) -> Option<&Value> {
+    fn get<'a>(&self, key: impl Into<Key>) -> Option<&str> {
         let key = key.into();
         for stack in self.stack.iter().rev() {
             if let Some(record) = stack.get(&key) {
-                return record.to_val();
+                if let Record::Value(val) = record {
+                    return Some(val.0.as_ref());
+                }
+                return None;
             }
         }
         None
