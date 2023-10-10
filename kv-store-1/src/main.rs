@@ -98,10 +98,7 @@ impl Default for Db {
 
 impl Db {
     fn begin(&mut self) {
-        self.stack.push(Storage {
-            tx: true,
-            vals: Default::default(),
-        });
+        self.stack.push(Storage::new_tx_storage());
     }
 
     fn commit(&mut self) {
@@ -174,6 +171,13 @@ struct Storage {
 }
 
 impl Storage {
+    fn new_tx_storage() -> Self {
+        Self {
+            tx: true,
+            vals: HashMap::default(),
+        }
+    }
+
     fn merge(&mut self, other: Storage) {
         for (k, v) in other.vals.into_iter() {
             if let Record::Tombstone = v {
