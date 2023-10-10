@@ -10,15 +10,15 @@ fn main() {
 }
 
 struct Db {
-    parent: Option<Box<Db>>,
-    vals: Option<HashMap<Key, Record>>,
+    parent: Option<Storage>,
+    vals: Option<Storage>,
 }
 
 impl Default for Db {
     fn default() -> Self {
         Self {
             parent: None,
-            vals: Some(HashMap::default()),
+            vals: Some(Storage::default()),
         }
     }
 }
@@ -27,38 +27,22 @@ impl Db {
     fn begin(&mut self) {}
 
     fn get(&self, key: impl Into<Key>) -> Option<&Value> {
-        let key = key.into();
         let Some(vals) = &self.vals else { return None };
-        vals.get(&key)
-            .map(|r| match r {
-                Record::Value(val) => Some(val),
-                Record::Tombstone => None,
-            })
-            .flatten()
+        vals.get(key)
     }
 
     fn set(&mut self, key: impl Into<Key>, val: impl Into<Value>) {
-        let key = key.into();
-        let val = val.into();
-        let val = Record::Value(val);
         let Some(vals) = self.vals.as_mut() else {
             return;
         };
-        vals.insert(key, val);
+        vals.set(key, val);
     }
 
     fn delete(&mut self, key: impl Into<Key>) {
-        let key = key.into();
         let Some(vals) = self.vals.as_mut() else {
             return;
         };
-        if self.parent.is_some() {
-            // we are in a tx.
-            vals.insert(key, Record::Tombstone);
-        } else {
-            // we can just deleted.
-            vals.remove(&key);
-        }
+        vals.delete(key);
     }
 }
 
@@ -82,5 +66,40 @@ struct Value(Rc<str>);
 impl From<&str> for Value {
     fn from(value: &str) -> Self {
         Value(Rc::from(value))
+    }
+}
+
+#[derive(Default)]
+struct Storage {
+    tx: bool,
+    vals: HashMap<Key, Record>,
+}
+
+impl Storage {
+    fn get(&self, key: impl Into<Key>) -> Option<&Value> {
+        let key = key.into();
+        self.vals
+            .get(&key)
+            .map(|r| match r {
+                Record::Value(val) => Some(val),
+                Record::Tombstone => None,
+            })
+            .flatten()
+    }
+
+    fn set(&mut self, key: impl Into<Key>, val: impl Into<Value>) {
+        let key = key.into();
+        let val = val.into();
+        let val = Record::Value(val);
+        self.vals.insert(key, val);
+    }
+
+    fn delete(&mut self, key: impl Into<Key>) {
+        let key = key.into();
+        if self.tx {
+            self.vals.insert(key, Record::Tombstone);
+        } else {
+            self.vals.remove(&key);
+        }
     }
 }
