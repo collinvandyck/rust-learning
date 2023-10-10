@@ -6,22 +6,30 @@ fn main() {
     println!("{:?}", db.get("key1"));
     db.delete("key1");
     println!("{:?}", db.get("key1"));
+    println!("{:?}", db.get("key_ne"));
 }
 
 #[derive(Default)]
 struct Db {
-    vals: HashMap<Key, Value>,
+    vals: HashMap<Key, Record>,
 }
 
 impl Db {
     fn get(&self, key: impl Into<Key>) -> Option<&Value> {
         let key = key.into();
-        self.vals.get(&key)
+        self.vals
+            .get(&key)
+            .map(|r| match r {
+                Record::Value(val) => Some(val),
+                Record::Tombstone => None,
+            })
+            .flatten()
     }
 
     fn set(&mut self, key: impl Into<Key>, val: impl Into<Value>) {
         let key = key.into();
         let val = val.into();
+        let val = Record::Value(val);
         self.vals.insert(key, val);
     }
 
@@ -38,6 +46,11 @@ impl From<&str> for Key {
     fn from(value: &str) -> Self {
         Key(Rc::from(value))
     }
+}
+
+enum Record {
+    Value(Value),
+    Tombstone,
 }
 
 #[derive(Debug)]
