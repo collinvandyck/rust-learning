@@ -34,8 +34,8 @@ tasks:
   test:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - cargo test
-    silent: true
+      - "{{.ROOT_DIR}}/.scripts/test.sh"
+    silent: false
   clean:
     cmds:
       - scripts/clean.sh
