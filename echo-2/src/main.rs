@@ -17,25 +17,6 @@ mod tests {
 
     #[test]
     #[traced_test]
-    fn test_read_buffer() {
-        let mut input = "Collin".as_bytes();
-        let mut buf = vec![0_u8; 2];
-        let n = input.read(&mut buf).unwrap();
-        assert_eq!(n, 2);
-        assert_eq!(&buf, "Co".as_bytes());
-        let n = input.read(&mut buf).unwrap();
-        assert_eq!(n, 2);
-        assert_eq!(&buf, "ll".as_bytes());
-        let n = input.read(&mut buf).unwrap();
-        assert_eq!(n, 2);
-        assert_eq!(&buf, "in".as_bytes());
-        let n = input.read(&mut buf).unwrap();
-        assert_eq!(n, 0);
-        assert_eq!(&buf, "in".as_bytes());
-    }
-
-    #[test]
-    #[traced_test]
     fn test_echo() {
         let runner = Runner::new(None).unwrap();
         let addr = runner.addr.clone();
