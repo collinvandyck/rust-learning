@@ -151,6 +151,11 @@ struct Stream {
     write: Vec<u8>,
 }
 
+enum Polled {
+    Bytes(usize),
+    Nothing,
+}
+
 impl Stream {
     fn new(stream: TcpStream, timeout: Option<Duration>) -> Result<Stream> {
         let tmp = vec![0_u8; 4096];
@@ -190,35 +195,40 @@ impl Stream {
 
     fn poll(&mut self) -> Result<()> {
         if !self.write.is_empty() {
-            match self
+            if let Polled::Bytes(n) = self
                 .stream
                 .write(&self.write)
-                .and_then(|n| Ok(self.write.drain(0..n).len()))
-                .map_err(Self::check_err)
+                .map_or_else(Self::map_poll_err, Self::map_poll_n)?
             {
-                Ok(0) => return Err(StreamError::Closed.into()),
-                Err(Some(err)) => return Err(err.into()),
-                _ => {}
+                debug!("Wrote {n} bytes");
+                self.write.drain(0..n);
             }
         }
-        match self.stream.read(&mut self.tmp).map_err(Self::check_err) {
-            Ok(0) => return Err(StreamError::Closed.into()),
-            Ok(n) => {
-                debug!("Read {n} bytes");
-                self.read
-                    .write_all(&self.tmp[0..n])
-                    .map_err(StreamError::IO)?;
-            }
-            Err(Some(err)) => return Err(err.into()),
-            _ => {}
+        if let Polled::Bytes(n) = self
+            .stream
+            .read(&mut self.tmp)
+            .map_or_else(Self::map_poll_err, Self::map_poll_n)?
+        {
+            debug!("Read {n} bytes");
+            self.read
+                .write_all(&self.tmp[0..n])
+                .map_err(StreamError::IO)?;
         }
         Ok(())
     }
 
-    fn check_err(err: io::Error) -> Option<io::Error> {
+    fn map_poll_err(err: io::Error) -> Result<Polled> {
         match err.kind() {
-            io::ErrorKind::WouldBlock => None, // this is ok
-            _ => Some(err),
+            io::ErrorKind::WouldBlock => Ok(Polled::Nothing),
+            _ => Err(StreamError::IO(err).into()),
+        }
+    }
+
+    fn map_poll_n(n: usize) -> Result<Polled> {
+        if n == 0 {
+            Err(StreamError::Closed.into())
+        } else {
+            Ok(Polled::Bytes(n))
         }
     }
 }
