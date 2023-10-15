@@ -34,7 +34,7 @@ mod tests {
 
     #[test]
     #[traced_test]
-    fn test_echo_stream() {
+    fn test_echo() {
         let runner = Runner::new(None).unwrap();
         let addr = runner.addr.clone();
         thread::spawn(move || {
@@ -61,55 +61,6 @@ mod tests {
             stream.poll().unwrap();
             if let Some(s) = stream.next_str().unwrap() {
                 assert_eq!(s, String::from("foobar\n"));
-                break;
-            }
-        }
-    }
-
-    #[test]
-    #[traced_test]
-    fn test_echo() {
-        let runner = Runner::new(None).unwrap();
-        let addr = runner.addr.clone();
-        thread::spawn(move || {
-            runner.run().expect("runner failed");
-        });
-        let mut stream = TcpStream::connect(&addr).unwrap();
-        let timeout = Some(Duration::from_millis(200));
-        stream.set_read_timeout(timeout).unwrap();
-        let peer_addr = stream.peer_addr().unwrap();
-        let local_addr = stream.local_addr().unwrap();
-        debug!("Connected to {} from {}", peer_addr, local_addr);
-
-        stream.write_all(b"Hello").unwrap();
-        stream.write_all(b", World!\n").unwrap();
-
-        let mut tmp = vec![0_u8; 4096];
-        let mut buf = vec![];
-        loop {
-            match stream.read(&mut tmp) {
-                Ok(0) => {
-                    debug!("Nothing to read");
-                    break;
-                }
-                Ok(n) => {
-                    debug!("Read {n} bytes");
-                    buf.write_all(&tmp[0..n]).unwrap();
-                }
-                Err(err) => match err.kind() {
-                    io::ErrorKind::WouldBlock => {
-                        debug!("Client would block");
-                    }
-                    _ => panic!("{err}"),
-                },
-            }
-            if let Some(n) = buf.iter().position(|b| b == &b'\n') {
-                debug!("Client found newline at {n} buf={buf:?}");
-                let res = String::from_utf8_lossy(&buf[0..n]).to_string();
-                assert_eq!(res, String::from("Hello, World!"));
-                buf.drain(0..=n);
-                debug!("Buf is now {buf:?}");
-                assert!(buf.is_empty());
                 break;
             }
         }
@@ -159,69 +110,20 @@ impl Runner {
             let (stream, addr) = self.listener.accept().context("accept failure")?;
             info!("Client addr: {addr}");
             thread::spawn(move || {
-                if let Err(err) = Self::handle_stream(stream) {
+                if let Err(err) = Self::handle(stream) {
                     eprintln!("Handle: {err:?}");
                 }
             });
         }
     }
 
-    fn handle_stream(stream: TcpStream) -> Result<()> {
+    fn handle(stream: TcpStream) -> Result<()> {
         let timeout = Some(Duration::from_millis(200));
         let mut stream = LineStream::new(stream, timeout)?;
         loop {
             stream.poll()?;
             if let Some(s) = stream.next_str()? {
                 stream.write_str(&s)?;
-            }
-        }
-    }
-
-    fn handle(stream: TcpStream) -> Result<()> {
-        stream
-            .set_read_timeout(Some(Duration::from_millis(200)))
-            .context("set read timeout")?;
-        let (mut tx, mut rx) = (
-            stream.try_clone().context("could not clone stream")?,
-            stream,
-        );
-        let mut buf = vec![];
-        let mut tmp = vec![0_u8; 4096];
-        loop {
-            let read = match rx.read(&mut tmp) {
-                Ok(n) => Some(n),
-                Err(err) => match err.kind() {
-                    io::ErrorKind::WouldBlock => None,
-                    _ => {
-                        return Err(err.into());
-                    }
-                },
-            };
-            debug!("Server read {read:?}");
-            if let Some(n) = read {
-                if n == 0 {
-                    return Ok(());
-                }
-                buf.write_all(&tmp[0..n]).context("write input")?;
-            }
-            // see if we have a newline in the buffer
-            if let Some(pos) = buf.iter().position(|b| b == &b'\n') {
-                debug!(pos, "found newline");
-                let write = match tx.write(&buf[0..=pos]) {
-                    Ok(n) => Some(n),
-                    Err(err) => match err.kind() {
-                        io::ErrorKind::WouldBlock => None,
-                        _ => {
-                            return Err(err.into());
-                        }
-                    },
-                };
-                if let Some(n) = write {
-                    if n == 0 {
-                        return Ok(());
-                    }
-                    buf.drain(0..n);
-                }
             }
         }
     }
@@ -282,27 +184,13 @@ impl LineStream {
 
     fn poll(&mut self) -> Result<()> {
         if !self.write.is_empty() {
-            let n = match self.stream.write(&self.write) {
-                Ok(0) => return Err(LineStreamError::Closed.into()),
-                Ok(n) => Some(n),
-                Err(err) => match err.kind() {
-                    io::ErrorKind::WouldBlock => None,
-                    _ => return Err(LineStreamError::IO(err).into()),
-                },
-            };
+            let n = Self::res_to_option(self.stream.write(&self.write))?;
             if let Some(n) = n {
                 debug!("Wrote {n} bytes");
                 self.write.drain(0..n);
             }
         }
-        let n = match self.stream.read(&mut self.tmp) {
-            Ok(0) => return Err(LineStreamError::Closed.into()),
-            Ok(n) => Some(n),
-            Err(err) => match err.kind() {
-                io::ErrorKind::WouldBlock => None,
-                _ => return Err(LineStreamError::IO(err).into()),
-            },
-        };
+        let n = Self::res_to_option(self.stream.read(&mut self.tmp))?;
         if let Some(n) = n {
             debug!("Read {n} bytes");
             self.read
@@ -310,5 +198,17 @@ impl LineStream {
                 .map_err(LineStreamError::IO)?;
         }
         Ok(())
+    }
+
+    fn res_to_option(res: std::result::Result<usize, io::Error>) -> Result<Option<usize>> {
+        let n = match res {
+            Ok(0) => return Err(LineStreamError::Closed.into()),
+            Ok(n) => Some(n),
+            Err(err) => match err.kind() {
+                io::ErrorKind::WouldBlock => None,
+                _ => return Err(LineStreamError::IO(err).into()),
+            },
+        };
+        Ok(n)
     }
 }
