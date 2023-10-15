@@ -51,7 +51,8 @@ mod tests {
         loop {
             stream.poll().unwrap();
             if let Some(s) = stream.next_str().unwrap() {
-                assert_eq!(s, String::from("Hello, World!"));
+                assert_eq!(s, String::from("Hello, World!\n"));
+                info!("Got hello world");
                 break;
             }
         }
@@ -59,7 +60,7 @@ mod tests {
         loop {
             stream.poll().unwrap();
             if let Some(s) = stream.next_str().unwrap() {
-                assert_eq!(s, String::from("foobar"));
+                assert_eq!(s, String::from("foobar\n"));
                 break;
             }
         }
@@ -271,7 +272,7 @@ impl LineStream {
 
     fn next_str(&mut self) -> Result<Option<String>> {
         if let Some(n) = self.read.iter().position(|b| b == &b'\n') {
-            let res = String::from_utf8_lossy(&self.read[0..n]).to_string();
+            let res = String::from_utf8_lossy(&self.read[0..=n]).to_string();
             self.read.drain(0..=n);
             Ok(Some(res))
         } else {
@@ -290,6 +291,7 @@ impl LineStream {
                 },
             };
             if let Some(n) = n {
+                debug!("Wrote {n} bytes");
                 self.write.drain(0..n);
             }
         }
@@ -302,6 +304,7 @@ impl LineStream {
             },
         };
         if let Some(n) = n {
+            debug!("Read {n} bytes");
             self.read
                 .write_all(&self.tmp[0..n])
                 .map_err(LineStreamError::IO)?;
