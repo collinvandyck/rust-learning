@@ -40,46 +40,31 @@ mod tests {
         thread::spawn(move || {
             runner.run().expect("runner failed");
         });
-        let mut stream = TcpStream::connect(&addr).unwrap();
+        let stream = TcpStream::connect(&addr).unwrap();
         let timeout = Some(Duration::from_millis(200));
-        stream.set_read_timeout(timeout).unwrap();
         let peer_addr = stream.peer_addr().unwrap();
         let local_addr = stream.local_addr().unwrap();
         debug!("Connected to {} from {}", peer_addr, local_addr);
-
-        stream.write_all(b"Hello").unwrap();
-        stream.write_all(b", World!\n").unwrap();
-
-        let mut tmp = vec![0_u8; 4096];
-        let mut buf = vec![];
+        let mut stream = LineStream::new(stream, timeout).unwrap();
+        stream.write_str("Hello").unwrap();
+        stream.write_str(", World!\n").unwrap();
         loop {
-            match stream.read(&mut tmp) {
-                Ok(0) => {
-                    debug!("Nothing to read");
-                    break;
-                }
-                Ok(n) => {
-                    debug!("Read {n} bytes");
-                    buf.write_all(&tmp[0..n]).unwrap();
-                }
-                Err(err) => match err.kind() {
-                    io::ErrorKind::WouldBlock => {
-                        debug!("Client would block");
-                    }
-                    _ => panic!("{err}"),
-                },
+            stream.poll().unwrap();
+            if let Some(s) = stream.next_str().unwrap() {
+                assert_eq!(s, String::from("Hello, World!"));
+                break;
             }
-            if let Some(n) = buf.iter().position(|b| b == &b'\n') {
-                debug!("Client found newline at {n} buf={buf:?}");
-                let res = String::from_utf8_lossy(&buf[0..n]).to_string();
-                assert_eq!(res, String::from("Hello, World!"));
-                buf.drain(0..=n);
-                debug!("Buf is now {buf:?}");
-                assert!(buf.is_empty());
+        }
+        stream.write_str("foobar\n").unwrap();
+        loop {
+            stream.poll().unwrap();
+            if let Some(s) = stream.next_str().unwrap() {
+                assert_eq!(s, String::from("foobar"));
                 break;
             }
         }
     }
+
     #[test]
     #[traced_test]
     fn test_echo() {
@@ -180,6 +165,17 @@ impl Runner {
         }
     }
 
+    fn handle_stream(stream: TcpStream) -> Result<()> {
+        let timeout = Some(Duration::from_millis(200));
+        let mut stream = LineStream::new(stream, timeout)?;
+        loop {
+            stream.poll()?;
+            if let Some(s) = stream.next_str()? {
+                stream.write_str(&s)?;
+            }
+        }
+    }
+
     fn handle(stream: TcpStream) -> Result<()> {
         stream
             .set_read_timeout(Some(Duration::from_millis(200)))
@@ -246,7 +242,7 @@ struct LineStream {
 }
 
 impl LineStream {
-    fn new(stream: TcpStream, timeout: Option<Duration>) -> Result<()> {
+    fn new(stream: TcpStream, timeout: Option<Duration>) -> Result<LineStream> {
         let tmp = vec![0_u8; 4096];
         let read = vec![];
         let write = vec![];
@@ -257,7 +253,7 @@ impl LineStream {
             write,
         };
         res.set_timeout(timeout)?;
-        Ok(())
+        Ok(res)
     }
 
     fn set_timeout(&mut self, timeout: Option<Duration>) -> Result<()> {
@@ -271,6 +267,16 @@ impl LineStream {
         let bs = s.as_bytes();
         self.write.write_all(bs)?;
         Ok(())
+    }
+
+    fn next_str(&mut self) -> Result<Option<String>> {
+        if let Some(n) = self.read.iter().position(|b| b == &b'\n') {
+            let res = String::from_utf8_lossy(&self.read[0..n]).to_string();
+            self.read.drain(0..=n);
+            Ok(Some(res))
+        } else {
+            Ok(None)
+        }
     }
 
     fn poll(&mut self) -> Result<()> {
