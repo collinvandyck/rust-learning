@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use clap::Parser;
 use std::{
     io::{self, Read, Write},
     net::{SocketAddr, TcpListener, TcpStream},
@@ -6,6 +7,12 @@ use std::{
     time::Duration,
 };
 use tracing::{info, Level};
+
+#[derive(clap::Parser, Debug)]
+struct Args {
+    #[arg(short, default_value_t = 8000)]
+    port: u32,
+}
 
 fn main() {
     tracing_subscriber::fmt()
@@ -18,7 +25,8 @@ fn main() {
 }
 
 fn run() -> Result<()> {
-    let runner = Runner::new()?;
+    let args = Args::parse();
+    let runner = Runner::new(args.port)?;
     info!("Local addr: {:?}", runner.addr);
     runner.run()?;
     Ok(())
@@ -30,8 +38,9 @@ struct Runner {
 }
 
 impl Runner {
-    fn new() -> Result<Self> {
-        let listener = TcpListener::bind("0.0.0.0:0").context("could not bind")?;
+    fn new(port: u32) -> Result<Self> {
+        let bind = format!("0.0.0.0:{}", port);
+        let listener = TcpListener::bind(&bind).context("could not bind")?;
         let addr = listener.local_addr()?;
         let res = Self { addr, listener };
         Ok(res)
