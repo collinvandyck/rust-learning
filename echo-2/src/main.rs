@@ -45,9 +45,9 @@ mod tests {
         let peer_addr = stream.peer_addr().unwrap();
         let local_addr = stream.local_addr().unwrap();
         debug!("Connected to {} from {}", peer_addr, local_addr);
-        let mut stream = LineStream::new(stream, timeout).unwrap();
-        stream.write_str("Hello").unwrap();
-        stream.write_str(", World!\n").unwrap();
+        let mut stream = Stream::new(stream, timeout).unwrap();
+        stream.write("Hello").unwrap();
+        stream.write(", World!\n").unwrap();
         loop {
             stream.poll().unwrap();
             if let Some(s) = stream.next_str().unwrap() {
@@ -56,7 +56,7 @@ mod tests {
                 break;
             }
         }
-        stream.write_str("foobar\n").unwrap();
+        stream.write("foobar\n").unwrap();
         loop {
             stream.poll().unwrap();
             if let Some(s) = stream.next_str().unwrap() {
@@ -119,11 +119,11 @@ impl Runner {
 
     fn handle(stream: TcpStream) -> Result<()> {
         let timeout = Some(Duration::from_millis(200));
-        let mut stream = LineStream::new(stream, timeout)?;
+        let mut stream = Stream::new(stream, timeout)?;
         loop {
             stream.poll()?;
             if let Some(s) = stream.next_str()? {
-                stream.write_str(&s)?;
+                stream.write(&s)?;
             }
         }
     }
@@ -137,19 +137,19 @@ enum LineStreamError {
     IO(#[from] io::Error),
 }
 
-struct LineStream {
+struct Stream {
     stream: TcpStream,
     tmp: Vec<u8>,
     read: Vec<u8>,
     write: Vec<u8>,
 }
 
-impl LineStream {
-    fn new(stream: TcpStream, timeout: Option<Duration>) -> Result<LineStream> {
+impl Stream {
+    fn new(stream: TcpStream, timeout: Option<Duration>) -> Result<Stream> {
         let tmp = vec![0_u8; 4096];
         let read = vec![];
         let write = vec![];
-        let mut res = LineStream {
+        let mut res = Stream {
             stream,
             tmp,
             read,
@@ -165,10 +165,9 @@ impl LineStream {
         Ok(())
     }
 
-    fn write_str(&mut self, input: impl AsRef<str>) -> Result<()> {
+    fn write(&mut self, input: impl AsRef<[u8]>) -> Result<()> {
         let s = input.as_ref();
-        let bs = s.as_bytes();
-        self.write.write_all(bs)?;
+        self.write.write_all(s)?;
         Ok(())
     }
 
