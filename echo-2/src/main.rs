@@ -99,13 +99,13 @@ impl Runner {
     fn run(&self) -> Result<()> {
         self.listener.set_nonblocking(true)?;
         loop {
+            if self.stop.load(std::sync::atomic::Ordering::Relaxed) {
+                debug!("Stopping runner...");
+                return Ok(());
+            }
             let (stream, addr) = match self.listener.accept() {
                 Ok(res) => res,
                 Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
-                    if self.stop.load(std::sync::atomic::Ordering::Relaxed) {
-                        debug!("Stopping runner...");
-                        return Ok(());
-                    }
                     thread::sleep(Duration::from_millis(10));
                     continue;
                 }
