@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use std::{
     io::{self, Read, Write},
@@ -7,7 +7,7 @@ use std::{
     str::Utf8Error,
     sync::{atomic::AtomicBool, Arc},
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 use tracing::{debug, info, Level};
 
@@ -15,6 +15,45 @@ use tracing::{debug, info, Level};
 mod tests {
     use super::*;
     use tracing_test::traced_test;
+
+    #[test]
+    #[traced_test]
+    fn test_echo_iter() {
+        let (runner, stop) = Runner::new(None).unwrap();
+        let addr = runner.addr.clone();
+        let jh = thread::spawn(move || {
+            runner.run().expect("runner failed");
+        });
+        let stream = TcpStream::connect(&addr).unwrap();
+        let timeout = Some(Duration::from_millis(200));
+        let peer_addr = stream.peer_addr().unwrap();
+        let local_addr = stream.local_addr().unwrap();
+        debug!("Connected to {} from {}", peer_addr, local_addr);
+        let mut stream = Stream::new(stream, timeout).unwrap();
+        stream.write("Hello").unwrap();
+        stream.write(", World!\n").unwrap();
+        assert_eq!(
+            stream
+                .iter()
+                .next()
+                .ok_or(anyhow!("expected value"))
+                .unwrap()
+                .unwrap(),
+            "Hello, World!\n"
+        );
+        stream.write("foobar\n").unwrap();
+        assert_eq!(
+            stream
+                .iter()
+                .next()
+                .ok_or(anyhow!("expected value"))
+                .unwrap()
+                .unwrap(),
+            "foobar\n"
+        );
+        stop.store(true, std::sync::atomic::Ordering::Relaxed);
+        jh.join().unwrap();
+    }
 
     #[test]
     #[traced_test]
@@ -146,6 +185,31 @@ enum StreamError {
     InvalidUTF8(#[from] Utf8Error),
 }
 
+struct StreamIterator<'a> {
+    stream: &'a mut Stream,
+    deadline: Instant,
+}
+
+impl<'a> Iterator for StreamIterator<'a> {
+    type Item = Result<String>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Err(err) = self.stream.poll() {
+            return Some(Err(err));
+        }
+        match self.stream.next() {
+            Ok(Some(res)) => Some(Ok(res)),
+            Err(err) => Some(Err(err)),
+            Ok(None) => {
+                if Instant::now() > self.deadline {
+                    Some(Err(anyhow!("no data")))
+                } else {
+                    None
+                }
+            }
+        }
+    }
+}
+
 /// A non-blocking wrapper around `TcpStream` that buffers input and output.
 struct Stream {
     stream: TcpStream,
@@ -167,6 +231,15 @@ impl Stream {
         };
         res.set_timeout(timeout)?;
         Ok(res)
+    }
+
+    #[cfg(test)]
+    fn iter(&mut self) -> StreamIterator {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        StreamIterator {
+            stream: self,
+            deadline,
+        }
     }
 
     fn set_timeout(&mut self, timeout: Option<Duration>) -> Result<()> {
