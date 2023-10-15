@@ -77,6 +77,7 @@ impl Runner {
             }
             // see if we have a newline in the buffer
             if let Some(pos) = buf.iter().position(|b| b == &b'\n') {
+                info!(pos, "found newline");
                 let write = match tx.write(&buf[0..=pos]) {
                     Ok(n) => Some(n),
                     Err(err) => match err.kind() {
