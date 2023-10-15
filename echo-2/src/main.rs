@@ -6,7 +6,7 @@ use std::{
     process, thread,
     time::Duration,
 };
-use tracing::{info, Level};
+use tracing::{debug, info, Level};
 
 #[cfg(test)]
 mod tests {
@@ -34,6 +34,54 @@ mod tests {
 
     #[test]
     #[traced_test]
+    fn test_echo_stream() {
+        let runner = Runner::new(None).unwrap();
+        let addr = runner.addr.clone();
+        thread::spawn(move || {
+            runner.run().expect("runner failed");
+        });
+        let mut stream = TcpStream::connect(&addr).unwrap();
+        let timeout = Some(Duration::from_millis(200));
+        stream.set_read_timeout(timeout).unwrap();
+        let peer_addr = stream.peer_addr().unwrap();
+        let local_addr = stream.local_addr().unwrap();
+        debug!("Connected to {} from {}", peer_addr, local_addr);
+
+        stream.write_all(b"Hello").unwrap();
+        stream.write_all(b", World!\n").unwrap();
+
+        let mut tmp = vec![0_u8; 4096];
+        let mut buf = vec![];
+        loop {
+            match stream.read(&mut tmp) {
+                Ok(0) => {
+                    debug!("Nothing to read");
+                    break;
+                }
+                Ok(n) => {
+                    debug!("Read {n} bytes");
+                    buf.write_all(&tmp[0..n]).unwrap();
+                }
+                Err(err) => match err.kind() {
+                    io::ErrorKind::WouldBlock => {
+                        debug!("Client would block");
+                    }
+                    _ => panic!("{err}"),
+                },
+            }
+            if let Some(n) = buf.iter().position(|b| b == &b'\n') {
+                debug!("Client found newline at {n} buf={buf:?}");
+                let res = String::from_utf8_lossy(&buf[0..n]).to_string();
+                assert_eq!(res, String::from("Hello, World!"));
+                buf.drain(0..=n);
+                debug!("Buf is now {buf:?}");
+                assert!(buf.is_empty());
+                break;
+            }
+        }
+    }
+    #[test]
+    #[traced_test]
     fn test_echo() {
         let runner = Runner::new(None).unwrap();
         let addr = runner.addr.clone();
@@ -45,7 +93,7 @@ mod tests {
         stream.set_read_timeout(timeout).unwrap();
         let peer_addr = stream.peer_addr().unwrap();
         let local_addr = stream.local_addr().unwrap();
-        info!("Connected to {} from {}", peer_addr, local_addr);
+        debug!("Connected to {} from {}", peer_addr, local_addr);
 
         stream.write_all(b"Hello").unwrap();
         stream.write_all(b", World!\n").unwrap();
@@ -55,26 +103,26 @@ mod tests {
         loop {
             match stream.read(&mut tmp) {
                 Ok(0) => {
-                    info!("Nothing to read");
+                    debug!("Nothing to read");
                     break;
                 }
                 Ok(n) => {
-                    info!("Read {n} bytes");
+                    debug!("Read {n} bytes");
                     buf.write_all(&tmp[0..n]).unwrap();
                 }
                 Err(err) => match err.kind() {
                     io::ErrorKind::WouldBlock => {
-                        info!("Client would block");
+                        debug!("Client would block");
                     }
                     _ => panic!("{err}"),
                 },
             }
             if let Some(n) = buf.iter().position(|b| b == &b'\n') {
-                info!("Client found newline at {n} buf={buf:?}");
+                debug!("Client found newline at {n} buf={buf:?}");
                 let res = String::from_utf8_lossy(&buf[0..n]).to_string();
                 assert_eq!(res, String::from("Hello, World!"));
                 buf.drain(0..=n);
-                info!("Buf is now {buf:?}");
+                debug!("Buf is now {buf:?}");
                 assert!(buf.is_empty());
                 break;
             }
@@ -152,7 +200,7 @@ impl Runner {
                     }
                 },
             };
-            info!("Server read {read:?}");
+            debug!("Server read {read:?}");
             if let Some(n) = read {
                 if n == 0 {
                     return Ok(());
@@ -161,7 +209,7 @@ impl Runner {
             }
             // see if we have a newline in the buffer
             if let Some(pos) = buf.iter().position(|b| b == &b'\n') {
-                info!(pos, "found newline");
+                debug!(pos, "found newline");
                 let write = match tx.write(&buf[0..=pos]) {
                     Ok(n) => Some(n),
                     Err(err) => match err.kind() {
@@ -179,5 +227,79 @@ impl Runner {
                 }
             }
         }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+enum LineStreamError {
+    #[error("Stream closed")]
+    Closed,
+    #[error("IO error: {0}")]
+    IO(#[from] io::Error),
+}
+
+struct LineStream {
+    stream: TcpStream,
+    tmp: Vec<u8>,
+    read: Vec<u8>,
+    write: Vec<u8>,
+}
+
+impl LineStream {
+    fn new(stream: TcpStream, timeout: Option<Duration>) -> Result<()> {
+        let tmp = vec![0_u8; 4096];
+        let read = vec![];
+        let write = vec![];
+        let mut res = LineStream {
+            stream,
+            tmp,
+            read,
+            write,
+        };
+        res.set_timeout(timeout)?;
+        Ok(())
+    }
+
+    fn set_timeout(&mut self, timeout: Option<Duration>) -> Result<()> {
+        self.stream.set_read_timeout(timeout)?;
+        self.stream.set_write_timeout(timeout)?;
+        Ok(())
+    }
+
+    fn write_str(&mut self, input: impl AsRef<str>) -> Result<()> {
+        let s = input.as_ref();
+        let bs = s.as_bytes();
+        self.write.write_all(bs)?;
+        Ok(())
+    }
+
+    fn poll(&mut self) -> Result<()> {
+        if !self.write.is_empty() {
+            let n = match self.stream.write(&self.write) {
+                Ok(0) => return Err(LineStreamError::Closed.into()),
+                Ok(n) => Some(n),
+                Err(err) => match err.kind() {
+                    io::ErrorKind::WouldBlock => None,
+                    _ => return Err(LineStreamError::IO(err).into()),
+                },
+            };
+            if let Some(n) = n {
+                self.write.drain(0..n);
+            }
+        }
+        let n = match self.stream.read(&mut self.tmp) {
+            Ok(0) => return Err(LineStreamError::Closed.into()),
+            Ok(n) => Some(n),
+            Err(err) => match err.kind() {
+                io::ErrorKind::WouldBlock => None,
+                _ => return Err(LineStreamError::IO(err).into()),
+            },
+        };
+        if let Some(n) = n {
+            self.read
+                .write_all(&self.tmp[0..n])
+                .map_err(LineStreamError::IO)?;
+        }
+        Ok(())
     }
 }
