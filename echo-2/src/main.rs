@@ -158,7 +158,7 @@ impl Runner {
             let (stream, addr) = self.listener.accept().context("accept failure")?;
             info!("Client addr: {addr}");
             thread::spawn(move || {
-                if let Err(err) = Self::handle(stream) {
+                if let Err(err) = Self::handle_stream(stream) {
                     eprintln!("Handle: {err:?}");
                 }
             });
