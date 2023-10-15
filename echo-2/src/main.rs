@@ -5,6 +5,7 @@ use std::{
     net::{SocketAddr, TcpListener, TcpStream},
     process,
     str::Utf8Error,
+    sync::{atomic::AtomicBool, Arc},
     thread,
     time::Duration,
 };
@@ -18,9 +19,9 @@ mod tests {
     #[test]
     #[traced_test]
     fn test_echo() {
-        let runner = Runner::new(None).unwrap();
+        let (runner, stop) = Runner::new(None).unwrap();
         let addr = runner.addr.clone();
-        thread::spawn(move || {
+        let jh = thread::spawn(move || {
             runner.run().expect("runner failed");
         });
         let stream = TcpStream::connect(&addr).unwrap();
@@ -46,6 +47,8 @@ mod tests {
                 break;
             }
         }
+        stop.store(true, std::sync::atomic::Ordering::Relaxed);
+        jh.join().unwrap();
     }
 }
 
@@ -67,7 +70,7 @@ fn main() {
 
 fn run() -> Result<()> {
     let args = Args::parse();
-    let runner = Runner::new(Some(args.port))?;
+    let (runner, _stop) = Runner::new(Some(args.port))?;
     info!("Local addr: {:?}", runner.addr);
     runner.run()?;
     Ok(())
@@ -76,20 +79,40 @@ fn run() -> Result<()> {
 struct Runner {
     addr: SocketAddr,
     listener: TcpListener,
+    stop: Arc<AtomicBool>,
 }
 
 impl Runner {
-    fn new(port: Option<u32>) -> Result<Self> {
+    fn new(port: Option<u32>) -> Result<(Self, Arc<AtomicBool>)> {
         let bind = format!("0.0.0.0:{}", port.unwrap_or_default());
         let listener = TcpListener::bind(&bind).context("could not bind")?;
         let addr = listener.local_addr()?;
-        let res = Self { addr, listener };
-        Ok(res)
+        let stop = Arc::new(AtomicBool::from(false));
+        let res = Self {
+            addr,
+            listener,
+            stop: stop.clone(),
+        };
+        Ok((res, stop))
     }
 
     fn run(&self) -> Result<()> {
+        self.listener.set_nonblocking(true)?;
         loop {
-            let (stream, addr) = self.listener.accept().context("accept failure")?;
+            let (stream, addr) = match self.listener.accept() {
+                Ok(res) => res,
+                Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
+                    if self.stop.load(std::sync::atomic::Ordering::Relaxed) {
+                        debug!("Stopping runner...");
+                        return Ok(());
+                    }
+                    thread::sleep(Duration::from_millis(10));
+                    continue;
+                }
+                Err(err) => {
+                    return Err(err.into());
+                }
+            };
             info!("Client addr: {addr}");
             thread::spawn(move || {
                 if let Err(err) = Self::handle(stream) {
