@@ -3,7 +3,9 @@ use clap::Parser;
 use std::{
     io::{self, Read, Write},
     net::{SocketAddr, TcpListener, TcpStream},
-    process, thread,
+    process,
+    str::Utf8Error,
+    thread,
     time::Duration,
 };
 use tracing::{debug, info, Level};
@@ -50,7 +52,7 @@ mod tests {
         stream.write(", World!\n").unwrap();
         loop {
             stream.poll().unwrap();
-            if let Some(s) = stream.next_str().unwrap() {
+            if let Some(s) = stream.next().unwrap() {
                 assert_eq!(s, String::from("Hello, World!\n"));
                 info!("Got hello world");
                 break;
@@ -59,7 +61,7 @@ mod tests {
         stream.write("foobar\n").unwrap();
         loop {
             stream.poll().unwrap();
-            if let Some(s) = stream.next_str().unwrap() {
+            if let Some(s) = stream.next().unwrap() {
                 assert_eq!(s, String::from("foobar\n"));
                 break;
             }
@@ -122,7 +124,7 @@ impl Runner {
         let mut stream = Stream::new(stream, timeout)?;
         loop {
             stream.poll()?;
-            if let Some(s) = stream.next_str()? {
+            if let Some(s) = stream.next()? {
                 stream.write(&s)?;
             }
         }
@@ -130,13 +132,18 @@ impl Runner {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum LineStreamError {
+enum StreamError {
     #[error("Stream closed")]
     Closed,
+
     #[error("IO error: {0}")]
     IO(#[from] io::Error),
+
+    #[error("Invalid UTF8: {0}")]
+    InvalidUTF8(#[from] Utf8Error),
 }
 
+/// A non-blocking wrapper around `TcpStream` that buffers input and output.
 struct Stream {
     stream: TcpStream,
     tmp: Vec<u8>,
@@ -169,9 +176,11 @@ impl Stream {
         self.write.write_all(input.as_ref()).map_err(|e| e.into())
     }
 
-    fn next_str(&mut self) -> Result<Option<String>> {
+    fn next(&mut self) -> Result<Option<String>> {
         if let Some(n) = self.read.iter().position(|b| b == &b'\n') {
-            let res = String::from_utf8_lossy(&self.read[0..=n]).to_string();
+            let res = std::str::from_utf8(&self.read[0..=n])
+                .map_err(StreamError::InvalidUTF8)?
+                .to_string();
             self.read.drain(0..=n);
             Ok(Some(res))
         } else {
@@ -181,31 +190,35 @@ impl Stream {
 
     fn poll(&mut self) -> Result<()> {
         if !self.write.is_empty() {
-            let n = Self::res_to_option(self.stream.write(&self.write))?;
-            if let Some(n) = n {
-                debug!("Wrote {n} bytes");
-                self.write.drain(0..n);
+            match self
+                .stream
+                .write(&self.write)
+                .and_then(|n| Ok(self.write.drain(0..n).len()))
+                .map_err(Self::check_err)
+            {
+                Ok(0) => return Err(StreamError::Closed.into()),
+                Err(Some(err)) => return Err(err.into()),
+                _ => {}
             }
         }
-        let n = Self::res_to_option(self.stream.read(&mut self.tmp))?;
-        if let Some(n) = n {
-            debug!("Read {n} bytes");
-            self.read
-                .write_all(&self.tmp[0..n])
-                .map_err(LineStreamError::IO)?;
+        match self.stream.read(&mut self.tmp).map_err(Self::check_err) {
+            Ok(0) => return Err(StreamError::Closed.into()),
+            Ok(n) => {
+                debug!("Read {n} bytes");
+                self.read
+                    .write_all(&self.tmp[0..n])
+                    .map_err(StreamError::IO)?;
+            }
+            Err(Some(err)) => return Err(err.into()),
+            _ => {}
         }
         Ok(())
     }
 
-    fn res_to_option(res: std::result::Result<usize, io::Error>) -> Result<Option<usize>> {
-        let n = match res {
-            Ok(0) => return Err(LineStreamError::Closed.into()),
-            Ok(n) => Some(n),
-            Err(err) => match err.kind() {
-                io::ErrorKind::WouldBlock => None,
-                _ => return Err(LineStreamError::IO(err).into()),
-            },
-        };
-        Ok(n)
+    fn check_err(err: io::Error) -> Option<io::Error> {
+        match err.kind() {
+            io::ErrorKind::WouldBlock => None, // this is ok
+            _ => Some(err),
+        }
     }
 }
