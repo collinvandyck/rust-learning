@@ -31,6 +31,55 @@ mod tests {
         assert_eq!(n, 0);
         assert_eq!(&buf, "in".as_bytes());
     }
+
+    #[test]
+    #[traced_test]
+    fn test_echo() {
+        let runner = Runner::new(None).unwrap();
+        let addr = runner.addr.clone();
+        thread::spawn(move || {
+            runner.run().expect("runner failed");
+        });
+        let mut stream = TcpStream::connect(&addr).unwrap();
+        let timeout = Some(Duration::from_millis(200));
+        stream.set_read_timeout(timeout).unwrap();
+        let peer_addr = stream.peer_addr().unwrap();
+        let local_addr = stream.local_addr().unwrap();
+        info!("Connected to {} from {}", peer_addr, local_addr);
+
+        stream.write_all(b"Hello").unwrap();
+        stream.write_all(b", World!\n").unwrap();
+
+        let mut tmp = vec![0_u8; 4096];
+        let mut buf = vec![];
+        loop {
+            match stream.read(&mut tmp) {
+                Ok(0) => {
+                    info!("Nothing to read");
+                    break;
+                }
+                Ok(n) => {
+                    info!("Read {n} bytes");
+                    buf.write_all(&tmp[0..n]).unwrap();
+                }
+                Err(err) => match err.kind() {
+                    io::ErrorKind::WouldBlock => {
+                        info!("Client would block");
+                    }
+                    _ => panic!("{err}"),
+                },
+            }
+            if let Some(n) = buf.iter().position(|b| b == &b'\n') {
+                info!("Client found newline at {n} buf={buf:?}");
+                let res = String::from_utf8_lossy(&buf[0..n]).to_string();
+                assert_eq!(res, String::from("Hello, World!"));
+                buf.drain(0..=n);
+                info!("Buf is now {buf:?}");
+                assert!(buf.is_empty());
+                break;
+            }
+        }
+    }
 }
 
 #[derive(clap::Parser, Debug)]
@@ -51,7 +100,7 @@ fn main() {
 
 fn run() -> Result<()> {
     let args = Args::parse();
-    let runner = Runner::new(args.port)?;
+    let runner = Runner::new(Some(args.port))?;
     info!("Local addr: {:?}", runner.addr);
     runner.run()?;
     Ok(())
@@ -63,8 +112,8 @@ struct Runner {
 }
 
 impl Runner {
-    fn new(port: u32) -> Result<Self> {
-        let bind = format!("0.0.0.0:{}", port);
+    fn new(port: Option<u32>) -> Result<Self> {
+        let bind = format!("0.0.0.0:{}", port.unwrap_or_default());
         let listener = TcpListener::bind(&bind).context("could not bind")?;
         let addr = listener.local_addr()?;
         let res = Self { addr, listener };
@@ -103,6 +152,7 @@ impl Runner {
                     }
                 },
             };
+            info!("Server read {read:?}");
             if let Some(n) = read {
                 if n == 0 {
                     return Ok(());
