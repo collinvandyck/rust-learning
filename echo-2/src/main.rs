@@ -151,11 +151,6 @@ struct Stream {
     write: Vec<u8>,
 }
 
-enum Polled {
-    Bytes(usize),
-    Nothing,
-}
-
 impl Stream {
     fn new(stream: TcpStream, timeout: Option<Duration>) -> Result<Stream> {
         let tmp = vec![0_u8; 4096];
@@ -177,10 +172,12 @@ impl Stream {
         Ok(())
     }
 
+    // writes the supplied data to the buffer but does not send it immediately
     fn write(&mut self, input: impl AsRef<[u8]>) -> Result<()> {
         self.write.write_all(input.as_ref()).map_err(|e| e.into())
     }
 
+    // returns the next line of input read, if it exists.
     fn next(&mut self) -> Result<Option<String>> {
         if let Some(n) = self.read.iter().position(|b| b == &b'\n') {
             let res = std::str::from_utf8(&self.read[0..=n])
@@ -193,9 +190,10 @@ impl Stream {
         }
     }
 
+    // attempts to read and write once. should be called in a loop.
     fn poll(&mut self) -> Result<()> {
         if !self.write.is_empty() {
-            if let Polled::Bytes(n) = self
+            if let Some(n) = self
                 .stream
                 .write(&self.write)
                 .map_or_else(Self::map_poll_err, Self::map_poll_n)?
@@ -204,7 +202,7 @@ impl Stream {
                 self.write.drain(0..n);
             }
         }
-        if let Polled::Bytes(n) = self
+        if let Some(n) = self
             .stream
             .read(&mut self.tmp)
             .map_or_else(Self::map_poll_err, Self::map_poll_n)?
@@ -217,18 +215,18 @@ impl Stream {
         Ok(())
     }
 
-    fn map_poll_err(err: io::Error) -> Result<Polled> {
+    fn map_poll_err(err: io::Error) -> Result<Option<usize>> {
         match err.kind() {
-            io::ErrorKind::WouldBlock => Ok(Polled::Nothing),
+            io::ErrorKind::WouldBlock => Ok(None),
             _ => Err(StreamError::IO(err).into()),
         }
     }
 
-    fn map_poll_n(n: usize) -> Result<Polled> {
+    fn map_poll_n(n: usize) -> Result<Option<usize>> {
         if n == 0 {
             Err(StreamError::Closed.into())
         } else {
-            Ok(Polled::Bytes(n))
+            Ok(Some(n))
         }
     }
 }
