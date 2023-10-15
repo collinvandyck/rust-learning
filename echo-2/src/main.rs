@@ -35,7 +35,6 @@ mod tests {
             stream.poll().unwrap();
             if let Some(s) = stream.next().unwrap() {
                 assert_eq!(s, String::from("Hello, World!\n"));
-                info!("Got hello world");
                 break;
             }
         }
