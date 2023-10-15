@@ -166,9 +166,7 @@ impl Stream {
     }
 
     fn write(&mut self, input: impl AsRef<[u8]>) -> Result<()> {
-        let s = input.as_ref();
-        self.write.write_all(s)?;
-        Ok(())
+        self.write.write_all(input.as_ref()).map_err(|e| e.into())
     }
 
     fn next_str(&mut self) -> Result<Option<String>> {
