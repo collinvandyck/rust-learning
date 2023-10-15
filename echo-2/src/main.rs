@@ -8,6 +8,19 @@ use std::{
 };
 use tracing::{info, Level};
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_read_buffer() {
+        let mut input = "Collin".as_bytes();
+        let mut buf = [0_u8; 2];
+        let n = input.read(&mut buf).unwrap();
+        assert_eq!(n, 2);
+    }
+}
+
 #[derive(clap::Parser, Debug)]
 struct Args {
     #[arg(short, default_value_t = 8000)]
