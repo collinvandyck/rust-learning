@@ -53,6 +53,10 @@ mod tests {
         let items: Vec<i32> = vec![];
         let mut iter = items.perm_iter(0);
         assert_eq!(iter.next(), None);
+
+        let items = vec![1];
+        let perms = items.perm_iter(1).collect::<Vec<_>>();
+        assert_eq!(perms, vec![&[1]]);
     }
 }
 
