@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = [ 
+	"day-01",
+]
+
+[workspace.dependencies]
+anyhow = "1.0.75"
