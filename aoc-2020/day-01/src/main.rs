@@ -1,46 +1,79 @@
 use anyhow::Result;
-use std::{fs, result};
+use std::{fmt::Debug, fs, result};
 
 fn main() -> Result<()> {
     part_one()?;
     part_two()?;
     Ok(())
 }
-
-fn find(nums: &Vec<i64>, perm_size: usize) -> i64 {
-    todo!()
-}
-
-struct PermIter<'a, T> {
-    items: &'a [T],
-    n: usize,
+struct PermIter<T> {
+    items: Vec<T>,
     idxs: Vec<usize>,
+    closed: bool,
 }
 
-impl<'a, T> PermIter<'a, T> {
-    fn new(items: &'a [T], n: usize) -> Self {
+impl<T> PermIter<T> {
+    fn new(items: Vec<T>, n: usize) -> Self {
         let mut idxs = vec![];
         for idx in 0..n {
             idxs.push(idx);
         }
-        Self { items, n, idxs }
+        let closed = n < items.len() || items.len() == 0;
+        Self {
+            items,
+            idxs,
+            closed,
+        }
     }
 }
 
-impl<'a, T> Iterator for PermIter<'a, T> {
-    type Item = &'a [T];
+impl<T> Iterator for PermIter<T>
+where
+    T: Clone + Debug,
+{
+    type Item = Vec<T>;
     fn next(&mut self) -> Option<Self::Item> {
-        None
+        if self.closed {
+            return None;
+        }
+        // populate the return vector
+        let mut res = vec![];
+        for n in 0..self.idxs.len() {
+            let idx = self.idxs[n];
+            if idx >= self.items.len() {
+                return None;
+            }
+            res.push(self.items[idx].clone())
+        }
+
+        let last = self.idxs.len() - 1;
+        for n in (0..=last).rev() {
+            self.idxs[n] += 1;
+            if self.idxs[n] >= self.items.len() {
+                if n == 0 {
+                    // we're closed.
+                    self.closed = true;
+                    break;
+                }
+                self.idxs[n] = 0;
+            } else {
+                break;
+            }
+        }
+        Some(res)
     }
 }
 
-trait VecExt<'a, T> {
-    fn perm_iter(&'a self, n: usize) -> PermIter<'a, T>;
+trait VecExt<T> {
+    fn perm_iter(&self, n: usize) -> PermIter<T>;
 }
 
-impl<'a, T> VecExt<'a, T> for Vec<T> {
-    fn perm_iter(&'a self, n: usize) -> PermIter<'a, T> {
-        PermIter::new(self, n)
+impl<T> VecExt<T> for Vec<T>
+where
+    T: Clone,
+{
+    fn perm_iter(&self, n: usize) -> PermIter<T> {
+        PermIter::new(self.clone(), n)
     }
 }
 
@@ -57,6 +90,10 @@ mod tests {
         let items = vec![1];
         let perms = items.perm_iter(1).collect::<Vec<_>>();
         assert_eq!(perms, vec![&[1]]);
+
+        let items = vec![1, 2];
+        let perms = items.perm_iter(2).collect::<Vec<_>>();
+        assert_eq!(perms, vec![[1, 2], [2, 1], [2, 2]]);
     }
 }
 
