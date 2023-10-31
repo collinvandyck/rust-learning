@@ -1,1 +1,1 @@
-mod permutations;
+mod perms;

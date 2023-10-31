@@ -59,14 +59,14 @@ where
 }
 
 trait VecExt<T> {
-    fn perm_iter(&self, n: usize) -> PermIter<T>;
+    fn permutations(&self, n: usize) -> PermIter<T>;
 }
 
 impl<T> VecExt<T> for Vec<T>
 where
     T: Clone,
 {
-    fn perm_iter(&self, n: usize) -> PermIter<T> {
+    fn permutations(&self, n: usize) -> PermIter<T> {
         PermIter::new(self.clone(), n)
     }
 }
@@ -78,15 +78,15 @@ mod tests {
     #[test]
     fn test_perm_iter() {
         let items: Vec<i32> = vec![];
-        let mut iter = items.perm_iter(0);
+        let mut iter = items.permutations(0);
         assert_eq!(iter.next(), None);
 
         let items = vec![1];
-        let perms = items.perm_iter(1).collect::<Vec<_>>();
+        let perms = items.permutations(1).collect::<Vec<_>>();
         assert_eq!(perms, vec![&[1]]);
 
         let items = vec![1, 2];
-        let perms = items.perm_iter(2).collect::<Vec<_>>();
+        let perms = items.permutations(2).collect::<Vec<_>>();
         assert_eq!(perms, vec![[1, 2], [2, 1]]);
     }
 }

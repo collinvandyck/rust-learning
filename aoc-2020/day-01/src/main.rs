@@ -1,5 +1,5 @@
 use anyhow::Result;
-use std::{fmt::Debug, fs, result};
+use std::{fs, result};
 
 fn main() -> Result<()> {
     part_one()?;
