@@ -1,6 +1,7 @@
 pub mod prelude {
     pub use super::*;
     pub use anyhow::anyhow;
+    pub use anyhow::bail;
     pub use anyhow::Result;
     pub use once_cell::sync::Lazy;
     pub use regex::Regex;
