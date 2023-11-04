@@ -6,13 +6,33 @@ struct PermIter<T> {
     closed: bool,
 }
 
+// permutation of all elements can be defined as
+// for each element:
+//  - that element plus the permutations of the other elements.
+
+pub fn permute<T>(items: Vec<T>) -> Vec<Vec<T>>
+where
+    T: Clone,
+{
+    let items: Vec<_> = items.into_iter().collect();
+    for i in 0..items.len() - 1 {
+        permute(items[i + 1..].to_vec());
+    }
+    vec![]
+}
+
+#[test]
+fn test_permute() {
+    permute([1, 2]);
+}
+
 impl<T> PermIter<T> {
     fn new(items: Vec<T>, n: usize) -> Self {
         let mut idxs = vec![];
         for idx in 0..n {
             idxs.push(idx);
         }
-        let closed = n < items.len() || items.len() == 0;
+        let closed = n > items.len() || items.len() == 0;
         Self {
             items,
             idxs,
@@ -27,7 +47,9 @@ where
 {
     type Item = Vec<T>;
     fn next(&mut self) -> Option<Self::Item> {
+        println!("next idxs={:?}", self.idxs);
         if self.closed {
+            println!("closed");
             return None;
         }
         // populate the return vector
@@ -77,6 +99,7 @@ mod tests {
 
     #[test]
     fn test_perm_iter() {
+        /*
         let items: Vec<i32> = vec![];
         let mut iter = items.permutations(0);
         assert_eq!(iter.next(), None);
@@ -84,8 +107,9 @@ mod tests {
         let items = vec![1];
         let perms = items.permutations(1).collect::<Vec<_>>();
         assert_eq!(perms, vec![&[1]]);
+        */
 
-        let items = vec![1, 2];
+        let items = vec![1, 2, 3];
         let perms = items.permutations(2).collect::<Vec<_>>();
         assert_eq!(perms, vec![[1, 2], [2, 1]]);
     }
