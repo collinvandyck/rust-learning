@@ -1,5 +1,11 @@
-use anyhow::Result;
-use std::{fmt::Debug, fs, path::Path};
+pub mod prelude {
+    pub use super::*;
+    pub use anyhow::anyhow;
+    pub use anyhow::Result;
+    pub use std::result::Result as StdResult;
+    pub use std::{fmt::Debug, fs, path::Path};
+}
+use prelude::*;
 
 pub fn file_to_lines(p: impl AsRef<Path>) -> Result<Vec<String>> {
     let s = fs::read_to_string(p.as_ref())?;

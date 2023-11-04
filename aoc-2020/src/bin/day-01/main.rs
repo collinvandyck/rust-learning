@@ -1,7 +1,4 @@
-use std::path::Path;
-use std::result::Result as StdResult;
-
-use anyhow::{anyhow, Result};
+use aoc_2020::prelude::*;
 
 fn main() -> Result<()> {
     let p1 = (
@@ -18,11 +15,11 @@ fn main() -> Result<()> {
 }
 
 fn run(path: impl AsRef<Path>, n: usize) -> Result<i64> {
-    let nums = aoc_2020::file_to_lines(path.as_ref())?
+    let nums = file_to_lines(path.as_ref())?
         .into_iter()
         .map(|s| s.parse::<i64>())
         .collect::<StdResult<Vec<_>, _>>()?;
-    let combos = aoc_2020::combinations(nums, n);
+    let combos = combinations(nums, n);
     let res: i64 = combos
         .into_iter()
         .find(|v| v.iter().sum::<i64>() == 2020)
