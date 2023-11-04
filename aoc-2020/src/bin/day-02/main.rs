@@ -50,7 +50,10 @@ impl Entry {
                 count >= self.min && count <= self.max
             }
             Policy::New => {
-                todo!()
+                let chars: Vec<_> = self.pass.chars().collect();
+                let one = chars.len() > (self.min - 1) && chars[self.min - 1] == self.ch;
+                let two = chars.len() > (self.max - 1) && chars[self.max - 1] == self.ch;
+                (one != two) && (one || two)
             }
         }
     }
