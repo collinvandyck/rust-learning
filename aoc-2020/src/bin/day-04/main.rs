@@ -74,10 +74,29 @@ impl Passport {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+enum Validator {
+    Year {
+        min: i32,
+        max: i32,
+    },
+    Height {
+        cm_min: i32,
+        cm_max: i32,
+        in_min: i32,
+        in_max: i32,
+    },
+    HairColor,
+    EyeColor,
+    PassportID,
+    None,
+}
+
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 struct Field {
     name: &'static str,
     optional: bool,
+    validator: Validator,
 }
 
 impl Field {
@@ -92,34 +111,56 @@ static FIELDS: Lazy<Vec<Field>> = Lazy::new(|| {
         Field {
             name: "byr",
             optional: false,
+            validator: Validator::Year {
+                min: 1920,
+                max: 2002,
+            },
         },
         Field {
             name: "iyr",
             optional: false,
+            validator: Validator::Year {
+                min: 2010,
+                max: 2020,
+            },
         },
         Field {
             name: "eyr",
             optional: false,
+            validator: Validator::Year {
+                min: 2020,
+                max: 2030,
+            },
         },
         Field {
             name: "hgt",
             optional: false,
+            validator: Validator::Height {
+                cm_min: 150,
+                cm_max: 193,
+                in_min: 59,
+                in_max: 76,
+            },
         },
         Field {
             name: "hcl",
             optional: false,
+            validator: Validator::HairColor,
         },
         Field {
             name: "ecl",
             optional: false,
+            validator: Validator::EyeColor,
         },
         Field {
             name: "pid",
             optional: false,
+            validator: Validator::PassportID,
         },
         Field {
             name: "cid",
             optional: true,
+            validator: Validator::None,
         },
     ]
 });
