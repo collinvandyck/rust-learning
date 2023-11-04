@@ -1,9 +1,19 @@
 use aoc_2020::prelude::*;
 
 fn main() -> Result<()> {
-    let passports = get_passports("example.txt")?;
-    println!("Got passports: {passports:?}");
+    let p1 = (
+        num_valid_passports("example.txt", Validation::Loose)?,
+        num_valid_passports("input.txt", Validation::Loose)?,
+    );
+    println!("p1: {p1:?}");
     Ok(())
+}
+
+fn num_valid_passports(p: impl AsRef<Path>, validation: Validation) -> Result<usize> {
+    Ok(get_passports(p)?
+        .into_iter()
+        .filter(|p| p.valid(validation))
+        .count())
 }
 
 fn get_passports(p: impl AsRef<Path>) -> Result<Vec<Passport>> {
@@ -22,7 +32,11 @@ fn get_passports(p: impl AsRef<Path>) -> Result<Vec<Passport>> {
         let map = line
             .split(" ")
             .map(|s| s.splitn(2, ":").collect::<Vec<_>>())
-            .map(|p| (p[0].to_string(), p[1].to_string()))
+            .map(|p| {
+                let field = Field::from(p[0]).unwrap();
+                let value = p[1].to_string();
+                (field, value)
+            })
             .collect::<HashMap<_, _>>();
         let passport = Passport::new(map);
         passports.push(passport);
@@ -30,13 +44,76 @@ fn get_passports(p: impl AsRef<Path>) -> Result<Vec<Passport>> {
     Ok(passports)
 }
 
+#[derive(Clone, Copy)]
+enum Validation {
+    Loose,
+    Strict,
+}
+
 #[derive(Debug, Clone)]
 struct Passport {
-    values: HashMap<String, String>,
+    values: HashMap<Field, String>,
 }
 
 impl Passport {
-    fn new(values: HashMap<String, String>) -> Self {
+    fn new(values: HashMap<Field, String>) -> Self {
         Self { values }
     }
+
+    fn valid(&self, validation: Validation) -> bool {
+        FIELDS
+            .iter()
+            .filter(|f| !f.optional)
+            .all(|f| self.values.get(f).is_some())
+    }
 }
+
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+struct Field {
+    name: &'static str,
+    optional: bool,
+}
+
+impl Field {
+    fn from(name: impl AsRef<str>) -> Option<Field> {
+        let name = name.as_ref();
+        FIELDS.iter().find(|f| f.name == name).copied()
+    }
+}
+
+static FIELDS: Lazy<Vec<Field>> = Lazy::new(|| {
+    vec![
+        Field {
+            name: "byr",
+            optional: false,
+        },
+        Field {
+            name: "iyr",
+            optional: false,
+        },
+        Field {
+            name: "eyr",
+            optional: false,
+        },
+        Field {
+            name: "hgt",
+            optional: false,
+        },
+        Field {
+            name: "hcl",
+            optional: false,
+        },
+        Field {
+            name: "ecl",
+            optional: false,
+        },
+        Field {
+            name: "pid",
+            optional: false,
+        },
+        Field {
+            name: "cid",
+            optional: true,
+        },
+    ]
+});
