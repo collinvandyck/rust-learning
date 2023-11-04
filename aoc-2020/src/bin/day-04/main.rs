@@ -69,7 +69,17 @@ impl Passport {
         let mut fields = FIELDS.iter().filter(|f| !f.optional);
         match validation {
             Validation::Loose => fields.all(|f| self.values.get(f).is_some()),
-            Validation::Strict => todo!(),
+            Validation::Strict => {
+                for field in fields {
+                    let Some(val) = self.values.get(field) else {
+                        return false;
+                    };
+                    if !field.validator.validate(val) {
+                        return false;
+                    }
+                }
+                true
+            }
         }
     }
 }
@@ -90,6 +100,12 @@ enum Validator {
     EyeColor,
     PassportID,
     None,
+}
+
+impl Validator {
+    fn validate(&self, val: &str) -> bool {
+        false
+    }
 }
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
