@@ -49,7 +49,7 @@ fn get_passports(p: impl AsRef<Path>) -> Result<Vec<Passport>> {
     Ok(passports)
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum Validation {
     Loose,
     Strict,
@@ -66,21 +66,18 @@ impl Passport {
     }
 
     fn valid(&self, validation: Validation) -> bool {
-        let mut fields = FIELDS.iter().filter(|f| !f.optional);
-        match validation {
-            Validation::Loose => fields.all(|f| self.values.get(f).is_some()),
-            Validation::Strict => {
-                for field in fields {
-                    let Some(val) = self.values.get(field) else {
-                        return false;
-                    };
-                    if !field.validator.validate(val) {
-                        return false;
-                    }
+        let required = FIELDS.iter().filter(|f| !f.optional);
+        for field in required {
+            let Some(val) = self.values.get(field) else {
+                return false;
+            };
+            if validation == Validation::Strict {
+                if !field.validator.validate(val) {
+                    return false;
                 }
-                true
             }
         }
+        true
     }
 }
 
