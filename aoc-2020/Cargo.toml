@@ -1,9 +1,10 @@
-[workspace]
-resolver = "2"
-members = [ 
-	"day-01",
-	"utils",
-]
+[package]
+name = "aoc-2020"
+version = "0.1.0"
+edition = "2021"
 
-[workspace.dependencies]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
 anyhow = "1.0.75"
+thiserror = "1.0.50"
