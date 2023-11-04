@@ -6,6 +6,11 @@ fn main() -> Result<()> {
         num_valid_passports("input.txt", Validation::Loose)?,
     );
     println!("p1: {p1:?}");
+    let p2 = (
+        num_valid_passports("example.txt", Validation::Strict)?,
+        num_valid_passports("input.txt", Validation::Strict)?,
+    );
+    println!("p2: {p2:?}");
     Ok(())
 }
 
@@ -61,10 +66,11 @@ impl Passport {
     }
 
     fn valid(&self, validation: Validation) -> bool {
-        FIELDS
-            .iter()
-            .filter(|f| !f.optional)
-            .all(|f| self.values.get(f).is_some())
+        let mut fields = FIELDS.iter().filter(|f| !f.optional);
+        match validation {
+            Validation::Loose => fields.all(|f| self.values.get(f).is_some()),
+            Validation::Strict => todo!(),
+        }
     }
 }
 
