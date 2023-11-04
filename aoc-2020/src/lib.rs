@@ -48,18 +48,7 @@ where
 
 #[test]
 fn test_combinations() {
-    /*
-    let res = combinations::<i32>(&[], 0);
-    assert!(res.is_empty());
-    let res = combinations(&[1], 0);
-    assert!(res.is_empty());
-    let res = combinations(&[1], 1);
-    assert_eq!(res, &[[&1]]);
-    let res = combinations(&[1, 2, 3], 1);
-    assert_eq!(res, &[[&1], [&2], [&3]]);
-    let res = combinations(&[1, 2, 3], 2);
-    assert_eq!(res, &[[&1, &2], [&1, &3], [&2, &3]]);
-    */
+    assert_eq!(combinations([1, 2, 3], 0), vec![vec![]],);
     assert_eq!(
         combinations([1, 2, 3], 2),
         vec![vec![1, 2], vec![1, 3], vec![2, 3,]]
