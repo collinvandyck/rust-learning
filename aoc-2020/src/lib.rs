@@ -5,21 +5,20 @@ pub mod prelude {
     pub use anyhow::Result;
     pub use once_cell::sync::Lazy;
     pub use regex::Regex;
+    pub use std::collections::HashMap;
     pub use std::path::PathBuf;
     pub use std::result::Result as StdResult;
     pub use std::str::FromStr;
     pub use std::{fmt::Debug, fs, path::Path};
 }
+use std::{fs::File, io::BufReader};
+
 use prelude::*;
 
 pub fn file_to_lines(p: impl AsRef<Path>) -> Result<Vec<String>> {
-    let s = fs::read_to_string(p.as_ref())?;
-    let lines = s
-        .split("\n")
-        .map(ToString::to_string)
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<_>>();
-    Ok(lines)
+    use std::io::BufRead;
+    let reader = BufReader::new(File::open(p.as_ref())?);
+    Ok(reader.lines().collect::<StdResult<Vec<_>, _>>()?)
 }
 
 pub fn combinations<T, I>(items: I, n: usize) -> Vec<Vec<T>>
