@@ -2,8 +2,11 @@ pub mod prelude {
     pub use super::*;
     pub use anyhow::anyhow;
     pub use anyhow::Result;
+    pub use once_cell::sync::Lazy;
+    pub use regex::Regex;
     pub use std::path::PathBuf;
     pub use std::result::Result as StdResult;
+    pub use std::str::FromStr;
     pub use std::{fmt::Debug, fs, path::Path};
 }
 use prelude::*;
