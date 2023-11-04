@@ -1,6 +1,5 @@
-use std::{fmt::Debug, fs, path::Path};
-
 use anyhow::Result;
+use std::{fmt::Debug, fs, path::Path};
 
 pub fn file_to_lines(p: impl AsRef<Path>) -> Result<Vec<String>> {
     let s = fs::read_to_string(p.as_ref())?;
@@ -21,23 +20,18 @@ where
     do_combinations(items, n)
 }
 
-// to get combinations where n = 2 and items = a,b,c,d
-// a b, a, c, a d, b c, b d, c d
 fn do_combinations<T>(items: Vec<T>, n: usize) -> Vec<Vec<T>>
 where
     T: Clone + Debug + Sized,
 {
-    println!("combos items={items:?} n={n}");
     if items.len() < n || n == 0 {
         return vec![vec![]];
     }
     let mut res = vec![];
     for i in 0..(items.len() - n + 1) {
-        println!("i={i}");
         let first = items[i].clone();
         let rest = items[i + 1..].to_vec().clone();
         let combos = do_combinations(rest, n - 1);
-        println!("  combos={combos:?}");
         for mut combo in combos {
             combo.insert(0, first.clone());
             res.push(combo);
@@ -48,6 +42,7 @@ where
 
 #[test]
 fn test_combinations() {
+    assert_eq!(combinations(vec![0_i32; 0], 0), vec![vec![]],);
     assert_eq!(combinations([1, 2, 3], 0), vec![vec![]],);
     assert_eq!(
         combinations([1, 2, 3], 2),
