@@ -6,20 +6,21 @@ use regex::Regex;
 
 fn main() -> Result<()> {
     let p1 = (
-        num_valid_pws("src/bin/day-02/example.txt", Policy::Old)?,
-        num_valid_pws("src/bin/day-02/input.txt", Policy::Old)?,
+        num_valid_pws("example.txt", Policy::Old)?,
+        num_valid_pws("input.txt", Policy::Old)?,
     );
     println!("p1={p1:?}");
     let p2 = (
-        num_valid_pws("src/bin/day-02/example.txt", Policy::New)?,
-        num_valid_pws("src/bin/day-02/input.txt", Policy::New)?,
+        num_valid_pws("example.txt", Policy::New)?,
+        num_valid_pws("input.txt", Policy::New)?,
     );
     println!("p2={p2:?}");
     Ok(())
 }
 
 fn num_valid_pws(p: impl AsRef<Path>, policy: Policy) -> Result<usize> {
-    let num = file_to_lines(p.as_ref())?
+    let p = PathBuf::from(file!()).parent().unwrap().join(p.as_ref());
+    let num = file_to_lines(p)?
         .into_iter()
         .map(|s| s.parse::<Entry>())
         .collect::<StdResult<Vec<_>, _>>()?

@@ -2,6 +2,7 @@ pub mod prelude {
     pub use super::*;
     pub use anyhow::anyhow;
     pub use anyhow::Result;
+    pub use std::path::PathBuf;
     pub use std::result::Result as StdResult;
     pub use std::{fmt::Debug, fs, path::Path};
 }
