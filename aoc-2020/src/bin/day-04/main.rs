@@ -104,7 +104,7 @@ enum Validator {
 
 impl Validator {
     fn validate(&self, val: &str) -> bool {
-        false
+        todo!()
     }
 }
 
