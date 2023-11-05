@@ -12,7 +12,7 @@ fn main() -> Result<()> {
 
 fn bags_that_can_contain(p: impl AsRef<Path>, bag: Bag) -> Result<usize> {
     let rules = build_rules(p)?;
-    let bags = rules.bags_that_can_contain(&bag);
+    let bags = rules.bags_that_can_contain(bag.clone());
     Ok(bags.len())
 }
 
@@ -132,7 +132,8 @@ impl Rules {
         res
     }
 
-    fn bags_that_can_contain(&self, bag: &Bag) -> Vec<Bag> {
+    fn bags_that_can_contain(&self, bag: impl Into<Bag>) -> Vec<Bag> {
+        let bag = bag.into();
         let mut lookup: HashMap<Bag, HashSet<Bag>> = HashMap::default();
         for rule in &self.rules {
             let mut entry = lookup
@@ -212,6 +213,18 @@ mod tests {
                 .contains(4, "muted yellow"),
             Rule::new("bright white").contains(1, "shiny gold"),
         ]);
+        assert_eq!(
+            rules.bags_that_can_contain("shiny gold"),
+            bags(["bright white"])
+        );
+    }
+
+    fn bags<I, T>(items: I) -> Vec<Bag>
+    where
+        I: IntoIterator<Item = T>,
+        T: Into<Bag>,
+    {
+        items.into_iter().map(|f| f.into()).collect::<Vec<_>>()
     }
 
     #[test]
