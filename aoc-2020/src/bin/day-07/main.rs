@@ -144,13 +144,7 @@ mod tests {
         assert_eq!(rule.map(|r| r.contains.len()), Some(2));
         assert_eq!(
             rule.map(|r| r.contains[0].clone()),
-            Some((
-                5,
-                Bag {
-                    shade: Shade(String::from("faded")),
-                    hue: Hue(String::from("blue")),
-                }
-            ))
+            Some((5, Bag::from(("faded", "blue"))))
         );
         assert_eq!(
             rule.map(|r| r.contains[1].clone()),
