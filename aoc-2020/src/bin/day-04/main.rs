@@ -1,5 +1,27 @@
 use aoc_2020::prelude::*;
 
+#[test]
+fn test_invalid() {
+    let passports = get_passports("invalid.txt").unwrap();
+    for passport in passports {
+        assert!(
+            !passport.valid(Validation::Strict),
+            "the passport {passport:?} should have been invalid"
+        )
+    }
+}
+
+#[test]
+fn test_valid() {
+    let passports = get_passports("valid.txt").unwrap();
+    for passport in passports {
+        assert!(
+            passport.valid(Validation::Strict),
+            "the passport {passport:?} should have been valid"
+        )
+    }
+}
+
 fn main() -> Result<()> {
     let p1 = (
         num_valid_passports("example.txt", Validation::Loose)?,
@@ -101,7 +123,60 @@ enum Validator {
 
 impl Validator {
     fn validate(&self, val: &str) -> bool {
-        todo!()
+        match self {
+            Validator::Year { min, max } => {
+                let chs: Vec<_> = val.chars().collect();
+                if chs.len() != 4 {
+                    return false;
+                }
+                let Ok(date) = val.parse::<i32>() else {
+                    return false;
+                };
+                date >= *min && date <= *max
+            }
+            Validator::Height {
+                cm_min,
+                cm_max,
+                in_min,
+                in_max,
+            } => {
+                if !val.ends_with("in") && !val.ends_with("cm") {
+                    return false;
+                }
+                let Ok(amt) = &val[0..val.len() - 2].parse::<i32>() else {
+                    return false;
+                };
+                let unit = &val[val.len() - 2..];
+                match unit {
+                    "in" => amt >= in_min && amt <= in_max,
+                    "cm" => amt >= cm_min && amt <= cm_max,
+                    _ => unreachable!(),
+                }
+            }
+            Validator::HairColor => {
+                if !val.starts_with('#') {
+                    return false;
+                }
+                let rest = &val[1..];
+                if rest.len() != 6 {
+                    return false;
+                }
+                rest.chars()
+                    .all(|c| c.is_ascii_hexdigit() && (c.is_digit(10) || c.is_lowercase()))
+            }
+            Validator::EyeColor => {
+                static COLORS: Lazy<Vec<&'static str>> =
+                    Lazy::new(|| vec!["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]);
+                COLORS.contains(&val)
+            }
+            Validator::PassportID => {
+                if val.len() != 9 {
+                    return false;
+                }
+                val.chars().all(|c| c.is_digit(10))
+            }
+            Validator::None => true,
+        }
     }
 }
 
