@@ -1,5 +1,6 @@
 #![allow(dead_code, unused)]
 use aoc_2020::prelude::*;
+use tracing::debug;
 
 fn main() -> Result<()> {
     let p1 = (bags_that_can_contain(
@@ -133,6 +134,7 @@ impl Rules {
     }
 
     fn bags_that_can_contain(&self, bag: impl Into<Bag>) -> Vec<Bag> {
+        debug!("Starting...");
         let bag = bag.into();
         let mut lookup: HashMap<Bag, HashSet<Bag>> = HashMap::default();
         for rule in &self.rules {
@@ -201,8 +203,10 @@ impl FromStr for Rule {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing_test::traced_test;
 
     #[test]
+    #[traced_test]
     fn test_bags_can_contain() {
         let mut rules = Rules::new([
             Rule::new("light red")
