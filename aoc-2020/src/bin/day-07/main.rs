@@ -15,12 +15,13 @@ fn bags_that_can_contain(p: impl AsRef<Path>, bag: Bag) -> Result<usize> {
     todo!()
 }
 
-fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
+fn build_rules(p: impl AsRef<Path>) -> Result<Rules> {
     let p = PathBuf::from(file!()).parent().unwrap().join(p.as_ref());
-    Ok(file_to_lines(p)?
+    let rules = file_to_lines(p)?
         .into_iter()
         .map(|s| s.parse::<Rule>())
-        .collect::<StdResult<Vec<_>, _>>()?)
+        .collect::<StdResult<Vec<_>, _>>()?;
+    Ok(Rules::new(rules))
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -77,6 +78,31 @@ where
             shade: shade.into(),
             hue: hue.into(),
         }
+    }
+}
+
+#[derive(Default)]
+struct Rules {
+    rules: Vec<Rule>,
+}
+
+impl std::ops::Deref for Rules {
+    type Target = Vec<Rule>;
+    fn deref(&self) -> &Self::Target {
+        &self.rules
+    }
+}
+
+impl Rules {
+    fn new<I>(rules: I) -> Self
+    where
+        I: IntoIterator<Item = Rule>,
+    {
+        let mut res = Self::default();
+        for rule in rules.into_iter() {
+            res.rules.push(rule);
+        }
+        res
     }
 }
 
