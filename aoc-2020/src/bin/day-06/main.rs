@@ -63,6 +63,10 @@ impl Group {
     fn uniq_answers(&self) -> usize {
         match self.mode {
             Mode::Any => {
+                self.votes.clone().into_iter().reduce(|mut f, b| {
+                    f.extend(b);
+                    f
+                });
                 let mut acc: HashSet<char> = HashSet::default();
                 let stuff: Vec<HashSet<char>> = self.votes.clone();
                 for stuff in stuff {
