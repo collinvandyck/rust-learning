@@ -2,13 +2,17 @@
 use aoc_2020::prelude::*;
 
 fn main() -> Result<()> {
+    let p1 = (bags_that_can_contain(
+        "example.txt",
+        Bag::from(("shiny", "gold")),
+    )?,);
+    println!("p1={p1:?}");
     Ok(())
 }
 
-fn process(p: impl AsRef<Path>) -> Result<()> {
-    let p = PathBuf::from(file!()).parent().unwrap().join(p.as_ref());
-    let lines = file_to_lines(p)?;
-    Ok(())
+fn bags_that_can_contain(p: impl AsRef<Path>, bag: Bag) -> Result<usize> {
+    let rules = build_rules(p)?;
+    todo!()
 }
 
 fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
