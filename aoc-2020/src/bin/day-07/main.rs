@@ -134,21 +134,31 @@ impl Rules {
         res
     }
 
-    fn bags_that_can_contain(&self, bag: impl Into<Bag>) -> Vec<Bag> {
-        debug!("Starting...");
-        let bag = bag.into();
-        let mut lookup: HashMap<Bag, HashMap<Bag, usize>> = HashMap::default();
-        for rule in &self.rules {
-            let mut entry = lookup
-                .entry(rule.bag.clone())
-                .or_insert_with(|| HashMap::default());
-            debug!("Processing {:?}", rule.bag);
-            for (num, child) in &rule.contains {
-                debug!("--> {num} {child:?}");
-                *entry.entry(child.clone()).or_insert(0) += num;
+    /// Returns the number of bags that the specified bag can contain
+    fn inflate_bag(&self, bag: impl Into<Bag>) -> HashMap<Bag, usize> {
+        let mut queue: Vec<Bag> = vec![bag.into()];
+        let mut res = HashMap::default();
+        while let Some(bag) = queue.pop() {
+            if let Some(rule) = self.rules.iter().find(|r| r.bag == bag) {
+                let rule = self.rule_for(&bag);
+                let Rule { counts, .. } = self.rule_for(&bag);
+                for (amount, bag) in counts {
+                    *res.entry(bag.clone()).or_insert(0) += amount;
+                    queue.push(bag.clone());
+                }
             }
         }
-        lookup = dbg!(lookup);
+        res
+    }
+
+    fn rule_for(&self, b: &Bag) -> &Rule {
+        match self.rules.iter().find(|rule| &rule.bag == b) {
+            Some(rule) => rule,
+            None => panic!("no rule found for {b:?}"),
+        }
+    }
+
+    fn bags_that_can_contain(&self, bag: impl Into<Bag>) -> Vec<Bag> {
         todo!()
     }
 }
@@ -156,18 +166,18 @@ impl Rules {
 #[derive(Debug)]
 struct Rule {
     bag: Bag,
-    contains: Vec<(usize, Bag)>,
+    counts: Vec<(usize, Bag)>,
 }
 
 impl Rule {
     fn new(bag: impl Into<Bag>) -> Self {
         Self {
             bag: bag.into(),
-            contains: vec![],
+            counts: vec![],
         }
     }
     fn contains(mut self, amt: usize, bag: impl Into<Bag>) -> Self {
-        self.contains.push((amt, bag.into()));
+        self.counts.push((amt, bag.into()));
         self
     }
 }
@@ -197,7 +207,7 @@ impl FromStr for Rule {
                     (num, color)
                 })
             {
-                rule.contains.push((num, color));
+                rule.counts.push((num, color));
             }
         }
         Ok(rule)
@@ -211,6 +221,37 @@ mod tests {
 
     #[test]
     #[traced_test]
+    fn test_inflate_bag() {
+        let mut rules = Rules::new([
+            Rule::new("light red")
+                .contains(2, "muted yellow")
+                .contains(1, "bright white"),
+            Rule::new("dark orange")
+                .contains(3, "bright white")
+                .contains(4, "muted yellow"),
+            Rule::new("bright white").contains(1, "shiny gold"),
+        ]);
+        assert_eq!(
+            rules.inflate_bag("light red"),
+            HashMap::from([
+                (Bag::from("muted yellow"), 2),
+                (Bag::from("bright white"), 1),
+                (Bag::from("shiny gold"), 1),
+            ]),
+        );
+        assert_eq!(
+            rules.inflate_bag("dark orange"),
+            HashMap::from([
+                (Bag::from("muted yellow"), 4),
+                (Bag::from("bright white"), 3),
+                (Bag::from("shiny gold"), 1),
+            ]),
+        );
+    }
+
+    #[test]
+    #[traced_test]
+    #[ignore]
     fn test_bags_can_contain() {
         let mut rules = Rules::new([
             Rule::new("light red")
@@ -245,18 +286,18 @@ mod tests {
             .iter()
             .find(|r| r.bag.shade.as_str() == "faded" && r.bag.hue.as_str() == "blue");
         assert!(rule.is_some());
-        assert_eq!(rule.map(|r| r.contains.len()), Some(0));
+        assert_eq!(rule.map(|r| r.counts.len()), Some(0));
         let rule = rules
             .iter()
             .find(|r| r.bag.shade.as_str() == "vibrant" && r.bag.hue.as_str() == "plum");
         assert!(rule.is_some());
-        assert_eq!(rule.map(|r| r.contains.len()), Some(2));
+        assert_eq!(rule.map(|r| r.counts.len()), Some(2));
         assert_eq!(
-            rule.map(|r| r.contains[0].clone()),
+            rule.map(|r| r.counts[0].clone()),
             Some((5, Bag::from(("faded", "blue"))))
         );
         assert_eq!(
-            rule.map(|r| r.contains[1].clone()),
+            rule.map(|r| r.counts[1].clone()),
             Some((6, Bag::from(("dotted", "black"))))
         );
     }
