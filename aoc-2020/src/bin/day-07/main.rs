@@ -12,7 +12,8 @@ fn main() -> Result<()> {
 
 fn bags_that_can_contain(p: impl AsRef<Path>, bag: Bag) -> Result<usize> {
     let rules = build_rules(p)?;
-    todo!()
+    let bags = rules.bags_that_can_contain(&bag);
+    Ok(bags.len())
 }
 
 fn build_rules(p: impl AsRef<Path>) -> Result<Rules> {
@@ -103,6 +104,10 @@ impl Rules {
             res.rules.push(rule);
         }
         res
+    }
+
+    fn bags_that_can_contain(&self, bag: &Bag) -> Vec<Bag> {
+        todo!()
     }
 }
 
