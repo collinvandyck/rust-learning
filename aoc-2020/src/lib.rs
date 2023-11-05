@@ -6,14 +6,54 @@ pub mod prelude {
     pub use once_cell::sync::Lazy;
     pub use regex::Regex;
     pub use std::collections::HashMap;
+    pub use std::collections::HashSet;
     pub use std::path::PathBuf;
     pub use std::result::Result as StdResult;
     pub use std::str::FromStr;
     pub use std::{fmt::Debug, fs, path::Path};
 }
+use prelude::*;
 use std::{fs::File, io::BufReader};
 
-use prelude::*;
+pub trait VecExt {
+    type Item;
+    fn grouped<F>(self, f: F) -> Vec<Vec<Self::Item>>
+    where
+        F: Fn(&Self::Item) -> bool;
+}
+
+impl<T> VecExt for Vec<T> {
+    type Item = T;
+    fn grouped<F>(self, f: F) -> Vec<Vec<Self::Item>>
+    where
+        F: Fn(&Self::Item) -> bool,
+    {
+        groups(self, f)
+    }
+}
+
+pub fn groups<T, I, F>(items: I, test: F) -> Vec<Vec<T>>
+where
+    I: IntoIterator<Item = T>,
+    F: Fn(&T) -> bool,
+{
+    let mut res = vec![];
+    let mut this = vec![];
+    for item in items {
+        if test(&item) {
+            if !this.is_empty() {
+                res.push(this);
+                this = vec![];
+            }
+        } else {
+            this.push(item);
+        }
+    }
+    if !this.is_empty() {
+        res.push(this);
+    }
+    res
+}
 
 pub fn file_to_lines(p: impl AsRef<Path>) -> Result<Vec<String>> {
     use std::io::BufRead;
