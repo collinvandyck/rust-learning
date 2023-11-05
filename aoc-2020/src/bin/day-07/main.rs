@@ -11,7 +11,7 @@ fn process(p: impl AsRef<Path>) -> Result<()> {
     Ok(())
 }
 
-fn rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
+fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
     let p = PathBuf::from(file!()).parent().unwrap().join(p.as_ref());
     Ok(file_to_lines(p)?
         .into_iter()
@@ -99,9 +99,9 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        // vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-        // faded blue bags contain no other bags.
-        let rules = rules("example.txt").unwrap();
+        let rules = build_rules("input.txt").unwrap();
+        assert_eq!(rules.len(), 594);
+        let rules = build_rules("example.txt").unwrap();
         assert_eq!(rules.len(), 9);
         let rule = rules
             .iter()
