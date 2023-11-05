@@ -75,6 +75,17 @@ impl Debug for Bag {
     }
 }
 
+trait IntoBag {
+    fn bag(&self) -> Bag;
+}
+
+impl IntoBag for &'static str {
+    fn bag(&self) -> Bag {
+        let parts = self.split(" ").collect::<Vec<_>>();
+        Bag::from((parts[0], parts[1]))
+    }
+}
+
 impl<S, H> From<(S, H)> for Bag
 where
     S: Into<Shade>,
@@ -85,6 +96,15 @@ where
             shade: shade.into(),
             hue: hue.into(),
         }
+    }
+}
+
+impl<B> From<B> for Bag
+where
+    B: IntoBag,
+{
+    fn from(value: B) -> Self {
+        value.bag()
     }
 }
 
@@ -133,11 +153,15 @@ struct Rule {
 }
 
 impl Rule {
-    fn new(color: Bag) -> Self {
+    fn new(bag: impl Into<Bag>) -> Self {
         Self {
-            bag: color,
+            bag: bag.into(),
             contains: vec![],
         }
+    }
+    fn contains(mut self, amt: usize, bag: impl Into<Bag>) -> Self {
+        self.contains.push((amt, bag.into()));
+        self
     }
 }
 
@@ -176,6 +200,13 @@ impl FromStr for Rule {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn test_bags_can_contain() {
+        let bag: Bag = Bag::from("light red");
+        let mut rules: Rules = Rules::new([Rule::new("light red")
+            .contains(2, "muted yellow")
+            .contains(1, "bright white")]);
+    }
 
     #[test]
     fn test_parse() {
