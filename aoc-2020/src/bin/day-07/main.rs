@@ -63,10 +63,16 @@ impl std::ops::Deref for Shade {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 struct Bag {
     shade: Shade,
     hue: Hue,
+}
+
+impl Debug for Bag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("{} {}", self.shade.0, self.hue.0))
+    }
 }
 
 impl<S, H> From<(S, H)> for Bag
@@ -107,6 +113,16 @@ impl Rules {
     }
 
     fn bags_that_can_contain(&self, bag: &Bag) -> Vec<Bag> {
+        let mut lookup: HashMap<Bag, HashSet<Bag>> = HashMap::default();
+        for rule in &self.rules {
+            let mut entry = lookup
+                .entry(rule.bag.clone())
+                .or_insert_with(|| HashSet::default());
+            for (_num, child) in &rule.contains {
+                entry.insert(child.clone());
+            }
+        }
+        lookup = dbg!(lookup);
         todo!()
     }
 }
