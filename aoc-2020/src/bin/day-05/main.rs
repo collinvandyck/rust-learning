@@ -6,6 +6,26 @@ fn main() -> Result<()> {
         .map(|a| a.seat_id())
         .max();
     println!("p1={p1:?}");
+    // part two -- find the missing seat.
+    // lookup is a map of row to (col, assignment).
+    let mut lookup: HashMap<usize, Vec<(usize, Assignment)>> = HashMap::default();
+    for seat in get_assignments("input.txt")? {
+        let row = seat.row();
+        let col = seat.col();
+        let seats = lookup.entry(row).or_insert(vec![]);
+        seats.push((col, seat));
+    }
+    for e in lookup.into_iter().filter(|e| e.1.len() == NUM_COLS - 1) {
+        let seats = e.1;
+        for col in 0..NUM_COLS {
+            if seats.iter().find(|p| p.0 == col).is_none() {
+                let row = e.0;
+                println!("p2 row={row}, col={col}");
+                let seat_id = row * 8 + col;
+                println!("seat id is {seat_id}");
+            }
+        }
+    }
     Ok(())
 }
 
@@ -17,6 +37,7 @@ fn get_assignments(p: impl AsRef<Path>) -> Result<Vec<Assignment>> {
 static NUM_ROWS: usize = 128;
 static NUM_COLS: usize = 8;
 
+#[derive(Clone)]
 struct Assignment(String);
 
 impl Assignment {
