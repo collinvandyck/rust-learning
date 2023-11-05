@@ -23,7 +23,7 @@ fn count_uniq_answers(p: impl AsRef<Path>, mode: Mode) -> Result<usize> {
 
 fn build_groups(p: impl AsRef<Path>, mode: Mode) -> Result<Vec<Group>> {
     let p = PathBuf::from(file!()).parent().unwrap().join(p.as_ref());
-    Ok(file_to_lines(p)?
+    let groups = file_to_lines(p)?
         .grouped(|l| l.is_empty())
         .into_iter()
         .map(|strings: Vec<String>| {
@@ -33,7 +33,9 @@ fn build_groups(p: impl AsRef<Path>, mode: Mode) -> Result<Vec<Group>> {
             }
             group
         })
-        .collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+    println!("Got {} groups", groups.len());
+    Ok(groups)
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -56,11 +58,12 @@ impl Group {
         }
     }
 
-    fn push<I>(&mut self, chars: I)
+    fn push<I>(&mut self, chars: I) -> &mut Self
     where
         I: IntoIterator<Item = char>,
     {
         self.votes.push(chars.into_iter().collect());
+        self
     }
 
     fn uniq_answers(&self) -> usize {
@@ -75,7 +78,28 @@ impl Group {
                 })
                 .map(|v| v.len())
                 .unwrap_or_default(),
-            Mode::All => todo!(),
+            Mode::All => {
+                let acc: HashSet<char> = HashSet::default();
+                self.votes
+                    .clone()
+                    .into_iter()
+                    .fold(acc, |acc, f| {
+                        acc.intersection(&f).copied().collect::<HashSet<_>>()
+                    })
+                    .len()
+            }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mode_all() {
+        let mut g1 = Group::new(Mode::All);
+        g1.push("abc".chars()).push("bc".chars()).push("ac".chars());
+        assert_eq!(g1.uniq_answers(), 1);
     }
 }
