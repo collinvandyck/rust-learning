@@ -1,6 +1,7 @@
 #![allow(dead_code, unused)]
 use aoc_2020::prelude::*;
 use tracing::debug;
+use tracing_subscriber::field::debug;
 
 fn main() -> Result<()> {
     let p1 = (bags_that_can_contain(
@@ -136,13 +137,15 @@ impl Rules {
     fn bags_that_can_contain(&self, bag: impl Into<Bag>) -> Vec<Bag> {
         debug!("Starting...");
         let bag = bag.into();
-        let mut lookup: HashMap<Bag, HashSet<Bag>> = HashMap::default();
+        let mut lookup: HashMap<Bag, HashMap<Bag, usize>> = HashMap::default();
         for rule in &self.rules {
             let mut entry = lookup
                 .entry(rule.bag.clone())
-                .or_insert_with(|| HashSet::default());
-            for (_num, child) in &rule.contains {
-                entry.insert(child.clone());
+                .or_insert_with(|| HashMap::default());
+            debug!("Processing {:?}", rule.bag);
+            for (num, child) in &rule.contains {
+                debug!("--> {num} {child:?}");
+                *entry.entry(child.clone()).or_insert(0) += num;
             }
         }
         lookup = dbg!(lookup);
@@ -150,6 +153,7 @@ impl Rules {
     }
 }
 
+#[derive(Debug)]
 struct Rule {
     bag: Bag,
     contains: Vec<(usize, Bag)>,
@@ -171,9 +175,9 @@ impl Rule {
 impl FromStr for Rule {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> StdResult<Self, Self::Err> {
-        static RE1: Lazy<Regex> =
+        static RE: Lazy<Regex> =
             Lazy::new(|| Regex::new(r"^(\w+) (\w+) bags contain (.*)$").unwrap());
-        let caps = RE1
+        let caps = RE
             .captures(s)
             .ok_or_else(|| anyhow!("first regex failed"))?;
         let shade = Shade(caps.get(1).unwrap().as_str().to_string());
