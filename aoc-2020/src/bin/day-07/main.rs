@@ -113,5 +113,25 @@ mod tests {
             .find(|r| r.color.shade.as_str() == "vibrant" && r.color.hue.as_str() == "plum");
         assert!(rule.is_some());
         assert_eq!(rule.map(|r| r.contains.len()), Some(2));
+        assert_eq!(
+            rule.map(|r| r.contains[0].clone()),
+            Some((
+                5,
+                Color {
+                    shade: Shade(String::from("faded")),
+                    hue: Hue(String::from("blue")),
+                }
+            ))
+        );
+        assert_eq!(
+            rule.map(|r| r.contains[1].clone()),
+            Some((
+                6,
+                Color {
+                    shade: Shade(String::from("dotted")),
+                    hue: Hue(String::from("black")),
+                }
+            ))
+        );
     }
 }
