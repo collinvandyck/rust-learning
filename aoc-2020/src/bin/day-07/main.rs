@@ -22,6 +22,15 @@ fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Hue(String);
 
+impl<V> From<V> for Hue
+where
+    V: AsRef<str>,
+{
+    fn from(value: V) -> Self {
+        Self(value.as_ref().to_string())
+    }
+}
+
 impl std::ops::Deref for Hue {
     type Target = String;
     fn deref(&self) -> &Self::Target {
@@ -32,6 +41,15 @@ impl std::ops::Deref for Hue {
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Shade(String);
 
+impl<V> From<V> for Shade
+where
+    V: AsRef<str>,
+{
+    fn from(value: V) -> Self {
+        Self(value.as_ref().to_string())
+    }
+}
+
 impl std::ops::Deref for Shade {
     type Target = String;
     fn deref(&self) -> &Self::Target {
@@ -40,20 +58,33 @@ impl std::ops::Deref for Shade {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-struct Color {
+struct Bag {
     shade: Shade,
     hue: Hue,
 }
 
+impl<S, H> From<(S, H)> for Bag
+where
+    S: Into<Shade>,
+    H: Into<Hue>,
+{
+    fn from((shade, hue): (S, H)) -> Self {
+        Self {
+            shade: shade.into(),
+            hue: hue.into(),
+        }
+    }
+}
+
 struct Rule {
-    color: Color,
-    contains: Vec<(usize, Color)>,
+    bag: Bag,
+    contains: Vec<(usize, Bag)>,
 }
 
 impl Rule {
-    fn new(color: Color) -> Self {
+    fn new(color: Bag) -> Self {
         Self {
-            color,
+            bag: color,
             contains: vec![],
         }
     }
@@ -69,8 +100,8 @@ impl FromStr for Rule {
             .ok_or_else(|| anyhow!("first regex failed"))?;
         let shade = Shade(caps.get(1).unwrap().as_str().to_string());
         let hue = Hue(caps.get(2).unwrap().as_str().to_string());
-        let color = Color { shade, hue };
-        let mut rule = Rule::new(color);
+        let bag = Bag { shade, hue };
+        let mut rule = Rule::new(bag);
         let res = caps.get(3).unwrap().as_str();
         if res != "no other bags." {
             for (num, color) in res
@@ -80,7 +111,7 @@ impl FromStr for Rule {
                     let num = p[0].parse::<usize>().unwrap();
                     let shade = Shade(p[1].to_string());
                     let hue = Hue(p[2].to_string());
-                    let color = Color { shade, hue };
+                    let color = Bag { shade, hue };
                     (num, color)
                 })
             {
@@ -90,8 +121,6 @@ impl FromStr for Rule {
         Ok(rule)
     }
 }
-
-struct Bag {}
 
 #[cfg(test)]
 mod tests {
@@ -105,19 +134,19 @@ mod tests {
         assert_eq!(rules.len(), 9);
         let rule = rules
             .iter()
-            .find(|r| r.color.shade.as_str() == "faded" && r.color.hue.as_str() == "blue");
+            .find(|r| r.bag.shade.as_str() == "faded" && r.bag.hue.as_str() == "blue");
         assert!(rule.is_some());
         assert_eq!(rule.map(|r| r.contains.len()), Some(0));
         let rule = rules
             .iter()
-            .find(|r| r.color.shade.as_str() == "vibrant" && r.color.hue.as_str() == "plum");
+            .find(|r| r.bag.shade.as_str() == "vibrant" && r.bag.hue.as_str() == "plum");
         assert!(rule.is_some());
         assert_eq!(rule.map(|r| r.contains.len()), Some(2));
         assert_eq!(
             rule.map(|r| r.contains[0].clone()),
             Some((
                 5,
-                Color {
+                Bag {
                     shade: Shade(String::from("faded")),
                     hue: Hue(String::from("blue")),
                 }
@@ -125,13 +154,7 @@ mod tests {
         );
         assert_eq!(
             rule.map(|r| r.contains[1].clone()),
-            Some((
-                6,
-                Color {
-                    shade: Shade(String::from("dotted")),
-                    hue: Hue(String::from("black")),
-                }
-            ))
+            Some((6, Bag::from(("dotted", "black"))))
         );
     }
 }
