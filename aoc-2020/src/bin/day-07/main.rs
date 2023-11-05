@@ -22,8 +22,22 @@ fn rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Hue(String);
 
+impl std::ops::Deref for Hue {
+    type Target = String;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Shade(String);
+
+impl std::ops::Deref for Shade {
+    type Target = String;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Color {
@@ -47,8 +61,6 @@ impl Rule {
 
 impl FromStr for Rule {
     type Err = anyhow::Error;
-    // vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-    // faded blue bags contain no other bags.
     fn from_str(s: &str) -> StdResult<Self, Self::Err> {
         static RE1: Lazy<Regex> =
             Lazy::new(|| Regex::new(r"^(\w+) (\w+) bags contain (.*)$").unwrap());
@@ -87,7 +99,19 @@ mod tests {
 
     #[test]
     fn test_parse() {
+        // vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+        // faded blue bags contain no other bags.
         let rules = rules("example.txt").unwrap();
         assert_eq!(rules.len(), 9);
+        let rule = rules
+            .iter()
+            .find(|r| r.color.shade.as_str() == "faded" && r.color.hue.as_str() == "blue");
+        assert!(rule.is_some());
+        assert_eq!(rule.map(|r| r.contains.len()), Some(0));
+        let rule = rules
+            .iter()
+            .find(|r| r.color.shade.as_str() == "vibrant" && r.color.hue.as_str() == "plum");
+        assert!(rule.is_some());
+        assert_eq!(rule.map(|r| r.contains.len()), Some(2));
     }
 }
