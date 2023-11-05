@@ -1,5 +1,3 @@
-use std::default;
-
 use aoc_2020::prelude::*;
 
 fn main() -> Result<()> {
@@ -8,6 +6,11 @@ fn main() -> Result<()> {
         .map(|f| count_uniq_answers(f, Mode::Any))
         .collect::<StdResult<Vec<_>, _>>()?;
     println!("p1={p1:?}");
+    let p2 = ["example.txt", "input.txt"]
+        .into_iter()
+        .map(|f| count_uniq_answers(f, Mode::All))
+        .collect::<StdResult<Vec<_>, _>>()?;
+    println!("p22{p2:?}");
     Ok(())
 }
 
