@@ -201,11 +201,17 @@ impl FromStr for Rule {
 mod tests {
     use super::*;
 
+    #[test]
     fn test_bags_can_contain() {
-        let bag: Bag = Bag::from("light red");
-        let mut rules: Rules = Rules::new([Rule::new("light red")
-            .contains(2, "muted yellow")
-            .contains(1, "bright white")]);
+        let mut rules = Rules::new([
+            Rule::new("light red")
+                .contains(2, "muted yellow")
+                .contains(1, "bright white"),
+            Rule::new("dark orange")
+                .contains(3, "bright white")
+                .contains(4, "muted yellow"),
+            Rule::new("bright white").contains(1, "shiny gold"),
+        ]);
     }
 
     #[test]
