@@ -4,18 +4,23 @@ use tracing::debug;
 use tracing_subscriber::field::debug;
 
 fn main() -> Result<()> {
-    let p1 = (bags_that_can_contain(
-        "example.txt",
-        Bag::from(("shiny", "gold")),
-    )?,);
+    let p1 =
+        ["example.txt", "input.txt"].map(|f| bags_that_can_contain(f, Bag::from("shiny gold")));
     println!("p1={p1:?}");
     Ok(())
 }
 
 fn bags_that_can_contain(p: impl AsRef<Path>, bag: Bag) -> Result<usize> {
-    let rules = build_rules(p)?;
-    let bags = rules.bags_that_can_contain(bag.clone());
-    Ok(bags.len())
+    let rules: Rules = build_rules(p)?;
+    let count = rules
+        .bags()
+        .into_iter()
+        .filter(|rb| {
+            let rb: Bag = rb.clone().clone();
+            rules.inflate_bag(rb).contains_key(&bag)
+        })
+        .count();
+    Ok(count)
 }
 
 fn build_rules(p: impl AsRef<Path>) -> Result<Rules> {
@@ -134,6 +139,10 @@ impl Rules {
         res
     }
 
+    fn bags(&self) -> Vec<Bag> {
+        self.rules.iter().map(|r| r.bag.clone()).collect::<Vec<_>>()
+    }
+
     /// Returns the number of bags that the specified bag can contain
     fn inflate_bag(&self, bag: impl Into<Bag>) -> HashMap<Bag, usize> {
         let mut queue: Vec<Bag> = vec![bag.into()];
@@ -156,10 +165,6 @@ impl Rules {
             Some(rule) => rule,
             None => panic!("no rule found for {b:?}"),
         }
-    }
-
-    fn bags_that_can_contain(&self, bag: impl Into<Bag>) -> Vec<Bag> {
-        todo!()
     }
 }
 
@@ -246,25 +251,6 @@ mod tests {
                 (Bag::from("bright white"), 3),
                 (Bag::from("shiny gold"), 1),
             ]),
-        );
-    }
-
-    #[test]
-    #[traced_test]
-    #[ignore]
-    fn test_bags_can_contain() {
-        let mut rules = Rules::new([
-            Rule::new("light red")
-                .contains(2, "muted yellow")
-                .contains(1, "bright white"),
-            Rule::new("dark orange")
-                .contains(3, "bright white")
-                .contains(4, "muted yellow"),
-            Rule::new("bright white").contains(1, "shiny gold"),
-        ]);
-        assert_eq!(
-            rules.bags_that_can_contain("shiny gold"),
-            bags(["bright white"])
         );
     }
 
