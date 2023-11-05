@@ -34,7 +34,6 @@ fn build_groups(p: impl AsRef<Path>, mode: Mode) -> Result<Vec<Group>> {
             group
         })
         .collect::<Vec<_>>();
-    println!("Got {} groups", groups.len());
     Ok(groups)
 }
 
@@ -72,22 +71,16 @@ impl Group {
                 .votes
                 .clone()
                 .into_iter()
-                .reduce(|mut f, b| {
-                    f.extend(b);
-                    f
-                })
+                .reduce(|acc, h| acc.union(&h).copied().collect::<HashSet<_>>())
                 .map(|v| v.len())
                 .unwrap_or_default(),
-            Mode::All => {
-                let acc: HashSet<char> = HashSet::default();
-                self.votes
-                    .clone()
-                    .into_iter()
-                    .fold(acc, |acc, f| {
-                        acc.intersection(&f).copied().collect::<HashSet<_>>()
-                    })
-                    .len()
-            }
+            Mode::All => self
+                .votes
+                .clone()
+                .into_iter()
+                .reduce(|acc, h| acc.intersection(&h).copied().collect::<HashSet<_>>())
+                .map(|v| v.len())
+                .unwrap_or_default(),
         }
     }
 }
