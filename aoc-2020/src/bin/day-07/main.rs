@@ -1,4 +1,6 @@
 #![allow(dead_code, unused)]
+use std::fmt::Display;
+
 use aoc_2020::prelude::*;
 use tracing::{debug, info};
 use tracing_subscriber::field::debug;
@@ -10,7 +12,13 @@ fn main() -> Result<()> {
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Bag(String);
 
-#[derive(Debug)]
+impl Display for Bag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct Rule {
     bag: Bag,
     counts: HashMap<Bag, usize>,
@@ -51,6 +59,33 @@ impl FromStr for Rule {
     }
 }
 
+fn topo_sort(mut rules: Vec<Rule>) -> Vec<Bag> {
+    let mut roots: Vec<Rule> = rules
+        .iter()
+        .filter(|r| r.counts.is_empty())
+        .cloned()
+        .collect();
+    let mut rules: Vec<Rule> = rules.into_iter().filter(|r| !roots.contains(r)).collect();
+    let mut sorted: Vec<Bag> = vec![];
+    while let Some(rule) = roots.pop() {
+        println!("Root: {rule:?}");
+        sorted.push(rule.bag.clone());
+        // remove rule counts where they reference `rule`.
+        rules.iter_mut().for_each(|rr| {
+            rr.counts.remove_entry(&rule.bag);
+            if rr.counts.is_empty() {
+                roots.push(rr.clone());
+            }
+        });
+        rules.retain(|rr| !rr.counts.is_empty());
+    }
+    if !rules.is_empty() {
+        panic!("Impossible topological sort");
+    }
+    println!("Sorted! {sorted:?}");
+    todo!()
+}
+
 fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
     let p = PathBuf::from(file!()).parent().unwrap().join(p.as_ref());
     file_to_lines(p)?
@@ -61,7 +96,16 @@ fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::build_rules;
+    use tracing_test::traced_test;
+
+    use super::*;
+
+    #[test]
+    #[traced_test]
+    fn test_rule_topo_sort() {
+        let rules = build_rules("example.txt").unwrap();
+        topo_sort(rules);
+    }
 
     #[test]
     fn test_rule_parse() {
