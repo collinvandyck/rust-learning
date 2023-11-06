@@ -67,5 +67,7 @@ mod tests {
     fn test_rule_parse() {
         let rules = build_rules("example.txt").unwrap();
         assert_eq!(rules.len(), 9);
+        let rules = build_rules("input.txt").unwrap();
+        assert_eq!(rules.len(), 594);
     }
 }
