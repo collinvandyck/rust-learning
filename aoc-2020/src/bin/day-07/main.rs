@@ -68,7 +68,6 @@ fn topo_sort(mut rules: Vec<Rule>) -> Vec<Bag> {
     let mut rules: Vec<Rule> = rules.into_iter().filter(|r| !roots.contains(r)).collect();
     let mut sorted: Vec<Bag> = vec![];
     while let Some(rule) = roots.pop() {
-        println!("Root: {rule:?}");
         sorted.push(rule.bag.clone());
         // remove rule counts where they reference `rule`.
         rules.iter_mut().for_each(|rr| {
@@ -119,8 +118,8 @@ mod tests {
             ]
         );
         let rules = build_rules("input.txt").unwrap();
-        let bags = topo_sort(rules);
-        assert_eq!(bags.len(), 594);
+        let bags = topo_sort(rules.clone());
+        assert_eq!(bags.len(), rules.len());
     }
 
     #[test]
