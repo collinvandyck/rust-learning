@@ -118,6 +118,9 @@ mod tests {
                 "light red",
             ]
         );
+        let rules = build_rules("input.txt").unwrap();
+        let bags = topo_sort(rules);
+        assert_eq!(bags.len(), 594);
     }
 
     #[test]
