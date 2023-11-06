@@ -82,8 +82,7 @@ fn topo_sort(mut rules: Vec<Rule>) -> Vec<Bag> {
     if !rules.is_empty() {
         panic!("Impossible topological sort");
     }
-    println!("Sorted! {sorted:?}");
-    todo!()
+    sorted
 }
 
 fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
@@ -96,15 +95,29 @@ fn build_rules(p: impl AsRef<Path>) -> Result<Vec<Rule>> {
 
 #[cfg(test)]
 mod tests {
-    use tracing_test::traced_test;
-
     use super::*;
+    use tracing_test::traced_test;
 
     #[test]
     #[traced_test]
     fn test_rule_topo_sort() {
         let rules = build_rules("example.txt").unwrap();
-        topo_sort(rules);
+        let bags = topo_sort(rules);
+        let names = bags.iter().map(|b| &b.0).collect::<Vec<_>>();
+        assert_eq!(
+            names,
+            &[
+                "dotted black",
+                "faded blue",
+                "vibrant plum",
+                "dark olive",
+                "shiny gold",
+                "muted yellow",
+                "bright white",
+                "dark orange",
+                "light red",
+            ]
+        );
     }
 
     #[test]
