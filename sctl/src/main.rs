@@ -1,6 +1,6 @@
 use std::{
     error::Error,
-    fmt::Debug,
+    fmt::{Debug, Display, Formatter},
     io::{self, BufRead, BufReader},
     process::Command,
     str::FromStr,
@@ -35,10 +35,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|s| s.parse::<Record>())
         .collect::<Result<Vec<_>, _>>()?
     {
-        println!("Line: {record:?}");
         tree.add(record);
     }
 
+    println!("{tree}");
     Ok(())
 }
 
@@ -54,8 +54,7 @@ impl FromStr for Record {
         let parts = s.splitn(2, ": ").collect::<Vec<_>>();
         if parts.len() != 2 {
             return Err(SysctlError::ParseRecord(format!(
-                "expected two parts from '{}' but got {}",
-                s,
+                "expected two parts from '{s}' but got {}",
                 parts.len()
             )));
         }
@@ -71,19 +70,38 @@ enum Tree {
     Node(Node),
 }
 
+impl Display for Tree {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s = self.print(0);
+        write!(f, "{s}")
+    }
+}
+
 impl Tree {
     fn new() -> Self {
         Self::Leaf
     }
+    fn print(&self, depth: usize) -> String {
+        todo!()
+    }
     fn add(&mut self, record: Record) {
         match self {
-            Self::Leaf => {}
-            Self::Node(node) => {}
+            Self::Leaf => *self = Self::Node(Node::new(record)),
+            Self::Node(ref mut node) => {}
         }
     }
 }
 
 struct Node {
-    value: Record,
+    record: Record,
     children: Vec<Tree>,
+}
+
+impl Node {
+    fn new(record: Record) -> Self {
+        Self {
+            record,
+            children: vec![],
+        }
+    }
 }
