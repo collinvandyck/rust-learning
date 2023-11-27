@@ -26,6 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .into());
     }
     let stdout = BufReader::new(output.stdout.as_slice());
+    let mut tree = Tree::new();
     for record in stdout
         .lines()
         .collect::<Result<Vec<_>, _>>()
@@ -35,6 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect::<Result<Vec<_>, _>>()?
     {
         println!("Line: {record:?}");
+        tree.add(record);
     }
 
     Ok(())
@@ -62,4 +64,26 @@ impl FromStr for Record {
             val: parts[1].to_string(),
         })
     }
+}
+
+enum Tree {
+    Leaf,
+    Node(Node),
+}
+
+impl Tree {
+    fn new() -> Self {
+        Self::Leaf
+    }
+    fn add(&mut self, record: Record) {
+        match self {
+            Self::Leaf => {}
+            Self::Node(node) => {}
+        }
+    }
+}
+
+struct Node {
+    value: Record,
+    children: Vec<Tree>,
 }
