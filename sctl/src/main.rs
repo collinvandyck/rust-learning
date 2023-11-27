@@ -85,10 +85,8 @@ impl Tree {
     fn print(&self, buf: &mut String, depth: usize) {
         match self {
             Tree::Leaf => {}
-            Tree::Node(Node {
-                record: _,
-                children,
-            }) => {
+            Tree::Node(Node { record, children }) => {
+                buf.push_str(&format!("{}: {}\n", record.name, record.val));
                 for child in children {
                     child.print(buf, depth + 1);
                 }
