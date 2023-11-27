@@ -32,7 +32,25 @@ impl Tree {
                             *node = node_replace;
                             return;
                         }
-                        _ => todo!(),
+                        (pl, nl, il) => {
+                            if pl < nl {
+                                debug!("Prefix {prefix:?} is a subset of the node {node}");
+                                // we should replace this node with insert.
+                                // insert should have a child that is node
+                                let mut new_node = node.clone();
+                                new_node.strip_prefix(&prefix);
+                                insert.tree.insert_node(new_node);
+                                *node = insert;
+                                return;
+                            } else {
+                                debug!("Prefix {prefix:?} is a subset of the insert {insert}");
+                                // strip off the prefix of the insert, and then insert it into the
+                                // node
+                                insert.strip_prefix(&prefix);
+                                node.tree.insert_node(insert);
+                                return;
+                            }
+                        }
                     }
                 }
                 nodes.push(insert);
@@ -150,6 +168,38 @@ mod tests {
                     Tree::Child(vec![
                         //
                         Node::new("c", "foo"),
+                        Node::new("d", "baz"),
+                    ],)
+                ),
+                Node::new_tree(
+                    "c",
+                    "qux",
+                    Tree::Child(vec![
+                        //
+                        Node::new("d", "bar"),
+                    ],)
+                ),
+            ]),
+            "{:?}",
+            dbg!(&tree),
+        );
+        tree.insert("a.b.c.d.e", "42");
+        assert_eq!(
+            tree,
+            Tree::Child(vec![
+                Node::new_tree(
+                    "a.b",
+                    "",
+                    Tree::Child(vec![
+                        //
+                        Node::new_tree(
+                            "c",
+                            "foo",
+                            Tree::Child(vec![
+                                //
+                                Node::new("d.e", "42"),
+                            ],)
+                        ),
                         Node::new("d", "baz"),
                     ],)
                 ),
