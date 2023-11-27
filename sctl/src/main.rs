@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::{
     error::Error,
     fmt::{Debug, Display, Formatter},
@@ -48,6 +49,10 @@ struct Record {
     val: String,
 }
 
+impl Record {
+    fn merge(other: &Record) {}
+}
+
 impl FromStr for Record {
     type Err = SysctlError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -86,7 +91,8 @@ impl Tree {
         match self {
             Tree::Leaf => {}
             Tree::Node(Node { record, children }) => {
-                buf.push_str(&format!("{}: {}\n", record.name, record.val));
+                let indent = "  ".repeat(depth);
+                buf.push_str(&format!("{indent}{}: {}\n", record.name, record.val));
                 for child in children {
                     child.print(buf, depth + 1);
                 }
@@ -96,7 +102,9 @@ impl Tree {
     fn add(&mut self, record: Record) {
         match self {
             Self::Leaf => *self = Self::Node(Node::new(record)),
-            Self::Node(ref mut node) => {}
+            Self::Node(ref mut node) => {
+                let crec = &mut node.record;
+            }
         }
     }
 }
