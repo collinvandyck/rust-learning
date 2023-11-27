@@ -11,29 +11,40 @@ pub enum Tree {
 }
 
 impl Tree {
-    pub fn insert(&mut self, key: impl AsRef<str>, val: impl AsRef<str>) {
-        let key = key.as_ref().to_string();
-        let val = val.as_ref().to_string();
-        let to_insert = Node::new(key, val);
-        debug!(?to_insert, "Inserting");
+    fn insert_node(&mut self, mut insert: Node) {
+        debug!(?insert, "Insert");
         match self {
-            Tree::Root => {
-                debug!("Replacing tree root");
-                *self = Tree::Child(vec![to_insert]);
-            }
+            Tree::Root => *self = Tree::Child(vec![insert]),
             Tree::Child(ref mut nodes) => {
-                // first, look for a prefix match.
                 for node in &mut *nodes {
-                    let prefix = node.common_prefix(&to_insert);
-                    if !prefix.is_empty() {
-                        debug!("Prefix of {node} and {to_insert}: {prefix:?}");
+                    let prefix = node.common_prefix(&insert);
+                    match (prefix.len(), node.segments.len(), insert.segments.len()) {
+                        (0, _, _) => { /*no prefix*/ }
+                        (pl, nl, il) if pl < nl && pl < il => {
+                            // prefix is a subset of both. make a new node and reparent them.
+                            debug!("Reparenting both nodes");
+                            let mut new_node = node.clone();
+                            new_node.strip_prefix(&prefix);
+                            insert.strip_prefix(&prefix);
+                            let mut node_replace = Node::new(prefix.join("."), "");
+                            node_replace.tree.insert_node(new_node);
+                            node_replace.tree.insert_node(insert);
+                            *node = node_replace;
+                            return;
+                        }
+                        _ => todo!(),
                     }
                 }
-                // if we got here, then there is no common prefix. just append it
-                nodes.push(to_insert);
+                nodes.push(insert);
                 nodes.sort_by_key(|node| node.segments.join("."));
             }
         }
+    }
+    pub fn insert(&mut self, key: impl AsRef<str>, val: impl AsRef<str>) {
+        let key = key.as_ref().to_string();
+        let val = val.as_ref().to_string();
+        let insert = Node::new(key, val);
+        self.insert_node(insert);
     }
 }
 
@@ -41,7 +52,7 @@ impl Tree {
 pub struct Node {
     segments: Vec<String>,
     value: String,
-    children: Vec<Tree>,
+    tree: Tree,
 }
 
 impl Display for Node {
@@ -59,8 +70,13 @@ impl Node {
         Self {
             segments,
             value,
-            children: vec![],
+            tree: Tree::Root,
         }
+    }
+    fn new_tree(key: impl AsRef<str>, value: impl AsRef<str>, tree: Tree) -> Self {
+        let mut node = Self::new(key, value);
+        node.tree = tree;
+        node
     }
     fn common_prefix(&self, other: &Node) -> Vec<String> {
         self.segments
@@ -69,6 +85,14 @@ impl Node {
             .take_while(|(a, b)| a == b)
             .map(|(a, b)| a.to_string())
             .collect()
+    }
+    fn strip_prefix(&mut self, prefix: &[String]) {
+        self.segments = self
+            .segments
+            .iter()
+            .skip(prefix.len())
+            .map(ToString::to_string)
+            .collect();
     }
 }
 
@@ -97,6 +121,49 @@ mod tests {
                 Node::new("a.b.c", "foo"),
                 Node::new("c.d", "bar"),
             ])
+        );
+        tree.insert("a.b.d", "baz");
+        assert_eq!(
+            tree,
+            Tree::Child(vec![
+                Node::new_tree(
+                    "a.b",
+                    "",
+                    Tree::Child(vec![
+                        //
+                        Node::new("c", "foo"),
+                        Node::new("d", "baz"),
+                    ],)
+                ),
+                Node::new("c.d", "bar"),
+            ]),
+            "{:?}",
+            dbg!(&tree),
+        );
+        tree.insert("c", "qux");
+        assert_eq!(
+            tree,
+            Tree::Child(vec![
+                Node::new_tree(
+                    "a.b",
+                    "",
+                    Tree::Child(vec![
+                        //
+                        Node::new("c", "foo"),
+                        Node::new("d", "baz"),
+                    ],)
+                ),
+                Node::new_tree(
+                    "c",
+                    "qux",
+                    Tree::Child(vec![
+                        //
+                        Node::new("d", "bar"),
+                    ],)
+                ),
+            ]),
+            "{:?}",
+            dbg!(&tree),
         );
     }
 }
