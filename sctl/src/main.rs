@@ -46,6 +46,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 #[derive(Debug)]
 struct Record {
     name: String,
+    segments: Vec<String>,
     val: String,
 }
 
@@ -64,6 +65,11 @@ impl FromStr for Record {
             )));
         }
         Ok(Self {
+            segments: parts[0]
+                .trim()
+                .split(".")
+                .map(ToString::to_string)
+                .collect(),
             name: parts[0].to_string(),
             val: parts[1].to_string(),
         })
@@ -92,7 +98,7 @@ impl Tree {
             Tree::Leaf => {}
             Tree::Node(Node { record, children }) => {
                 let indent = "  ".repeat(depth);
-                buf.push_str(&format!("{indent}{}: {}\n", record.name, record.val));
+                buf.push_str(&format!("{indent}{:?}: {}\n", record.segments, record.val));
                 for child in children {
                     child.print(buf, depth + 1);
                 }
