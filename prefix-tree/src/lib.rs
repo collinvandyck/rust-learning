@@ -1,7 +1,4 @@
-#![allow(dead_code, unused)]
-
 use std::fmt::Display;
-
 use tracing::debug;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -32,7 +29,7 @@ impl Tree {
                             *node = node_replace;
                             return;
                         }
-                        (pl, nl, il) => {
+                        (pl, nl, _il) => {
                             if pl < nl {
                                 debug!("Prefix {prefix:?} is a subset of the node {node}");
                                 // we should replace this node with insert.
@@ -91,6 +88,7 @@ impl Node {
             tree: Tree::Root,
         }
     }
+    #[cfg(test)]
     fn new_tree(key: impl AsRef<str>, value: impl AsRef<str>, tree: Tree) -> Self {
         let mut node = Self::new(key, value);
         node.tree = tree;
@@ -101,7 +99,7 @@ impl Node {
             .iter()
             .zip(other.segments.iter())
             .take_while(|(a, b)| a == b)
-            .map(|(a, b)| a.to_string())
+            .map(|(a, _b)| a.to_string())
             .collect()
     }
     fn strip_prefix(&mut self, prefix: &[String]) {
