@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         tree.add(record);
     }
 
-    println!("{tree}");
+    println!("Tree:\n{tree}");
     Ok(())
 }
 
