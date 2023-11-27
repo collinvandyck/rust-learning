@@ -22,10 +22,7 @@ impl Debug for SysctlError {
 
 impl Display for SysctlError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SysctlError::SysctlFailed { .. } => write!(f, "sysctl failed"),
-            SysctlError::IO(err) => write!(f, "io error: {err}"),
-        }
+        Debug::fmt(&self, f)
     }
 }
 
