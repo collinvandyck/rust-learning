@@ -35,6 +35,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .into_iter()
         .map(|s| s.parse::<Record>())
         .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .take(2)
     {
         tree.add(record);
     }
@@ -43,37 +45,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[derive(Debug)]
-struct Record {
+enum BetterTree {
+    Empty,
+    Node(Vec<BetterRecord>),
+}
+
+struct BetterRecord {
     name: String,
     segments: Vec<String>,
     val: String,
-}
-
-impl Record {
-    fn merge(other: &Record) {}
-}
-
-impl FromStr for Record {
-    type Err = SysctlError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = s.splitn(2, ": ").collect::<Vec<_>>();
-        if parts.len() != 2 {
-            return Err(SysctlError::ParseRecord(format!(
-                "expected two parts from '{s}' but got {}",
-                parts.len()
-            )));
-        }
-        Ok(Self {
-            segments: parts[0]
-                .trim()
-                .split(".")
-                .map(ToString::to_string)
-                .collect(),
-            name: parts[0].to_string(),
-            val: parts[1].to_string(),
-        })
-    }
 }
 
 enum Tree {
@@ -109,7 +89,19 @@ impl Tree {
         match self {
             Self::Leaf => *self = Self::Node(Node::new(record)),
             Self::Node(ref mut node) => {
-                let crec = &mut node.record;
+                let node_rec: &mut Record = &mut node.record;
+                let node_children: &mut Vec<Tree> = &mut node.children;
+
+                // we are adding the record to the node of this tree.
+                // if the record has a segment prefix of this node, we need to break this node up
+                // so that it can accommodate the record as a child.
+
+                match record.relationship(node_rec) {
+                    Relationship::Child => todo!(),
+                    Relationship::None => {
+                        // node rec should live on the same level
+                    }
+                }
             }
         }
     }
@@ -126,5 +118,45 @@ impl Node {
             record,
             children: vec![],
         }
+    }
+}
+
+#[derive(Debug)]
+struct Record {
+    name: String,
+    segments: Vec<String>,
+    val: String,
+}
+
+enum Relationship {
+    Child,
+    None,
+}
+
+impl Record {
+    fn relationship(&self, other: &Record) -> Relationship {
+        Relationship::None
+    }
+}
+
+impl FromStr for Record {
+    type Err = SysctlError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts = s.splitn(2, ": ").collect::<Vec<_>>();
+        if parts.len() != 2 {
+            return Err(SysctlError::ParseRecord(format!(
+                "expected two parts from '{s}' but got {}",
+                parts.len()
+            )));
+        }
+        Ok(Self {
+            segments: parts[0]
+                .trim()
+                .split(".")
+                .map(ToString::to_string)
+                .collect(),
+            name: parts[0].to_string(),
+            val: parts[1].to_string(),
+        })
     }
 }
