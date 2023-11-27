@@ -72,7 +72,8 @@ enum Tree {
 
 impl Display for Tree {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let s = self.print(0);
+        let mut buf = String::new();
+        let s = self.print(&mut buf, 0);
         write!(f, "{s}")
     }
 }
@@ -81,8 +82,11 @@ impl Tree {
     fn new() -> Self {
         Self::Leaf
     }
-    fn print(&self, depth: usize) -> String {
-        todo!()
+    fn print(&self, buf: &mut String, depth: usize) -> String {
+        match self {
+            Tree::Leaf => String::from(""),
+            Tree::Node(_) => todo!(),
+        }
     }
     fn add(&mut self, record: Record) {
         match self {
