@@ -73,7 +73,7 @@ enum Tree {
 impl Display for Tree {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut buf = String::new();
-        let s = self.print(&mut buf, 0);
+        self.print(&mut buf, 0);
         write!(f, "{buf}")
     }
 }
