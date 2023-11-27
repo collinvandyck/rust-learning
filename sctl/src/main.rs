@@ -74,7 +74,7 @@ impl Display for Tree {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut buf = String::new();
         let s = self.print(&mut buf, 0);
-        write!(f, "{s}")
+        write!(f, "{buf}")
     }
 }
 
@@ -82,10 +82,17 @@ impl Tree {
     fn new() -> Self {
         Self::Leaf
     }
-    fn print(&self, buf: &mut String, depth: usize) -> String {
+    fn print(&self, buf: &mut String, depth: usize) {
         match self {
-            Tree::Leaf => String::from(""),
-            Tree::Node(_) => todo!(),
+            Tree::Leaf => {}
+            Tree::Node(Node {
+                record: _,
+                children,
+            }) => {
+                for child in children {
+                    child.print(buf, depth + 1);
+                }
+            }
         }
     }
     fn add(&mut self, record: Record) {
