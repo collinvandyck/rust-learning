@@ -43,19 +43,11 @@ fn run(s: &str, scan_alpha: bool) -> u32 {
 }
 
 fn scan_digits(s: &str, lu: &HashMap<&str, u32>) -> (u32, u32) {
-    let mut digis = vec![];
-    for i in 0..s.len() {
-        let s = &s[i..];
-        for k in lu.keys() {
-            if s.starts_with(*k) {
-                digis.push(lu.get(k).unwrap());
-                break;
-            }
-        }
-    }
-    match digis[..] {
-        [num] => (*num, *num),
-        [first, .., last] => (*first, *last),
-        _ => panic!("first and last not found"),
-    }
+    let mut nums = (0..s.len())
+        .map(|f| &s[f..])
+        .flat_map(|s| lu.keys().find(|key| s.starts_with(**key)))
+        .flat_map(|key| lu.get(key));
+    let first = *nums.nth(0).unwrap();
+    let last = *nums.last().unwrap_or(&first);
+    (first, last)
 }
