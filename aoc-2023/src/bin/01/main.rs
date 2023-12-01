@@ -46,8 +46,9 @@ fn scan_digits(s: &str, lu: &HashMap<&str, u32>) -> (u32, u32) {
     let mut nums = (0..s.len())
         .map(|f| &s[f..])
         .flat_map(|s| lu.keys().find(|key| s.starts_with(**key)))
-        .flat_map(|key| lu.get(key));
-    let first = *nums.nth(0).unwrap();
-    let last = *nums.last().unwrap_or(&first);
+        .flat_map(|key| lu.get(key))
+        .copied();
+    let first = nums.nth(0).unwrap();
+    let last = nums.last().unwrap_or(first);
     (first, last)
 }
