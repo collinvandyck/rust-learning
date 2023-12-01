@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let input = include_str!("input.txt");
     let example = include_str!("example.txt");
     let examplep2 = include_str!("example-p2.txt");
