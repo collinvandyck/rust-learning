@@ -11,16 +11,6 @@ fn main() {
 }
 
 fn run(s: &str, scan_alpha: bool) -> u32 {
-    let mut sum = 0;
-    for s in s.lines() {
-        let (first, last) = scan_digits(s, scan_alpha);
-        let num = first * 10 + last;
-        sum += num;
-    }
-    sum
-}
-
-fn scan_digits(s: &str, use_alpha: bool) -> (u32, u32) {
     let mut lu = HashMap::from([
         ("1", 1),
         ("2", 2),
@@ -32,7 +22,7 @@ fn scan_digits(s: &str, use_alpha: bool) -> (u32, u32) {
         ("8", 8),
         ("9", 9),
     ]);
-    if use_alpha {
+    if scan_alpha {
         lu.insert("one", 1);
         lu.insert("two", 2);
         lu.insert("three", 3);
@@ -43,6 +33,16 @@ fn scan_digits(s: &str, use_alpha: bool) -> (u32, u32) {
         lu.insert("eight", 8);
         lu.insert("nine", 9);
     }
+    let mut sum = 0;
+    for s in s.lines() {
+        let (first, last) = scan_digits(s, &lu);
+        let num = first * 10 + last;
+        sum += num;
+    }
+    sum
+}
+
+fn scan_digits(s: &str, lu: &HashMap<&str, u32>) -> (u32, u32) {
     let mut digis = vec![];
     for i in 0..s.len() {
         let s = &s[i..];
