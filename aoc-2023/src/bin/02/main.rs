@@ -16,26 +16,26 @@ struct Game {
 }
 
 impl Game {
-    //Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
     fn from(s: impl AsRef<str>) -> Self {
         static GAME_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^Game (.*): (.*)").unwrap());
         let caps = GAME_RE.captures(s.as_ref()).unwrap();
         let (id, rest) = (caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str());
-        let id: u64 = id.parse().unwrap();
-        let turns = rest
-            .split("; ")
-            .map(|turn| {
-                turn.split(", ")
-                    .map(|num_color| {
-                        let mut iter = num_color.trim().split(" ");
-                        let num = iter.next().unwrap().parse::<u64>().unwrap();
-                        let color = Color::from_str(iter.next().unwrap().trim()).unwrap();
-                        (color, num)
-                    })
-                    .collect::<HashMap<_, _>>()
-            })
-            .collect();
-        Self { id, turns }
+        Self {
+            id: id.parse().unwrap(),
+            turns: rest
+                .split("; ")
+                .map(|turn| {
+                    turn.split(", ")
+                        .map(|num_color| {
+                            let mut iter = num_color.trim().split(" ");
+                            let num = iter.next().unwrap().parse::<u64>().unwrap();
+                            let color = Color::from_str(iter.next().unwrap().trim()).unwrap();
+                            (color, num)
+                        })
+                        .collect::<HashMap<_, _>>()
+                })
+                .collect(),
+        }
     }
 }
 
