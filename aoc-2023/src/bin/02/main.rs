@@ -16,6 +16,8 @@ fn main() {
     ]));
     println!("p1ex={}", possible_games(example, &bag));
     println!("p1in={}", possible_games(input, &bag));
+    println!("p2ex={}", power_minimums(example));
+    println!("p2in={}", power_minimums(input));
 }
 
 fn possible_games(input: &str, bag: &Cubes) -> u64 {
@@ -27,29 +29,36 @@ fn possible_games(input: &str, bag: &Cubes) -> u64 {
         .sum()
 }
 
-fn power_minimums(input: &str) {
-    input.lines().map(Game::from).map(|g| {
-        let min = g.minimum();
-        (g, min)
-    });
-}
-
-fn minimum_sets(input: &str) -> impl Iterator<Item = Cubes> + '_ {
+fn power_minimums(input: &str) -> u64 {
     input
         .lines()
-        .map(|line| Game::from(line))
-        .map(|game| game.minimum())
+        .map(Game::from)
+        .map(|g| g.minimum())
+        .map(|c| c.power())
+        .sum()
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, Default)]
 struct Cubes(HashMap<Color, u64>);
 
 impl Cubes {
-    fn get(&self, color: Color) -> u64 {
+    fn get_or_zero(&self, color: Color) -> u64 {
         self.0.get(&color).copied().unwrap_or_default()
     }
     fn power(&self) -> u64 {
-        Color::iter().map(|c| self.get(c)).product()
+        Color::iter().map(|c| self.get_or_zero(c)).product()
+    }
+    fn set_maxes(&mut self, other: &Cubes) {
+        for color in Color::iter() {
+            if let Some(min) = match (self.0.get(&color), other.0.get(&color)) {
+                (None, Some(b)) => Some(b),
+                (Some(a), None) => Some(a),
+                (Some(a), Some(b)) => Some(a.max(b)),
+                _ => None,
+            } {
+                self.0.insert(color, *min);
+            }
+        }
     }
 }
 
@@ -61,13 +70,16 @@ struct Game {
 
 impl Game {
     fn minimum(&self) -> Cubes {
-        todo!()
+        self.turns.iter().fold(Cubes::default(), |mut acc, cube| {
+            acc.set_maxes(cube);
+            acc
+        })
     }
     fn possible(&self, bag: &Cubes) -> bool {
         self.turns.iter().all(|turn| {
             Color::iter().all(|color| {
-                let tc = turn.get(color);
-                let bg = bag.get(color);
+                let tc = turn.get_or_zero(color);
+                let bg = bag.get_or_zero(color);
                 tc <= bg
             })
         })
@@ -145,6 +157,20 @@ mod tests {
                     Cubes(HashMap::from([(Color::Green, 2)])),
                 ]
             }
+        );
+    }
+
+    #[test]
+    fn test_game_minimum() {
+        let game = Game::from("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green");
+        let min = game.minimum();
+        assert_eq!(
+            min,
+            Cubes(HashMap::from([
+                (Color::Red, 4),
+                (Color::Green, 2),
+                (Color::Blue, 6)
+            ]))
         );
     }
 }
