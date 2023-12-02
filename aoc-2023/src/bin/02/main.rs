@@ -1,7 +1,6 @@
-use once_cell::sync::Lazy;
-use regex::Regex;
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 use strum::IntoEnumIterator;
+mod parser;
 
 fn main() {
     let example = include_str!("example.txt");
@@ -83,27 +82,9 @@ impl Game {
         })
     }
     fn from(s: impl AsRef<str>) -> Self {
-        static GAME_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^Game (.*): (.*)").unwrap());
-        let caps = GAME_RE.captures(s.as_ref()).unwrap();
-        let (id, rest) = (caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str());
-        Self {
-            id: id.parse().unwrap(),
-            turns: rest
-                .split("; ")
-                .map(|turn| {
-                    Cubes(
-                        turn.split(", ")
-                            .map(|num_color| {
-                                let mut iter = num_color.trim().split(" ");
-                                let num = iter.next().unwrap().parse::<u64>().unwrap();
-                                let color = Color::from_str(iter.next().unwrap().trim()).unwrap();
-                                (color, num)
-                            })
-                            .collect::<HashMap<_, _>>(),
-                    )
-                })
-                .collect(),
-        }
+        let (rest, game) = parser::parse_game(s.as_ref()).unwrap();
+        assert_eq!(rest, "");
+        game
     }
 }
 
