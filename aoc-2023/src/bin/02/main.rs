@@ -1,9 +1,6 @@
-#![allow(dead_code, unused)]
-
-use std::{collections::HashMap, str::FromStr};
-
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::{collections::HashMap, str::FromStr};
 use strum::IntoEnumIterator;
 
 fn main() {
@@ -23,8 +20,8 @@ fn main() {
 fn possible_games(input: &str, bag: &Cubes) -> u64 {
     input
         .lines()
-        .map(|line| Game::from(line))
-        .filter(|game| game.possible(&bag))
+        .map(Game::from)
+        .filter(|g| g.possible(&bag))
         .map(|g| g.id)
         .sum()
 }
@@ -70,10 +67,11 @@ struct Game {
 
 impl Game {
     fn minimum(&self) -> Cubes {
-        self.turns.iter().fold(Cubes::default(), |mut acc, cube| {
-            acc.set_maxes(cube);
-            acc
-        })
+        let mut acc = Cubes::default();
+        for turn in &self.turns {
+            acc.set_maxes(turn);
+        }
+        acc
     }
     fn possible(&self, bag: &Cubes) -> bool {
         self.turns.iter().all(|turn| {
