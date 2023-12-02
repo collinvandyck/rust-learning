@@ -40,7 +40,7 @@ fn parse_turns(input: &str) -> IResult<&str, Vec<Cubes>> {
     separated_list0(tag("; "), parse_turn)(input)
 }
 
-pub fn parse_game(input: &str) -> IResult<&str, Game> {
+pub(crate) fn parse_game(input: &str) -> IResult<&str, Game> {
     let (input, _) = tag("Game ")(input)?;
     let (input, id) = parse_u64(input)?;
     let (input, _) = tag(": ")(input)?;
