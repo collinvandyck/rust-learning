@@ -3,12 +3,19 @@
 use std::collections::HashMap;
 
 fn main() {
-    let ex = include_str!("example.txt");
-    println!("p1ex={}", sum_of_part_numbers(ex));
+    let example = include_str!("example.txt");
+    let input = include_str!("input.txt");
+    println!("p1ex={}", sum_of_part_numbers(example));
+    println!("p1in={}", sum_of_part_numbers(input));
+    println!("p2ex={}", sum_of_gear_ratios(example));
 }
 
 fn sum_of_part_numbers(input: &str) -> u64 {
     Schema::new(input).parts().iter().map(|s| s.num).sum()
+}
+
+fn sum_of_gear_ratios(input: &str) -> u64 {
+    Schema::new(input).gears().iter().map(|s| s.ratio()).sum()
 }
 
 #[derive(Debug, Clone, Copy, strum_macros::EnumIs)]
@@ -36,6 +43,18 @@ struct Part {
 }
 
 #[derive(Debug)]
+struct Gear {
+    p1: Part,
+    p2: Part,
+}
+
+impl Gear {
+    fn ratio(&self) -> u64 {
+        self.p1.num * self.p2.num
+    }
+}
+
+#[derive(Debug)]
 struct Point(usize, usize);
 struct Schema(Vec<Vec<Value>>);
 
@@ -57,7 +76,26 @@ impl Schema {
         self.0.get(y).map(|row| row.get(x)).flatten().copied()
     }
     fn is_part(&self, part: &Part) -> bool {
-        true
+        let Point(mut ulx, mut uly) = part.ul;
+        let Point(mut lrx, mut lry) = part.lr;
+        uly = uly.saturating_sub(1);
+        ulx = ulx.saturating_sub(1);
+        lrx = usize::min(self.width() - 1, lrx + 1);
+        lry = usize::min(self.height() - 1, lry + 1);
+        for y in uly..=lry {
+            for x in ulx..=lrx {
+                if let Some(v) = self.get(x, y) {
+                    if v.is_symbol() {
+                        return true;
+                    }
+                }
+            }
+        }
+        false
+    }
+    fn gears(&self) -> Vec<Gear> {
+        let parts = self.parts();
+        todo!()
     }
     fn parts(&self) -> Vec<Part> {
         let mut parts = vec![];
