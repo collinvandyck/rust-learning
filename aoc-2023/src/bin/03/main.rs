@@ -1,7 +1,3 @@
-#![allow(dead_code, unused)]
-
-use std::collections::HashMap;
-
 fn main() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
@@ -123,7 +119,7 @@ impl Schema {
         let mut gears = vec![];
         for (y, row) in self.0.iter().enumerate() {
             for (x, v) in row.iter().enumerate() {
-                if let Some(Value::Symbol('*')) = self.get(x, y) {
+                if let Value::Symbol('*') = v {
                     let adj = Self::parts_adjacent(&parts, Point(x, y));
                     if adj.len() == 2 {
                         gears.push(Gear {
