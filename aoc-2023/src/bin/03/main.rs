@@ -14,24 +14,29 @@ fn sum_of_part_numbers(input: &str) -> u64 {
 #[derive(Debug, Clone, Copy, strum_macros::EnumIs)]
 enum Value {
     Space,
-    Digit(u32),
+    Digit(u64),
     Symbol(char),
 }
 
 impl Value {
     fn from(ch: char) -> Self {
         match (ch, ch.to_digit(10)) {
-            (_, Some(v)) => Value::Digit(v),
+            (_, Some(v)) => Value::Digit(v.into()),
             ('.', _) => Value::Space,
             _ => Value::Symbol(ch),
         }
     }
 }
 
+#[derive(Debug)]
 struct Part {
     num: u64,
+    ul: Point,
+    lr: Point,
 }
 
+#[derive(Debug)]
+struct Point(usize, usize);
 struct Schema(Vec<Vec<Value>>);
 
 impl Schema {
@@ -54,19 +59,30 @@ impl Schema {
     fn parts(&self) -> Vec<Part> {
         let mut parts = vec![];
         for (y, row) in self.0.iter().enumerate() {
-            println!("Got row: {row:?}");
-            let mut iter = row.iter().enumerate();
-            loop {
-                let digits = iter
-                    .by_ref()
-                    .take_while(|v| v.1.is_digit())
-                    .collect::<Vec<_>>();
-                if !digits.is_empty() {
-                    println!("Digits: {digits:?}");
-                    continue;
+            let mut part: Option<Part> = None;
+            for (x, v) in row.iter().enumerate() {
+                match part.as_mut() {
+                    Some(p) => {
+                        if let Value::Digit(v) = v {
+                            p.num = p.num * 10 + v;
+                            p.lr = Point(x, y);
+                        } else {
+                            parts.push(part.take().unwrap());
+                        }
+                    }
+                    None => {
+                        if let Value::Digit(v) = v {
+                            part = Some(Part {
+                                num: *v,
+                                ul: Point(x, y),
+                                lr: Point(x, y),
+                            })
+                        }
+                    }
                 }
-                // todo: check for space and for symbol
-                break;
+            }
+            if let Some(part) = part.take() {
+                parts.push(part);
             }
         }
         parts
