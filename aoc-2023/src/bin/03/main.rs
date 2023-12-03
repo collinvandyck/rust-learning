@@ -42,15 +42,10 @@ struct Part {
 impl Part {
     fn overlaps(&self, ul: Point, lr: Point) -> bool {
         self.points()
-            .iter()
             .any(|p| p.0 >= ul.0 && p.0 <= lr.0 && p.1 >= ul.1 && p.1 <= lr.1)
     }
-    fn points(&self) -> Vec<Point> {
-        let mut points = vec![];
-        for x in self.ul.0..=(self.lr.0) {
-            points.push(Point(x, self.ul.1));
-        }
-        points
+    fn points(&self) -> impl Iterator<Item = Point> + '_ {
+        (self.ul.0..=(self.lr.0)).map(|x| Point(x, self.ul.1))
     }
 }
 
