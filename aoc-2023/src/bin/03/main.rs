@@ -13,11 +13,17 @@ fn sum_of_part_numbers(input: &str) -> u64 {
 
 enum Value {
     Space,
+    Digit(u32),
+    Symbol(char),
 }
 
 impl Value {
     fn from(ch: char) -> Self {
-        todo!()
+        match (ch, ch.to_digit(10)) {
+            (_, Some(v)) => Value::Digit(v),
+            ('.', _) => Value::Space,
+            _ => Value::Symbol(ch),
+        }
     }
 }
 
