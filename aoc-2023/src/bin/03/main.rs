@@ -8,6 +8,7 @@ fn main() {
     println!("p1ex={}", sum_of_part_numbers(example));
     println!("p1in={}", sum_of_part_numbers(input));
     println!("p2ex={}", sum_of_gear_ratios(example));
+    println!("p2in={}", sum_of_gear_ratios(input));
 }
 
 fn sum_of_part_numbers(input: &str) -> u64 {
@@ -43,15 +44,10 @@ struct Part {
 }
 
 impl Part {
-    // ex
-    //
-    // num=35 pul:(2,2), plr:(3,2)
-    //         ul:(2,0),  lr:(4,2)
     fn overlaps(&self, ul: Point, lr: Point) -> bool {
-        self.points().iter().any(|p| {
-            // return true if this point is in the bounding box
-            p.0 >= ul.0 && p.0 <= lr.0 && p.1 >= ul.1 && p.1 <= lr.1
-        })
+        self.points()
+            .iter()
+            .any(|p| p.0 >= ul.0 && p.0 <= lr.0 && p.1 >= ul.1 && p.1 <= lr.1)
     }
     fn points(&self) -> Vec<Point> {
         let mut points = vec![];
