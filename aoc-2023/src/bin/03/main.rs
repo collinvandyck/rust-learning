@@ -43,8 +43,22 @@ struct Part {
 }
 
 impl Part {
+    // ex
+    //
+    // num=35 pul:(2,2), plr:(3,2)
+    //         ul:(2,0),  lr:(4,2)
     fn overlaps(&self, ul: Point, lr: Point) -> bool {
-        todo!()
+        self.points().iter().any(|p| {
+            // return true if this point is in the bounding box
+            p.0 >= ul.0 && p.0 <= lr.0 && p.1 >= ul.1 && p.1 <= lr.1
+        })
+    }
+    fn points(&self) -> Vec<Point> {
+        let mut points = vec![];
+        for x in self.ul.0..=(self.lr.0) {
+            points.push(Point(x, self.ul.1));
+        }
+        points
     }
 }
 
