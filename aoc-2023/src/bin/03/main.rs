@@ -15,7 +15,7 @@ fn sum_of_part_numbers(input: &str) -> u64 {
 }
 
 fn sum_of_gear_ratios(input: &str) -> u64 {
-    Schema::new(input).gears().iter().map(|s| s.ratio()).sum()
+    Schema::new(input).gears().iter().map(|s| s.ratio).sum()
 }
 
 #[derive(Debug, Clone, Copy, strum_macros::EnumIs)]
@@ -35,26 +35,25 @@ impl Value {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Part {
     num: u64,
     ul: Point,
     lr: Point,
 }
 
-#[derive(Debug)]
-struct Gear {
-    p1: Part,
-    p2: Part,
-}
-
-impl Gear {
-    fn ratio(&self) -> u64 {
-        self.p1.num * self.p2.num
+impl Part {
+    fn overlaps(&self, ul: Point, lr: Point) -> bool {
+        todo!()
     }
 }
 
 #[derive(Debug)]
+struct Gear {
+    ratio: u64,
+}
+
+#[derive(Debug, Clone, Copy)]
 struct Point(usize, usize);
 struct Schema(Vec<Vec<Value>>);
 
@@ -93,9 +92,38 @@ impl Schema {
         }
         false
     }
+    fn part_adjacent(part: &Part, p: Point) -> bool {
+        let Point(x, y) = p;
+        let ulx = x.saturating_sub(1);
+        let uly = y.saturating_sub(1);
+        let lrx = x + 1;
+        let lry = y + 1;
+        part.overlaps(Point(ulx, uly), Point(lrx, lry))
+    }
+    fn parts_adjacent(parts: &[Part], p: Point) -> Vec<Part> {
+        parts
+            .iter()
+            .filter(|part| Self::part_adjacent(part, p))
+            .take(3) // anything more than three is extra work
+            .copied()
+            .collect()
+    }
     fn gears(&self) -> Vec<Gear> {
         let parts = self.parts();
-        todo!()
+        let mut gears = vec![];
+        for (y, row) in self.0.iter().enumerate() {
+            for (x, v) in row.iter().enumerate() {
+                if let Some(Value::Symbol('*')) = self.get(x, y) {
+                    let adj = Self::parts_adjacent(&parts, Point(x, y));
+                    if adj.len() == 2 {
+                        gears.push(Gear {
+                            ratio: adj.iter().map(|a| a.num).product(),
+                        })
+                    }
+                }
+            }
+        }
+        gears
     }
     fn parts(&self) -> Vec<Part> {
         let mut parts = vec![];
