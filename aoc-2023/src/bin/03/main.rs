@@ -56,6 +56,9 @@ impl Schema {
     fn get(&self, x: usize, y: usize) -> Option<Value> {
         self.0.get(y).map(|row| row.get(x)).flatten().copied()
     }
+    fn is_part(&self, part: &Part) -> bool {
+        true
+    }
     fn parts(&self) -> Vec<Part> {
         let mut parts = vec![];
         for (y, row) in self.0.iter().enumerate() {
@@ -85,6 +88,6 @@ impl Schema {
                 parts.push(part);
             }
         }
-        parts
+        parts.into_iter().filter(|p| self.is_part(p)).collect()
     }
 }
