@@ -54,7 +54,6 @@ impl Schema {
     fn parts(&self) -> Vec<Part> {
         let mut parts = vec![];
         for (y, row) in self.0.iter().enumerate() {
-            // row is a &Vec<Value>
             println!("Got row: {row:?}");
             let mut iter = row.iter().enumerate();
             loop {
