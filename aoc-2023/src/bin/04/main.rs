@@ -1,8 +1,4 @@
-#![allow(unused, dead_code)]
-
-use std::collections::HashMap;
-
-use anyhow::{bail, Result};
+use anyhow::Result;
 use nom::{
     bytes::complete::{tag, take_while1},
     character::{
@@ -21,6 +17,7 @@ fn main() -> Result<()> {
     println!("p1ex={}", scratchcard_points(example));
     println!("p1in={}", scratchcard_points(input));
     println!("p2ex={}", scratchcard_burnout(example));
+    println!("p2in={}", scratchcard_burnout(input));
     Ok(())
 }
 
@@ -28,19 +25,21 @@ fn scratchcard_points(input: &str) -> u64 {
     parse(input).iter().map(|c| c.points()).sum()
 }
 
-fn scratchcard_burnout(input: &str) -> usize {
-    let cards = parse(input);
-    for card in cards.iter() {
-        let matching = card.matching();
-        println!("Card {} has matching: {}", card.id, matching);
+fn scratchcard_burnout(input: &str) -> u64 {
+    let mut cards = parse(input);
+    let cards = cards.as_mut_slice();
+    for i in 0..cards.len() {
+        let matching = cards[i].matching();
+        for j in (i + 1)..=(i + matching) {
+            cards[j].count += cards[i].count;
+        }
     }
-    todo!()
+    cards.iter().map(|c| c.count).sum()
 }
 
 type Number = u64;
 #[derive(Debug, Clone)]
 struct Card {
-    id: u64,
     count: u64,
     winning: Vec<Number>,
     ours: Vec<Number>,
@@ -81,13 +80,12 @@ fn parse_cards(input: &str) -> IResult<&str, Vec<Card>> {
 fn parse_card(input: &str) -> IResult<&str, Card> {
     let (input, _) = tag("Card")(input)?;
     let (input, _) = space1(input)?;
-    let (input, id) = parse_u64(input)?;
+    let (input, _id) = parse_u64(input)?;
     let (input, _) = tag(":")(input)?;
     let (input, _) = space1(input)?;
     let (input, (winning, _, ours)) = tuple((parse_nums, tag("|"), parse_nums))(input)?;
     let count = 1;
     let card = Card {
-        id,
         count,
         winning,
         ours,
