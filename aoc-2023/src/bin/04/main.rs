@@ -1,4 +1,3 @@
-use anyhow::Result;
 use nom::{
     bytes::complete::{tag, take_while1},
     character::{
@@ -11,14 +10,13 @@ use nom::{
     IResult,
 };
 
-fn main() -> Result<()> {
+fn main() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
     println!("p1ex={}", scratchcard_points(example));
     println!("p1in={}", scratchcard_points(input));
     println!("p2ex={}", scratchcard_burnout(example));
     println!("p2in={}", scratchcard_burnout(input));
-    Ok(())
 }
 
 fn scratchcard_points(input: &str) -> u64 {
