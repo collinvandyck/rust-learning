@@ -15,14 +15,74 @@ use nom::{
 };
 use std::ops;
 
-fn main() {}
+fn main() {
+    let example = include_str!("example.txt");
+    let input = include_str!("input.txt");
+    println!("p1ex={}", lowest_location(example, SeedMode::Literal));
+    println!("p1in={}", lowest_location(input, SeedMode::Literal));
+}
+
+enum SeedMode {
+    Literal,
+    Range,
+}
+
+fn lowest_location(input: &str, seed_mode: SeedMode) -> Id {
+    let almanac = parse(input);
+    almanac
+        .seeds(seed_mode)
+        .iter()
+        .copied()
+        .map(|id| almanac.lookup(id, "seed", "location"))
+        .min()
+        .unwrap()
+}
 
 type Resource = String;
 type Id = u64;
 
+struct IdType(Id, Resource);
+
 struct Almanac {
     seeds: Vec<Id>,
     mappings: Vec<Mapping>,
+}
+
+impl Almanac {
+    fn seeds(&self, seed_mode: SeedMode) -> Vec<Id> {
+        match seed_mode {
+            SeedMode::Literal => self.seeds.clone(),
+            _ => panic!("boom"),
+        }
+    }
+
+    fn lookup(&self, mut src_id: Id, src_typ: impl AsRef<str>, fd_typ: impl AsRef<str>) -> Id {
+        let fd_typ = fd_typ.as_ref().to_string();
+        let mut src_typ = src_typ.as_ref().to_string();
+        loop {
+            let (dst_typ, dst_id) = self
+                .mappings
+                .iter()
+                .filter(|m| m.src.resource == src_typ)
+                .flat_map(|m| m.dst_mapping(src_id, &src_typ))
+                .next()
+                .unwrap_or_else(|| {
+                    let dst_typ = self
+                        .mappings
+                        .iter()
+                        .find(|m| m.src.resource == src_typ)
+                        .map(|m| m.dst.resource.clone())
+                        .unwrap();
+                    (dst_typ, src_id)
+                });
+            if dst_typ == fd_typ {
+                // we're done
+                return dst_id;
+            }
+            src_typ = dst_typ;
+            src_id = dst_id;
+        }
+    }
 }
 
 struct ResourceMaps {
@@ -34,6 +94,21 @@ struct ResourceMaps {
 struct Mapping {
     src: ResourceRange,
     dst: ResourceRange,
+}
+
+impl Mapping {
+    // for a given source id and type, what is the destination that it maps to. if there is no
+    // mapping that fits, None will be returned.
+    fn dst_mapping(&self, src_id: Id, src_typ: &Resource) -> Option<(Resource, Id)> {
+        if &self.src.resource == src_typ {
+            if self.src.ids.contains(&src_id) {
+                let distance = src_id - self.src.ids.start;
+                let dst_id = self.dst.ids.start + distance;
+                return Some((self.dst.resource.clone(), dst_id));
+            }
+        }
+        None
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
