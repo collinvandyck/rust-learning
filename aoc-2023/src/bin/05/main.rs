@@ -59,7 +59,7 @@ impl RangeExt for ops::Range<Id> {
     fn intersect(&self, other: &Self) -> Option<Self> {
         let start = self.start.max(other.start);
         let end = self.end.min(other.end);
-        if end >= start {
+        if end > start {
             Some(start..end)
         } else {
             None
@@ -143,9 +143,11 @@ impl ResourceRanges {
         if self.src.resource == t.resource {
             let dst = self.dst.resource.clone();
             if let Some(range) = self.src.range.intersect(&t.range) {
-                let offset = range.start - t.range.start;
+                let offset = range.start - self.src.range.start;
                 let distance = range.end - range.start;
-                let range = (self.dst.range.start + offset)..(self.dst.range.start + distance);
+                let start = self.dst.range.start + offset;
+                let end = start + distance;
+                let range = start..(start + distance);
                 return Some(TypedRange {
                     resource: self.dst.resource.clone(),
                     range,
@@ -267,17 +269,29 @@ mod tests {
                 },
             })
         );
+
+        // range tests for the first range
         let range = almanac.ranges.get(0).unwrap();
-        assert_eq!(
-            range.intersection(TypedRange {
-                resource: resource("seed"),
-                range: 98..99,
-            }),
-            Some(TypedRange {
-                resource: resource("soil"),
-                range: 50..51,
-            })
-        );
+        for (src_range, dst_range) in [
+            ((99..100), Some((51..52))),
+            ((98..99), Some((50..51))),
+            ((98..98), None), // invalid range
+            ((1..2), None),
+            ((100..101), None),
+        ] {
+            assert_eq!(
+                range.intersection(TypedRange {
+                    resource: resource("seed"),
+                    range: src_range.clone(),
+                }),
+                dst_range.clone().map(|range| TypedRange {
+                    resource: resource("soil"),
+                    range
+                }),
+                "expected {src_range:?} to map to {dst_range:?}"
+            );
+        }
+
         assert_eq!(
             almanac.ranges.get(1),
             Some(&ResourceRanges {
@@ -301,6 +315,7 @@ mod tests {
         assert_eq!(lowest_location(input, SeedMode::Literal), 240320250);
     }
 
+    #[test]
     fn test_ranges() {
         let r1: IdRange = (1..5);
         let r2: IdRange = (2..8);
@@ -312,6 +327,6 @@ mod tests {
 
         let r1: IdRange = (1..5);
         let r2: IdRange = (5..10);
-        assert_eq!(r1.intersect(&r2), Some(5..5));
+        assert_eq!(r1.intersect(&r2), None);
     }
 }
