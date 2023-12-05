@@ -1,0 +1,9 @@
+[package]
+name = "logos-1"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.75"
+logos =  "0.13.0"
+thiserror = "1.0.50"
