@@ -40,6 +40,11 @@ fn lowest_location(input: &str, seed_mode: SeedMode) -> Id {
 }
 
 type Resource = String;
+
+fn resource(s: impl AsRef<str>) -> Resource {
+    s.as_ref().to_string()
+}
+
 type Id = u64;
 type IdRange = ops::Range<Id>;
 
@@ -63,6 +68,7 @@ impl RangeExt for ops::Range<Id> {
 }
 
 struct IdType(Id, Resource);
+#[derive(Debug, PartialEq, Eq)]
 struct TypedRange {
     resource: Resource,
     range: IdRange,
@@ -133,7 +139,7 @@ impl ResourceRanges {
     // for the given typed range, return the overlap with the src ranges as ranged types for the
     // destination. If the source type is wrong, or the ranges do not overlap, None will be
     // returned.
-    fn source_intersects(&self, t: TypedRange) -> Option<TypedRange> {
+    fn intersection(&self, t: TypedRange) -> Option<TypedRange> {
         if self.src.resource == t.resource {
             let dst = self.dst.resource.clone();
             if let Some(range) = self.src.range.intersect(&t.range) {
@@ -240,7 +246,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_example() {
+    fn test_basics() {
         let ex = include_str!("example.txt");
         let almanac = parse(&ex);
         assert_eq!(almanac.seeds, vec![79, 14, 55, 13]);
@@ -256,6 +262,17 @@ mod tests {
                     resource: String::from("soil"),
                     range: (50..52),
                 },
+            })
+        );
+        let range = almanac.ranges.get(0).unwrap();
+        assert_eq!(
+            range.intersection(TypedRange {
+                resource: resource("seed"),
+                range: 98..99,
+            }),
+            Some(TypedRange {
+                resource: resource("soil"),
+                range: 50..51,
             })
         );
         assert_eq!(
