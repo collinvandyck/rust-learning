@@ -30,7 +30,7 @@ enum SeedMode {
 fn lowest_location(input: &str, seed_mode: SeedMode) -> Id {
     let almanac = parse(input);
     almanac
-        .seeds(seed_mode)
+        .seeds
         .iter()
         .copied()
         .map(|id| almanac.lookup(id, "seed", "location"))
@@ -49,13 +49,6 @@ struct Almanac {
 }
 
 impl Almanac {
-    fn seeds(&self, seed_mode: SeedMode) -> Vec<Id> {
-        match seed_mode {
-            SeedMode::Literal => self.seeds.clone(),
-            SeedMode::Range => {}
-        }
-    }
-
     fn lookup(&self, mut src_id: Id, src_typ: impl AsRef<str>, fd_typ: impl AsRef<str>) -> Id {
         let fd_typ = fd_typ.as_ref().to_string();
         let mut src_typ = src_typ.as_ref().to_string();
@@ -193,7 +186,7 @@ fn parse_id(input: &str) -> IResult<&str, Id> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{parse, Mapping};
+    use super::*;
 
     #[test]
     fn test_parse_example() {
@@ -227,5 +220,13 @@ mod tests {
                 },
             })
         );
+    }
+
+    #[test]
+    fn test_results() {
+        let example = include_str!("example.txt");
+        let input = include_str!("input.txt");
+        assert_eq!(lowest_location(example, SeedMode::Literal), 35);
+        assert_eq!(lowest_location(input, SeedMode::Literal), 240320250);
     }
 }
