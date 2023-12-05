@@ -43,14 +43,18 @@ type Id = u64;
 type IdRange = ops::Range<Id>;
 
 struct IdType(Id, Resource);
+struct TypedRange {
+    resource: Resource,
+    typ: IdRange,
+}
 
 struct Almanac {
     seeds: Vec<Id>,
-    mappings: Vec<Mapping>,
+    ranges: Vec<ResourceRanges>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Mapping {
+struct ResourceRanges {
     src: ResourceRange,
     dst: ResourceRange,
 }
@@ -67,14 +71,14 @@ impl Almanac {
         let mut src_typ = src_typ.as_ref().to_string();
         loop {
             let (dst_typ, dst_id) = self
-                .mappings
+                .ranges
                 .iter()
                 .filter(|m| m.src.resource == src_typ)
                 .flat_map(|m| m.dst_id_for_src(src_id, &src_typ))
                 .next()
                 .unwrap_or_else(|| {
                     let dst_typ = self
-                        .mappings
+                        .ranges
                         .iter()
                         .find(|m| m.src.resource == src_typ)
                         .map(|m| m.dst.resource.clone())
@@ -91,7 +95,7 @@ impl Almanac {
     }
 }
 
-impl Mapping {
+impl ResourceRanges {
     // for a given source id and type, what is the destination that it maps to. if there is no
     // mapping that fits, None will be returned.
     fn dst_id_for_src(&self, src_id: Id, src_typ: &Resource) -> Option<(Resource, Id)> {
@@ -103,6 +107,16 @@ impl Mapping {
             }
         }
         None
+    }
+
+    // for the given typed range, return the overlap with the src ranges as ranged types for the
+    // destination. If the source type is wrong, or the ranges do not overlap, None will be
+    // returned.
+    fn source_mappings(&self, t: TypedRange) -> Option<TypedRange> {
+        if self.src.resource != t.resource {
+            return None;
+        }
+        todo!()
     }
 }
 
@@ -120,16 +134,22 @@ fn parse_almanac(input: &str) -> IResult<&str, Almanac> {
     let (input, _) = line_ending(input)?;
     let (input, _) = line_ending(input)?;
     let (input, mappings) = parse_mappings(input)?;
-    Ok((input, Almanac { seeds, mappings }))
+    Ok((
+        input,
+        Almanac {
+            seeds,
+            ranges: mappings,
+        },
+    ))
 }
 
-fn parse_mappings(input: &str) -> IResult<&str, Vec<Mapping>> {
+fn parse_mappings(input: &str) -> IResult<&str, Vec<ResourceRanges>> {
     let (input, maps) = separated_list0(complete::line_ending, parse_mapping)(input)?;
     let maps = maps.into_iter().flatten().collect::<Vec<_>>();
     Ok((input, maps))
 }
 
-fn parse_mapping(input: &str) -> IResult<&str, Vec<Mapping>> {
+fn parse_mapping(input: &str) -> IResult<&str, Vec<ResourceRanges>> {
     let (input, (src_resource, _, dst_resource, _, _, _)) = tuple((
         parse_resource,
         tag("-to-"),
@@ -142,7 +162,7 @@ fn parse_mapping(input: &str) -> IResult<&str, Vec<Mapping>> {
     let (input, _) = nom::combinator::opt(line_ending)(input)?;
     let ranges = ranges
         .into_iter()
-        .map(|(dst, src, amt)| Mapping {
+        .map(|(dst, src, amt)| ResourceRanges {
             src: ResourceRange {
                 resource: src_resource.clone(),
                 ids: src..(src + amt),
@@ -191,10 +211,10 @@ mod tests {
         let ex = include_str!("example.txt");
         let almanac = parse(&ex);
         assert_eq!(almanac.seeds, vec![79, 14, 55, 13]);
-        assert_eq!(almanac.mappings.len(), 18);
+        assert_eq!(almanac.ranges.len(), 18);
         assert_eq!(
-            almanac.mappings.get(0),
-            Some(&Mapping {
+            almanac.ranges.get(0),
+            Some(&ResourceRanges {
                 src: crate::ResourceRange {
                     resource: String::from("seed"),
                     ids: (98..100),
@@ -206,8 +226,8 @@ mod tests {
             })
         );
         assert_eq!(
-            almanac.mappings.get(1),
-            Some(&Mapping {
+            almanac.ranges.get(1),
+            Some(&ResourceRanges {
                 src: crate::ResourceRange {
                     resource: String::from("seed"),
                     ids: (50..98),
