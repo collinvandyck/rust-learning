@@ -104,10 +104,12 @@ impl Mapping {
     }
 }
 
+type IdRange = ops::Range<Id>;
+
 #[derive(Debug, PartialEq, Eq)]
 struct ResourceRange {
     resource: Resource,
-    ids: ops::Range<Id>,
+    ids: IdRange,
 }
 
 // ----------- parsing ---------------------------------------------------------------
