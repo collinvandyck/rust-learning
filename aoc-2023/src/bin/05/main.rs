@@ -40,12 +40,25 @@ fn lowest_location(input: &str, seed_mode: SeedMode) -> Id {
 
 type Resource = String;
 type Id = u64;
+type IdRange = ops::Range<Id>;
 
 struct IdType(Id, Resource);
 
 struct Almanac {
     seeds: Vec<Id>,
     mappings: Vec<Mapping>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct Mapping {
+    src: ResourceRange,
+    dst: ResourceRange,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct ResourceRange {
+    resource: Resource,
+    ids: IdRange,
 }
 
 impl Almanac {
@@ -78,12 +91,6 @@ impl Almanac {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-struct Mapping {
-    src: ResourceRange,
-    dst: ResourceRange,
-}
-
 impl Mapping {
     // for a given source id and type, what is the destination that it maps to. if there is no
     // mapping that fits, None will be returned.
@@ -97,14 +104,6 @@ impl Mapping {
         }
         None
     }
-}
-
-type IdRange = ops::Range<Id>;
-
-#[derive(Debug, PartialEq, Eq)]
-struct ResourceRange {
-    resource: Resource,
-    ids: IdRange,
 }
 
 // ----------- parsing ---------------------------------------------------------------
