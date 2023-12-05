@@ -30,11 +30,13 @@ struct ResourceMaps {
     to: Resource,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 struct Mapping {
     src: ResourceRange,
     dst: ResourceRange,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 struct ResourceRange {
     resource: Resource,
     ids: ops::Range<Id>,
@@ -77,17 +79,11 @@ fn parse_mapping(input: &str) -> IResult<&str, Vec<Mapping>> {
         .map(|(dst, src, amt)| Mapping {
             src: ResourceRange {
                 resource: src_resource.clone(),
-                ids: ops::Range {
-                    start: src,
-                    end: src + amt,
-                },
+                ids: src..(src + amt),
             },
             dst: ResourceRange {
                 resource: dst_resource.clone(),
-                ids: ops::Range {
-                    start: dst,
-                    end: dst + amt,
-                },
+                ids: dst..(dst + amt),
             },
         })
         .collect::<Vec<_>>();
@@ -120,12 +116,26 @@ fn parse_id(input: &str) -> IResult<&str, Id> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parse;
+    use crate::{parse, Mapping};
 
     #[test]
     fn test_parse_example() {
         let ex = include_str!("example.txt");
         let almanac = parse(&ex);
         assert_eq!(almanac.seeds, vec![79, 14, 55, 13]);
+        assert_eq!(almanac.mappings.len(), 18);
+        assert_eq!(
+            almanac.mappings.get(0),
+            Some(&Mapping {
+                src: crate::ResourceRange {
+                    resource: String::from("seed"),
+                    ids: (98..100),
+                },
+                dst: crate::ResourceRange {
+                    resource: String::from("soil"),
+                    ids: (50..52),
+                },
+            })
+        )
     }
 }
