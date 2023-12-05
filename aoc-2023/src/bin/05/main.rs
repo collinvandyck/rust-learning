@@ -42,6 +42,19 @@ type Resource = String;
 type Id = u64;
 type IdRange = ops::Range<Id>;
 
+trait RangeExt
+where
+    Self: Sized,
+{
+    fn intersect(other: &Self) -> Option<Self>;
+}
+
+impl RangeExt for ops::Range<Id> {
+    fn intersect(other: &Self) -> Option<Self> {
+        None
+    }
+}
+
 struct IdType(Id, Resource);
 struct TypedRange {
     resource: Resource,
@@ -62,7 +75,7 @@ struct ResourceRanges {
 #[derive(Debug, PartialEq, Eq)]
 struct ResourceRange {
     resource: Resource,
-    ids: IdRange,
+    range: IdRange,
 }
 
 impl Almanac {
@@ -100,9 +113,9 @@ impl ResourceRanges {
     // mapping that fits, None will be returned.
     fn dst_id_for_src(&self, src_id: Id, src_typ: &Resource) -> Option<(Resource, Id)> {
         if &self.src.resource == src_typ {
-            if self.src.ids.contains(&src_id) {
-                let distance = src_id - self.src.ids.start;
-                let dst_id = self.dst.ids.start + distance;
+            if self.src.range.contains(&src_id) {
+                let distance = src_id - self.src.range.start;
+                let dst_id = self.dst.range.start + distance;
                 return Some((self.dst.resource.clone(), dst_id));
             }
         }
@@ -165,11 +178,11 @@ fn parse_mapping(input: &str) -> IResult<&str, Vec<ResourceRanges>> {
         .map(|(dst, src, amt)| ResourceRanges {
             src: ResourceRange {
                 resource: src_resource.clone(),
-                ids: src..(src + amt),
+                range: src..(src + amt),
             },
             dst: ResourceRange {
                 resource: dst_resource.clone(),
-                ids: dst..(dst + amt),
+                range: dst..(dst + amt),
             },
         })
         .collect::<Vec<_>>();
@@ -217,11 +230,11 @@ mod tests {
             Some(&ResourceRanges {
                 src: crate::ResourceRange {
                     resource: String::from("seed"),
-                    ids: (98..100),
+                    range: (98..100),
                 },
                 dst: crate::ResourceRange {
                     resource: String::from("soil"),
-                    ids: (50..52),
+                    range: (50..52),
                 },
             })
         );
@@ -230,11 +243,11 @@ mod tests {
             Some(&ResourceRanges {
                 src: crate::ResourceRange {
                     resource: String::from("seed"),
-                    ids: (50..98),
+                    range: (50..98),
                 },
                 dst: crate::ResourceRange {
                     resource: String::from("soil"),
-                    ids: (52..100),
+                    range: (52..100),
                 },
             })
         );
