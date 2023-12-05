@@ -52,7 +52,7 @@ impl Almanac {
     fn seeds(&self, seed_mode: SeedMode) -> Vec<Id> {
         match seed_mode {
             SeedMode::Literal => self.seeds.clone(),
-            _ => panic!("boom"),
+            SeedMode::Range => {}
         }
     }
 
@@ -116,6 +116,8 @@ struct ResourceRange {
     resource: Resource,
     ids: ops::Range<Id>,
 }
+
+// ----------- parsing ---------------------------------------------------------------
 
 fn parse(input: &str) -> Almanac {
     let (input, almanac) = parse_almanac(input).unwrap();
