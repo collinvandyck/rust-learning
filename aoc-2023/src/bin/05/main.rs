@@ -13,6 +13,7 @@ use nom::{
     multi::separated_list0,
     IResult,
 };
+use std::collections::HashMap;
 use std::ops;
 
 fn main() {
@@ -64,21 +65,22 @@ impl RangeExt for ops::Range<Id> {
 struct IdType(Id, Resource);
 struct TypedRange {
     resource: Resource,
-    typ: IdRange,
+    range: IdRange,
 }
 
 struct Almanac {
     seeds: Vec<Id>,
+    nexts: HashMap<Resource, Resource>,
     ranges: Vec<ResourceRanges>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct ResourceRanges {
     src: ResourceRange,
     dst: ResourceRange,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct ResourceRange {
     resource: Resource,
     range: IdRange,
@@ -131,11 +133,17 @@ impl ResourceRanges {
     // for the given typed range, return the overlap with the src ranges as ranged types for the
     // destination. If the source type is wrong, or the ranges do not overlap, None will be
     // returned.
-    fn source_mappings(&self, t: TypedRange) -> Option<TypedRange> {
-        if self.src.resource != t.resource {
-            return None;
+    fn source_intersects(&self, t: TypedRange) -> Option<TypedRange> {
+        if self.src.resource == t.resource {
+            let dst = self.dst.resource.clone();
+            if let Some(range) = self.src.range.intersect(&t.range) {
+                return Some(TypedRange {
+                    resource: self.dst.resource.clone(),
+                    range,
+                });
+            }
         }
-        todo!()
+        None
     }
 }
 
@@ -153,10 +161,16 @@ fn parse_almanac(input: &str) -> IResult<&str, Almanac> {
     let (input, _) = line_ending(input)?;
     let (input, _) = line_ending(input)?;
     let (input, mappings) = parse_mappings(input)?;
+    let nexts = mappings
+        .iter()
+        .cloned()
+        .map(|m| (m.src.resource, m.dst.resource))
+        .collect::<HashMap<_, _>>();
     Ok((
         input,
         Almanac {
             seeds,
+            nexts,
             ranges: mappings,
         },
     ))
