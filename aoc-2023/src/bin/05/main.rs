@@ -136,6 +136,19 @@ mod tests {
                     ids: (50..52),
                 },
             })
-        )
+        );
+        assert_eq!(
+            almanac.mappings.get(1),
+            Some(&Mapping {
+                src: crate::ResourceRange {
+                    resource: String::from("seed"),
+                    ids: (50..98),
+                },
+                dst: crate::ResourceRange {
+                    resource: String::from("soil"),
+                    ids: (52..100),
+                },
+            })
+        );
     }
 }
