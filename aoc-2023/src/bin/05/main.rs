@@ -184,6 +184,8 @@ fn parse_id(input: &str) -> IResult<&str, Id> {
     map_res(parser, |f: &str| f.parse::<u64>())(input)
 }
 
+// ----------- tests -----------------------------------------------------------------
+
 #[cfg(test)]
 mod tests {
     use super::*;
