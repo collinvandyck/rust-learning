@@ -46,12 +46,18 @@ trait RangeExt
 where
     Self: Sized,
 {
-    fn intersect(other: &Self) -> Option<Self>;
+    fn intersect(&self, other: &Self) -> Option<Self>;
 }
 
 impl RangeExt for ops::Range<Id> {
-    fn intersect(other: &Self) -> Option<Self> {
-        None
+    fn intersect(&self, other: &Self) -> Option<Self> {
+        let start = self.start.max(other.start);
+        let end = self.end.min(other.end);
+        if end >= start {
+            Some(start..end)
+        } else {
+            None
+        }
     }
 }
 
@@ -259,5 +265,19 @@ mod tests {
         let input = include_str!("input.txt");
         assert_eq!(lowest_location(example, SeedMode::Literal), 35);
         assert_eq!(lowest_location(input, SeedMode::Literal), 240320250);
+    }
+
+    fn test_ranges() {
+        let r1: IdRange = (1..5);
+        let r2: IdRange = (2..8);
+        assert_eq!(r1.intersect(&r2), Some(2..5));
+
+        let r1: IdRange = (1..5);
+        let r2: IdRange = (7..10);
+        assert_eq!(r1.intersect(&r2), None);
+
+        let r1: IdRange = (1..5);
+        let r2: IdRange = (5..10);
+        assert_eq!(r1.intersect(&r2), Some(5..5));
     }
 }
