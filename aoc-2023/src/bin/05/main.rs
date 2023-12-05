@@ -143,6 +143,9 @@ impl ResourceRanges {
         if self.src.resource == t.resource {
             let dst = self.dst.resource.clone();
             if let Some(range) = self.src.range.intersect(&t.range) {
+                let offset = range.start - t.range.start;
+                let distance = range.end - range.start;
+                let range = (self.dst.range.start + offset)..(self.dst.range.start + distance);
                 return Some(TypedRange {
                     resource: self.dst.resource.clone(),
                     range,
