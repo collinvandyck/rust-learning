@@ -78,11 +78,6 @@ impl Almanac {
     }
 }
 
-struct ResourceMaps {
-    from: Resource,
-    to: Resource,
-}
-
 #[derive(Debug, PartialEq, Eq)]
 struct Mapping {
     src: ResourceRange,
