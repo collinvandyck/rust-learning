@@ -2,7 +2,7 @@ use nom::{
     bytes::complete::{tag, take_while1},
     character::{
         self,
-        complete::{newline, space0, space1},
+        complete::{line_ending, space0, space1},
     },
     combinator::map_res,
     multi::separated_list0,
@@ -72,7 +72,7 @@ fn parse(input: &str) -> Vec<Card> {
 }
 
 fn parse_cards(input: &str) -> IResult<&str, Vec<Card>> {
-    separated_list0(newline, parse_card)(input.trim())
+    separated_list0(line_ending, parse_card)(input.trim())
 }
 
 fn parse_card(input: &str) -> IResult<&str, Card> {
