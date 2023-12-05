@@ -57,7 +57,7 @@ impl Almanac {
                 .mappings
                 .iter()
                 .filter(|m| m.src.resource == src_typ)
-                .flat_map(|m| m.dst_mapping(src_id, &src_typ))
+                .flat_map(|m| m.dst_id_for_src(src_id, &src_typ))
                 .next()
                 .unwrap_or_else(|| {
                     let dst_typ = self
@@ -92,7 +92,7 @@ struct Mapping {
 impl Mapping {
     // for a given source id and type, what is the destination that it maps to. if there is no
     // mapping that fits, None will be returned.
-    fn dst_mapping(&self, src_id: Id, src_typ: &Resource) -> Option<(Resource, Id)> {
+    fn dst_id_for_src(&self, src_id: Id, src_typ: &Resource) -> Option<(Resource, Id)> {
         if &self.src.resource == src_typ {
             if self.src.ids.contains(&src_id) {
                 let distance = src_id - self.src.ids.start;
