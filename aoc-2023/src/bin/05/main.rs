@@ -20,7 +20,7 @@ fn main() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
     println!("p1ex={}", lowest_location(example, SeedMode::Literal));
-    println!("p1in={}", lowest_location(input, SeedMode::Literal));
+    //println!("p1in={}", lowest_location(input, SeedMode::Literal));
 }
 
 enum SeedMode {
@@ -30,6 +30,25 @@ enum SeedMode {
 
 fn lowest_location(input: &str, seed_mode: SeedMode) -> Id {
     let almanac = parse(input);
+
+    // disregard seed mode for now.
+    let seeds = almanac
+        .seeds
+        .iter()
+        .copied()
+        .map(|id| TypedRange {
+            resource: resource("seed"),
+            range: id..id + 1,
+        })
+        .collect::<Vec<_>>();
+    let dst_resource = resource("location");
+    seeds
+        .into_iter()
+        .map(|range| almanac.lowest_for_range(range, &dst_resource))
+        .min()
+        .expect("no min found!")
+
+    /*
     almanac
         .seeds
         .iter()
@@ -37,6 +56,7 @@ fn lowest_location(input: &str, seed_mode: SeedMode) -> Id {
         .map(|id| almanac.lookup(id, "seed", "location"))
         .min()
         .unwrap()
+        */
 }
 
 type Resource = String;
@@ -117,16 +137,18 @@ impl Almanac {
         }
     }
 
-    fn lowest_for_range(&self, range: TypedRange, dst_res: Resource) -> Id {
+    fn lowest_for_range(&self, range: TypedRange, dst_res: &Resource) -> Id {
+        println!("lowest for range={range:?} dst_res={dst_res}");
         let mut lowest: Option<Id> = None;
         let mut queue = vec![range];
         while let Some(range) = queue.pop() {
-            let nexts = self
-                .ranges
+            println!("\nPopped range {range:?}");
+            self.ranges
                 .iter()
-                .flat_map(|r| r.dest_ranges_for(&range))
+                .flat_map(|rrs| rrs.dest_ranges_for(&range))
                 .for_each(|tr| {
-                    if tr.resource == dst_res {
+                    println!("  <== {tr:?}");
+                    if &tr.resource == dst_res {
                         lowest = Some(match lowest {
                             None => tr.range.start,
                             Some(lowest) if lowest < tr.range.start => lowest,
@@ -138,17 +160,6 @@ impl Almanac {
                 });
         }
         lowest.expect("no lowest found!")
-    }
-
-    // return a mapping of the specified src range to all of the ranges for the dest.
-    fn dst_ranges_for_src(&self, src: TypedRange) -> Vec<TypedRange> {
-        let dst_ranges: Vec<TypedRange> = self
-            .ranges
-            .iter()
-            .flat_map(|ranges| ranges.intersection(&src))
-            .collect();
-        // we need to fill in any gaps in the ranges based on the src.
-        todo!()
     }
 }
 
@@ -188,19 +199,66 @@ impl ResourceRanges {
         None
     }
 
+    // like intersection but also maps unmatched regions to bookended typed ranges
     // must return empty vec for no matches
     fn dest_ranges_for(&self, t: &TypedRange) -> Vec<TypedRange> {
-        todo!()
+        let mut res = vec![];
+        if self.src.resource == t.resource {
+            println!("  dest ranges for {t:?}");
+            let dst = self.dst.resource.clone();
+            println!(
+                "  ?range({}) {:?} intersect {:?}",
+                self.src.resource, self.src.range, t.range
+            );
+            if let Some(range) = self.src.range.intersect(&t.range) {
+                let (before, after) = self.src.range.before_after(&range);
+                let offset = range.start - self.src.range.start;
+                let distance = range.end - range.start;
+                let start = self.dst.range.start + offset;
+                let end = start + distance;
+                let range = start..(start + distance);
+                let next = TypedRange {
+                    resource: self.dst.resource.clone(),
+                    range,
+                };
+                if let Some(range) = before {
+                    let next = TypedRange {
+                        resource: self.dst.resource.clone(),
+                        range,
+                    };
+                    res.push(next);
+                }
+                res.push(next);
+
+                if let Some(range) = after {
+                    let next = TypedRange {
+                        resource: self.dst.resource.clone(),
+                        range,
+                    };
+                    res.push(next);
+                }
+
+                // TODO: push the bookends
+            } else {
+                // TODO: no intersection so just send the same ranges as self
+                // but with a dest type
+            }
+        }
+        res
     }
 }
 
 impl RangeExt for ops::Range<Id> {
     fn intersect(&self, other: &Self) -> Option<Self> {
+        println!("    intersect {self:?} x {other:?}");
         let start = self.start.max(other.start);
         let end = self.end.min(other.end);
         if end > start {
-            Some(start..end)
+            let res = Some(start..end);
+            println!("    {res:?}");
+            res
         } else {
+            println!("    None");
             None
         }
     }
@@ -389,6 +447,10 @@ mod tests {
         let r1: IdRange = (1..5);
         let r2: IdRange = (5..10);
         assert_eq!(r1.intersect(&r2), None);
+
+        let r1: IdRange = (50..98);
+        let r2: IdRange = (79..80);
+        assert_eq!(r1.intersect(&r2), Some(79..80));
     }
 
     #[test]
