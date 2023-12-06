@@ -117,6 +117,29 @@ impl Almanac {
         }
     }
 
+    fn lowest_for_range(&self, range: TypedRange, dst_res: Resource) -> Id {
+        let mut lowest: Option<Id> = None;
+        let mut queue = vec![range];
+        while let Some(range) = queue.pop() {
+            let nexts = self
+                .ranges
+                .iter()
+                .flat_map(|r| r.dest_ranges_for(&range))
+                .for_each(|tr| {
+                    if tr.resource == dst_res {
+                        lowest = Some(match lowest {
+                            None => tr.range.start,
+                            Some(lowest) if lowest < tr.range.start => lowest,
+                            Some(value) => tr.range.start,
+                        });
+                    } else {
+                        queue.push(tr);
+                    }
+                });
+        }
+        lowest.expect("no lowest found!")
+    }
+
     // return a mapping of the specified src range to all of the ranges for the dest.
     fn dst_ranges_for_src(&self, src: TypedRange) -> Vec<TypedRange> {
         let dst_ranges: Vec<TypedRange> = self
@@ -163,6 +186,11 @@ impl ResourceRanges {
             }
         }
         None
+    }
+
+    // must return empty vec for no matches
+    fn dest_ranges_for(&self, t: &TypedRange) -> Vec<TypedRange> {
+        todo!()
     }
 }
 
