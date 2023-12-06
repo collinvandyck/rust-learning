@@ -351,5 +351,6 @@ mod tests {
         let r1: IdRange = (1..10);
         assert_eq!(r1.before_after(&(5..15)), (Some(1..5), None));
         assert_eq!(r1.before_after(&(5..6)), (Some(1..5), Some(6..10)));
+        assert_eq!(r1.before_after(&(0..5)), (None, Some(5..10)));
     }
 }
