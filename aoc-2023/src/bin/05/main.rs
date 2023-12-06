@@ -53,6 +53,7 @@ where
     Self: Sized,
 {
     fn intersect(&self, other: &Self) -> Option<Self>;
+    fn before_after(&self, other: &Self) -> (Option<Self>, Option<Self>);
 }
 
 impl RangeExt for ops::Range<Id> {
@@ -64,6 +65,19 @@ impl RangeExt for ops::Range<Id> {
         } else {
             None
         }
+    }
+    fn before_after(&self, other: &Self) -> (Option<Self>, Option<Self>) {
+        let before = if self.start < other.start {
+            Some(self.start..other.start)
+        } else {
+            None
+        };
+        let after = if self.end > other.end {
+            Some(other.end..self.end)
+        } else {
+            None
+        };
+        (before, after)
     }
 }
 
@@ -120,6 +134,8 @@ impl Almanac {
             src_id = dst_id;
         }
     }
+
+    fn lookup_range(&self, range: TypedRange) {}
 }
 
 impl ResourceRanges {
@@ -275,7 +291,7 @@ mod tests {
         for (src_range, dst_range) in [
             ((99..100), Some((51..52))),
             ((98..99), Some((50..51))),
-            ((98..98), None), // invalid range
+            ((98..98), None),
             ((1..2), None),
             ((100..101), None),
         ] {
@@ -328,5 +344,12 @@ mod tests {
         let r1: IdRange = (1..5);
         let r2: IdRange = (5..10);
         assert_eq!(r1.intersect(&r2), None);
+    }
+
+    #[test]
+    fn test_ranges_expansion() {
+        let r1: IdRange = (1..10);
+        assert_eq!(r1.before_after(&(5..15)), (Some(1..5), None));
+        assert_eq!(r1.before_after(&(5..6)), (Some(1..5), Some(6..10)));
     }
 }
