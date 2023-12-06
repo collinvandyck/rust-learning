@@ -56,31 +56,6 @@ where
     fn before_after(&self, other: &Self) -> (Option<Self>, Option<Self>);
 }
 
-impl RangeExt for ops::Range<Id> {
-    fn intersect(&self, other: &Self) -> Option<Self> {
-        let start = self.start.max(other.start);
-        let end = self.end.min(other.end);
-        if end > start {
-            Some(start..end)
-        } else {
-            None
-        }
-    }
-    fn before_after(&self, other: &Self) -> (Option<Self>, Option<Self>) {
-        let before = if self.start < other.start {
-            Some(self.start..other.start)
-        } else {
-            None
-        };
-        let after = if self.end > other.end {
-            Some(other.end..self.end)
-        } else {
-            None
-        };
-        (before, after)
-    }
-}
-
 struct IdType(Id, Resource);
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct TypedRange {
@@ -188,6 +163,31 @@ impl ResourceRanges {
             }
         }
         None
+    }
+}
+
+impl RangeExt for ops::Range<Id> {
+    fn intersect(&self, other: &Self) -> Option<Self> {
+        let start = self.start.max(other.start);
+        let end = self.end.min(other.end);
+        if end > start {
+            Some(start..end)
+        } else {
+            None
+        }
+    }
+    fn before_after(&self, other: &Self) -> (Option<Self>, Option<Self>) {
+        let before = if self.start < other.start {
+            Some(self.start..other.start)
+        } else {
+            None
+        };
+        let after = if self.end > other.end {
+            Some(other.end..self.end)
+        } else {
+            None
+        };
+        (before, after)
     }
 }
 
