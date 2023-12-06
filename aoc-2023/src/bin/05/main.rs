@@ -54,7 +54,6 @@ where
 {
     fn intersect(&self, other: &Self) -> Option<Self>;
     fn before_after(&self, other: &Self) -> (Option<Self>, Option<Self>);
-    fn hydrate(&self, others: &[Self]) -> Vec<Self>;
 }
 
 impl RangeExt for ops::Range<Id> {
@@ -80,26 +79,20 @@ impl RangeExt for ops::Range<Id> {
         };
         (before, after)
     }
-    fn hydrate(&self, others: &[Self]) -> Vec<Self> {
-        if others.is_empty() {
-            return vec![self.clone()];
-        }
-        let mut results = vec![];
-        let mut others = others.to_vec();
-        others.sort_by_key(|f| f.start);
-        let mut start = self.start;
-        for other in others {
-            results.push(start..other.start);
-        }
-        results
-    }
 }
 
 struct IdType(Id, Resource);
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct TypedRange {
     resource: Resource,
     range: IdRange,
+}
+
+fn typed_range(r: impl AsRef<str>, range: IdRange) -> TypedRange {
+    TypedRange {
+        resource: r.as_ref().to_string(),
+        range,
+    }
 }
 
 struct Almanac {
@@ -161,6 +154,7 @@ impl Almanac {
     }
 }
 
+// a collection of dst and src ranges
 impl ResourceRanges {
     // for a given source id and type, what is the destination that it maps to. if there is no
     // mapping that fits, None will be returned.
@@ -177,7 +171,7 @@ impl ResourceRanges {
 
     // for the given typed range, return the overlap with the src ranges as ranged types for the
     // destination. If the source type is wrong, or the ranges do not overlap, None will be
-    // returned.
+    // returned. The return value is the source range along with the dest range.
     fn intersection(&self, t: &TypedRange) -> Option<TypedRange> {
         if self.src.resource == t.resource {
             let dst = self.dst.resource.clone();
@@ -370,7 +364,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ranges_expansion() {
+    fn test_ranges_before_after() {
         let r1: IdRange = (1..10);
         assert_eq!(r1.before_after(&(5..15)), (Some(1..5), None));
         assert_eq!(r1.before_after(&(5..6)), (Some(1..5), Some(6..10)));
