@@ -135,7 +135,15 @@ impl Almanac {
         }
     }
 
-    fn lookup_range(&self, range: TypedRange) {}
+    // return a mapping of the specified src range to all of the ranges for the dest.
+    fn dst_ranges_for_src(&self, src: TypedRange) -> Vec<TypedRange> {
+        self.ranges
+            .iter()
+            .filter(|r| r.src.resource == src.resource)
+            .map(|r| r.intersection(&src));
+
+        todo!()
+    }
 }
 
 impl ResourceRanges {
@@ -155,7 +163,7 @@ impl ResourceRanges {
     // for the given typed range, return the overlap with the src ranges as ranged types for the
     // destination. If the source type is wrong, or the ranges do not overlap, None will be
     // returned.
-    fn intersection(&self, t: TypedRange) -> Option<TypedRange> {
+    fn intersection(&self, t: &TypedRange) -> Option<TypedRange> {
         if self.src.resource == t.resource {
             let dst = self.dst.resource.clone();
             if let Some(range) = self.src.range.intersect(&t.range) {
@@ -296,7 +304,7 @@ mod tests {
             ((100..101), None),
         ] {
             assert_eq!(
-                range.intersection(TypedRange {
+                range.intersection(&TypedRange {
                     resource: resource("seed"),
                     range: src_range.clone(),
                 }),
