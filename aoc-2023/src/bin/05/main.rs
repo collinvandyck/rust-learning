@@ -54,6 +54,7 @@ where
 {
     fn intersect(&self, other: &Self) -> Option<Self>;
     fn before_after(&self, other: &Self) -> (Option<Self>, Option<Self>);
+    fn hydrate(&self, others: &[Self]) -> Vec<Self>;
 }
 
 impl RangeExt for ops::Range<Id> {
@@ -78,6 +79,19 @@ impl RangeExt for ops::Range<Id> {
             None
         };
         (before, after)
+    }
+    fn hydrate(&self, others: &[Self]) -> Vec<Self> {
+        if others.is_empty() {
+            return vec![self.clone()];
+        }
+        let mut results = vec![];
+        let mut others = others.to_vec();
+        others.sort_by_key(|f| f.start);
+        let mut start = self.start;
+        for other in others {
+            results.push(start..other.start);
+        }
+        results
     }
 }
 
@@ -137,11 +151,12 @@ impl Almanac {
 
     // return a mapping of the specified src range to all of the ranges for the dest.
     fn dst_ranges_for_src(&self, src: TypedRange) -> Vec<TypedRange> {
-        self.ranges
+        let dst_ranges: Vec<TypedRange> = self
+            .ranges
             .iter()
-            .filter(|r| r.src.resource == src.resource)
-            .map(|r| r.intersection(&src));
-
+            .flat_map(|ranges| ranges.intersection(&src))
+            .collect();
+        // we need to fill in any gaps in the ranges based on the src.
         todo!()
     }
 }
