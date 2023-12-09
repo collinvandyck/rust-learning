@@ -91,6 +91,25 @@ impl Type {
             Type::FiveOfKind => Type::FiveOfKind,
         }
     }
+    fn from(cards: &[Card]) -> Self {
+        let mut hm = HashMap::new();
+        for card in cards {
+            *hm.entry(card).or_insert(0) += 1;
+        }
+        let mut counts: Vec<_> = hm.into_iter().map(|(_, count)| count).collect();
+        counts.sort();
+        counts.reverse();
+        use Type::*;
+        match counts.as_slice() {
+            &[5, ..] => FiveOfKind,
+            &[4, ..] => FourOfKind,
+            &[3, 2, ..] => FullHouse,
+            &[3, ..] => ThreeOfKind,
+            &[2, 2, ..] => TwoPair,
+            &[2, ..] => OnePair,
+            _ => HighCard,
+        }
+    }
 }
 
 impl Card {
@@ -135,28 +154,6 @@ impl Ord for Bid {
 impl PartialOrd for Bid {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-impl From<&[Card]> for Type {
-    fn from(cards: &[Card]) -> Self {
-        let mut hm = HashMap::new();
-        for card in cards {
-            *hm.entry(card).or_insert(0) += 1;
-        }
-        let mut counts: Vec<_> = hm.into_iter().map(|(_, count)| count).collect();
-        counts.sort();
-        counts.reverse();
-        use Type::*;
-        match counts.as_slice() {
-            &[5, ..] => FiveOfKind,
-            &[4, ..] => FourOfKind,
-            &[3, 2, ..] => FullHouse,
-            &[3, ..] => ThreeOfKind,
-            &[2, 2, ..] => TwoPair,
-            &[2, ..] => OnePair,
-            _ => HighCard,
-        }
     }
 }
 
@@ -262,8 +259,16 @@ mod tests {
     #[test]
     fn test_joker_ord() {
         let h1 = parse_hand("JKKK2", Mode::Jokers);
+        assert!(h1.typ == Type::FourOfKind);
         let h2 = parse_hand("QQQQ2", Mode::Jokers);
+        assert!(h2.typ == Type::FourOfKind);
         assert!(h1 < h2)
+    }
+
+    #[test]
+    fn test_joker_parse() {
+        let h1 = parse_hand("K1JJ2", Mode::Jokers);
+        assert_eq!(h1.typ, Type::ThreeOfKind);
     }
 
     fn cards(chs: &str) -> Vec<Card> {
