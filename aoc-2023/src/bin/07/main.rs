@@ -11,11 +11,11 @@ struct Bid(Hand, u64);
 enum Type {
     HighCard(Card) = 1,
     OnePair(Card) = 2,
-    TwoPair = 3,
-    ThreeOfKind = 4,
-    FullHouse = 5,
-    FourOfKind = 6,
-    FiveOfKind = 7,
+    TwoPair(Card, Card) = 3,
+    ThreeOfKind(Card) = 4,
+    FullHouse(Card, Card) = 5,
+    FourOfKind(Card) = 6,
+    FiveOfKind(Card) = 7,
 }
 
 impl From<&[Card]> for Type {
