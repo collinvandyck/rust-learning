@@ -217,6 +217,38 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_and_sort_p2() {
+        use Type::*;
+
+        let mode = Mode::Jokers;
+        let example = include_str!("example.txt");
+        let mut bids = parse(example, mode);
+        assert_eq!(
+            bids,
+            vec![
+                Bid(Hand::from("32T3K", OnePair, mode), 765),
+                Bid(Hand::from("T55J5", FourOfKind, mode), 684),
+                Bid(Hand::from("KK677", TwoPair, mode), 28),
+                Bid(Hand::from("KTJJT", FourOfKind, mode), 220),
+                Bid(Hand::from("QQQJA", FourOfKind, mode), 483),
+            ]
+        );
+
+        // test sorted bids
+        bids.sort();
+        assert_eq!(
+            bids,
+            vec![
+                Bid(Hand::from("32T3K", OnePair, mode), 765),
+                Bid(Hand::from("KK677", TwoPair, mode), 28),
+                Bid(Hand::from("T55J5", FourOfKind, mode), 684),
+                Bid(Hand::from("QQQJA", FourOfKind, mode), 483),
+                Bid(Hand::from("KTJJT", FourOfKind, mode), 220),
+            ]
+        );
+    }
+
+    #[test]
     fn test_hand_cmp_one() {
         let h1 = parse_hand("33332", Mode::Normal);
         let h2 = parse_hand("2AAAA", Mode::Normal);
@@ -225,6 +257,31 @@ mod tests {
         assert_eq!(h2.cards, cards("2AAAA"));
         assert_eq!(h2.typ, Type::FourOfKind);
         assert!(h1 > h2);
+    }
+
+    #[test]
+    fn test_hands_part_two() {
+        use Type::*;
+        assert_eq!(
+            parse_hand("32T3K", Mode::Jokers),
+            Hand::from("32T3K", OnePair, Mode::Jokers)
+        );
+        assert_eq!(
+            parse_hand("T55J5", Mode::Jokers),
+            Hand::from("T55J5", FourOfKind, Mode::Jokers)
+        );
+        assert_eq!(
+            parse_hand("KK677", Mode::Jokers),
+            Hand::from("KK677", TwoPair, Mode::Jokers)
+        );
+        assert_eq!(
+            parse_hand("KTJJT", Mode::Jokers),
+            Hand::from("KTJJT", FourOfKind, Mode::Jokers)
+        );
+        assert_eq!(
+            parse_hand("QQQJA", Mode::Jokers),
+            Hand::from("QQQJA", FourOfKind, Mode::Jokers)
+        );
     }
 
     fn cards(chs: &str) -> Vec<Card> {
