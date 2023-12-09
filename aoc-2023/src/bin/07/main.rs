@@ -260,28 +260,10 @@ mod tests {
     }
 
     #[test]
-    fn test_hands_part_two() {
-        use Type::*;
-        assert_eq!(
-            parse_hand("32T3K", Mode::Jokers),
-            Hand::from("32T3K", OnePair, Mode::Jokers)
-        );
-        assert_eq!(
-            parse_hand("T55J5", Mode::Jokers),
-            Hand::from("T55J5", FourOfKind, Mode::Jokers)
-        );
-        assert_eq!(
-            parse_hand("KK677", Mode::Jokers),
-            Hand::from("KK677", TwoPair, Mode::Jokers)
-        );
-        assert_eq!(
-            parse_hand("KTJJT", Mode::Jokers),
-            Hand::from("KTJJT", FourOfKind, Mode::Jokers)
-        );
-        assert_eq!(
-            parse_hand("QQQJA", Mode::Jokers),
-            Hand::from("QQQJA", FourOfKind, Mode::Jokers)
-        );
+    fn test_joker_ord() {
+        let h1 = parse_hand("JKKK2", Mode::Jokers);
+        let h2 = parse_hand("QQQQ2", Mode::Jokers);
+        assert!(h1 < h2)
     }
 
     fn cards(chs: &str) -> Vec<Card> {
