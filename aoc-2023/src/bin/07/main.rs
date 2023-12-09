@@ -21,21 +21,31 @@ fn total_winnings(input: &str) -> u64 {
 struct Card(char);
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-struct Hand(Vec<Card>, Type);
+struct Hand {
+    cards: Vec<Card>,
+    typ: Type,
+}
+
+impl Hand {
+    #[cfg(test)]
+    fn from(cards: &str, typ: Type) -> Hand {
+        let cards = cards.chars().map(Card).collect();
+        Hand { cards, typ }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Bid(Hand, u64);
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[repr(u8)]
 enum Type {
-    HighCard(Card) = 1,
-    OnePair(Card) = 2,
-    TwoPair(Card, Card) = 3,
-    ThreeOfKind(Card) = 4,
-    FullHouse(Card, Card) = 5,
-    FourOfKind(Card) = 6,
-    FiveOfKind(Card) = 7,
+    HighCard(Card),
+    OnePair(Card),
+    TwoPair(Card, Card),
+    ThreeOfKind(Card),
+    FullHouse(Card, Card),
+    FourOfKind(Card),
+    FiveOfKind(Card),
 }
 
 type CardMap = Lazy<HashMap<char, i32>>;
@@ -54,9 +64,11 @@ impl PartialOrd for Card {
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> Ordering {
-        let (typ_1, typ_2) = (&self.1, &other.1);
-        let (cards_1, cards_2) = (&self.0, &other.0);
-        typ_1.cmp(typ_2).then_with(|| cards_1.cmp(cards_2))
+        println!("cmp for hand");
+        self.typ.cmp(&other.typ).then_with(|| {
+            println!("comparing cards");
+            self.cards.cmp(&other.cards)
+        })
     }
 }
 
@@ -116,7 +128,7 @@ fn parse_bid(input: &str) -> Bid {
 fn parse_hand(input: &str) -> Hand {
     let cards: Vec<_> = input.chars().map(Card).collect();
     let typ = Type::from(cards.as_slice());
-    Hand(cards, typ)
+    Hand { cards, typ }
 }
 
 #[cfg(test)]
@@ -131,11 +143,11 @@ mod tests {
         assert_eq!(
             bids,
             vec![
-                Bid(Hand(cards("32T3K"), OnePair(Card('3'))), 765),
-                Bid(Hand(cards("T55J5"), ThreeOfKind(Card('5'))), 684),
-                Bid(Hand(cards("KK677"), TwoPair(Card('K'), Card('7'))), 28),
-                Bid(Hand(cards("KTJJT"), TwoPair(Card('J'), Card('T'))), 220),
-                Bid(Hand(cards("QQQJA"), ThreeOfKind(Card('Q'))), 483),
+                Bid(Hand::from("32T3K", OnePair(Card('3'))), 765),
+                Bid(Hand::from("T55J5", ThreeOfKind(Card('5'))), 684),
+                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7'))), 28),
+                Bid(Hand::from("KTJJT", TwoPair(Card('J'), Card('T'))), 220),
+                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q'))), 483),
             ]
         );
 
@@ -144,14 +156,33 @@ mod tests {
         assert_eq!(
             bids,
             vec![
-                Bid(Hand(cards("32T3K"), OnePair(Card('3'))), 765),
-                Bid(Hand(cards("KTJJT"), TwoPair(Card('J'), Card('T'))), 220),
-                Bid(Hand(cards("KK677"), TwoPair(Card('K'), Card('7'))), 28),
-                Bid(Hand(cards("T55J5"), ThreeOfKind(Card('5'))), 684),
-                Bid(Hand(cards("QQQJA"), ThreeOfKind(Card('Q'))), 483),
+                Bid(Hand::from("32T3K", OnePair(Card('3'))), 765),
+                Bid(Hand::from("KTJJT", TwoPair(Card('J'), Card('T'))), 220),
+                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7'))), 28),
+                Bid(Hand::from("T55J5", ThreeOfKind(Card('5'))), 684),
+                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q'))), 483),
             ]
         );
     }
+
+    #[test]
+    fn test_hand_cmp_one() {
+        let h1 = parse_hand("33332");
+        let h2 = parse_hand("2AAAA");
+        assert_eq!(h1.cards, cards("33332"));
+        assert_eq!(h1.typ, Type::FourOfKind(Card('3')));
+        assert_eq!(h2.cards, cards("2AAAA"));
+        assert_eq!(h2.typ, Type::FourOfKind(Card('A')));
+        assert!(h1 > h2);
+    }
+
+    /*
+    #[test]
+    fn test_hand_cmp() {
+        assert!(parse_hand("33332") > parse_hand("2AAAA"));
+        assert!(parse_hand("77888") > parse_hand("77788"));
+    }
+    */
 
     #[test]
     fn test_type_ord() {
