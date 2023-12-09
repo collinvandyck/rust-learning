@@ -6,6 +6,7 @@ fn main() {
     let input = include_str!("input.txt");
     println!("p1ex={}", total_winnings(example, Mode::Normal));
     println!("p1in={}", total_winnings(input, Mode::Normal));
+    println!("p2ex={}", total_winnings(example, Mode::Jokers));
 }
 
 fn total_winnings(input: &str, mode: Mode) -> u64 {
