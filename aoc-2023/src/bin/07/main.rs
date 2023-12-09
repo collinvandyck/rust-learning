@@ -16,7 +16,7 @@ struct Hand(Vec<Card>, Type);
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Bid(Hand, u64);
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(u8)]
 enum Type {
     HighCard(Card) = 1,
@@ -90,20 +90,15 @@ mod tests {
     fn test_parse() {
         let example = include_str!("example.txt");
         let bids = parse(example);
+        use Type::*;
         assert_eq!(
             bids,
             vec![
-                Bid(Hand(cards("32T3K"), Type::OnePair(Card('3'))), 765),
-                Bid(Hand(cards("T55J5"), Type::ThreeOfKind(Card('5'))), 684),
-                Bid(
-                    Hand(cards("KK677"), Type::TwoPair(Card('K'), Card('7'))),
-                    28
-                ),
-                Bid(
-                    Hand(cards("KTJJT"), Type::TwoPair(Card('J'), Card('T'))),
-                    220
-                ),
-                Bid(Hand(cards("QQQJA"), Type::ThreeOfKind(Card('Q'))), 483),
+                Bid(Hand(cards("32T3K"), OnePair(Card('3'))), 765),
+                Bid(Hand(cards("T55J5"), ThreeOfKind(Card('5'))), 684),
+                Bid(Hand(cards("KK677"), TwoPair(Card('K'), Card('7'))), 28),
+                Bid(Hand(cards("KTJJT"), TwoPair(Card('J'), Card('T'))), 220),
+                Bid(Hand(cards("QQQJA"), ThreeOfKind(Card('Q'))), 483),
             ]
         );
     }
