@@ -3,12 +3,17 @@ fn main() {
     let input = include_str!("input.txt");
     println!("p1ex={}", margin_of_error(example, false));
     println!("p1in={}", margin_of_error(input, false));
+    println!("p2ex={}", margin_of_error(example, true));
+    println!("p2in={}", margin_of_error(input, true));
 }
 
-fn margin_of_error(input: &str, squash: bool) -> u64 {
-    let games = parse(input);
-    if squash {}
-    parse(input).into_iter().map(|r| r.ways_to_beat()).product()
+fn margin_of_error(input: &str, sq: bool) -> u64 {
+    let games = if sq {
+        vec![squash(parse(input))]
+    } else {
+        parse(input)
+    };
+    games.into_iter().map(|r| r.ways_to_beat()).product()
 }
 
 fn squash(games: Vec<Race>) -> Race {
@@ -86,6 +91,7 @@ mod tests {
         assert_eq!(moe, 288);
     }
 
+    #[test]
     fn test_squash() {
         let races = parse(include_str!("example.txt"));
         let race = squash(races);
