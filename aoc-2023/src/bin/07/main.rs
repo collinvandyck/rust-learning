@@ -3,8 +3,18 @@ use std::{cmp::Ordering, collections::HashMap};
 
 fn main() {
     let example = include_str!("example.txt");
-    let bids = parse(example);
-    println!("Got {} bids", bids.len());
+    let input = include_str!("input.txt");
+    println!("p1ex={}", total_winnings(example));
+    println!("p1in={}", total_winnings(input));
+}
+
+fn total_winnings(input: &str) -> u64 {
+    let mut bids = parse(input);
+    bids.sort();
+    bids.iter()
+        .zip(1_u64..)
+        .map(|(bid, factor)| bid.1 * factor)
+        .sum()
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -37,6 +47,32 @@ impl Ord for Card {
 }
 
 impl PartialOrd for Card {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let (typ_1, typ_2) = (&self.1, &other.1);
+        let (cards_1, cards_2) = (&self.0, &other.0);
+        typ_1.cmp(typ_2).then_with(|| cards_1.cmp(cards_2))
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Bid {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+
+impl PartialOrd for Bid {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -87,10 +123,11 @@ fn parse_hand(input: &str) -> Hand {
 mod tests {
     use super::*;
     #[test]
-    fn test_parse() {
-        let example = include_str!("example.txt");
-        let bids = parse(example);
+    fn test_parse_and_sort() {
         use Type::*;
+
+        let example = include_str!("example.txt");
+        let mut bids = parse(example);
         assert_eq!(
             bids,
             vec![
@@ -101,6 +138,29 @@ mod tests {
                 Bid(Hand(cards("QQQJA"), ThreeOfKind(Card('Q'))), 483),
             ]
         );
+
+        // test sorted bids
+        bids.sort();
+        assert_eq!(
+            bids,
+            vec![
+                Bid(Hand(cards("32T3K"), OnePair(Card('3'))), 765),
+                Bid(Hand(cards("KTJJT"), TwoPair(Card('J'), Card('T'))), 220),
+                Bid(Hand(cards("KK677"), TwoPair(Card('K'), Card('7'))), 28),
+                Bid(Hand(cards("T55J5"), ThreeOfKind(Card('5'))), 684),
+                Bid(Hand(cards("QQQJA"), ThreeOfKind(Card('Q'))), 483),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_type_ord() {
+        use Type::*;
+        assert_eq!(OnePair(Card('3')), OnePair(Card('3')));
+        assert!(OnePair(Card('4')) > OnePair(Card('3')));
+        assert!(ThreeOfKind(Card('T')) > OnePair(Card('T')));
+        assert!(ThreeOfKind(Card('T')) < ThreeOfKind(Card('A')));
+        assert!(ThreeOfKind(Card('A')) == ThreeOfKind(Card('A')));
     }
 
     fn cards(chs: &str) -> Vec<Card> {
