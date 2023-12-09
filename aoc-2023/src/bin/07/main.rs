@@ -91,9 +91,12 @@ impl Type {
             Type::FiveOfKind => Type::FiveOfKind,
         }
     }
-    fn from(cards: &[Card]) -> Self {
+    fn from(cards: &[Card], mode: Mode) -> Self {
         let mut hm = HashMap::new();
         for card in cards {
+            if mode == Mode::Jokers && card.0 == 'J' {
+                continue;
+            }
             *hm.entry(card).or_insert(0) += 1;
         }
         let mut counts: Vec<_> = hm.into_iter().map(|(_, count)| count).collect();
@@ -170,7 +173,7 @@ fn parse_bid(input: &str, mode: Mode) -> Bid {
 
 fn parse_hand(input: &str, mode: Mode) -> Hand {
     let cards: Vec<_> = input.chars().map(Card).collect();
-    let typ = Type::from(cards.as_slice());
+    let typ = Type::from(cards.as_slice(), mode);
     let typ = match mode {
         Mode::Normal => typ,
         Mode::Jokers => typ.upgrade(cards.iter().filter(|c| c.0 == 'J').count()),
