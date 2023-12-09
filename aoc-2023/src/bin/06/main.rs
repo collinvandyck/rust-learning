@@ -24,10 +24,7 @@ fn line_to_nums(input: &str) -> impl Iterator<Item = u64> + '_ {
         .nth(1)
         .unwrap()
         .split(" ")
-        .flat_map(|n| {
-            println!("line_to_nums n={n}");
-            n.parse::<u64>().ok()
-        })
+        .flat_map(|n| n.parse::<u64>().ok())
 }
 
 #[cfg(test)]
