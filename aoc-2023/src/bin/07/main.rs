@@ -46,63 +46,49 @@ impl Hand {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Bid(Hand, u64);
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 enum Type {
-    HighCard(Card),
-    OnePair(Card),
-    TwoPair(Card, Card),
-    ThreeOfKind(Card),
-    FullHouse(Card, Card),
-    FourOfKind(Card),
-    FiveOfKind(Card),
+    HighCard,
+    OnePair,
+    TwoPair,
+    ThreeOfKind,
+    FullHouse,
+    FourOfKind,
+    FiveOfKind,
 }
 
 impl Type {
-    // i had to do this because i decided to include Card in my Type enum
-    // because i thought it would be necessary, but that fucks up the derivation of
-    // Ord, and PartialOrd
-    fn ord(&self) -> usize {
-        match self {
-            Type::HighCard(_) => 1,
-            Type::OnePair(_) => 2,
-            Type::TwoPair(_, _) => 3,
-            Type::ThreeOfKind(_) => 4,
-            Type::FullHouse(_, _) => 5,
-            Type::FourOfKind(_) => 6,
-            Type::FiveOfKind(_) => 7,
-        }
-    }
     fn upgrade(self, jokers: usize) -> Type {
         if jokers == 0 {
             return self;
         }
         match self {
-            Type::HighCard(c) => match jokers {
-                1 => Self::OnePair(c),
-                2 => Self::ThreeOfKind(c),
-                3 => Self::FourOfKind(c),
-                _ => Self::FiveOfKind(c),
+            Type::HighCard => match jokers {
+                1 => Self::OnePair,
+                2 => Self::ThreeOfKind,
+                3 => Self::FourOfKind,
+                _ => Self::FiveOfKind,
             },
-            Type::OnePair(c) => match jokers {
-                1 => Self::ThreeOfKind(c),
-                2 => Self::FourOfKind(c),
-                _ => Self::FiveOfKind(c),
+            Type::OnePair => match jokers {
+                1 => Self::ThreeOfKind,
+                2 => Self::FourOfKind,
+                _ => Self::FiveOfKind,
             },
-            Type::TwoPair(c1, c2) => match jokers {
-                1 => Type::FullHouse(c1, c2),
-                2 => Type::FourOfKind(c1),
-                _ => Type::FiveOfKind(c1),
+            Type::TwoPair => match jokers {
+                1 => Type::FullHouse,
+                2 => Type::FourOfKind,
+                _ => Type::FiveOfKind,
             },
-            Type::ThreeOfKind(c) => match jokers {
-                1 => Type::FourOfKind(c),
-                _ => Type::FiveOfKind(c),
+            Type::ThreeOfKind => match jokers {
+                1 => Type::FourOfKind,
+                _ => Type::FiveOfKind,
             },
-            Type::FullHouse(c1, _c2) => match jokers {
-                1 => Type::FourOfKind(c1),
-                _ => Type::FiveOfKind(c1),
+            Type::FullHouse => match jokers {
+                1 => Type::FourOfKind,
+                _ => Type::FiveOfKind,
             },
-            Type::FourOfKind(c) => Type::FiveOfKind(c),
-            Type::FiveOfKind(c) => Type::FiveOfKind(c),
+            Type::FourOfKind => Type::FiveOfKind,
+            Type::FiveOfKind => Type::FiveOfKind,
         }
     }
 }
@@ -122,7 +108,7 @@ static JOKER_VALUES: CardMap = Lazy::new(|| "J23456789TQKA".chars().zip(1..).col
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.typ.ord().cmp(&other.typ.ord()).then_with(|| {
+        self.typ.cmp(&other.typ).then_with(|| {
             let mode = self.mode;
             self.cards
                 .iter()
@@ -158,22 +144,18 @@ impl From<&[Card]> for Type {
         for card in cards {
             *hm.entry(card).or_insert(0) += 1;
         }
-        let mut counts: Vec<_> = hm.into_iter().map(|(ca, ct)| (*ca, ct)).collect();
-        counts.sort_by(|(c1_card, c1_count), (c2_card, c2_count)| {
-            c2_count
-                .cmp(c1_count)
-                .then(c2_card.cmp(c1_card, Mode::Normal)) // TODO: fix this
-        });
+        let mut counts: Vec<_> = hm.into_iter().map(|(_, count)| count).collect();
+        counts.sort();
+        counts.reverse();
         use Type::*;
         match counts.as_slice() {
-            &[(c, 5), ..] => FiveOfKind(c),
-            &[(c, 4), ..] => FourOfKind(c),
-            &[(c1, 3), (c2, 2), ..] => FullHouse(c1, c2),
-            &[(c, 3), ..] => ThreeOfKind(c),
-            &[(c1, 2), (c2, 2), ..] => TwoPair(c1, c2),
-            &[(c, 2), ..] => OnePair(c),
-            &[(c, _), ..] => HighCard(c),
-            _ => unreachable!(),
+            &[5, ..] => FiveOfKind,
+            &[4, ..] => FourOfKind,
+            &[3, 2, ..] => FullHouse,
+            &[3, ..] => ThreeOfKind,
+            &[2, 2, ..] => TwoPair,
+            &[2, ..] => OnePair,
+            _ => HighCard,
         }
     }
 }
@@ -212,14 +194,11 @@ mod tests {
         assert_eq!(
             bids,
             vec![
-                Bid(Hand::from("32T3K", OnePair(Card('3')), mode), 765),
-                Bid(Hand::from("T55J5", ThreeOfKind(Card('5')), mode), 684),
-                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7')), mode), 28),
-                Bid(
-                    Hand::from("KTJJT", TwoPair(Card('J'), Card('T')), mode),
-                    220
-                ),
-                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q')), mode), 483),
+                Bid(Hand::from("32T3K", OnePair, mode), 765),
+                Bid(Hand::from("T55J5", ThreeOfKind, mode), 684),
+                Bid(Hand::from("KK677", TwoPair, mode), 28),
+                Bid(Hand::from("KTJJT", TwoPair, mode), 220),
+                Bid(Hand::from("QQQJA", ThreeOfKind, mode), 483),
             ]
         );
 
@@ -228,14 +207,11 @@ mod tests {
         assert_eq!(
             bids,
             vec![
-                Bid(Hand::from("32T3K", OnePair(Card('3')), mode), 765),
-                Bid(
-                    Hand::from("KTJJT", TwoPair(Card('J'), Card('T')), mode),
-                    220
-                ),
-                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7')), mode), 28),
-                Bid(Hand::from("T55J5", ThreeOfKind(Card('5')), mode), 684),
-                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q')), mode), 483),
+                Bid(Hand::from("32T3K", OnePair, mode), 765),
+                Bid(Hand::from("KTJJT", TwoPair, mode), 220),
+                Bid(Hand::from("KK677", TwoPair, mode), 28),
+                Bid(Hand::from("T55J5", ThreeOfKind, mode), 684),
+                Bid(Hand::from("QQQJA", ThreeOfKind, mode), 483),
             ]
         );
     }
@@ -245,9 +221,9 @@ mod tests {
         let h1 = parse_hand("33332", Mode::Normal);
         let h2 = parse_hand("2AAAA", Mode::Normal);
         assert_eq!(h1.cards, cards("33332"));
-        assert_eq!(h1.typ, Type::FourOfKind(Card('3')));
+        assert_eq!(h1.typ, Type::FourOfKind);
         assert_eq!(h2.cards, cards("2AAAA"));
-        assert_eq!(h2.typ, Type::FourOfKind(Card('A')));
+        assert_eq!(h2.typ, Type::FourOfKind);
         assert!(h1 > h2);
     }
 
