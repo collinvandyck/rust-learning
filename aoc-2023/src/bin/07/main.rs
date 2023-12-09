@@ -93,13 +93,13 @@ impl Type {
     }
     fn from(cards: &[Card], mode: Mode) -> Self {
         let mut hm = HashMap::new();
-        for card in cards {
-            if mode == Mode::Jokers && card.0 == 'J' {
-                continue;
-            }
-            *hm.entry(card).or_insert(0) += 1;
-        }
-        let mut counts: Vec<_> = hm.into_iter().map(|(_, count)| count).collect();
+        cards
+            .into_iter()
+            .filter(|c| mode != Mode::Jokers || c.0 != 'J')
+            .for_each(|card| {
+                *hm.entry(card).or_insert(0) += 1;
+            });
+        let mut counts = hm.values().collect::<Vec<_>>();
         counts.sort();
         counts.reverse();
         use Type::*;
@@ -115,18 +115,19 @@ impl Type {
     }
 }
 
+static VALUES: Lazy<HashMap<Mode, HashMap<char, i32>>> = Lazy::new(|| {
+    HashMap::from([
+        (Mode::Normal, "23456789TJQKA".chars().zip(1..).collect()),
+        (Mode::Jokers, "J23456789TQKA".chars().zip(1..).collect()),
+    ])
+});
+
 impl Card {
     fn cmp(&self, other: &Card, mode: Mode) -> Ordering {
-        match mode {
-            Mode::Normal => CARD_VALUES.get(&self.0).cmp(&CARD_VALUES.get(&other.0)),
-            Mode::Jokers => JOKER_VALUES.get(&self.0).cmp(&JOKER_VALUES.get(&other.0)),
-        }
+        let values = VALUES.get(&mode).expect("no value for mode");
+        values.get(&self.0).cmp(&values.get(&other.0))
     }
 }
-
-type CardMap = Lazy<HashMap<char, i32>>;
-static CARD_VALUES: CardMap = Lazy::new(|| "23456789TJQKA".chars().zip(1..).collect());
-static JOKER_VALUES: CardMap = Lazy::new(|| "J23456789TQKA".chars().zip(1..).collect());
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> Ordering {
@@ -184,6 +185,17 @@ fn parse_hand(input: &str, mode: Mode) -> Hand {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_results() {
+        let example = include_str!("example.txt");
+        let input = include_str!("input.txt");
+        assert_eq!(total_winnings(example, Mode::Normal), 6440);
+        assert_eq!(total_winnings(input, Mode::Normal), 248836197);
+        assert_eq!(total_winnings(example, Mode::Jokers), 5905);
+        assert_eq!(total_winnings(input, Mode::Jokers), 251195607);
+    }
+
     #[test]
     fn test_parse_and_sort() {
         use Type::*;
@@ -265,13 +277,9 @@ mod tests {
         assert!(h1.typ == Type::FourOfKind);
         let h2 = parse_hand("QQQQ2", Mode::Jokers);
         assert!(h2.typ == Type::FourOfKind);
-        assert!(h1 < h2)
-    }
-
-    #[test]
-    fn test_joker_parse() {
-        let h1 = parse_hand("K1JJ2", Mode::Jokers);
-        assert_eq!(h1.typ, Type::ThreeOfKind);
+        assert!(h1 < h2);
+        let h3 = parse_hand("K1JJ2", Mode::Jokers);
+        assert_eq!(h3.typ, Type::ThreeOfKind);
     }
 
     fn cards(chs: &str) -> Vec<Card> {
