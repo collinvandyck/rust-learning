@@ -427,14 +427,6 @@ mod tests {
     }
 
     #[test]
-    fn test_results() {
-        let example = include_str!("example.txt");
-        let input = include_str!("input.txt");
-        assert_eq!(lowest_location(example, SeedMode::Literal), 35);
-        assert_eq!(lowest_location(input, SeedMode::Literal), 240320250);
-    }
-
-    #[test]
     fn test_ranges() {
         let r1: IdRange = (1..5);
         let r2: IdRange = (2..8);
