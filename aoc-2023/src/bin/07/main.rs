@@ -63,32 +63,11 @@ impl Type {
             return self;
         }
         match self {
-            Type::HighCard => match jokers {
-                1 => Self::OnePair,
-                2 => Self::ThreeOfKind,
-                3 => Self::FourOfKind,
-                _ => Self::FiveOfKind,
-            },
-            Type::OnePair => match jokers {
-                1 => Self::ThreeOfKind,
-                2 => Self::FourOfKind,
-                _ => Self::FiveOfKind,
-            },
-            Type::TwoPair => match jokers {
-                1 => Type::FullHouse,
-                2 => Type::FourOfKind,
-                _ => Type::FiveOfKind,
-            },
-            Type::ThreeOfKind => match jokers {
-                1 => Type::FourOfKind,
-                _ => Type::FiveOfKind,
-            },
-            Type::FullHouse => match jokers {
-                1 => Type::FourOfKind,
-                _ => Type::FiveOfKind,
-            },
-            Type::FourOfKind => Type::FiveOfKind,
-            Type::FiveOfKind => Type::FiveOfKind,
+            Type::HighCard => Type::OnePair.upgrade(jokers - 1),
+            Type::OnePair => Type::ThreeOfKind.upgrade(jokers - 1),
+            Type::TwoPair => Type::FullHouse.upgrade(jokers - 1),
+            Type::ThreeOfKind | Type::FullHouse => Type::FourOfKind.upgrade(jokers - 1),
+            Type::FourOfKind | Type::FiveOfKind => Type::FiveOfKind,
         }
     }
     fn from(cards: &[Card], mode: Mode) -> Self {
