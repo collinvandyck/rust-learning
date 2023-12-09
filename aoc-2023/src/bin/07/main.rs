@@ -4,17 +4,23 @@ use std::{cmp::Ordering, collections::HashMap};
 fn main() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
-    println!("p1ex={}", total_winnings(example));
-    println!("p1in={}", total_winnings(input));
+    println!("p1ex={}", total_winnings(example, Mode::Normal));
+    println!("p1in={}", total_winnings(input, Mode::Normal));
 }
 
-fn total_winnings(input: &str) -> u64 {
-    let mut bids = parse(input);
+fn total_winnings(input: &str, mode: Mode) -> u64 {
+    let mut bids = parse(input, mode);
     bids.sort();
     bids.iter()
         .zip(1_u64..)
         .map(|(bid, factor)| bid.1 * factor)
         .sum()
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum Mode {
+    Normal,
+    Jokers,
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -24,13 +30,14 @@ struct Card(char);
 struct Hand {
     cards: Vec<Card>,
     typ: Type,
+    mode: Mode,
 }
 
 impl Hand {
     #[cfg(test)]
-    fn from(cards: &str, typ: Type) -> Hand {
+    fn from(cards: &str, typ: Type, mode: Mode) -> Hand {
         let cards = cards.chars().map(Card).collect();
-        Hand { cards, typ }
+        Hand { cards, typ, mode }
     }
 }
 
@@ -49,6 +56,9 @@ enum Type {
 }
 
 impl Type {
+    // i had to do this because i decided to include Card in my Type enum
+    // because i thought it would be necessary, but that fucks up the derivation of
+    // Ord, and PartialOrd
     fn ord(&self) -> usize {
         match self {
             Type::HighCard(_) => 1,
@@ -127,21 +137,21 @@ impl From<&[Card]> for Type {
     }
 }
 
-fn parse(input: &str) -> Vec<Bid> {
-    input.lines().map(parse_bid).collect()
+fn parse(input: &str, mode: Mode) -> Vec<Bid> {
+    input.lines().map(|l| parse_bid(l, mode)).collect()
 }
 
-fn parse_bid(input: &str) -> Bid {
+fn parse_bid(input: &str, mode: Mode) -> Bid {
     let mut parts = input.splitn(2, " ");
-    let hand = parse_hand(parts.next().unwrap());
+    let hand = parse_hand(parts.next().unwrap(), mode);
     let amt = parts.next().unwrap().parse::<u64>().unwrap();
     Bid(hand, amt)
 }
 
-fn parse_hand(input: &str) -> Hand {
+fn parse_hand(input: &str, mode: Mode) -> Hand {
     let cards: Vec<_> = input.chars().map(Card).collect();
     let typ = Type::from(cards.as_slice());
-    Hand { cards, typ }
+    Hand { cards, typ, mode }
 }
 
 #[cfg(test)]
@@ -152,15 +162,19 @@ mod tests {
         use Type::*;
 
         let example = include_str!("example.txt");
-        let mut bids = parse(example);
+        let mut bids = parse(example, Mode::Normal);
+        let mode = Mode::Normal;
         assert_eq!(
             bids,
             vec![
-                Bid(Hand::from("32T3K", OnePair(Card('3'))), 765),
-                Bid(Hand::from("T55J5", ThreeOfKind(Card('5'))), 684),
-                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7'))), 28),
-                Bid(Hand::from("KTJJT", TwoPair(Card('J'), Card('T'))), 220),
-                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q'))), 483),
+                Bid(Hand::from("32T3K", OnePair(Card('3')), mode), 765),
+                Bid(Hand::from("T55J5", ThreeOfKind(Card('5')), mode), 684),
+                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7')), mode), 28),
+                Bid(
+                    Hand::from("KTJJT", TwoPair(Card('J'), Card('T')), mode),
+                    220
+                ),
+                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q')), mode), 483),
             ]
         );
 
@@ -169,33 +183,28 @@ mod tests {
         assert_eq!(
             bids,
             vec![
-                Bid(Hand::from("32T3K", OnePair(Card('3'))), 765),
-                Bid(Hand::from("KTJJT", TwoPair(Card('J'), Card('T'))), 220),
-                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7'))), 28),
-                Bid(Hand::from("T55J5", ThreeOfKind(Card('5'))), 684),
-                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q'))), 483),
+                Bid(Hand::from("32T3K", OnePair(Card('3')), mode), 765),
+                Bid(
+                    Hand::from("KTJJT", TwoPair(Card('J'), Card('T')), mode),
+                    220
+                ),
+                Bid(Hand::from("KK677", TwoPair(Card('K'), Card('7')), mode), 28),
+                Bid(Hand::from("T55J5", ThreeOfKind(Card('5')), mode), 684),
+                Bid(Hand::from("QQQJA", ThreeOfKind(Card('Q')), mode), 483),
             ]
         );
     }
 
     #[test]
     fn test_hand_cmp_one() {
-        let h1 = parse_hand("33332");
-        let h2 = parse_hand("2AAAA");
+        let h1 = parse_hand("33332", Mode::Normal);
+        let h2 = parse_hand("2AAAA", Mode::Normal);
         assert_eq!(h1.cards, cards("33332"));
         assert_eq!(h1.typ, Type::FourOfKind(Card('3')));
         assert_eq!(h2.cards, cards("2AAAA"));
         assert_eq!(h2.typ, Type::FourOfKind(Card('A')));
         assert!(h1 > h2);
     }
-
-    /*
-    #[test]
-    fn test_hand_cmp() {
-        assert!(parse_hand("33332") > parse_hand("2AAAA"));
-        assert!(parse_hand("77888") > parse_hand("77788"));
-    }
-    */
 
     fn cards(chs: &str) -> Vec<Card> {
         chs.chars().map(Card).collect()
