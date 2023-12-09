@@ -37,7 +37,7 @@ impl Hand {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Bid(Hand, u64);
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 enum Type {
     HighCard(Card),
     OnePair(Card),
@@ -46,6 +46,20 @@ enum Type {
     FullHouse(Card, Card),
     FourOfKind(Card),
     FiveOfKind(Card),
+}
+
+impl Type {
+    fn ord(&self) -> usize {
+        match self {
+            Type::HighCard(_) => 1,
+            Type::OnePair(_) => 2,
+            Type::TwoPair(_, _) => 3,
+            Type::ThreeOfKind(_) => 4,
+            Type::FullHouse(_, _) => 5,
+            Type::FourOfKind(_) => 6,
+            Type::FiveOfKind(_) => 7,
+        }
+    }
 }
 
 type CardMap = Lazy<HashMap<char, i32>>;
@@ -64,11 +78,10 @@ impl PartialOrd for Card {
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> Ordering {
-        println!("cmp for hand");
-        self.typ.cmp(&other.typ).then_with(|| {
-            println!("comparing cards");
-            self.cards.cmp(&other.cards)
-        })
+        self.typ
+            .ord()
+            .cmp(&other.typ.ord())
+            .then_with(|| self.cards.cmp(&other.cards))
     }
 }
 
@@ -183,16 +196,6 @@ mod tests {
         assert!(parse_hand("77888") > parse_hand("77788"));
     }
     */
-
-    #[test]
-    fn test_type_ord() {
-        use Type::*;
-        assert_eq!(OnePair(Card('3')), OnePair(Card('3')));
-        assert!(OnePair(Card('4')) > OnePair(Card('3')));
-        assert!(ThreeOfKind(Card('T')) > OnePair(Card('T')));
-        assert!(ThreeOfKind(Card('T')) < ThreeOfKind(Card('A')));
-        assert!(ThreeOfKind(Card('A')) == ThreeOfKind(Card('A')));
-    }
 
     fn cards(chs: &str) -> Vec<Card> {
         chs.chars().map(Card).collect()
