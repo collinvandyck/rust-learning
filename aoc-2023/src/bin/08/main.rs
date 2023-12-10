@@ -1,5 +1,4 @@
-#![allow(unused, dead_code)]
-
+use num::Integer;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
@@ -8,6 +7,8 @@ fn main() {
     let input = include_str!("input.txt");
     println!("p1ex={}", part_one(example));
     println!("p1in={}", part_one(input));
+    println!("p2ex={}", part_two(include_str!("example-p2.txt")));
+    println!("p2in={}", part_two(input));
 }
 
 fn part_one(input: &str) -> usize {
@@ -23,19 +24,13 @@ fn part_one(input: &str) -> usize {
 
 fn part_two(input: &str) -> usize {
     let map = parse(input);
-    let cycles: Vec<Cycle> = map
-        .starts()
+    map.starts()
         .iter()
-        .map(|n| {
-            println!("");
-            get_cycle(n, &map)
-        })
-        .collect();
-    println!("");
-    for cycle in cycles {
-        println!("{cycle:?}");
-    }
-    todo!()
+        .map(|n| get_cycle(n, &map))
+        .map(|cycle| *cycle.finishes.first().unwrap())
+        .map(|cycle| cycle)
+        .reduce(|a, b| a.lcm(&b))
+        .unwrap_or_default()
 }
 
 #[test]
@@ -47,6 +42,7 @@ fn test_part_1() {
 #[test]
 fn test_part_2() {
     assert_eq!(part_two(include_str!("example-p2.txt")), 6);
+    assert_eq!(part_two(include_str!("input.txt")), 7309459565207);
 }
 
 fn get_cycle(start: &Node, map: &Map) -> Cycle {
@@ -54,7 +50,6 @@ fn get_cycle(start: &Node, map: &Map) -> Cycle {
     let mut cycle = Cycle::default();
     let mut lookup: HashSet<(&Node, IdDir)> = HashSet::default();
     for (count, id_dir) in map.id_dirs().enumerate() {
-        println!("start={start:?} node={node:?} count={count} iddir={id_dir:?}");
         let key = (node, id_dir);
         if lookup.contains(&key) {
             break;
@@ -73,21 +68,6 @@ fn get_cycle(start: &Node, map: &Map) -> Cycle {
 struct Cycle {
     length: usize,
     finishes: Vec<usize>,
-}
-
-fn count_steps_old(input: &str) -> usize {
-    let map = parse(input);
-    let node: Node = "AAA".into();
-    let mut node = &node;
-    let mut count = 0;
-    for id_dir in map.id_dirs() {
-        if node.is_end() {
-            break;
-        }
-        node = map.next(node, id_dir.dir);
-        count += 1;
-    }
-    count
 }
 
 struct Map {
