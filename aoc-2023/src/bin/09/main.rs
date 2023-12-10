@@ -1,19 +1,12 @@
-#![allow(dead_code, unused)]
-
-use itertools::Itertools;
-use std::{
-    iter::{self, Copied, Rev},
-    slice,
-};
-
-type Num = i64;
-
 fn main() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
     println!("p1ex={}", sum_nexts(example, true));
     println!("p1in={}", sum_nexts(input, true));
+    println!("p2in={}", sum_nexts(input, false));
 }
+
+type Num = i64;
 
 fn sum_nexts(input: &str, forward: bool) -> Num {
     parse(input)
@@ -37,9 +30,9 @@ fn next(nums: Vec<Num>, forward: bool) -> Num {
     stack.reverse();
     stack
         .iter()
-        .flat_map(|f| f.last())
+        .flat_map(|f| if forward { f.last() } else { f.first() })
         .copied()
-        .reduce(|a, b| a + b)
+        .reduce(|a, b| if forward { a + b } else { b - a })
         .unwrap_or_default()
 }
 
@@ -48,6 +41,13 @@ fn stack_done(stack: &Vec<Vec<Num>>) -> bool {
         .last()
         .map(|s| s.iter().all(|n| n == &0))
         .unwrap_or_default()
+}
+
+#[test]
+fn test_outputs() {
+    let input = include_str!("input.txt");
+    assert_eq!(sum_nexts(input, true), 2098530125);
+    assert_eq!(sum_nexts(input, false), 1016);
 }
 
 #[test]
