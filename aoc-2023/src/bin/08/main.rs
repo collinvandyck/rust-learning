@@ -1,24 +1,67 @@
-use std::collections::{HashMap, HashSet};
+#![allow(unused, dead_code)]
 
 use regex::Regex;
+use std::collections::{HashMap, HashSet};
 
 fn main() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
-    println!("p1ex={}", count_steps(example));
-    println!("p1in={}", count_steps(input));
+    println!("p1ex={}", part_one(example));
+    println!("p1in={}", part_one(input));
 }
 
-fn count_steps(input: &str) -> usize {
+fn part_one(input: &str) -> usize {
+    let map = parse(input);
+    map.starts()
+        .iter()
+        .filter(|n| n.0 == "AAA")
+        .map(|n| get_cycle(n, &map))
+        .map(|c| c.finishes[0])
+        .next()
+        .unwrap_or_default()
+}
+
+#[test]
+fn test_part_1() {
+    assert_eq!(part_one(include_str!("example.txt")), 2);
+    assert_eq!(part_one(include_str!("input.txt")), 13301);
+}
+
+fn get_cycle(node: &Node, map: &Map) -> Cycle {
+    let mut node = node;
+    let mut cycle = Cycle::default();
+    let mut lookup: HashSet<(&Node, IdDir)> = HashSet::default();
+    for (count, id_dir) in map.id_dirs().enumerate() {
+        let key = (node, id_dir);
+        if lookup.contains(&key) {
+            break;
+        }
+        lookup.insert(key);
+        cycle.length = count;
+        if node.is_end() {
+            cycle.finishes.push(count);
+        }
+        node = map.next(node, id_dir.dir);
+    }
+    cycle
+}
+
+#[derive(Default, Debug, PartialEq, Eq)]
+struct Cycle {
+    length: usize,
+    finishes: Vec<usize>,
+}
+
+fn count_steps_old(input: &str) -> usize {
     let map = parse(input);
     let node: Node = "AAA".into();
     let mut node = &node;
     let mut count = 0;
-    for dir in map.dirs() {
-        if node.0 == "ZZZ" {
+    for id_dir in map.id_dirs() {
+        if node.is_end() {
             break;
         }
-        node = map.next(node, dir);
+        node = map.next(node, id_dir.dir);
         count += 1;
     }
     count
@@ -29,9 +72,23 @@ struct Map {
     paths: HashMap<Node, (Node, Node)>,
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+struct IdDir {
+    id: usize,
+    dir: Dir,
+}
+
 impl Map {
-    fn dirs(&self) -> impl Iterator<Item = Dir> + '_ {
-        self.dirs.iter().copied().cycle()
+    fn id_dirs(&self) -> impl Iterator<Item = IdDir> + '_ {
+        self.dirs
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(id, dir)| IdDir { id, dir })
+            .cycle()
+    }
+    fn starts(&self) -> Vec<&Node> {
+        self.paths.keys().filter(|n| n.is_start()).collect()
     }
     fn next(&self, n: &Node, dir: Dir) -> &Node {
         if let Some((left, right)) = self.paths.get(n) {
