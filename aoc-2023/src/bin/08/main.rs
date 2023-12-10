@@ -5,44 +5,37 @@ use std::collections::{HashMap, HashSet};
 fn main() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
-    println!("p1ex={}", part_one(example));
-    println!("p1in={}", part_one(input));
-    println!("p2ex={}", part_two(include_str!("example-p2.txt")));
-    println!("p2in={}", part_two(input));
+    let ex2 = include_str!("example-p2.txt");
+    println!("p1ex={}", min_distance(example, true));
+    println!("p1in={}", min_distance(input, true));
+    println!("p2ex={}", min_distance(ex2, false));
+    println!("p2in={}", min_distance(input, false));
 }
 
-fn part_one(input: &str) -> usize {
+fn min_distance(input: &str, pt1: bool) -> usize {
     let map = parse(input);
     map.starts()
         .iter()
-        .filter(|n| n.0 == "AAA")
+        .filter(|n| !pt1 || n.0 == "AAA")
         .map(|n| get_cycle(n, &map))
         .map(|c| c.finishes[0])
-        .next()
-        .unwrap_or_default()
-}
-
-fn part_two(input: &str) -> usize {
-    let map = parse(input);
-    map.starts()
-        .iter()
-        .map(|n| get_cycle(n, &map))
-        .map(|cycle| *cycle.finishes.first().unwrap())
-        .map(|cycle| cycle)
         .reduce(|a, b| a.lcm(&b))
         .unwrap_or_default()
 }
 
 #[test]
 fn test_part_1() {
-    assert_eq!(part_one(include_str!("example.txt")), 2);
-    assert_eq!(part_one(include_str!("input.txt")), 13301);
+    assert_eq!(min_distance(include_str!("example.txt"), true), 2);
+    assert_eq!(min_distance(include_str!("input.txt"), true), 13301);
 }
 
 #[test]
 fn test_part_2() {
-    assert_eq!(part_two(include_str!("example-p2.txt")), 6);
-    assert_eq!(part_two(include_str!("input.txt")), 7309459565207);
+    assert_eq!(min_distance(include_str!("example-p2.txt"), false), 6);
+    assert_eq!(
+        min_distance(include_str!("input.txt"), false),
+        7309459565207
+    );
 }
 
 fn get_cycle(start: &Node, map: &Map) -> Cycle {
