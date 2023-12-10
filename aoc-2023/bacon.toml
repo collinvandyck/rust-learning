@@ -35,12 +35,17 @@ command = [
 need_stdout = true
 
 [jobs.08]
-command = [ "cargo", "test", "--bin","08", "--color", "always", "--", 
+command = [ "cargo", "test", "--bin", "08", "--color", "always", "--", 
 	"--color", "always" ]
 need_stdout = true
 
 [jobs.09]
-command = [ "cargo", "test", "--bin","09", "--color", "always", "--", 
+command = [ "cargo", "test", "--bin", "09", "--color", "always", "--", 
+	"--color", "always" ]
+need_stdout = true
+
+[jobs.10]
+command = [ "cargo", "test", "--bin", "10", "--color", "always", "--", 
 	"--color", "always" ]
 need_stdout = true
 
