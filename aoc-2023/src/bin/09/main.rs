@@ -4,6 +4,10 @@ fn main() {
 }
 
 fn sum_nexts(input: &str) -> u64 {
+    parse(input).iter().map(next_value).sum()
+}
+
+fn next_value(_seq: &Seq) -> u64 {
     todo!()
 }
 
