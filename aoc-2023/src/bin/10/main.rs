@@ -2,7 +2,43 @@
 
 fn main() {}
 
+#[test]
+fn test_map() {
+    let example = include_str!("example.txt");
+    let map = parse(example);
+    let starts = map.find(Tile::Start);
+    assert_eq!(starts, vec![]);
+}
+
 struct Map(Vec<Vec<Tile>>);
+
+impl Map {
+    fn swap_start(&mut self) {
+        todo!()
+    }
+    fn get(&self, pt: Pt) -> Option<&Tile> {
+        self.0.get(pt.1).and_then(|r| r.get(pt.0))
+    }
+    fn find(&self, tile: Tile) -> Vec<Pt> {
+        self.0
+            .iter()
+            .enumerate()
+            .map(|(row, tiles)| {
+                tiles
+                    .iter()
+                    .enumerate()
+                    .filter(|(col, t)| t == &&tile)
+                    .map(|(col, _)| (row, col))
+                    .collect::<Vec<_>>()
+            })
+            .flatten()
+            .map(|(row, col)| Pt(row, col))
+            .collect::<Vec<_>>()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Pt(usize, usize); // x,y
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Tile {
