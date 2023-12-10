@@ -21,17 +21,40 @@ fn part_one(input: &str) -> usize {
         .unwrap_or_default()
 }
 
+fn part_two(input: &str) -> usize {
+    let map = parse(input);
+    let cycles: Vec<Cycle> = map
+        .starts()
+        .iter()
+        .map(|n| {
+            println!("");
+            get_cycle(n, &map)
+        })
+        .collect();
+    println!("");
+    for cycle in cycles {
+        println!("{cycle:?}");
+    }
+    todo!()
+}
+
 #[test]
 fn test_part_1() {
     assert_eq!(part_one(include_str!("example.txt")), 2);
     assert_eq!(part_one(include_str!("input.txt")), 13301);
 }
 
-fn get_cycle(node: &Node, map: &Map) -> Cycle {
-    let mut node = node;
+#[test]
+fn test_part_2() {
+    assert_eq!(part_two(include_str!("example-p2.txt")), 6);
+}
+
+fn get_cycle(start: &Node, map: &Map) -> Cycle {
+    let mut node = start;
     let mut cycle = Cycle::default();
     let mut lookup: HashSet<(&Node, IdDir)> = HashSet::default();
     for (count, id_dir) in map.id_dirs().enumerate() {
+        println!("start={start:?} node={node:?} count={count} iddir={id_dir:?}");
         let key = (node, id_dir);
         if lookup.contains(&key) {
             break;
