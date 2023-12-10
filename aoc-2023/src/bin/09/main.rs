@@ -16,8 +16,7 @@ fn sum_nexts(input: &str, forward: bool) -> Num {
 }
 
 fn next(nums: Vec<Num>, forward: bool) -> Num {
-    let mut stack = vec![];
-    stack.push(nums);
+    let mut stack = vec![nums];
     while !stack_done(&stack) {
         let last = stack.last().unwrap();
         let next = last
@@ -27,9 +26,9 @@ fn next(nums: Vec<Num>, forward: bool) -> Num {
             .collect::<Vec<_>>();
         stack.push(next);
     }
-    stack.reverse();
     stack
         .iter()
+        .rev()
         .flat_map(|f| if forward { f.last() } else { f.first() })
         .copied()
         .reduce(|a, b| if forward { a + b } else { b - a })
