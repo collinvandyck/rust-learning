@@ -57,6 +57,12 @@ fn test_next() {
     assert_eq!(next(nums, true), 18);
     let nums = vec![1, 3, 6, 10, 15, 21];
     assert_eq!(next(nums, true), 28);
+    let nums = vec![10, 13, 16, 21, 30, 45];
+    assert_eq!(next(nums, true), 68);
+
+    // test backward direction
+    let nums = vec![10, 13, 16, 21, 30, 45];
+    assert_eq!(next(nums, false), 5);
 }
 
 fn parse(input: &str) -> Vec<Vec<Num>> {
