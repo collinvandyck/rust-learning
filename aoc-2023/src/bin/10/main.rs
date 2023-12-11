@@ -7,7 +7,7 @@ fn test_map() {
     let example = include_str!("example.txt");
     let map = parse(example);
     let starts = map.find(Tile::Start);
-    assert_eq!(starts, vec![]);
+    assert_eq!(starts, vec![Pt(2, 0)]);
 }
 
 struct Map(Vec<Vec<Tile>>);
