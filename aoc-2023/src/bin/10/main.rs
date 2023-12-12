@@ -2,25 +2,31 @@
 
 fn main() {}
 
-#[test]
-fn test_map() {
-    let example = include_str!("example.txt");
-    let map = parse(example);
-    let starts = map.find(Tile::Start);
-    assert_eq!(starts, vec![Pt(2, 0)]);
+struct Map {
+    start: Pt,
+    tiles: Vec<Vec<Tile>>,
 }
 
-struct Map(Vec<Vec<Tile>>);
-
 impl Map {
+    fn new(tiles: Vec<Vec<Tile>>) -> Self {
+        let start = Self::find_tile(&tiles, Tile::Start)
+            .first()
+            .copied()
+            .unwrap();
+        Self { tiles, start }
+    }
     fn swap_start(&mut self) {
+        let pt = self.find(Tile::Start).first().unwrap();
         todo!()
     }
     fn get(&self, pt: Pt) -> Option<&Tile> {
-        self.0.get(pt.1).and_then(|r| r.get(pt.0))
+        self.tiles.get(pt.1).and_then(|r| r.get(pt.0))
     }
     fn find(&self, tile: Tile) -> Vec<Pt> {
-        self.0
+        Self::find_tile(&self.tiles, tile)
+    }
+    fn find_tile(tiles: &[Vec<Tile>], tile: Tile) -> Vec<Pt> {
+        tiles
             .iter()
             .enumerate()
             .map(|(row, tiles)| {
@@ -36,10 +42,10 @@ impl Map {
             .collect::<Vec<_>>()
     }
     fn rows(&self) -> usize {
-        self.0.len()
+        self.tiles.len()
     }
     fn cols(&self) -> usize {
-        self.0.get(0).map(|l| l.len()).unwrap_or_default()
+        self.tiles.get(0).map(|l| l.len()).unwrap_or_default()
     }
 }
 
@@ -59,7 +65,7 @@ enum Tile {
 }
 
 fn parse(input: &str) -> Map {
-    Map(input.lines().map(parse_row).collect())
+    Map::new(input.lines().map(parse_row).collect())
 }
 
 fn parse_row(input: &str) -> Vec<Tile> {
@@ -79,12 +85,24 @@ fn parse_row(input: &str) -> Vec<Tile> {
         .collect()
 }
 
-#[test]
-fn test_parse() {
-    let example = include_str!("example.txt");
-    let input = include_str!("input.txt");
-    let map = parse(example);
-    assert_eq!(map.rows(), 5);
-    assert_eq!(map.cols(), 5);
-    parse(input);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_map() {
+        let example = include_str!("example.txt");
+        let map = parse(example);
+        let starts = map.find(Tile::Start);
+        assert_eq!(starts, vec![Pt(2, 0)]);
+    }
+
+    #[test]
+    fn test_parse() {
+        let example = include_str!("example.txt");
+        let input = include_str!("input.txt");
+        let map = parse(example);
+        assert_eq!(map.rows(), 5);
+        assert_eq!(map.cols(), 5);
+        parse(input);
+    }
 }
