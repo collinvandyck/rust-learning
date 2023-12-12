@@ -35,6 +35,12 @@ impl Map {
             .map(|(row, col)| Pt(row, col))
             .collect::<Vec<_>>()
     }
+    fn rows(&self) -> usize {
+        self.0.len()
+    }
+    fn cols(&self) -> usize {
+        self.0.get(0).map(|l| l.len()).unwrap_or_default()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -77,6 +83,8 @@ fn parse_row(input: &str) -> Vec<Tile> {
 fn test_parse() {
     let example = include_str!("example.txt");
     let input = include_str!("input.txt");
-    parse(example);
+    let map = parse(example);
+    assert_eq!(map.rows(), 5);
+    assert_eq!(map.cols(), 5);
     parse(input);
 }
