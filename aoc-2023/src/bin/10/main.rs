@@ -36,7 +36,7 @@ impl Map {
     }
 
     fn find_loop(&mut self) {
-        let mut visited: HashSet<(usize, usize)> = HashSet::default();
+        let mut visited: HashSet<Pt> = HashSet::default();
         let cur = self.get(self.start.x, self.start.y).expect("no start");
         let mut queue = vec![cur];
         let mut length = 0;
@@ -44,17 +44,19 @@ impl Map {
             length += 1;
             if let Some(dirs) = pt.tile.dirs() {
                 for pt in dirs.into_iter().flat_map(|d| self.neighbor(pt, d)) {
-                    if !visited.contains(&(pt.x, pt.y)) {
+                    if !visited.contains(&pt) {
                         queue.push(pt);
                     }
                 }
             }
-            visited.insert((pt.x, pt.y));
+            visited.insert(pt);
         }
-        for (y, row) in self.tiles.iter_mut().enumerate() {
+        for (y, row) in self.tiles.clone().iter_mut().enumerate() {
             for (x, t) in row.iter_mut().enumerate() {
-                if !visited.contains(&(x, y)) {
-                    *t = Tile::Ground;
+                if let Some(pt) = self.get(x, y) {
+                    if !visited.contains(&pt) {
+                        *t = Tile::Ground;
+                    }
                 }
             }
         }
