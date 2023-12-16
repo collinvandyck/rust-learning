@@ -27,7 +27,9 @@ impl Map {
         Self { tiles, start }
     }
     fn swap_start(&mut self) {
-        let pt = self.find(Tile::Start).first().unwrap();
+        let pt = self.find(Tile::Start);
+        let pt = pt.first().unwrap();
+        println!("found point: {:?}", pt);
         todo!()
     }
     fn get(&self, pt: Pt) -> Option<&Tile> {
