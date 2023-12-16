@@ -42,7 +42,16 @@ impl Map {
     }
 
     fn loop_area(&self) -> usize {
-        0
+        println!("{self}");
+        for y in 0..self.tiles.len() {
+            let row = self.loop_row(y);
+            println!("Got loop row: {row:?}");
+        }
+        todo!()
+    }
+
+    fn loop_row(&self, y: usize) -> Vec<Pt> {
+        self.loop_pts.iter().filter(|p| p.y == y).copied().collect()
     }
 
     fn find_loop(&mut self) {
@@ -59,12 +68,11 @@ impl Map {
             }
             visited.insert(pt);
         }
-        for (y, row) in self.tiles.clone().iter_mut().enumerate() {
+        for (y, row) in self.tiles.iter_mut().enumerate() {
             for (x, t) in row.iter_mut().enumerate() {
-                if let Some(pt) = self.get(x, y) {
-                    if !visited.contains(&pt) {
-                        *t = Tile::Ground;
-                    }
+                let pt = Pt::new(x, y, *t);
+                if !visited.contains(&pt) {
+                    *t = Tile::Ground;
                 }
             }
         }
