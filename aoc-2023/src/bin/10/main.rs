@@ -27,9 +27,7 @@ impl Map {
         Self { tiles, start }
     }
     fn swap_start(&mut self) {
-        let pt = self.find(Tile::Start);
-        let pt = pt.first().unwrap();
-        println!("found point: {:?}", pt);
+        println!("start: {:?}", self.start);
         todo!()
     }
     fn get(&self, pt: Pt) -> Option<&Tile> {
@@ -47,7 +45,7 @@ impl Map {
                     .iter()
                     .enumerate()
                     .filter(|(col, t)| t == &&tile)
-                    .map(|(col, _)| (row, col))
+                    .map(|(col, _)| (col, row))
                     .collect::<Vec<_>>()
             })
             .flatten()
