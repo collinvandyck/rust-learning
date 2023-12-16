@@ -6,13 +6,20 @@ use std::{collections::HashSet, error::Error, fmt::Debug};
 
 fn main() {
     let example = include_str!("example.txt");
-    let map = parse(example);
-    println!("{map}");
+    let input = include_str!("input.txt");
+    println!("p1ex={}", farthest_distance(example));
+    println!("p1in={}", farthest_distance(input));
+}
+
+fn farthest_distance(input: &str) -> usize {
+    let map = parse(input);
+    map.loop_length
 }
 
 struct Map {
     start: Pt,
     tiles: Vec<Vec<Tile>>,
+    loop_length: usize,
 }
 
 impl Map {
@@ -21,7 +28,11 @@ impl Map {
             .first()
             .copied()
             .unwrap();
-        let mut map = Self { tiles, start };
+        let mut map = Self {
+            tiles,
+            start,
+            loop_length: 0,
+        };
         map.swap_start();
         map.find_loop();
         map
@@ -31,7 +42,9 @@ impl Map {
         let mut visited: HashSet<(usize, usize)> = HashSet::default();
         let cur = self.get(self.start.x, self.start.y).expect("no start");
         let mut queue = vec![cur];
+        let mut length = 0;
         while let Some(pt) = queue.pop() {
+            length += 1;
             if let Some(dirs) = pt.tile.dirs() {
                 for pt in dirs.into_iter().flat_map(|d| self.neighbor(pt, d)) {
                     if !visited.contains(&(pt.x, pt.y)) {
@@ -39,7 +52,6 @@ impl Map {
                     }
                 }
             }
-            // finally..
             visited.insert((pt.x, pt.y));
         }
         for (y, row) in self.tiles.iter_mut().enumerate() {
@@ -49,6 +61,7 @@ impl Map {
                 }
             }
         }
+        self.loop_length = length / 2;
     }
 
     fn swap_start(&mut self) {
