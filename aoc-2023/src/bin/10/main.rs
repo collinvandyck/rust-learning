@@ -4,7 +4,9 @@ use std::{collections::HashSet, fmt::Debug};
 fn main() {
     let ex1 = include_str!("ex1.txt");
     let ex2 = include_str!("ex2.txt");
+    let in1 = include_str!("in1.txt");
     println!("p1ex={}", farthest_distance(ex1));
+    println!("p2in={}", farthest_distance(in1));
     println!("p2ex1={}", area_enclosed(ex1));
     println!("p2ex2={}", area_enclosed(ex2));
 }
@@ -15,8 +17,8 @@ fn farthest_distance(input: &str) -> usize {
 }
 
 fn area_enclosed(input: &str) -> usize {
-    let map = parse(input);
-    map.loop_area()
+    let _map = parse(input);
+    todo!()
 }
 
 struct Map {
@@ -39,51 +41,6 @@ impl Map {
         map.swap_start();
         map.find_loop();
         map
-    }
-
-    fn loop_area(&self) -> usize {
-        println!("{self}");
-        (0..self.tiles.len())
-            .into_iter()
-            .skip(4)
-            .take(1)
-            .map(|y| self.loop_row(y))
-            .map(|row| {
-                println!("Got loop row: {row:?}");
-                let val = row.windows(2).enumerate().fold(0, |mut acc, (idx, pts)| {
-                    if idx % 2 == 0 {
-                        acc += pts[1].x - pts[0].x - 1;
-                    }
-                    acc
-                });
-                println!("  val: {val}");
-                val
-            })
-            .sum()
-    }
-
-    fn loop_row(&self, y: usize) -> Vec<Pt> {
-        let mut row: Vec<_> = self.loop_pts.iter().filter(|p| p.y == y).copied().collect();
-        row.sort_by_key(|f| f.x);
-        println!("Row pts: {row:?}");
-        row.into_iter().fold(vec![], |mut acc, pt| {
-            let acc_len = acc.len();
-            println!("ACC: {acc:?}");
-            match acc.last_mut() {
-                Some(last) if acc_len % 2 == 1 && lr_connects(&last, &pt) => {
-                    println!("in area connect -> {pt:?}");
-                    *last = pt;
-                }
-                Some(last) if acc_len % 2 == 0 && lr_connects(&last, &pt) => {
-                    println!("not in area and connects");
-                }
-                _ => {
-                    println!("Pushing {pt:?}");
-                    acc.push(pt)
-                }
-            }
-            acc
-        })
     }
 
     fn find_loop(&mut self) {
@@ -175,6 +132,7 @@ impl Map {
     }
 }
 
+#[allow(unused)]
 fn lr_connects(left: &Pt, right: &Pt) -> bool {
     let distance = right.x.saturating_sub(left.x);
     let left_ok = left.tile.has(Dir::Right);
@@ -282,6 +240,18 @@ impl std::fmt::Display for Tile {
             Tile::Ground => ".",
             Tile::Start => "S",
         };
+        /*
+        let s = match self {
+            Tile::VPipe => "|",
+            Tile::HPipe => "-",
+            Tile::BendNE => "L",
+            Tile::BendNW => "J",
+            Tile::BendSW => "7",
+            Tile::BendSE => "F",
+            Tile::Ground => ".",
+            Tile::Start => "S",
+        };
+        */
         write!(f, "{s}")
     }
 }
