@@ -1,6 +1,17 @@
 #![allow(unused, dead_code)]
 
-fn main() {}
+use anyhow::bail;
+use itertools::Itertools;
+use std::error::Error;
+
+fn main() {
+    let example = include_str!("example.txt");
+    println!("{example}");
+    let mut map = parse(example);
+    println!("{map}");
+    map.swap_start();
+    println!("{map}");
+}
 
 struct Map {
     start: Pt,
@@ -49,6 +60,17 @@ impl Map {
     }
 }
 
+impl std::fmt::Display for Map {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = self
+            .tiles
+            .iter()
+            .map(|row| row.iter().map(|t| format!("{t}")).join(""))
+            .join("\n");
+        write!(f, "{s}")
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Pt(usize, usize); // x,y
 
@@ -62,6 +84,22 @@ enum Tile {
     BendSE,
     Ground,
     Start,
+}
+
+impl std::fmt::Display for Tile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Tile::VPipe => "║",
+            Tile::HPipe => "═",
+            Tile::BendNE => "╚",
+            Tile::BendNW => "╝",
+            Tile::BendSW => "╗",
+            Tile::BendSE => "╔",
+            Tile::Ground => ".",
+            Tile::Start => "S",
+        };
+        write!(f, "{s}")
+    }
 }
 
 impl From<char> for Tile {
