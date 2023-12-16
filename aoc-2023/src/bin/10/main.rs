@@ -28,8 +28,16 @@ impl Map {
     }
 
     fn swap_start(&mut self) {
+        use Dir::*;
         println!("start: {:?}", self.start);
-        todo!()
+        let u = self.neighbor(self.start, Up).map(|p| p.tile);
+        let d = self.neighbor(self.start, Down).map(|p| p.tile);
+        let l = self.neighbor(self.start, Left).map(|p| p.tile);
+        let r = self.neighbor(self.start, Right).map(|p| p.tile);
+        self.start.tile = match (u, d, l, r) {
+            (Some(u), Some(d), _, _) if u.has(Down) && d.has(Up) => Tile::VPipe,
+            _ => panic!("no start could be found"),
+        };
     }
 
     fn neighbor(&self, pt: Pt, dir: Dir) -> Option<Pt> {
@@ -119,7 +127,18 @@ enum Tile {
     Start,
 }
 
-impl Tile {}
+impl Tile {
+    fn has(&self, dir: Dir) -> bool {
+        use Tile::*;
+        match (self, dir) {
+            (VPipe | BendNE | BendNW, Dir::Up) => true,
+            (VPipe | BendSE | BendSW, Dir::Down) => true,
+            (HPipe | BendNW | BendSW, Dir::Left) => true,
+            (HPipe | BendNE | BendSE, Dir::Right) => true,
+            _ => false,
+        }
+    }
+}
 
 impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
