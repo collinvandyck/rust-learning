@@ -5,10 +5,8 @@ use itertools::Itertools;
 use std::{collections::HashSet, error::Error, fmt::Debug};
 
 fn main() {
-    let example = include_str!("input.txt");
-    let mut map = parse(example);
-    map.swap_start();
-    map.find_loop();
+    let example = include_str!("example.txt");
+    let map = parse(example);
     println!("{map}");
 }
 
@@ -23,7 +21,10 @@ impl Map {
             .first()
             .copied()
             .unwrap();
-        Self { tiles, start }
+        let mut map = Self { tiles, start };
+        map.swap_start();
+        map.find_loop();
+        map
     }
 
     fn find_loop(&mut self) {
