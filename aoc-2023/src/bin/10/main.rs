@@ -8,8 +8,8 @@ fn main() {
     let ex2 = include_str!("ex2.txt");
     let in1 = include_str!("in1.txt");
     println!("p1ex={}", farthest_distance(ex1));
-    println!("p2in={}", farthest_distance(in1));
-    println!("p2ex1={}", area_enclosed(ex1));
+    //println!("p2in={}", farthest_distance(in1));
+    //println!("p2ex1={}", area_enclosed(ex1));
 }
 
 fn farthest_distance(input: &str) -> usize {
@@ -40,13 +40,37 @@ impl Map {
             loop_pts: Default::default(),
         };
         map.swap_start();
-        map.find_loop();
+        map.walk();
         map
     }
 
+    // pick the first tile found on the first row and walk the loop
     fn area(&self) -> usize {
         println!("{self}");
         todo!()
+    }
+
+    fn walk(&mut self) {
+        let mut visited: HashSet<Pt> = HashSet::default();
+        let start = self.get(self.start.x, self.start.y).expect("no start");
+        let mut cur = start.clone();
+        let mut last_dir: Option<Dir> = None;
+        while !visited.contains(&start) {
+            let dir = cur
+                .tile
+                .dirs()
+                .unwrap()
+                .into_iter()
+                .filter(|dir| match &last_dir {
+                    Some(last) if dir != &last.opposite() => true,
+                    Some(last) => false,
+                    None => true,
+                })
+                .next()
+                .unwrap();
+            println!("Dir is {dir:?}");
+            return;
+        }
     }
 
     fn find_loop(&mut self) {
@@ -164,12 +188,23 @@ impl std::fmt::Display for Map {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Dir {
     Up,
     Down,
     Left,
     Right,
+}
+
+impl Dir {
+    fn opposite(&self) -> Dir {
+        match self {
+            Dir::Up => Dir::Down,
+            Dir::Down => Dir::Up,
+            Dir::Left => Dir::Right,
+            Dir::Right => Dir::Left,
+        }
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
