@@ -34,10 +34,12 @@ impl Map {
         let d = self.neighbor(self.start, Down).map(|p| p.tile);
         let l = self.neighbor(self.start, Left).map(|p| p.tile);
         let r = self.neighbor(self.start, Right).map(|p| p.tile);
-        self.start.tile = match (u, d, l, r) {
+        let tile = match (u, d, l, r) {
             (Some(u), Some(d), _, _) if u.has(Down) && d.has(Up) => Tile::VPipe,
+            (_, Some(d), _, Some(r)) if d.has(Up) && r.has(Left) => Tile::BendSE,
             _ => panic!("no start could be found"),
         };
+        self.set(self.start.x, self.start.y, tile);
     }
 
     fn neighbor(&self, pt: Pt, dir: Dir) -> Option<Pt> {
@@ -49,6 +51,14 @@ impl Map {
         }
         .map(|(x, y)| self.get(x, y))
         .flatten()
+    }
+
+    fn set(&mut self, x: usize, y: usize, tile: Tile) {
+        if let Some(row) = self.tiles.get_mut(y) {
+            if let Some(v) = row.get_mut(x) {
+                *v = tile;
+            }
+        }
     }
 
     fn get(&self, x: usize, y: usize) -> Option<Pt> {
