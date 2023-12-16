@@ -6,11 +6,17 @@ fn main() {
     let input = include_str!("input.txt");
     println!("p1ex={}", farthest_distance(example));
     println!("p1in={}", farthest_distance(input));
+    println!("p2ex={}", area_enclosed(example));
 }
 
 fn farthest_distance(input: &str) -> usize {
     let map = parse(input);
     map.loop_pts.len() / 2
+}
+
+fn area_enclosed(input: &str) -> usize {
+    let map = parse(input);
+    map.loop_area()
 }
 
 struct Map {
@@ -33,6 +39,10 @@ impl Map {
         map.swap_start();
         map.find_loop();
         map
+    }
+
+    fn loop_area(&self) -> usize {
+        0
     }
 
     fn find_loop(&mut self) {
