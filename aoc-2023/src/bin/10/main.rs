@@ -32,6 +32,26 @@ impl Map {
         todo!()
     }
 
+    fn neighbor(&self, pt: Pt, dir: Dir) -> Option<Pt> {
+        match dir {
+            Dir::Up => pt.y.checked_sub(1).map(|y| (pt.x, y)),
+            Dir::Down => pt.y.checked_add(1).map(|y| (pt.x, y)),
+            Dir::Left => pt.x.checked_sub(1).map(|x| (x, pt.y)),
+            Dir::Right => pt.x.checked_add(1).map(|x| (x, pt.y)),
+        }
+        .map(|(x, y)| self.get(x, y))
+        .flatten()
+    }
+
+    fn get(&self, x: usize, y: usize) -> Option<Pt> {
+        self.tiles
+            .get(y)
+            .map(|row| row.get(x))
+            .flatten()
+            .copied()
+            .map(|tile| Pt { x, y, tile })
+    }
+
     fn find(&self, tile: Tile) -> Vec<Pt> {
         Self::find_tile(&self.tiles, tile)
     }
@@ -84,6 +104,8 @@ struct Pt {
     y: usize,
     tile: Tile,
 }
+
+impl Pt {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Tile {
