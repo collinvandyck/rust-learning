@@ -10,13 +10,13 @@ fn main() {
 
 fn farthest_distance(input: &str) -> usize {
     let map = parse(input);
-    map.loop_length
+    map.loop_pts.len() / 2
 }
 
 struct Map {
     start: Pt,
     tiles: Vec<Vec<Tile>>,
-    loop_length: usize,
+    loop_pts: HashSet<Pt>,
 }
 
 impl Map {
@@ -28,7 +28,7 @@ impl Map {
         let mut map = Self {
             tiles,
             start,
-            loop_length: 0,
+            loop_pts: Default::default(),
         };
         map.swap_start();
         map.find_loop();
@@ -39,9 +39,7 @@ impl Map {
         let mut visited: HashSet<Pt> = HashSet::default();
         let cur = self.get(self.start.x, self.start.y).expect("no start");
         let mut queue = vec![cur];
-        let mut length = 0;
         while let Some(pt) = queue.pop() {
-            length += 1;
             if let Some(dirs) = pt.tile.dirs() {
                 for pt in dirs.into_iter().flat_map(|d| self.neighbor(pt, d)) {
                     if !visited.contains(&pt) {
@@ -60,7 +58,7 @@ impl Map {
                 }
             }
         }
-        self.loop_length = length / 2;
+        self.loop_pts = visited;
     }
 
     fn swap_start(&mut self) {
