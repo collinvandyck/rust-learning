@@ -30,6 +30,7 @@ impl Map {
         println!("start: {:?}", self.start);
         todo!()
     }
+
     fn get(&self, pt: Pt) -> Option<&Tile> {
         self.tiles.get(pt.1).and_then(|r| r.get(pt.0))
     }
@@ -45,11 +46,11 @@ impl Map {
                     .iter()
                     .enumerate()
                     .filter(|(col, t)| t == &&tile)
-                    .map(|(col, _)| (col, row))
+                    .map(|(col, t)| (col, row, t))
                     .collect::<Vec<_>>()
             })
             .flatten()
-            .map(|(row, col)| Pt(row, col))
+            .map(|(row, col, t)| Pt(row, col, *t))
             .collect::<Vec<_>>()
     }
     fn rows(&self) -> usize {
@@ -71,8 +72,15 @@ impl std::fmt::Display for Map {
     }
 }
 
+enum Dir {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Pt(usize, usize); // x,y
+struct Pt(usize, usize, Tile); // x,y
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Tile {
@@ -85,6 +93,8 @@ enum Tile {
     Ground,
     Start,
 }
+
+impl Tile {}
 
 impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -134,7 +144,7 @@ mod tests {
         let example = include_str!("example.txt");
         let map = parse(example);
         let starts = map.find(Tile::Start);
-        assert_eq!(starts, vec![Pt(2, 0)]);
+        assert_eq!(starts, vec![Pt(0, 2, Tile::Start)]);
     }
 
     #[test]
