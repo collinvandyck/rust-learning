@@ -29,7 +29,7 @@ impl Map {
 
     fn find_loop(&mut self) {
         let mut visited: HashSet<(usize, usize)> = HashSet::default();
-        let mut cur = self.get(self.start.x, self.start.y).expect("no start");
+        let cur = self.get(self.start.x, self.start.y).expect("no start");
         let mut queue = vec![cur];
         while let Some(pt) = queue.pop() {
             if let Some(dirs) = pt.tile.dirs() {
@@ -94,7 +94,7 @@ impl Map {
             .map(|row| row.get(x))
             .flatten()
             .copied()
-            .map(|tile| Pt { x, y, tile })
+            .map(|tile| Pt::new(x, y, tile))
     }
 
     fn find(&self, tile: Tile) -> Vec<Pt> {
@@ -114,7 +114,7 @@ impl Map {
                     .collect::<Vec<_>>()
             })
             .flatten()
-            .map(|(x, y, tile)| Pt { x, y, tile })
+            .map(|(x, y, tile)| Pt::new(x, y, tile))
             .collect::<Vec<_>>()
     }
     fn rows(&self) -> usize {
@@ -149,6 +149,18 @@ struct Pt {
     x: usize,
     y: usize,
     tile: Tile,
+    dist: usize,
+}
+
+impl Pt {
+    fn new(x: usize, y: usize, tile: Tile) -> Self {
+        Self {
+            x,
+            y,
+            tile,
+            dist: 0,
+        }
+    }
 }
 
 impl Debug for Pt {
@@ -156,8 +168,6 @@ impl Debug for Pt {
         write!(f, "({},{})::{:?}", self.x, self.y, self.tile)
     }
 }
-
-impl Pt {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Tile {
@@ -242,15 +252,7 @@ mod tests {
     fn test_map() {
         let example = include_str!("example.txt");
         let map = parse(example);
-        let starts = map.find(Tile::Start);
-        assert_eq!(
-            starts,
-            vec![Pt {
-                x: 0,
-                y: 2,
-                tile: Tile::Start
-            }]
-        );
+        assert_eq!(map.start, Pt::new(0, 2, Tile::Start));
     }
 
     #[test]
