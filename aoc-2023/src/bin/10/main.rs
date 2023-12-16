@@ -2,14 +2,13 @@
 
 use anyhow::bail;
 use itertools::Itertools;
-use std::error::Error;
+use std::{collections::HashSet, error::Error, fmt::Debug};
 
 fn main() {
-    let example = include_str!("example.txt");
-    println!("{example}");
+    let example = include_str!("input.txt");
     let mut map = parse(example);
-    println!("{map}");
     map.swap_start();
+    map.find_loop();
     println!("{map}");
 }
 
@@ -27,16 +26,43 @@ impl Map {
         Self { tiles, start }
     }
 
+    fn find_loop(&mut self) {
+        let mut visited: HashSet<(usize, usize)> = HashSet::default();
+        let mut cur = self.get(self.start.x, self.start.y).expect("no start");
+        let mut queue = vec![cur];
+        while let Some(pt) = queue.pop() {
+            if let Some(dirs) = pt.tile.dirs() {
+                for pt in dirs.into_iter().flat_map(|d| self.neighbor(pt, d)) {
+                    if !visited.contains(&(pt.x, pt.y)) {
+                        queue.push(pt);
+                    }
+                }
+            }
+            // finally..
+            visited.insert((pt.x, pt.y));
+        }
+        for (y, row) in self.tiles.iter_mut().enumerate() {
+            for (x, t) in row.iter_mut().enumerate() {
+                if !visited.contains(&(x, y)) {
+                    *t = Tile::Ground;
+                }
+            }
+        }
+    }
+
     fn swap_start(&mut self) {
         use Dir::*;
-        println!("start: {:?}", self.start);
         let u = self.neighbor(self.start, Up).map(|p| p.tile);
         let d = self.neighbor(self.start, Down).map(|p| p.tile);
         let l = self.neighbor(self.start, Left).map(|p| p.tile);
         let r = self.neighbor(self.start, Right).map(|p| p.tile);
         let tile = match (u, d, l, r) {
             (Some(u), Some(d), _, _) if u.has(Down) && d.has(Up) => Tile::VPipe,
+            (_, _, Some(l), Some(r)) if l.has(Right) && r.has(Left) => Tile::HPipe,
             (_, Some(d), _, Some(r)) if d.has(Up) && r.has(Left) => Tile::BendSE,
+            (_, Some(d), Some(l), _) if d.has(Up) && l.has(Right) => Tile::BendSW,
+            (Some(u), _, _, Some(r)) if u.has(Down) && r.has(Left) => Tile::BendNE,
+            (Some(u), _, Some(l), _) if u.has(Down) && l.has(Right) => Tile::BendNW,
             _ => panic!("no start could be found"),
         };
         self.set(self.start.x, self.start.y, tile);
@@ -109,6 +135,7 @@ impl std::fmt::Display for Map {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 enum Dir {
     Up,
     Down,
@@ -116,16 +143,22 @@ enum Dir {
     Right,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Pt {
     x: usize,
     y: usize,
     tile: Tile,
 }
 
+impl Debug for Pt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})::{:?}", self.x, self.y, self.tile)
+    }
+}
+
 impl Pt {}
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Tile {
     VPipe,
     HPipe,
@@ -138,6 +171,17 @@ enum Tile {
 }
 
 impl Tile {
+    fn dirs(&self) -> Option<[Dir; 2]> {
+        match self {
+            Tile::VPipe => Some([Dir::Up, Dir::Down]),
+            Tile::HPipe => Some([Dir::Left, Dir::Right]),
+            Tile::BendNE => Some([Dir::Up, Dir::Right]),
+            Tile::BendNW => Some([Dir::Up, Dir::Left]),
+            Tile::BendSE => Some([Dir::Down, Dir::Right]),
+            Tile::BendSW => Some([Dir::Down, Dir::Left]),
+            _ => None,
+        }
+    }
     fn has(&self, dir: Dir) -> bool {
         use Tile::*;
         match (self, dir) {
