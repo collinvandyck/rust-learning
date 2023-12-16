@@ -64,14 +64,9 @@ enum Tile {
     Start,
 }
 
-fn parse(input: &str) -> Map {
-    Map::new(input.lines().map(parse_row).collect())
-}
-
-fn parse_row(input: &str) -> Vec<Tile> {
-    input
-        .chars()
-        .map(|ch| match ch {
+impl From<char> for Tile {
+    fn from(ch: char) -> Self {
+        match ch {
             '.' => Tile::Ground,
             '|' => Tile::VPipe,
             '-' => Tile::HPipe,
@@ -81,8 +76,16 @@ fn parse_row(input: &str) -> Vec<Tile> {
             'F' => Tile::BendSE,
             'S' => Tile::Start,
             _ => panic!("unknown tile: {ch}"),
-        })
-        .collect()
+        }
+    }
+}
+
+fn parse(input: &str) -> Map {
+    Map::new(input.lines().map(parse_row).collect())
+}
+
+fn parse_row(input: &str) -> Vec<Tile> {
+    input.chars().map(Tile::from).collect()
 }
 
 #[cfg(test)]
