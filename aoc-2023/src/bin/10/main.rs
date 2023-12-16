@@ -1,8 +1,5 @@
-#![allow(unused, dead_code)]
-
-use anyhow::bail;
 use itertools::Itertools;
-use std::{collections::HashSet, error::Error, fmt::Debug};
+use std::{collections::HashSet, fmt::Debug};
 
 fn main() {
     let example = include_str!("example.txt");
@@ -110,10 +107,6 @@ impl Map {
             .map(|tile| Pt::new(x, y, tile))
     }
 
-    fn find(&self, tile: Tile) -> Vec<Pt> {
-        Self::find_tile(&self.tiles, tile)
-    }
-
     fn find_tile(tiles: &[Vec<Tile>], tile: Tile) -> Vec<Pt> {
         tiles
             .iter()
@@ -122,19 +115,13 @@ impl Map {
                 tiles
                     .iter()
                     .enumerate()
-                    .filter(|(col, t)| t == &&tile)
+                    .filter(|(_col, t)| t == &&tile)
                     .map(|(col, t)| (col, row, *t))
                     .collect::<Vec<_>>()
             })
             .flatten()
             .map(|(x, y, tile)| Pt::new(x, y, tile))
             .collect::<Vec<_>>()
-    }
-    fn rows(&self) -> usize {
-        self.tiles.len()
-    }
-    fn cols(&self) -> usize {
-        self.tiles.get(0).map(|l| l.len()).unwrap_or_default()
     }
 }
 
@@ -266,15 +253,5 @@ mod tests {
         let example = include_str!("example.txt");
         let map = parse(example);
         assert_eq!(map.start, Pt::new(0, 2, Tile::Start));
-    }
-
-    #[test]
-    fn test_parse() {
-        let example = include_str!("example.txt");
-        let input = include_str!("input.txt");
-        let map = parse(example);
-        assert_eq!(map.rows(), 5);
-        assert_eq!(map.cols(), 5);
-        parse(input);
     }
 }
