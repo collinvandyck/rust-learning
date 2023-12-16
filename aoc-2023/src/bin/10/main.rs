@@ -1,3 +1,5 @@
+#![allow(unused, dead_code)]
+
 use itertools::Itertools;
 use std::{collections::HashSet, fmt::Debug};
 
@@ -8,7 +10,6 @@ fn main() {
     println!("p1ex={}", farthest_distance(ex1));
     println!("p2in={}", farthest_distance(in1));
     println!("p2ex1={}", area_enclosed(ex1));
-    println!("p2ex2={}", area_enclosed(ex2));
 }
 
 fn farthest_distance(input: &str) -> usize {
@@ -17,8 +18,8 @@ fn farthest_distance(input: &str) -> usize {
 }
 
 fn area_enclosed(input: &str) -> usize {
-    let _map = parse(input);
-    todo!()
+    let map = parse(input);
+    map.area()
 }
 
 struct Map {
@@ -41,6 +42,11 @@ impl Map {
         map.swap_start();
         map.find_loop();
         map
+    }
+
+    fn area(&self) -> usize {
+        println!("{self}");
+        todo!()
     }
 
     fn find_loop(&mut self) {
@@ -132,7 +138,6 @@ impl Map {
     }
 }
 
-#[allow(unused)]
 fn lr_connects(left: &Pt, right: &Pt) -> bool {
     let distance = right.x.saturating_sub(left.x);
     let left_ok = left.tile.has(Dir::Right);
