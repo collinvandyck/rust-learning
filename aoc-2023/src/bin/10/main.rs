@@ -226,6 +226,7 @@ enum Tile {
     BendSE,
     Ground,
     Start,
+    Interior,
 }
 
 impl Tile {
@@ -263,6 +264,7 @@ impl std::fmt::Display for Tile {
             Tile::BendSE => "╔",
             Tile::Ground => ".",
             Tile::Start => "S",
+            Tile::Interior => "I",
         };
         write!(f, "{s}")
     }
