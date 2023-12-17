@@ -12,27 +12,41 @@ fn main() {
 struct Map {
     tiles: Vec<Vec<Tile>>,
     path: Vec<Tile>,
+    start: Tile,
     fancy: bool,
 }
 
 impl Map {
     fn from_input(input: &str) -> Self {
+        let tiles = input
+            .lines()
+            .enumerate()
+            .map(|(y, line)| {
+                line.chars()
+                    .enumerate()
+                    .map(|(x, ch)| {
+                        let glyph = Glyph::from_char(ch);
+                        Tile::new(x, y, glyph)
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        let start = tiles
+            .iter()
+            .flat_map(|r| r.iter())
+            .find(|t| matches!(t.glyph, Glyph::Start))
+            .copied()
+            .unwrap();
         let mut map = Self {
             fancy: true,
             path: vec![],
-            tiles: input
-                .lines()
-                .enumerate()
-                .map(|(y, line)| {
-                    line.chars()
-                        .enumerate()
-                        .map(|(x, ch)| Tile::new(x, y, Glyph::from_char(ch)))
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>(),
+            start,
+            tiles,
         };
+        map.walk();
         map
     }
+    fn walk(&mut self) {}
 }
 
 impl std::fmt::Display for Map {
@@ -50,6 +64,7 @@ impl std::fmt::Display for Map {
     }
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 struct Tile {
     glyph: Glyph,
     x: usize,
@@ -62,6 +77,7 @@ impl Tile {
     }
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 enum Glyph {
     VPipe,
     HPipe,
