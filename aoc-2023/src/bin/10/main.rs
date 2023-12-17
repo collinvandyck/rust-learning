@@ -44,14 +44,23 @@ impl Map {
     // start with a path tile on the top and start walking the path, recording interior spaces.
     fn area(&self) -> usize {
         println!("{self}");
-        let start = self
+        let start: &Pt = self
             .pts
             .iter()
             .flat_map(|r| r.into_iter())
             .filter(|pt| matches!(pt.tile, Tile::HPipe | Tile::BendSW | Tile::BendSE))
             .next()
             .unwrap();
+        let idx: usize = self
+            .path
+            .iter()
+            .enumerate()
+            .find(|(i, pt)| pt == &start)
+            .map(|(i, pt)| i)
+            .unwrap();
         println!("Start: {start:?}");
+        println!("Found: {idx:?}");
+
         todo!()
     }
 
