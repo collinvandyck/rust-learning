@@ -55,9 +55,11 @@ impl Map {
         info!("Walking.");
         let conn = self.neighbors(self.start);
     }
+
     fn new_start_tile(&self) -> Tile {
         todo!()
     }
+
     fn neighbors(&self, tile: Tile) -> Vec<(Dir, Tile)> {
         let neighbors = Dir::iter()
             .flat_map(|dir| self.neighbor(tile, dir).map(|t| (dir, t)))
@@ -65,6 +67,7 @@ impl Map {
         info!(%tile, num = neighbors.len(), "Neighbors");
         neighbors
     }
+
     fn neighbor(&self, tile: Tile, dir: Dir) -> Option<Tile> {
         let Tile { glyph, x, y } = tile;
         match dir {
@@ -74,7 +77,7 @@ impl Map {
             Dir::Right => x.checked_add(1).map(|x| (x, y)),
         }
         .and_then(|(x, y)| self.get(x, y))
-        .filter(|tile| !matches!(tile.glyph, Glyph::Ground | Glyph::Start))
+        .filter(|tile| tile.glyph.is_pipe())
     }
     fn get(&self, x: usize, y: usize) -> Option<Tile> {
         self.tiles.get(y).and_then(|r| r.get(x)).copied()
@@ -147,6 +150,12 @@ impl Glyph {
             'S' => Self::Start,
             _ => panic!("unexpected ch: {ch}"),
         }
+    }
+    fn is_pipe(&self) -> bool {
+        matches!(
+            self,
+            Self::VPipe | Self::HPipe | Self::BendNW | Self::BendNE | Self::BendSW | Self::BendSE
+        )
     }
     fn render(&self, fancy: bool) -> char {
         match self {
