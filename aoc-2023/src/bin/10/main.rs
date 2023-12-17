@@ -1,15 +1,16 @@
 #![allow(unused, dead_code)]
 
 use itertools::Itertools;
-use std::{collections::HashSet, fmt::Debug};
+use std::{collections::HashSet, fmt::Debug, hash::Hash};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
     let ex2 = include_str!("ex2.txt");
     let in1 = include_str!("in1.txt");
-    println!("p1ex={}", farthest_distance(ex1));
-    println!("p1in={}", farthest_distance(in1));
-    println!("p2ex={}", area_enclosed(ex1));
+    println!("p1ex1={}", farthest_distance(ex1));
+    println!("p1i1n={}", farthest_distance(in1));
+    println!("p2e1x={}", area_enclosed(ex1));
+    println!("p2e2x={}", area_enclosed(ex2));
     //println!("p2in={}", area_enclosed(in1));
 }
 
@@ -19,7 +20,7 @@ fn farthest_distance(input: &str) -> usize {
 }
 
 fn area_enclosed(input: &str) -> usize {
-    let map = parse(input);
+    let mut map = parse(input);
     map.area()
 }
 
@@ -27,6 +28,7 @@ struct Map {
     start: Pt,
     pts: Vec<Vec<Pt>>,
     path: Vec<Pt>,
+    marks: HashSet<Pt>,
 }
 
 impl Map {
@@ -36,15 +38,19 @@ impl Map {
             pts,
             start,
             path: Default::default(),
+            marks: HashSet::default(),
         };
         map.swap_start();
         map.walk();
         map
     }
 
+    fn mark(&mut self, pt: Pt) {
+        self.marks.insert(pt);
+    }
+
     // start with a path tile on the top and start walking the path, recording interior spaces.
-    fn area(&self) -> usize {
-        println!("{self}");
+    fn area(&mut self) -> usize {
         let start: &Pt = self
             .pts
             .iter()
@@ -59,49 +65,71 @@ impl Map {
             .find(|(i, pt)| pt == &start)
             .map(|(i, pt)| i)
             .unwrap();
-        let mut pts: Vec<&Pt> = self.path[idx..]
+        let mut pts: Vec<Pt> = self.path[idx..]
             .iter()
             .chain(self.path[0..idx].iter())
+            .copied()
             .collect::<Vec<_>>();
-        if !pts[1].tile.has(Dir::Left) && !pts[1].tile.has(Dir::Up) {
+        let rev = pts[1].x <= pts[0].x;
+        if rev {
             println!("Reversing iterator.");
             pts = self.path[0..=idx]
                 .iter()
                 .rev()
                 .chain(self.path[idx + 1..self.path.len()].iter().rev())
+                .copied()
                 .collect();
         }
         // from here on, we can assume that as we're moving along the points of the path that we
         // will be using a rule that the "interior" is anything on the "right" side of the path.
         // The right side of the path is the right side as determined by the vector of the last
         // tile to the current one.
-        let mut iter = pts.iter().copied().copied();
+        let mut iter = pts.iter_mut();
         let mut last: Option<Pt> = None;
         let mut interiors: HashSet<Pt> = HashSet::default();
         use Tile::*;
-        for pt in iter {
-            println!("Pt: {pt:?}");
+        for (idx, pt) in iter.enumerate() {
+            if idx < 5 {
+                println!("{idx}: {pt:?}");
+            }
             match (pt.tile, last.as_ref()) {
                 (HPipe, None) => {
-                    let tiles = self.ground_tiles(pt, Dir::Down);
+                    let tiles = self.ground_tiles(*pt, Dir::Down);
+                    if !tiles.is_empty() {
+                        self.mark(*pt);
+                        println!("{idx}: {pt:?}");
+                        println!("  hpipe (none) ground tiles: {tiles:?}");
+                    }
                     interiors.extend(tiles);
                 }
                 (HPipe, Some(last)) => {
                     let interior_dir = HPipe.interior_dir_for_last(&last.tile);
-                    let tiles = self.ground_tiles(pt, interior_dir);
+                    let tiles = self.ground_tiles(*pt, interior_dir);
+                    if !tiles.is_empty() {
+                        println!("{idx}: {pt:?}");
+                        println!("  hpipe ground tiles: {tiles:?}");
+                    }
                     interiors.extend(tiles);
                 }
                 (VPipe, Some(last)) => {
                     let interior_dir = VPipe.interior_dir_for_last(&last.tile);
-                    let tiles = self.ground_tiles(pt, interior_dir);
+                    let tiles = self.ground_tiles(*pt, interior_dir);
+                    if !tiles.is_empty() {
+                        println!("{idx}: {pt:?}");
+                        println!("  vpipe ground tiles: {tiles:?}");
+                    }
                     interiors.extend(tiles);
                 }
                 (BendSW | BendSE | BendNE | BendNW, last) => {}
                 (VPipe, None) => panic!("invalid vpipe with no last"),
                 (tile, last) => panic!("invalid tile: {tile:?} last: {last:?}"),
             }
-            last.replace(pt);
+            last.replace(*pt);
         }
+        interiors.iter().for_each(|pt| {
+            self.set(pt.x, pt.y, Tile::Interior);
+        });
+        println!("{self}");
         interiors.len()
     }
 
@@ -115,7 +143,6 @@ impl Map {
                 break;
             }
         }
-        println!("Ground tiles pt={pt:?} dir={dir:?} res={res:?}");
         res
     }
 
@@ -210,6 +237,9 @@ impl Map {
 
 #[test]
 fn test_ground_tiles() {
+    let input = include_str!("ex1.txt");
+    let map = parse(input);
+    println!("{map}");
     assert!(false, "boom");
 }
 
@@ -321,9 +351,9 @@ impl Tile {
     // which direction is the interior given the last?
     fn interior_dir_for_last(&self, last: &Tile) -> Dir {
         match self {
-            Tile::VPipe if last.has(Dir::Up) => Dir::Right,
-            Tile::VPipe => Dir::Left,
-            Tile::HPipe if last.has(Dir::Right) => Dir::Down,
+            Tile::VPipe if last.has(Dir::Down) => Dir::Left,
+            Tile::VPipe => Dir::Right,
+            Tile::HPipe if last.has(Dir::Right) => Dir::Up,
             Tile::HPipe => Dir::Up,
             _ => panic!("invalid interior dir for last self:{self:?}"),
         }
