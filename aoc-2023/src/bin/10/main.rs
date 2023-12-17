@@ -16,9 +16,9 @@ fn main() {
     let in1 = include_str!("in1.txt");
     info!("p1ex1={}", farthest_distance(ex1));
     info!("p1in1={}", farthest_distance(in1));
+    info!("p2ex1={}", enclosed_area(ex1));
     info!("p2ex2={}", enclosed_area(ex2));
-    //info!("p2ex1={}", enclosed_area(ex1));
-    //info!("p2in1={}", enclosed_area(in1));
+    info!("p2ex3={}", enclosed_area(ex3));
     info!(elapsed = ?start.elapsed(), "Done")
 }
 
@@ -106,7 +106,7 @@ impl Map {
                 Dir::Right => Dir::Down,
             };
             let mut cur = tile.clone();
-            info!(
+            debug!(
                 "Tile: {tile} dir: {dir:?} chk: {chk_dir:?} next:{:?}",
                 self.neighbor(cur, chk_dir)
             );
@@ -120,6 +120,9 @@ impl Map {
             }
         }
         info!("Interiors: {}", interiors.len());
+        for tile in interiors {
+            self.set_glyph(tile.x, tile.y, Glyph::Interior);
+        }
     }
 
     fn chart_loop(&mut self) {
