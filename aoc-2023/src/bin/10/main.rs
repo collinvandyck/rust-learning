@@ -13,13 +13,14 @@ fn main() {
     let ex1 = include_str!("ex1.txt");
     let ex2 = include_str!("ex2.txt");
     let ex3 = include_str!("ex3.txt");
+    let ex4 = include_str!("ex4.txt");
     let in1 = include_str!("in1.txt");
     info!("p1ex1={}", farthest_distance(ex1));
     info!("p1in1={}", farthest_distance(in1));
     info!("p2ex1={}", enclosed_area(ex1));
     info!("p2ex2={}", enclosed_area(ex2));
     info!("p2ex3={}", enclosed_area(ex3));
-    //info!("p2in1={}", enclosed_area(in1));
+    info!("p2ex4={}", enclosed_area(ex4));
     info!(elapsed = ?start.elapsed(), "Done")
 }
 
@@ -88,6 +89,7 @@ impl Map {
     }
 
     fn mark_interior(&mut self) {
+        // fill in the edges
         for row in self.tiles.iter_mut() {
             for tile in row.iter_mut() {
                 if tile.glyph != Glyph::Ground {
@@ -102,6 +104,21 @@ impl Map {
                 tile.status = Status::Exterior;
             }
         }
+        info!("Rows: {} Cols: {}", self.rows(), self.cols());
+        for y in 0..self.rows() {
+            for x in 0..self.cols() {
+                // explore any exterior node
+                let tile = self.get(x, y).unwrap();
+            }
+        }
+    }
+
+    fn rows(&self) -> usize {
+        self.tiles.len()
+    }
+
+    fn cols(&self) -> usize {
+        self.tiles.get(0).map(|r| r.len()).unwrap_or_default()
     }
 
     fn chart_loop(&mut self) {
