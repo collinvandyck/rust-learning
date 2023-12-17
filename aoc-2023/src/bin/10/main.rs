@@ -19,6 +19,7 @@ fn main() {
     info!("p2ex1={}", enclosed_area(ex1));
     info!("p2ex2={}", enclosed_area(ex2));
     info!("p2ex3={}", enclosed_area(ex3));
+    //info!("p2in1={}", enclosed_area(in1));
     info!(elapsed = ?start.elapsed(), "Done")
 }
 
@@ -30,7 +31,7 @@ fn farthest_distance(input: &str) -> usize {
 fn enclosed_area(input: &str) -> usize {
     let mut map = Map::from_input(input);
     assert!(map.path_is_clockwise());
-    map.mark_interior();
+    map.mark_interior_2();
     info!("\n{map}");
     0
 }
@@ -86,6 +87,8 @@ impl Map {
         map
     }
 
+    fn mark_interior_2(&mut self) {}
+
     fn mark_interior(&mut self) {
         let mut interiors: HashSet<Tile> = HashSet::new();
         let mut last_tile: Option<&Tile> = None;
@@ -99,23 +102,43 @@ impl Map {
                 }
                 Some(dir) => dir,
             };
+            let mut dirs: Vec<Dir> = match (tile.glyph, dir) {
+                (Glyph::VPipe, Dir::Down) => vec![Dir::Left],
+                (Glyph::VPipe, Dir::Up) => vec![Dir::Right],
+                (Glyph::HPipe, Dir::Left) => vec![Dir::Up],
+                (Glyph::HPipe, Dir::Right) => vec![Dir::Down],
+                (Glyph::BendNE, Dir::Right) => vec![Dir::Down],
+                (Glyph::BendNE, Dir::Up) => vec![Dir::Right, Dir::Up],
+                (Glyph::BendNW, Dir::Left) => vec![Dir::Left, Dir::Up],
+                (Glyph::BendNW, Dir::Up) => vec![Dir::Right],
+                (Glyph::BendSE, Dir::Down) => vec![],
+                (Glyph::BendSE, Dir::Right) => vec![Dir::Down, Dir::Right],
+                (Glyph::BendSW, Dir::Down) => vec![Dir::Left, Dir::Down],
+                (Glyph::BendSW, Dir::Left) => vec![],
+                _ => vec![],
+            };
             let chk_dir = match dir {
                 Dir::Up => Dir::Right,
                 Dir::Down => Dir::Left,
                 Dir::Left => Dir::Up,
                 Dir::Right => Dir::Down,
             };
-            let mut cur = tile.clone();
-            debug!(
-                "Tile: {tile} dir: {dir:?} chk: {chk_dir:?} next:{:?}",
-                self.neighbor(cur, chk_dir)
-            );
-            while let Some(next) = self.neighbor(cur, chk_dir) {
-                if matches!(next.glyph, Glyph::Interior | Glyph::Ground) {
-                    interiors.insert(next);
-                    cur = next;
-                } else {
-                    break;
+            dirs.push(chk_dir);
+            for chk_dir in dirs {
+                let mut cur = tile.clone();
+                if cur.x == 14 && cur.y == 4 {
+                    info!(
+                        "Tile: {tile} dir: {dir:?} chk: {chk_dir:?} next:{:?}",
+                        self.neighbor(cur, chk_dir)
+                    );
+                }
+                while let Some(next) = self.neighbor(cur, chk_dir) {
+                    if matches!(next.glyph, Glyph::Interior | Glyph::Ground) {
+                        interiors.insert(next);
+                        cur = next;
+                    } else {
+                        break;
+                    }
                 }
             }
         }
