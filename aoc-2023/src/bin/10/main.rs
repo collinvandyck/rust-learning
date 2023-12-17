@@ -1,12 +1,14 @@
 #![allow(dead_code, unused)]
 
 use itertools::Itertools;
+use tracing::info;
 
 fn main() {
+    tracing_subscriber::fmt().init();
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
     let map = Map::from_input(ex1);
-    println!("{map}");
+    info!("map:\n{map}");
 }
 
 struct Map {
