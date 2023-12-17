@@ -17,6 +17,8 @@ fn main() {
     info!("p1ex1={}", farthest_distance(ex1));
     info!("p1in1={}", farthest_distance(in1));
     info!("p2ex2={}", enclosed_area(ex2));
+    //info!("p2ex1={}", enclosed_area(ex1));
+    //info!("p2in1={}", enclosed_area(in1));
     info!(elapsed = ?start.elapsed(), "Done")
 }
 
@@ -26,7 +28,11 @@ fn farthest_distance(input: &str) -> usize {
 }
 
 fn enclosed_area(input: &str) -> usize {
-    todo!()
+    let mut map = Map::from_input(input);
+    assert!(map.path_is_clockwise());
+    map.mark_interior();
+    info!("\n{map}");
+    0
 }
 
 struct Map {
@@ -36,6 +42,7 @@ struct Map {
     fancy: bool,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Move {
     tile: Tile,
     dir: Option<Dir>,
@@ -77,6 +84,42 @@ impl Map {
         map.set_start_tile();
         map.chart_loop();
         map
+    }
+
+    fn mark_interior(&mut self) {
+        let mut interiors: HashSet<Tile> = HashSet::new();
+        let mut last_tile: Option<&Tile> = None;
+        for mv in &self.path {
+            let Move { tile, dir } = mv;
+            // the direction we took
+            let dir = match dir {
+                None => {
+                    last_tile.replace(tile);
+                    continue;
+                }
+                Some(dir) => dir,
+            };
+            let chk_dir = match dir {
+                Dir::Up => Dir::Right,
+                Dir::Down => Dir::Left,
+                Dir::Left => Dir::Up,
+                Dir::Right => Dir::Down,
+            };
+            let mut cur = tile.clone();
+            info!(
+                "Tile: {tile} dir: {dir:?} chk: {chk_dir:?} next:{:?}",
+                self.neighbor(cur, chk_dir)
+            );
+            while let Some(next) = self.neighbor(cur, chk_dir) {
+                if matches!(next.glyph, Glyph::Interior | Glyph::Ground) {
+                    interiors.insert(next);
+                    cur = next;
+                } else {
+                    break;
+                }
+            }
+        }
+        info!("Interiors: {}", interiors.len());
     }
 
     fn chart_loop(&mut self) {
@@ -150,6 +193,24 @@ impl Map {
         self.set_glyph(self.start.x, self.start.y, glyph);
     }
 
+    fn path_is_clockwise(&self) -> bool {
+        self.path
+            .iter()
+            .map(|m| m.tile)
+            .filter(|tile| matches!(tile.glyph, Glyph::HPipe | Glyph::BendNE | Glyph::BendNW))
+            .any(|tile| self.ray_ground(tile, Dir::Up, Glyph::Ground))
+    }
+
+    fn ray_ground(&self, mut tile: Tile, dir: Dir, glyph: Glyph) -> bool {
+        while let Some(t) = self.neighbor(tile, dir) {
+            if !matches!(t.glyph, Glyph::Ground | Glyph::Interior) {
+                return false;
+            }
+            tile = t;
+        }
+        true
+    }
+
     fn neighbors(&self, tile: Tile) -> Vec<(Dir, Tile)> {
         let neighbors = Dir::iter()
             .flat_map(|dir| self.neighbor(tile, dir).map(|t| (dir, t)))
@@ -166,7 +227,6 @@ impl Map {
             Dir::Right => x.checked_add(1).map(|x| (x, y)),
         }
         .and_then(|(x, y)| self.get(x, y))
-        .filter(|tile| tile.glyph.is_pipe())
     }
 
     fn get(&self, x: usize, y: usize) -> Option<Tile> {
@@ -233,6 +293,7 @@ enum Glyph {
     BendSW,
     Ground,
     Start,
+    Interior,
 }
 
 impl Glyph {
@@ -292,6 +353,7 @@ impl Glyph {
             Self::BendSW => 'L',
             Self::Ground => '.',
             Self::Start => 'S',
+            Self::Interior => 'I',
         }
     }
 }
