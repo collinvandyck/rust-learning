@@ -89,28 +89,48 @@ impl Map {
     }
 
     fn mark_interior(&mut self) {
-        // fill in the edges
-        for row in self.tiles.iter_mut() {
-            for tile in row.iter_mut() {
-                if tile.glyph != Glyph::Ground {
-                    break;
-                }
-                tile.status = Status::Exterior;
-            }
-            for tile in row.iter_mut().rev() {
-                if tile.glyph != Glyph::Ground {
-                    break;
-                }
-                tile.status = Status::Exterior;
-            }
-        }
-        info!("Rows: {} Cols: {}", self.rows(), self.cols());
-        for y in 0..self.rows() {
-            for x in 0..self.cols() {
-                // explore any exterior node
+        // fill from the top and bottom
+        for x in 0..self.cols() {
+            for (x, y) in [(x, 0), (x, self.rows() - 1)] {
                 let tile = self.get(x, y).unwrap();
+                if tile.glyph == Glyph::Ground {
+                    self.flood_exterior(tile);
+                }
             }
         }
+        // fill from the left and the right
+        for y in 0..self.rows() {
+            for (x, y) in [(0, y), (self.cols() - 1, y)] {
+                let tile = self.get(x, y).unwrap();
+                if tile.glyph == Glyph::Ground {
+                    self.flood_exterior(tile);
+                }
+            }
+        }
+    }
+
+    // given a tile, mark it as exterior if it is ground and explore the different edges
+    fn flood_exterior(&mut self, tile: Tile) {
+        let mut visited: HashSet<Tile> = HashSet::default();
+        let mut queue = vec![tile];
+        while let Some(tile) = queue.pop() {
+            visited.insert(tile);
+            if tile.glyph == Glyph::Ground {
+                self.set_status(&tile, Status::Exterior);
+                for dir in Dir::iter() {
+                    if let Some(tile) = self.neighbor(tile, dir) {
+                        if !visited.contains(&tile) {
+                            queue.push(tile);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn set_status(&mut self, tile: &Tile, status: Status) {
+        let tile = self.get_mut(tile.x, tile.y).unwrap();
+        tile.status = status;
     }
 
     fn rows(&self) -> usize {
@@ -228,8 +248,23 @@ impl Map {
         .and_then(|(x, y)| self.get(x, y))
     }
 
+    fn neighbor_mut(&mut self, tile: Tile, dir: Dir) -> Option<&mut Tile> {
+        let Tile { glyph, x, y, .. } = tile;
+        match dir {
+            Dir::Up => y.checked_sub(1).map(|y| (x, y)),
+            Dir::Down => y.checked_add(1).map(|y| (x, y)),
+            Dir::Left => x.checked_sub(1).map(|x| (x, y)),
+            Dir::Right => x.checked_add(1).map(|x| (x, y)),
+        }
+        .and_then(|(x, y)| self.get_mut(x, y))
+    }
+
     fn get(&self, x: usize, y: usize) -> Option<Tile> {
         self.tiles.get(y).and_then(|r| r.get(x)).copied()
+    }
+
+    fn get_mut(&mut self, x: usize, y: usize) -> Option<&mut Tile> {
+        self.tiles.get_mut(y).and_then(|r| r.get_mut(x))
     }
 
     fn set_glyph(&mut self, x: usize, y: usize, glyph: Glyph) {
