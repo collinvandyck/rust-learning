@@ -17,7 +17,7 @@ struct Map {
 
 impl Map {
     fn from_input(input: &str) -> Self {
-        Self {
+        let mut map = Self {
             fancy: true,
             path: vec![],
             tiles: input
@@ -30,7 +30,8 @@ impl Map {
                         .collect::<Vec<_>>()
                 })
                 .collect::<Vec<_>>(),
-        }
+        };
+        map
     }
 }
 
@@ -88,20 +89,20 @@ impl Glyph {
     }
     fn render(&self, fancy: bool) -> char {
         match self {
-            Glyph::VPipe if fancy => '║',
-            Glyph::VPipe => '|',
-            Glyph::HPipe if fancy => '═',
-            Glyph::HPipe => '-',
-            Glyph::BendNE if fancy => '╗',
-            Glyph::BendNE => '7',
-            Glyph::BendNW if fancy => '╔',
-            Glyph::BendNW => 'F',
+            Self::VPipe if fancy => '║',
+            Self::VPipe => '|',
+            Self::HPipe if fancy => '═',
+            Self::HPipe => '-',
+            Self::BendNE if fancy => '╗',
+            Self::BendNE => '7',
+            Self::BendNW if fancy => '╔',
+            Self::BendNW => 'F',
             Self::BendSE if fancy => '╝',
-            Glyph::BendSE => 'J',
+            Self::BendSE => 'J',
             Self::BendSW if fancy => '╚',
-            Glyph::BendSW => 'L',
-            Glyph::Ground => '.',
-            Glyph::Start => 'S',
+            Self::BendSW => 'L',
+            Self::Ground => '.',
+            Self::Start => 'S',
         }
     }
 }
