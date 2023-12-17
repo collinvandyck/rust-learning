@@ -55,20 +55,26 @@ impl Map {
         info!("Walking.");
         let conn = self.neighbors(self.start);
     }
+    fn new_start_tile(&self) -> Tile {
+        todo!()
+    }
     fn neighbors(&self, tile: Tile) -> Vec<(Dir, Tile)> {
-        info!(%tile, "Neighbors");
-        Dir::iter()
+        let neighbors = Dir::iter()
             .flat_map(|dir| self.neighbor(tile, dir).map(|t| (dir, t)))
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>();
+        info!(%tile, num = neighbors.len(), "Neighbors");
+        neighbors
     }
     fn neighbor(&self, tile: Tile, dir: Dir) -> Option<Tile> {
         let Tile { glyph, x, y } = tile;
         match dir {
-            Dir::Up => todo!(),
-            Dir::Down => todo!(),
-            Dir::Left => todo!(),
-            Dir::Right => todo!(),
+            Dir::Up => y.checked_sub(1).map(|y| (x, y)),
+            Dir::Down => y.checked_add(1).map(|y| (x, y)),
+            Dir::Left => x.checked_sub(1).map(|x| (x, y)),
+            Dir::Right => x.checked_add(1).map(|x| (x, y)),
         }
+        .and_then(|(x, y)| self.get(x, y))
+        .filter(|tile| !matches!(tile.glyph, Glyph::Ground | Glyph::Start))
     }
     fn get(&self, x: usize, y: usize) -> Option<Tile> {
         self.tiles.get(y).and_then(|r| r.get(x)).copied()
