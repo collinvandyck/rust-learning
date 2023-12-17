@@ -75,8 +75,8 @@ impl Map {
         // will be using a rule that the "interior" is anything on the "right" side of the path.
         // The right side of the path is the right side as determined by the vector of the last
         // tile to the current one.
-        let mut iter = pts.iter().copied();
-        let mut last: Option<&Pt> = None;
+        let mut iter = pts.iter().copied().copied();
+        let mut last: Option<Pt> = None;
         let mut interiors: HashSet<Pt> = HashSet::default();
         use Tile::*;
         for pt in iter {
@@ -105,7 +105,7 @@ impl Map {
         interiors.len()
     }
 
-    fn ground_tiles(&self, pt: &Pt, dir: Dir) -> Vec<&Pt> {
+    fn ground_tiles(&self, pt: Pt, dir: Dir) -> Vec<&Pt> {
         vec![]
     }
 
