@@ -105,9 +105,15 @@ impl Map {
         interiors.len()
     }
 
-    fn ground_tiles(&self, pt: Pt, dir: Dir) -> Vec<Pt> {
-        self.neighbor(pt, dir);
-        vec![]
+    fn ground_tiles(&self, mut pt: Pt, dir: Dir) -> Vec<Pt> {
+        let mut res = vec![];
+        while let Some(dst) = self.neighbor(pt, dir) {
+            if matches!(dst.tile, Tile::Ground) {
+                res.push(dst);
+                pt = dst;
+            }
+        }
+        res
     }
 
     // find the complete path and record it
