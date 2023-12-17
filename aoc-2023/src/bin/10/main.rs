@@ -1,6 +1,6 @@
 #![allow(dead_code, unused)]
 
-use std::collections::HashSet;
+use std::{collections::HashSet, thread::yield_now, time::Instant};
 
 use itertools::Itertools;
 use strum::IntoEnumIterator;
@@ -8,11 +8,25 @@ use strum_macros::EnumIter;
 use tracing::{debug, info};
 
 fn main() {
-    tracing_subscriber::fmt().without_time().init();
+    tracing_subscriber::fmt().init();
+    let start = Instant::now();
     let ex1 = include_str!("ex1.txt");
+    let ex2 = include_str!("ex2.txt");
+    let ex3 = include_str!("ex3.txt");
     let in1 = include_str!("in1.txt");
-    let map = Map::from_input(ex1);
-    info!("map:\n{map}");
+    info!("p1ex1={}", farthest_distance(ex1));
+    info!("p1in1={}", farthest_distance(in1));
+    info!("p2ex2={}", enclosed_area(ex2));
+    info!(elapsed = ?start.elapsed(), "Done")
+}
+
+fn farthest_distance(input: &str) -> usize {
+    let map = Map::from_input(input);
+    map.path.len() / 2
+}
+
+fn enclosed_area(input: &str) -> usize {
+    todo!()
 }
 
 struct Map {
@@ -61,17 +75,16 @@ impl Map {
             tiles,
         };
         map.set_start_tile();
-        map.walk();
+        map.chart_loop();
         map
     }
 
-    fn walk(&mut self) {
+    fn chart_loop(&mut self) {
         let mut visited: HashSet<Tile> = HashSet::default();
         let start = self.get(self.start.x, self.start.y).unwrap();
         visited.insert(start);
         self.path.push(Move::new(start.clone(), None));
         while let Some(Move { tile, dir }) = self.path.last() {
-            info!("Tile: {tile:?}");
             let dir = tile
                 .glyph
                 .connectors()
@@ -82,7 +95,15 @@ impl Map {
                     if let Some(dir) = dir {
                         dir != &d.negate()
                     } else {
-                        matches!(d, Dir::Up | Dir::Right)
+                        d == &match tile.glyph {
+                            Glyph::VPipe => Dir::Up,
+                            Glyph::HPipe => Dir::Right,
+                            Glyph::BendNE => Dir::Down,
+                            Glyph::BendNW => Dir::Right,
+                            Glyph::BendSE => Dir::Left,
+                            Glyph::BendSW => Dir::Up,
+                            _ => panic!("non pipe tile"),
+                        }
                     }
                 })
                 .next()
