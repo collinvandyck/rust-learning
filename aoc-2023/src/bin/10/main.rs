@@ -15,9 +15,14 @@ fn main() {
 
 struct Map {
     tiles: Vec<Vec<Tile>>,
-    path: Vec<Tile>,
+    path: Vec<Move>,
     start: Tile,
     fancy: bool,
+}
+
+struct Move {
+    tile: Tile,
+    dir: Option<Dir>,
 }
 
 impl Map {
