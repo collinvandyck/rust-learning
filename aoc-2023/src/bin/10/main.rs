@@ -1,6 +1,7 @@
 #![allow(dead_code, unused)]
 
 use itertools::Itertools;
+use strum_macros::EnumIter;
 use tracing::info;
 
 fn main() {
@@ -51,11 +52,11 @@ impl Map {
     }
     fn walk(&mut self) {
         info!("Walking.");
-        let conn = self.connections(self.start);
+        let conn = self.neighbors(self.start);
     }
-    fn connections(&self, tile: Tile) -> (Tile, Tile) {
-        info!("Getting connections for {tile}");
-        panic!()
+    fn neighbors(&self, tile: Tile) -> Vec<(Dir, Tile)> {
+        info!(%tile, "Neighbors");
+        vec![]
     }
 }
 
@@ -144,4 +145,12 @@ impl Glyph {
             Self::Start => 'S',
         }
     }
+}
+
+#[derive(EnumIter, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum Dir {
+    Up,
+    Down,
+    Left,
+    Right,
 }
