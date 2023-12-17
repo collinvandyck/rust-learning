@@ -111,8 +111,11 @@ impl Map {
             if matches!(dst.tile, Tile::Ground) {
                 res.push(dst);
                 pt = dst;
+            } else {
+                break;
             }
         }
+        println!("Ground tiles pt={pt:?} dir={dir:?} res={res:?}");
         res
     }
 
@@ -206,17 +209,8 @@ impl Map {
 }
 
 #[test]
-fn test_iterator_rev() {
-    let ns: &[i32; 3] = &[1, 2, 3];
-    let xs: Vec<_> = ns
-        .iter()
-        .rev()
-        .cycle()
-        .skip(ns.len())
-        .take(ns.len())
-        .collect();
-    let es: Vec<&i32> = vec![];
-    assert_eq!(xs, es);
+fn test_ground_tiles() {
+    assert!(false, "boom");
 }
 
 fn lr_connects(left: &Pt, right: &Pt) -> bool {

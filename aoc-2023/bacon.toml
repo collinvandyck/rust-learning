@@ -92,3 +92,11 @@ allow_warnings = true
 # should go in your personal global prefs.toml file instead.
 [keybindings]
 # alt-m = "job:my-job"
+
+# required for nvim-bacon
+# https://dystroy.org/bacon/config/#export-locations
+[export]
+enabled = true
+path = ".bacon-locations"
+line_format = "{kind} {path}:{line}:{column} {message}"
+
