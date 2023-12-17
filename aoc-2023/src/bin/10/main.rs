@@ -1,5 +1,7 @@
 #![allow(dead_code, unused)]
 
+use std::collections::HashSet;
+
 use itertools::Itertools;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -25,6 +27,12 @@ struct Move {
     dir: Option<Dir>,
 }
 
+impl Move {
+    fn new(tile: Tile, dir: Option<Dir>) -> Self {
+        Self { tile, dir }
+    }
+}
+
 impl Map {
     fn from_input(input: &str) -> Self {
         let tiles = input
@@ -46,20 +54,53 @@ impl Map {
             .find(|t| matches!(t.glyph, Glyph::Start))
             .copied()
             .unwrap();
-        info!("Start: {start}");
         let mut map = Self {
             fancy: true,
             path: vec![],
             start,
             tiles,
         };
+        map.set_start_tile();
         map.walk();
         map
     }
 
     fn walk(&mut self) {
-        info!("Walking.");
-        self.set_start_tile();
+        let mut visited: HashSet<Tile> = HashSet::default();
+        let start = self.get(self.start.x, self.start.y).unwrap();
+        visited.insert(start);
+        self.path.push(Move::new(start.clone(), None));
+        while let Some(Move { tile, dir }) = self.path.last() {
+            info!("Tile: {tile:?}");
+            let dir = tile
+                .glyph
+                .connectors()
+                .expect("no connectors")
+                .iter()
+                .copied()
+                .filter(|d| {
+                    if let Some(dir) = dir {
+                        dir != &d.negate()
+                    } else {
+                        matches!(d, Dir::Up | Dir::Right)
+                    }
+                })
+                .next()
+                .expect("no initial dir");
+            let next = self.neighbor(*tile, dir).unwrap();
+            if next.x == self.start.x && next.y == self.start.y {
+                break;
+            }
+            visited.insert(next);
+            self.path.push(Move::new(next, Some(dir)));
+        }
+        for row in self.tiles.iter_mut() {
+            for tile in row.iter_mut() {
+                if !visited.contains(tile) {
+                    tile.glyph = Glyph::Ground;
+                }
+            }
+        }
     }
 
     fn set_start_tile(&mut self) {
@@ -187,8 +228,14 @@ impl Glyph {
             _ => panic!("unexpected ch: {ch}"),
         }
     }
+    fn dir_to(&self, other: &Glyph) -> Dir {
+        info!("Dir from {self:?} to {other:?}");
+        let g_conns = self.connectors();
+        let o_conns = other.connectors();
+        todo!()
+    }
     fn connectors(&self) -> Option<[Dir; 2]> {
-        match self {
+        let mut res = match self {
             Self::VPipe => Some([Dir::Up, Dir::Down]),
             Self::HPipe => Some([Dir::Left, Dir::Right]),
             Self::BendNE => Some([Dir::Left, Dir::Down]),
@@ -196,7 +243,11 @@ impl Glyph {
             Self::BendSE => Some([Dir::Left, Dir::Up]),
             Self::BendSW => Some([Dir::Right, Dir::Up]),
             _ => None,
+        };
+        if let Some(dirs) = res.as_mut() {
+            dirs.sort();
         }
+        res
     }
     fn is_pipe(&self) -> bool {
         matches!(
