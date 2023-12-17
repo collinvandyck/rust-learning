@@ -51,9 +51,13 @@ impl Map {
         map.walk();
         map
     }
+
     fn walk(&mut self) {
         info!("Walking.");
-        let conn = self.neighbors(self.start);
+        let neighbors = self.neighbors(self.start);
+        for (dir, tile) in neighbors {
+            info!(%tile, ?dir, "Neighbor");
+        }
     }
 
     fn new_start_tile(&self) -> Tile {
@@ -79,6 +83,7 @@ impl Map {
         .and_then(|(x, y)| self.get(x, y))
         .filter(|tile| tile.glyph.is_pipe())
     }
+
     fn get(&self, x: usize, y: usize) -> Option<Tile> {
         self.tiles.get(y).and_then(|r| r.get(x)).copied()
     }
@@ -149,6 +154,17 @@ impl Glyph {
             '.' => Self::Ground,
             'S' => Self::Start,
             _ => panic!("unexpected ch: {ch}"),
+        }
+    }
+    fn connectors(&self) -> Option<[Dir; 2]> {
+        match self {
+            Self::VPipe => Some([Dir::Up, Dir::Down]),
+            Self::HPipe => Some([Dir::Left, Dir::Right]),
+            Self::BendNE => Some([Dir::Left, Dir::Down]),
+            Self::BendNW => Some([Dir::Right, Dir::Down]),
+            Self::BendSE => Some([Dir::Left, Dir::Up]),
+            Self::BendSW => Some([Dir::Right, Dir::Up]),
+            _ => None,
         }
     }
     fn is_pipe(&self) -> bool {
