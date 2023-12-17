@@ -8,13 +8,13 @@ fn main() {
     let ex2 = include_str!("ex2.txt");
     let in1 = include_str!("in1.txt");
     println!("p1ex={}", farthest_distance(ex1));
-    //println!("p2in={}", farthest_distance(in1));
-    //println!("p2ex1={}", area_enclosed(ex1));
+    println!("p1in={}", farthest_distance(in1));
+    println!("p2ex={}", area_enclosed(ex2));
 }
 
 fn farthest_distance(input: &str) -> usize {
     let map = parse(input);
-    map.loop_pts.len() / 2
+    map.path.len() / 2
 }
 
 fn area_enclosed(input: &str) -> usize {
@@ -24,20 +24,17 @@ fn area_enclosed(input: &str) -> usize {
 
 struct Map {
     start: Pt,
-    tiles: Vec<Vec<Tile>>,
-    loop_pts: HashSet<Pt>,
+    pts: Vec<Vec<Pt>>,
+    path: Vec<Pt>,
 }
 
 impl Map {
-    fn new(tiles: Vec<Vec<Tile>>) -> Self {
-        let start = Self::find_tile(&tiles, Tile::Start)
-            .first()
-            .copied()
-            .unwrap();
+    fn new(pts: Vec<Vec<Pt>>) -> Self {
+        let start = Self::find_tile(&pts, Tile::Start).first().copied().unwrap();
         let mut map = Self {
-            tiles,
+            pts,
             start,
-            loop_pts: Default::default(),
+            path: Default::default(),
         };
         map.swap_start();
         map.walk();
@@ -51,11 +48,14 @@ impl Map {
     }
 
     fn walk(&mut self) {
-        let mut visited: HashSet<Pt> = HashSet::default();
+        let mut lu: HashSet<Pt> = HashSet::default();
+        let mut path: Vec<Pt> = vec![];
         let start = self.get(self.start.x, self.start.y).expect("no start");
         let mut cur = start.clone();
         let mut last_dir: Option<Dir> = None;
-        while !visited.contains(&start) {
+        loop {
+            path.push(cur);
+            lu.insert(cur);
             let dir = cur
                 .tile
                 .dirs()
@@ -68,34 +68,20 @@ impl Map {
                 })
                 .next()
                 .unwrap();
-            println!("Dir is {dir:?}");
-            return;
-        }
-    }
-
-    fn find_loop(&mut self) {
-        let mut visited: HashSet<Pt> = HashSet::default();
-        let cur = self.get(self.start.x, self.start.y).expect("no start");
-        let mut queue = vec![cur];
-        while let Some(pt) = queue.pop() {
-            if let Some(dirs) = pt.tile.dirs() {
-                for pt in dirs.into_iter().flat_map(|d| self.neighbor(pt, d)) {
-                    if !visited.contains(&pt) {
-                        queue.push(pt);
-                    }
-                }
+            last_dir.replace(dir);
+            cur = self.neighbor(cur, dir).unwrap();
+            if cur == start {
+                break;
             }
-            visited.insert(pt);
         }
-        for (y, row) in self.tiles.iter_mut().enumerate() {
-            for (x, t) in row.iter_mut().enumerate() {
-                let pt = Pt::new(x, y, *t);
-                if !visited.contains(&pt) {
-                    *t = Tile::Ground;
+        for row in self.pts.iter_mut() {
+            for pt in row.iter_mut() {
+                if !lu.contains(&pt) {
+                    pt.tile = Tile::Ground;
                 }
             }
         }
-        self.loop_pts = visited;
+        self.path = path;
     }
 
     fn swap_start(&mut self) {
@@ -128,36 +114,23 @@ impl Map {
     }
 
     fn set(&mut self, x: usize, y: usize, tile: Tile) {
-        if let Some(row) = self.tiles.get_mut(y) {
+        if let Some(row) = self.pts.get_mut(y) {
             if let Some(v) = row.get_mut(x) {
-                *v = tile;
+                v.tile = tile;
             }
         }
     }
 
     fn get(&self, x: usize, y: usize) -> Option<Pt> {
-        self.tiles
-            .get(y)
-            .map(|row| row.get(x))
-            .flatten()
-            .copied()
-            .map(|tile| Pt::new(x, y, tile))
+        self.pts.get(y).map(|row| row.get(x)).flatten().copied()
     }
 
-    fn find_tile(tiles: &[Vec<Tile>], tile: Tile) -> Vec<Pt> {
-        tiles
-            .iter()
+    fn find_tile(pts: &[Vec<Pt>], tile: Tile) -> Vec<Pt> {
+        pts.iter()
             .enumerate()
-            .map(|(row, tiles)| {
-                tiles
-                    .iter()
-                    .enumerate()
-                    .filter(|(_col, t)| t == &&tile)
-                    .map(|(col, t)| (col, row, *t))
-                    .collect::<Vec<_>>()
-            })
+            .map(|(row, pts)| pts.iter().filter(|pt| pt.tile == tile).collect::<Vec<_>>())
             .flatten()
-            .map(|(x, y, tile)| Pt::new(x, y, tile))
+            .copied()
             .collect::<Vec<_>>()
     }
 }
@@ -180,9 +153,9 @@ fn test_lr_connects() {
 impl std::fmt::Display for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = self
-            .tiles
+            .pts
             .iter()
-            .map(|row| row.iter().map(|t| format!("{t}")).join(""))
+            .map(|pts| pts.iter().map(|pt| format!("{}", pt.tile)).join(""))
             .join("\n");
         write!(f, "{s}")
     }
@@ -313,7 +286,19 @@ impl From<char> for Tile {
 }
 
 fn parse(input: &str) -> Map {
-    Map::new(input.lines().map(parse_row).collect())
+    Map::new(
+        input
+            .lines()
+            .into_iter()
+            .enumerate()
+            .map(|(y, row)| {
+                row.chars()
+                    .enumerate()
+                    .map(|(x, ch)| Pt::new(x, y, Tile::from(ch)))
+                    .collect()
+            })
+            .collect(),
+    )
 }
 
 fn parse_row(input: &str) -> Vec<Tile> {
