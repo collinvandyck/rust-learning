@@ -105,7 +105,8 @@ impl Map {
         interiors.len()
     }
 
-    fn ground_tiles(&self, pt: Pt, dir: Dir) -> Vec<&Pt> {
+    fn ground_tiles(&self, pt: Pt, dir: Dir) -> Vec<Pt> {
+        self.neighbor(pt, dir);
         vec![]
     }
 
