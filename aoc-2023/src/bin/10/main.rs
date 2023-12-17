@@ -87,7 +87,16 @@ impl Map {
         map
     }
 
-    fn mark_interior(&mut self) {}
+    fn mark_interior(&mut self) {
+        for row in self.tiles.iter_mut() {
+            for tile in row.iter_mut() {
+                if tile.glyph != Glyph::Ground {
+                    break;
+                }
+                tile.status = Status::Exterior;
+            }
+        }
+    }
 
     fn chart_loop(&mut self) {
         let mut visited: HashSet<Tile> = HashSet::default();
