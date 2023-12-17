@@ -1,8 +1,9 @@
 #![allow(dead_code, unused)]
 
 use itertools::Itertools;
+use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use tracing::info;
+use tracing::{debug, info};
 
 fn main() {
     tracing_subscriber::fmt().without_time().init();
@@ -56,7 +57,21 @@ impl Map {
     }
     fn neighbors(&self, tile: Tile) -> Vec<(Dir, Tile)> {
         info!(%tile, "Neighbors");
-        vec![]
+        Dir::iter()
+            .flat_map(|dir| self.neighbor(tile, dir).map(|t| (dir, t)))
+            .collect::<Vec<_>>()
+    }
+    fn neighbor(&self, tile: Tile, dir: Dir) -> Option<Tile> {
+        let Tile { glyph, x, y } = tile;
+        match dir {
+            Dir::Up => todo!(),
+            Dir::Down => todo!(),
+            Dir::Left => todo!(),
+            Dir::Right => todo!(),
+        }
+    }
+    fn get(&self, x: usize, y: usize) -> Option<Tile> {
+        self.tiles.get(y).and_then(|r| r.get(x)).copied()
     }
 }
 
