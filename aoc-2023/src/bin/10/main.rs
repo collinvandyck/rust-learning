@@ -41,12 +41,23 @@ impl Map {
         map
     }
 
-    // pick the first tile found on the first row and walk the loop
+    // start with a path tile on the top and start walking the path, recording interior spaces.
     fn area(&self) -> usize {
         println!("{self}");
+        let start = self
+            .pts
+            .iter()
+            .flat_map(|row| {
+                row.iter()
+                    .find(|pt| matches!(pt.tile, Tile::HPipe | Tile::BendSW | Tile::BendSE))
+            })
+            .next()
+            .unwrap();
+        println!("Start: {start:?}");
         todo!()
     }
 
+    // find the complete path and record it
     fn walk(&mut self) {
         let mut lu: HashSet<Pt> = HashSet::default();
         let mut path: Vec<Pt> = vec![];
@@ -253,18 +264,6 @@ impl std::fmt::Display for Tile {
             Tile::Ground => ".",
             Tile::Start => "S",
         };
-        /*
-        let s = match self {
-            Tile::VPipe => "|",
-            Tile::HPipe => "-",
-            Tile::BendNE => "L",
-            Tile::BendNW => "J",
-            Tile::BendSW => "7",
-            Tile::BendSE => "F",
-            Tile::Ground => ".",
-            Tile::Start => "S",
-        };
-        */
         write!(f, "{s}")
     }
 }
