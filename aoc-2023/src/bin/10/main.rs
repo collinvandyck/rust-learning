@@ -47,10 +47,8 @@ impl Map {
         let start = self
             .pts
             .iter()
-            .flat_map(|row| {
-                row.iter()
-                    .find(|pt| matches!(pt.tile, Tile::HPipe | Tile::BendSW | Tile::BendSE))
-            })
+            .flat_map(|r| r.into_iter())
+            .filter(|pt| matches!(pt.tile, Tile::HPipe | Tile::BendSW | Tile::BendSE))
             .next()
             .unwrap();
         println!("Start: {start:?}");
