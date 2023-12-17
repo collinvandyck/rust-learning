@@ -95,6 +95,12 @@ impl Map {
                 }
                 tile.status = Status::Exterior;
             }
+            for tile in row.iter_mut().rev() {
+                if tile.glyph != Glyph::Ground {
+                    break;
+                }
+                tile.status = Status::Exterior;
+            }
         }
     }
 
@@ -257,7 +263,11 @@ impl Tile {
 
 impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let ch = self.glyph.render(true);
+        let ch = match self.status {
+            Status::Interior => 'I',
+            Status::Exterior => 'O',
+            Status::Unknown => self.glyph.render(true),
+        };
         write!(f, "{ch}")
     }
 }
