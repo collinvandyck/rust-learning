@@ -73,22 +73,40 @@ impl Map {
         }
         // from here on, we can assume that as we're moving along the points of the path that we
         // will be using a rule that the "interior" is anything on the "right" side of the path.
+        // The right side of the path is the right side as determined by the vector of the last
+        // tile to the current one.
         let mut iter = pts.iter().copied();
         let mut last: Option<&Pt> = None;
+        let mut interiors: HashSet<Pt> = HashSet::default();
         use Tile::*;
         for pt in iter {
             println!("Pt: {pt:?}");
-            match (pt.tile, last.as_mut()) {
-                (VPipe, None) => panic!("invalid vpipe with no last"),
-                (VPipe, Some(last)) => {}
-                (HPipe, None) => {}
-                (HPipe, Some(last)) => {}
+            match (pt.tile, last.as_ref()) {
+                (HPipe, None) => {
+                    let tiles = self.ground_tiles(pt, Dir::Down);
+                    interiors.extend(tiles);
+                }
+                (HPipe, Some(last)) => {
+                    let interior_dir = HPipe.interior_dir_for_last(&last.tile);
+                    let tiles = self.ground_tiles(pt, interior_dir);
+                    interiors.extend(tiles);
+                }
+                (VPipe, Some(last)) => {
+                    let interior_dir = VPipe.interior_dir_for_last(&last.tile);
+                    let tiles = self.ground_tiles(pt, interior_dir);
+                    interiors.extend(tiles);
+                }
                 (BendSW | BendSE | BendNE | BendNW, last) => {}
+                (VPipe, None) => panic!("invalid vpipe with no last"),
                 (tile, last) => panic!("invalid tile: {tile:?} last: {last:?}"),
             }
             last.replace(pt);
         }
-        0
+        interiors.len()
+    }
+
+    fn ground_tiles(&self, pt: &Pt, dir: Dir) -> Vec<&Pt> {
+        vec![]
     }
 
     // find the complete path and record it
@@ -297,6 +315,16 @@ impl Tile {
             (HPipe | BendSE | BendNE, Dir::Left) => true,
             (HPipe | BendSW | BendNW, Dir::Right) => true,
             _ => false,
+        }
+    }
+    // which direction is the interior given the last?
+    fn interior_dir_for_last(&self, last: &Tile) -> Dir {
+        match self {
+            Tile::VPipe if last.has(Dir::Up) => Dir::Right,
+            Tile::VPipe => Dir::Left,
+            Tile::HPipe if last.has(Dir::Right) => Dir::Down,
+            Tile::HPipe => Dir::Up,
+            _ => panic!("invalid interior dir for last self:{self:?}"),
         }
     }
 }
