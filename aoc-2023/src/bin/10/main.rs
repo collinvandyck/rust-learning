@@ -54,21 +54,39 @@ impl Map {
 
     fn walk(&mut self) {
         info!("Walking.");
-        let neighbors = self.neighbors(self.start);
-        for (dir, tile) in neighbors {
-            info!(%tile, ?dir, "Neighbor");
-        }
+        self.set_start_tile();
     }
 
-    fn new_start_tile(&self) -> Tile {
-        todo!()
+    fn set_start_tile(&mut self) {
+        let mut dirs: Vec<_> = self
+            .neighbors(self.start)
+            .into_iter()
+            .filter(|(dir, tile)| {
+                tile.glyph
+                    .connectors()
+                    .iter()
+                    .any(|f| f.contains(&dir.negate()))
+            })
+            .map(|(dir, _)| dir)
+            .collect();
+        assert_eq!(dirs.len(), 2);
+        dirs.sort(); // sort by ord to make matching easier
+        let glyph = match (dirs[0], dirs[1]) {
+            (Dir::Down, Dir::Right) => Glyph::BendNW,
+            (Dir::Down, Dir::Left) => Glyph::BendNE,
+            (Dir::Up, Dir::Right) => Glyph::BendSW,
+            (Dir::Up, Dir::Left) => Glyph::BendSE,
+            (Dir::Left, Dir::Right) => Glyph::HPipe,
+            (Dir::Up, Dir::Down) => Glyph::VPipe,
+            (d1, d2) => panic!("Unknown dir combo {d1:?} & {d2:?}"),
+        };
+        self.set_glyph(self.start.x, self.start.y, glyph);
     }
 
     fn neighbors(&self, tile: Tile) -> Vec<(Dir, Tile)> {
         let neighbors = Dir::iter()
             .flat_map(|dir| self.neighbor(tile, dir).map(|t| (dir, t)))
             .collect::<Vec<_>>();
-        info!(%tile, num = neighbors.len(), "Neighbors");
         neighbors
     }
 
@@ -86,6 +104,14 @@ impl Map {
 
     fn get(&self, x: usize, y: usize) -> Option<Tile> {
         self.tiles.get(y).and_then(|r| r.get(x)).copied()
+    }
+
+    fn set_glyph(&mut self, x: usize, y: usize, glyph: Glyph) {
+        if let Some(row) = self.tiles.get_mut(y) {
+            if let Some(tile) = row.get_mut(x) {
+                tile.glyph = glyph;
+            }
+        }
     }
 }
 
@@ -193,10 +219,21 @@ impl Glyph {
     }
 }
 
-#[derive(EnumIter, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(EnumIter, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 enum Dir {
     Up,
     Down,
     Left,
     Right,
+}
+
+impl Dir {
+    fn negate(&self) -> Dir {
+        match self {
+            Dir::Up => Dir::Down,
+            Dir::Down => Dir::Up,
+            Dir::Left => Dir::Right,
+            Dir::Right => Dir::Left,
+        }
+    }
 }
