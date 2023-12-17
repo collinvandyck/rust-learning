@@ -4,7 +4,7 @@ use itertools::Itertools;
 use tracing::info;
 
 fn main() {
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt().without_time().init();
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
     let map = Map::from_input(ex1);
@@ -39,6 +39,7 @@ impl Map {
             .find(|t| matches!(t.glyph, Glyph::Start))
             .copied()
             .unwrap();
+        info!("Start: {start}");
         let mut map = Self {
             fancy: true,
             path: vec![],
@@ -48,7 +49,14 @@ impl Map {
         map.walk();
         map
     }
-    fn walk(&mut self) {}
+    fn walk(&mut self) {
+        info!("Walking.");
+        let conn = self.connections(self.start);
+    }
+    fn connections(&self, tile: Tile) -> (Tile, Tile) {
+        info!("Getting connections for {tile}");
+        panic!()
+    }
 }
 
 impl std::fmt::Display for Map {
@@ -76,6 +84,19 @@ struct Tile {
 impl Tile {
     fn new(x: usize, y: usize, glyph: Glyph) -> Self {
         Self { x, y, glyph }
+    }
+}
+
+impl std::fmt::Display for Tile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{:?}::({},{})::{}",
+            self.glyph,
+            self.x,
+            self.y,
+            self.glyph.render(true)
+        )
     }
 }
 
