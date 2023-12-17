@@ -9,7 +9,8 @@ fn main() {
     let in1 = include_str!("in1.txt");
     println!("p1ex={}", farthest_distance(ex1));
     println!("p1in={}", farthest_distance(in1));
-    println!("p2ex={}", area_enclosed(ex2));
+    println!("p2ex={}", area_enclosed(ex1));
+    //println!("p2in={}", area_enclosed(in1));
 }
 
 fn farthest_distance(input: &str) -> usize {
@@ -48,7 +49,7 @@ impl Map {
             .pts
             .iter()
             .flat_map(|r| r.into_iter())
-            .filter(|pt| matches!(pt.tile, Tile::HPipe | Tile::BendSW | Tile::BendSE))
+            .filter(|pt| matches!(pt.tile, Tile::HPipe | Tile::BendNE | Tile::BendNW))
             .next()
             .unwrap();
         let idx: usize = self
@@ -58,10 +59,36 @@ impl Map {
             .find(|(i, pt)| pt == &start)
             .map(|(i, pt)| i)
             .unwrap();
-        println!("Start: {start:?}");
-        println!("Found: {idx:?}");
-
-        todo!()
+        let mut pts: Vec<&Pt> = self.path[idx..]
+            .iter()
+            .chain(self.path[0..idx].iter())
+            .collect::<Vec<_>>();
+        if !pts[1].tile.has(Dir::Left) && !pts[1].tile.has(Dir::Up) {
+            println!("Reversing iterator.");
+            pts = self.path[0..=idx]
+                .iter()
+                .rev()
+                .chain(self.path[idx + 1..self.path.len()].iter().rev())
+                .collect();
+        }
+        // from here on, we can assume that as we're moving along the points of the path that we
+        // will be using a rule that the "interior" is anything on the "right" side of the path.
+        let mut iter = pts.iter().copied();
+        let mut last: Option<&Pt> = None;
+        use Tile::*;
+        for pt in iter {
+            println!("Pt: {pt:?}");
+            match (pt.tile, last.as_mut()) {
+                (VPipe, None) => panic!("invalid vpipe with no last"),
+                (VPipe, Some(last)) => {}
+                (HPipe, None) => {}
+                (HPipe, Some(last)) => {}
+                (BendSW | BendSE | BendNE | BendNW, last) => {}
+                (tile, last) => panic!("invalid tile: {tile:?} last: {last:?}"),
+            }
+            last.replace(pt);
+        }
+        0
     }
 
     // find the complete path and record it
@@ -111,10 +138,10 @@ impl Map {
         let tile = match (u, d, l, r) {
             (Some(u), Some(d), _, _) if u.has(Down) && d.has(Up) => Tile::VPipe,
             (_, _, Some(l), Some(r)) if l.has(Right) && r.has(Left) => Tile::HPipe,
-            (_, Some(d), _, Some(r)) if d.has(Up) && r.has(Left) => Tile::BendSE,
-            (_, Some(d), Some(l), _) if d.has(Up) && l.has(Right) => Tile::BendSW,
-            (Some(u), _, _, Some(r)) if u.has(Down) && r.has(Left) => Tile::BendNE,
-            (Some(u), _, Some(l), _) if u.has(Down) && l.has(Right) => Tile::BendNW,
+            (_, Some(d), _, Some(r)) if d.has(Up) && r.has(Left) => Tile::BendNW,
+            (_, Some(d), Some(l), _) if d.has(Up) && l.has(Right) => Tile::BendNE,
+            (Some(u), _, _, Some(r)) if u.has(Down) && r.has(Left) => Tile::BendSW,
+            (Some(u), _, Some(l), _) if u.has(Down) && l.has(Right) => Tile::BendSE,
             _ => panic!("no start could be found"),
         };
         self.set(self.start.x, self.start.y, tile);
@@ -153,6 +180,20 @@ impl Map {
     }
 }
 
+#[test]
+fn test_iterator_rev() {
+    let ns: &[i32; 3] = &[1, 2, 3];
+    let xs: Vec<_> = ns
+        .iter()
+        .rev()
+        .cycle()
+        .skip(ns.len())
+        .take(ns.len())
+        .collect();
+    let es: Vec<&i32> = vec![];
+    assert_eq!(xs, es);
+}
+
 fn lr_connects(left: &Pt, right: &Pt) -> bool {
     let distance = right.x.saturating_sub(left.x);
     let left_ok = left.tile.has(Dir::Right);
@@ -163,7 +204,7 @@ fn lr_connects(left: &Pt, right: &Pt) -> bool {
 #[test]
 fn test_lr_connects() {
     assert!(lr_connects(
-        &Pt::new(0, 4, Tile::BendNE),
+        &Pt::new(0, 4, Tile::BendSW),
         &Pt::new(1, 4, Tile::HPipe)
     ))
 }
@@ -227,10 +268,10 @@ impl Debug for Pt {
 enum Tile {
     VPipe,
     HPipe,
-    BendNE,
-    BendNW,
     BendSW,
     BendSE,
+    BendNE,
+    BendNW,
     Ground,
     Start,
     Interior,
@@ -241,20 +282,20 @@ impl Tile {
         match self {
             Tile::VPipe => Some([Dir::Up, Dir::Down]),
             Tile::HPipe => Some([Dir::Left, Dir::Right]),
-            Tile::BendNE => Some([Dir::Up, Dir::Right]),
-            Tile::BendNW => Some([Dir::Up, Dir::Left]),
-            Tile::BendSE => Some([Dir::Down, Dir::Right]),
-            Tile::BendSW => Some([Dir::Down, Dir::Left]),
+            Tile::BendSW => Some([Dir::Up, Dir::Right]),
+            Tile::BendSE => Some([Dir::Up, Dir::Left]),
+            Tile::BendNW => Some([Dir::Down, Dir::Right]),
+            Tile::BendNE => Some([Dir::Down, Dir::Left]),
             _ => None,
         }
     }
     fn has(&self, dir: Dir) -> bool {
         use Tile::*;
         match (self, dir) {
-            (VPipe | BendNE | BendNW, Dir::Up) => true,
-            (VPipe | BendSE | BendSW, Dir::Down) => true,
-            (HPipe | BendNW | BendSW, Dir::Left) => true,
-            (HPipe | BendNE | BendSE, Dir::Right) => true,
+            (VPipe | BendSW | BendSE, Dir::Up) => true,
+            (VPipe | BendNW | BendNE, Dir::Down) => true,
+            (HPipe | BendSE | BendNE, Dir::Left) => true,
+            (HPipe | BendSW | BendNW, Dir::Right) => true,
             _ => false,
         }
     }
@@ -265,10 +306,10 @@ impl std::fmt::Display for Tile {
         let s = match self {
             Tile::VPipe => "║",
             Tile::HPipe => "═",
-            Tile::BendNE => "╚",
-            Tile::BendNW => "╝",
-            Tile::BendSW => "╗",
-            Tile::BendSE => "╔",
+            Tile::BendSW => "╚",
+            Tile::BendSE => "╝",
+            Tile::BendNE => "╗",
+            Tile::BendNW => "╔",
             Tile::Ground => ".",
             Tile::Start => "S",
             Tile::Interior => "I",
@@ -283,10 +324,10 @@ impl From<char> for Tile {
             '.' => Tile::Ground,
             '|' => Tile::VPipe,
             '-' => Tile::HPipe,
-            'L' => Tile::BendNE,
-            'J' => Tile::BendNW,
-            '7' => Tile::BendSW,
-            'F' => Tile::BendSE,
+            'L' => Tile::BendSW,
+            'J' => Tile::BendSE,
+            '7' => Tile::BendNE,
+            'F' => Tile::BendNW,
             'S' => Tile::Start,
             _ => panic!("unknown tile: {ch}"),
         }
