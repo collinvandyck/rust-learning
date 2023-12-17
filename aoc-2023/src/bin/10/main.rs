@@ -31,7 +31,7 @@ fn farthest_distance(input: &str) -> usize {
 fn enclosed_area(input: &str) -> usize {
     let mut map = Map::from_input(input);
     assert!(map.path_is_clockwise());
-    map.mark_interior_2();
+    map.mark_interior();
     info!("\n{map}");
     0
 }
@@ -87,66 +87,7 @@ impl Map {
         map
     }
 
-    fn mark_interior_2(&mut self) {}
-
-    fn mark_interior(&mut self) {
-        let mut interiors: HashSet<Tile> = HashSet::new();
-        let mut last_tile: Option<&Tile> = None;
-        for mv in &self.path {
-            let Move { tile, dir } = mv;
-            // the direction we took
-            let dir = match dir {
-                None => {
-                    last_tile.replace(tile);
-                    continue;
-                }
-                Some(dir) => dir,
-            };
-            let mut dirs: Vec<Dir> = match (tile.glyph, dir) {
-                (Glyph::VPipe, Dir::Down) => vec![Dir::Left],
-                (Glyph::VPipe, Dir::Up) => vec![Dir::Right],
-                (Glyph::HPipe, Dir::Left) => vec![Dir::Up],
-                (Glyph::HPipe, Dir::Right) => vec![Dir::Down],
-                (Glyph::BendNE, Dir::Right) => vec![Dir::Down],
-                (Glyph::BendNE, Dir::Up) => vec![Dir::Right, Dir::Up],
-                (Glyph::BendNW, Dir::Left) => vec![Dir::Left, Dir::Up],
-                (Glyph::BendNW, Dir::Up) => vec![Dir::Right],
-                (Glyph::BendSE, Dir::Down) => vec![],
-                (Glyph::BendSE, Dir::Right) => vec![Dir::Down, Dir::Right],
-                (Glyph::BendSW, Dir::Down) => vec![Dir::Left, Dir::Down],
-                (Glyph::BendSW, Dir::Left) => vec![],
-                _ => vec![],
-            };
-            let chk_dir = match dir {
-                Dir::Up => Dir::Right,
-                Dir::Down => Dir::Left,
-                Dir::Left => Dir::Up,
-                Dir::Right => Dir::Down,
-            };
-            dirs.push(chk_dir);
-            for chk_dir in dirs {
-                let mut cur = tile.clone();
-                if cur.x == 14 && cur.y == 4 {
-                    info!(
-                        "Tile: {tile} dir: {dir:?} chk: {chk_dir:?} next:{:?}",
-                        self.neighbor(cur, chk_dir)
-                    );
-                }
-                while let Some(next) = self.neighbor(cur, chk_dir) {
-                    if matches!(next.glyph, Glyph::Interior | Glyph::Ground) {
-                        interiors.insert(next);
-                        cur = next;
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-        info!("Interiors: {}", interiors.len());
-        for tile in interiors {
-            self.set_glyph(tile.x, tile.y, Glyph::Interior);
-        }
-    }
+    fn mark_interior(&mut self) {}
 
     fn chart_loop(&mut self) {
         let mut visited: HashSet<Tile> = HashSet::default();
@@ -229,7 +170,7 @@ impl Map {
 
     fn ray_ground(&self, mut tile: Tile, dir: Dir, glyph: Glyph) -> bool {
         while let Some(t) = self.neighbor(tile, dir) {
-            if !matches!(t.glyph, Glyph::Ground | Glyph::Interior) {
+            if !matches!(t.glyph, Glyph::Ground) {
                 return false;
             }
             tile = t;
@@ -245,7 +186,7 @@ impl Map {
     }
 
     fn neighbor(&self, tile: Tile, dir: Dir) -> Option<Tile> {
-        let Tile { glyph, x, y } = tile;
+        let Tile { glyph, x, y, .. } = tile;
         match dir {
             Dir::Up => y.checked_sub(1).map(|y| (x, y)),
             Dir::Down => y.checked_add(1).map(|y| (x, y)),
@@ -273,11 +214,7 @@ impl std::fmt::Display for Map {
         let rendered = self
             .tiles
             .iter()
-            .map(|row| {
-                row.iter()
-                    .map(|t| t.glyph.render(self.fancy))
-                    .collect::<String>()
-            })
+            .map(|row| row.iter().map(|t| t.to_string()).collect::<String>())
             .join("\n");
         write!(f, "{rendered}")
     }
@@ -288,24 +225,31 @@ struct Tile {
     glyph: Glyph,
     x: usize,
     y: usize,
+    status: Status,
+}
+
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+enum Status {
+    Interior,
+    Exterior,
+    Unknown,
 }
 
 impl Tile {
     fn new(x: usize, y: usize, glyph: Glyph) -> Self {
-        Self { x, y, glyph }
+        Self {
+            x,
+            y,
+            glyph,
+            status: Status::Unknown,
+        }
     }
 }
 
 impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{:?}::({},{})::{}",
-            self.glyph,
-            self.x,
-            self.y,
-            self.glyph.render(true)
-        )
+        let ch = self.glyph.render(true);
+        write!(f, "{ch}")
     }
 }
 
@@ -319,7 +263,6 @@ enum Glyph {
     BendSW,
     Ground,
     Start,
-    Interior,
 }
 
 impl Glyph {
@@ -379,7 +322,6 @@ impl Glyph {
             Self::BendSW => 'L',
             Self::Ground => '.',
             Self::Start => 'S',
-            Self::Interior => 'I',
         }
     }
 }
