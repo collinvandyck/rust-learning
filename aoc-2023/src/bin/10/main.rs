@@ -21,6 +21,7 @@ fn main() {
     info!("p2ex2={}", enclosed_area(ex2));
     info!("p2ex3={}", enclosed_area(ex3));
     info!("p2ex4={}", enclosed_area(ex4));
+    //info!("p2in1={}", enclosed_area(in1));
     info!(elapsed = ?start.elapsed(), "Done")
 }
 
@@ -89,39 +90,38 @@ impl Map {
     }
 
     fn mark_interior(&mut self) {
+        let mut visited: HashSet<Tile> = HashSet::default();
         // fill from the top and bottom
         for x in 0..self.cols() {
             for (x, y) in [(x, 0), (x, self.rows() - 1)] {
-                let tile = self.get(x, y).unwrap();
-                if tile.glyph == Glyph::Ground {
-                    self.flood_exterior(tile);
-                }
+                self.flood_exterior(x, y, &mut visited);
             }
         }
         // fill from the left and the right
         for y in 0..self.rows() {
             for (x, y) in [(0, y), (self.cols() - 1, y)] {
-                let tile = self.get(x, y).unwrap();
-                if tile.glyph == Glyph::Ground {
-                    self.flood_exterior(tile);
-                }
+                self.flood_exterior(x, y, &mut visited);
             }
         }
     }
 
     // given a tile, mark it as exterior if it is ground and explore the different edges
-    fn flood_exterior(&mut self, tile: Tile) {
-        let mut visited: HashSet<Tile> = HashSet::default();
+    fn flood_exterior(&mut self, x: usize, y: usize, visited: &mut HashSet<Tile>) {
+        let tile = self.get(x, y).unwrap();
+        if tile.glyph != Glyph::Ground {
+            return;
+        }
         let mut queue = vec![tile];
         while let Some(tile) = queue.pop() {
+            if visited.contains(&tile) {
+                continue;
+            }
             visited.insert(tile);
             if tile.glyph == Glyph::Ground {
                 self.set_status(&tile, Status::Exterior);
                 for dir in Dir::iter() {
                     if let Some(tile) = self.neighbor(tile, dir) {
-                        if !visited.contains(&tile) {
-                            queue.push(tile);
-                        }
+                        queue.push(tile);
                     }
                 }
             }
