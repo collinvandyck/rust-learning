@@ -5,7 +5,11 @@ use itertools::Itertools;
 use std::{fmt::Display, ops::Deref};
 
 fn main() {
-    println!("Hi there.");
+    let ex1 = include_str!("ex1.txt");
+    let map = Map::parse(ex1);
+    map.galaxy_pairs()
+        .into_iter()
+        .for_each(|(t1, t2)| println!("{t1:?} {t2:?}"));
 }
 
 #[derive(Debug, Clone)]
@@ -66,6 +70,17 @@ impl Map {
             .enumerate()
             .for_each(|(y, row)| row.insert(x, Tile::new(x, y, Glyph::Space)))
     }
+    fn galaxy_pairs(&self) -> Vec<(&Tile, &Tile)> {
+        self.galaxy_iter()
+            .combinations(2)
+            .map(|v| (v[0], v[1]))
+            .collect()
+    }
+    fn galaxy_iter(&self) -> impl Iterator<Item = &Tile> {
+        self.0
+            .iter()
+            .flat_map(|row| row.into_iter().filter(|tile| tile.is_galaxy()))
+    }
     fn row_iter(&self, idx: usize) -> impl Iterator<Item = &Tile> {
         self.0
             .get(idx)
@@ -73,11 +88,11 @@ impl Map {
             .unwrap_or(&[])
             .into_iter()
     }
-    fn num_rows(&self) -> usize {
-        self.0.len()
-    }
     fn col_iter(&self, idx: usize) -> impl Iterator<Item = &Tile> {
         self.0.iter().filter_map(move |row| row.get(idx))
+    }
+    fn num_rows(&self) -> usize {
+        self.0.len()
     }
     fn num_cols(&self) -> usize {
         self.0.get(0).map(|v| v.len()).unwrap_or_default()
