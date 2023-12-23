@@ -31,6 +31,9 @@ impl Map {
                 .collect(),
         )
     }
+    fn shortest_path(&self, src: &Tile, dst: &Tile) -> usize {
+        0
+    }
     fn expand(&mut self) {
         (0..self.num_rows())
             .into_iter()
