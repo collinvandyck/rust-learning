@@ -160,6 +160,14 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_map_pairs() {
+        let input = include_str!("ex1.txt");
+        let map = Map::parse(input);
+        let pairs = map.galaxy_pairs().into_iter().count();
+        assert_eq!(pairs, 36);
+    }
+
+    #[test]
     fn test_map_serde() {
         let input = include_str!("ex1.txt");
         let map = Map::parse(input);
