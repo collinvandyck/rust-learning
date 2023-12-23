@@ -151,4 +151,14 @@ mod tests {
         let map_str = map.to_string();
         assert_eq!(map_str, input);
     }
+
+    #[test]
+    fn test_map_expand() {
+        let ex1 = include_str!("ex1.txt");
+        let mut map = Map::parse(ex1);
+        map.expand();
+        let map_str = map.to_string();
+        let ex1_exp = include_str!("ex1-exp.txt");
+        assert_eq!(map_str, ex1_exp);
+    }
 }
