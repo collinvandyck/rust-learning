@@ -113,7 +113,7 @@ impl Display for Map {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 struct Tile {
     glyph: Glyph,
     x: usize,
@@ -133,7 +133,7 @@ impl Deref for Tile {
     }
 }
 
-#[derive(Debug, Clone, Copy, strum_macros::EnumIs)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, strum_macros::EnumIs)]
 enum Glyph {
     Galaxy,
     Space,
