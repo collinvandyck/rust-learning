@@ -1,5 +1,3 @@
-#![allow(dead_code, unused)]
-
 use itertools::Itertools;
 use std::{
     collections::{HashMap, HashSet},
@@ -77,33 +75,23 @@ impl Map {
     }
 
     fn shortest_path(&self, src: &Tile, dst: &Tile) -> usize {
-        self.shortest_path_old(src, dst)
-    }
-
-    fn shortest_path_old(&self, src: &Tile, dst: &Tile) -> usize {
-        assert!(src.is_galaxy());
-        assert!(dst.is_galaxy());
-        let yd = src.y.max(dst.y) - src.y.min(dst.y);
-        let xd = src.x.max(dst.x) - src.x.min(dst.x);
-        let ds = yd + xd;
-        debug!("{src} {dst} yd={yd} xd={xd} => {ds}");
-        ds
-    }
-
-    fn shortest_path_new(&self, src: &Tile, dst: &Tile) -> usize {
         assert!(src.is_galaxy());
         assert!(dst.is_galaxy());
         let (ymin, ymax) = (src.y.min(dst.y), src.y.max(dst.y));
         let (xmin, xmax) = (src.x.min(dst.x), src.x.max(dst.x));
-        let yd = (ymax - ymin);
-        let xd = (xmax - xmin);
-        let non_expanded_dist = yd + xd;
-        let dist = non_expanded_dist;
+        let mut dist = (ymax - ymin) + (xmax - xmin);
+        dist = dist
+            + (ymin..=ymax)
+                .map(|y| self.exp_ys.get(&y).copied().unwrap_or_default())
+                .sum::<usize>();
+        dist = dist
+            + (xmin..=xmax)
+                .map(|x| self.exp_xs.get(&x).copied().unwrap_or_default())
+                .sum::<usize>();
         dist
     }
 
     fn expand(&mut self, amt: usize) {
-        self.expand_orig();
         self.expand_new(amt);
     }
 
@@ -116,6 +104,7 @@ impl Map {
             .collect::<Vec<_>>()
             .into_iter()
             .for_each(|y| {
+                debug!("Expanded y at {y} for {amt}");
                 self.exp_ys.insert(y, amt);
             });
         (0..self.num_cols())
@@ -126,49 +115,11 @@ impl Map {
             .collect::<Vec<_>>()
             .into_iter()
             .for_each(|x| {
+                debug!("Expanded x at {x} for {amt}");
                 self.exp_xs.insert(x, amt);
             });
     }
 
-    fn expand_orig(&mut self) {
-        (0..self.num_rows())
-            .into_iter()
-            .filter(|y| self.row_iter(*y).all(|t| t.is_space()))
-            .enumerate()
-            .map(|(c, y)| c + y)
-            .collect::<Vec<_>>()
-            .into_iter()
-            .for_each(|idx| self.expand_row(idx));
-        (0..self.num_cols())
-            .into_iter()
-            .filter(|x| self.col_iter(*x).all(|t| t.is_space()))
-            .enumerate()
-            .map(|(c, x)| c + x)
-            .collect::<Vec<_>>()
-            .into_iter()
-            .for_each(|idx| self.expand_col(idx));
-        self.tile_vec.iter_mut().enumerate().for_each(|(y, row)| {
-            row.iter_mut().enumerate().for_each(|(x, tile)| {
-                tile.x = x;
-                tile.y = y;
-            })
-        })
-    }
-    fn expand_row(&mut self, y: usize) {
-        self.tile_vec.insert(
-            y,
-            (0..self.num_cols())
-                .into_iter()
-                .map(|x| Tile::new(x, y, Glyph::Space))
-                .collect_vec(),
-        );
-    }
-    fn expand_col(&mut self, x: usize) {
-        self.tile_vec
-            .iter_mut()
-            .enumerate()
-            .for_each(|(y, row)| row.insert(x, Tile::new(x, y, Glyph::Space)))
-    }
     fn galaxy_pairs(&self) -> Vec<(Tile, Tile)> {
         self.galaxy_iter()
             .combinations(2)
@@ -195,10 +146,6 @@ impl Map {
     }
     fn num_cols(&self) -> usize {
         self.tile_vec.get(0).map(|v| v.len()).unwrap_or_default()
-    }
-    #[cfg(test)]
-    fn xy(&self, x: usize, y: usize) -> &Tile {
-        self.tile_vec.get(y).and_then(|row| row.get(x)).unwrap()
     }
 }
 
@@ -266,9 +213,12 @@ impl From<char> for Glyph {
 
 #[cfg(test)]
 mod tests {
+    use tracing_test::traced_test;
+
     use super::*;
 
     #[test]
+    #[traced_test]
     fn test_outputs() {
         let ex1 = include_str!("ex1.txt");
         assert_eq!(sum_of_shortest_paths(ex1, 1), 374);
@@ -286,11 +236,11 @@ mod tests {
             ((0, 2), (12, 7), 17), // 3 and 6
             ((0, 11), (5, 11), 5), // 8 and 9
         ] {
-            let src = map.xy(srcx, srcy);
-            let dst = map.xy(dstx, dsty);
+            let src = Tile::new(srcx, srcy, Glyph::Galaxy);
+            let dst = Tile::new(dstx, dsty, Glyph::Galaxy);
             assert!(src.is_galaxy(), "src {src:?} is not galaxy");
             assert!(dst.is_galaxy(), "dst {dst:?} is not galaxy");
-            let dist = map.shortest_path(src, dst);
+            let dist = map.shortest_path(&src, &dst);
             assert_eq!(
                 dist, expected,
                 "expected {dist}={expected} src={src:?} dst={dst:?}"
@@ -312,15 +262,5 @@ mod tests {
         let map = Map::parse(input);
         let map_str = map.to_string();
         assert_eq!(map_str, input);
-    }
-
-    #[test]
-    fn test_map_expand() {
-        let ex1 = include_str!("ex1.txt");
-        let mut map = Map::parse(ex1);
-        map.expand(1);
-        let map_str = map.to_string();
-        let ex1_exp = include_str!("ex1-exp.txt");
-        assert_eq!(map_str, ex1_exp);
     }
 }
