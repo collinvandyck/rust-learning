@@ -21,7 +21,7 @@ fn sum_of_shortest_paths(input: &str, expansion_amt: usize) -> usize {
     map.expand(expansion_amt);
     map.galaxy_pairs()
         .into_iter()
-        .map(|(t1, t2)| map.shortest_path(t1, t2))
+        .map(|(t1, t2)| map.shortest_path(&t1, &t2))
         .sum()
 }
 
@@ -93,10 +93,13 @@ impl Map {
     fn shortest_path_new(&self, src: &Tile, dst: &Tile) -> usize {
         assert!(src.is_galaxy());
         assert!(dst.is_galaxy());
-        let yd = src.y.max(dst.y) - src.y.min(dst.y);
-        let xd = src.x.max(dst.x) - src.x.min(dst.x);
-        let ds = yd + xd;
-        ds
+        let (ymin, ymax) = (src.y.min(dst.y), src.y.max(dst.y));
+        let (xmin, xmax) = (src.x.min(dst.x), src.x.max(dst.x));
+        let yd = (ymax - ymin);
+        let xd = (xmax - xmin);
+        let non_expanded_dist = yd + xd;
+        let dist = non_expanded_dist;
+        dist
     }
 
     fn expand(&mut self, amt: usize) {
@@ -166,16 +169,16 @@ impl Map {
             .enumerate()
             .for_each(|(y, row)| row.insert(x, Tile::new(x, y, Glyph::Space)))
     }
-    fn galaxy_pairs(&self) -> Vec<(&Tile, &Tile)> {
+    fn galaxy_pairs(&self) -> Vec<(Tile, Tile)> {
         self.galaxy_iter()
             .combinations(2)
             .map(|v| (v[0], v[1]))
             .collect()
     }
-    fn galaxy_iter(&self) -> impl Iterator<Item = &Tile> {
-        self.tile_vec
+    fn galaxy_iter(&self) -> impl Iterator<Item = Tile> + '_ {
+        self.galaxies
             .iter()
-            .flat_map(|row| row.into_iter().filter(|tile| tile.is_galaxy()))
+            .map(|point| Tile::new(point.x, point.y, Glyph::Galaxy))
     }
     fn row_iter(&self, idx: usize) -> impl Iterator<Item = &Tile> {
         self.tile_vec
