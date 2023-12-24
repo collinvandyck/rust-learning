@@ -194,6 +194,14 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_outputs() {
+        let ex1 = include_str!("ex1.txt");
+        assert_eq!(sum_of_shortest_paths(ex1), 374);
+        let in1 = include_str!("in1.txt");
+        assert_eq!(sum_of_shortest_paths(in1), 9648398);
+    }
+
+    #[test]
     fn test_shortest_path() {
         let input = include_str!("ex1.txt");
         let mut map = Map::parse(input);
