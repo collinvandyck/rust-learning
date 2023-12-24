@@ -57,6 +57,9 @@ impl Record {
         assert!(parts.next().is_none());
         Ok(Self { groups, damaged })
     }
+    fn arrangements(&self) -> impl Iterator<Item = Record> {
+        std::iter::empty()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -92,6 +95,22 @@ impl Spring {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_example_pt1() -> Result<()> {
+        let ex1 = include_str!("ex1.txt");
+        let records = Records::parse(ex1)?;
+        assert_eq!(
+            records
+                .get(0)
+                .expect("no record")
+                .arrangements()
+                .collect_vec()
+                .len(),
+            1
+        );
+        Ok(())
+    }
 
     #[test]
     fn test_parse() -> Result<()> {
