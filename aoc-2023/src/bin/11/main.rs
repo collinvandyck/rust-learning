@@ -1,9 +1,5 @@
 use itertools::Itertools;
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Display,
-    ops::Deref,
-};
+use std::{collections::HashSet, fmt::Display, ops::Deref};
 use tracing::{debug, info};
 
 fn main() {
@@ -86,7 +82,12 @@ impl Map {
             }
         }
     }
+
     fn expand(&mut self) {
+        self.expand_orig();
+    }
+
+    fn expand_orig(&mut self) {
         (0..self.num_rows())
             .into_iter()
             .filter(|y| self.row_iter(*y).all(|t| t.is_space()))
