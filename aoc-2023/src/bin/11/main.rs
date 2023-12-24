@@ -22,7 +22,7 @@ fn sum_of_shortest_paths(input: &str, expansion_amt: usize) -> usize {
 
 #[derive(Debug, Clone)]
 struct Map {
-    tile_vec: Vec<Vec<Tile>>,
+    tiles: Vec<Vec<Tile>>,
     exp_y: HashMap<usize, usize>, // y -> amt
     exp_x: HashMap<usize, usize>, // x -> amt
 }
@@ -32,7 +32,7 @@ impl Map {
         Self {
             exp_y: HashMap::default(),
             exp_x: HashMap::default(),
-            tile_vec: input
+            tiles: input
                 .trim()
                 .lines()
                 .enumerate()
@@ -45,23 +45,18 @@ impl Map {
                 .collect(),
         }
     }
-
     fn shortest_path(&self, src: &Tile, dst: &Tile) -> usize {
         let (ymin, ymax) = (src.y.min(dst.y), src.y.max(dst.y));
         let (xmin, xmax) = (src.x.min(dst.x), src.x.max(dst.x));
-        let yds: usize = (ymin..ymax)
-            .map(|y| {
-                let amt = self.exp_y.get(&y).copied().unwrap_or(1);
-                amt
-            })
-            .sum();
-        let xds: usize = (xmin..xmax)
-            .map(|x| {
-                let amt = self.exp_x.get(&x).copied().unwrap_or(1);
-                amt
-            })
-            .sum();
-        return xds + yds;
+        let yds = (ymin..ymax)
+            .filter_map(|y| self.exp_y.get(&y).copied())
+            .collect::<Vec<_>>();
+        let xds = (xmin..xmax)
+            .filter_map(|x| self.exp_x.get(&x).copied())
+            .collect::<Vec<_>>();
+        let yd: usize = (ymax - ymin) + yds.iter().sum::<usize>() - yds.len();
+        let xd: usize = (xmax - xmin) + xds.iter().sum::<usize>() - xds.len();
+        return yd + xd;
     }
     fn expand(&mut self, amt: usize) {
         (0..self.num_rows())
@@ -88,34 +83,34 @@ impl Map {
             .collect()
     }
     fn galaxy_iter(&self) -> impl Iterator<Item = Tile> + '_ {
-        self.tile_vec
+        self.tiles
             .iter()
             .flat_map(|r| r.into_iter())
             .filter(|t| t.is_galaxy())
             .copied()
     }
     fn row_iter(&self, idx: usize) -> impl Iterator<Item = &Tile> {
-        self.tile_vec
+        self.tiles
             .get(idx)
             .map(|s| s.as_slice())
             .unwrap_or(&[])
             .into_iter()
     }
     fn col_iter(&self, idx: usize) -> impl Iterator<Item = &Tile> {
-        self.tile_vec.iter().filter_map(move |row| row.get(idx))
+        self.tiles.iter().filter_map(move |row| row.get(idx))
     }
     fn num_rows(&self) -> usize {
-        self.tile_vec.len()
+        self.tiles.len()
     }
     fn num_cols(&self) -> usize {
-        self.tile_vec.get(0).map(|v| v.len()).unwrap_or_default()
+        self.tiles.get(0).map(|v| v.len()).unwrap_or_default()
     }
 }
 
 impl Display for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = self
-            .tile_vec
+            .tiles
             .iter()
             .map(|row| row.iter().map(|t| t.ch()).collect::<String>())
             .join("\n");
