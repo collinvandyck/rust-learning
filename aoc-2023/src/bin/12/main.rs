@@ -1,5 +1,7 @@
 #![allow(dead_code, unused)]
 
+use std::collections::VecDeque;
+
 use anyhow::{anyhow, Context, Result};
 use itertools::Itertools;
 use strum_macros::EnumIs;
@@ -32,8 +34,8 @@ impl std::ops::Deref for Records {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Record {
-    groups: Vec<Group>,
-    damaged: Vec<usize>,
+    groups: VecDeque<Group>,
+    damaged: VecDeque<usize>,
 }
 
 impl Record {
@@ -47,25 +49,61 @@ impl Record {
             .group_by(|s| *s)
             .into_iter()
             .map(|(spring, xs)| Group::new(spring, xs.count()))
-            .collect_vec();
+            .collect_vec()
+            .into();
         let damaged = parts
             .next()
             .context("no damaged part")?
             .split(",")
             .map(|s| s.parse::<usize>().unwrap())
-            .collect_vec();
+            .collect_vec()
+            .into();
         assert!(parts.next().is_none());
         Ok(Self { groups, damaged })
     }
     fn arrangements(&self) -> impl Iterator<Item = Record> {
-        std::iter::empty()
+        arrangements(self.clone()).into_iter()
     }
+    fn is_complete(&self) -> bool {
+        self.damaged.is_empty() && !self.groups.iter().any(|g| g.is_unknown())
+    }
+}
+
+fn arrangements(rec: Record) -> Vec<Record> {
+    let mut res = vec![];
+    let mut queue = vec![rec];
+    while let Some(rec) = queue.pop() {
+        if rec.is_complete() {
+            queue.push(rec);
+            continue;
+        }
+        match rec
+            .groups
+            .iter()
+            .enumerate()
+            .find(|(idx, group)| group.is_unknown())
+        {
+            Some((idx, group)) => {
+                let count = group.count;
+            }
+            // if there are no more unknown groups, we're done
+            None => break,
+        }
+    }
+    res
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Group {
     spring: Spring,
     count: usize,
+}
+
+impl std::ops::Deref for Group {
+    type Target = Spring;
+    fn deref(&self) -> &Self::Target {
+        &self.spring
+    }
 }
 
 impl Group {
@@ -124,8 +162,9 @@ mod tests {
                     Group::new(Spring::Unknown, 3),
                     Group::new(Spring::Ok, 1),
                     Group::new(Spring::Damaged, 3),
-                ],
-                damaged: vec![1, 1, 3]
+                ]
+                .into(),
+                damaged: vec![1, 1, 3].into()
             })
         );
         assert_eq!(
@@ -140,8 +179,9 @@ mod tests {
                     Group::new(Spring::Unknown, 1),
                     Group::new(Spring::Damaged, 2),
                     Group::new(Spring::Ok, 1),
-                ],
-                damaged: vec![1, 1, 3]
+                ]
+                .into(),
+                damaged: vec![1, 1, 3].into(),
             })
         );
         Ok(())
