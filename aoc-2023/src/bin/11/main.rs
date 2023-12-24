@@ -21,7 +21,7 @@ fn sum_of_shortest_paths(input: &str, expansion_amt: usize) -> usize {
     map.expand(expansion_amt);
     map.galaxy_pairs()
         .into_iter()
-        .map(|(t1, t2)| map.shortest_path(t1, t2, PathType::Simple))
+        .map(|(t1, t2)| map.shortest_path(t1, t2))
         .sum()
 }
 
@@ -43,10 +43,6 @@ impl Point {
     fn from(x: usize, y: usize) -> Self {
         Self { x, y }
     }
-}
-
-enum PathType {
-    Simple,
 }
 
 impl Map {
@@ -79,18 +75,28 @@ impl Map {
                 .collect(),
         }
     }
-    fn shortest_path(&self, src: &Tile, dst: &Tile, typ: PathType) -> usize {
-        match typ {
-            PathType::Simple => {
-                assert!(src.is_galaxy());
-                assert!(dst.is_galaxy());
-                let yd = src.y.max(dst.y) - src.y.min(dst.y);
-                let xd = src.x.max(dst.x) - src.x.min(dst.x);
-                let ds = yd + xd;
-                debug!("{src} {dst} yd={yd} xd={xd} => {ds}");
-                ds
-            }
-        }
+
+    fn shortest_path(&self, src: &Tile, dst: &Tile) -> usize {
+        self.shortest_path_old(src, dst)
+    }
+
+    fn shortest_path_old(&self, src: &Tile, dst: &Tile) -> usize {
+        assert!(src.is_galaxy());
+        assert!(dst.is_galaxy());
+        let yd = src.y.max(dst.y) - src.y.min(dst.y);
+        let xd = src.x.max(dst.x) - src.x.min(dst.x);
+        let ds = yd + xd;
+        debug!("{src} {dst} yd={yd} xd={xd} => {ds}");
+        ds
+    }
+
+    fn shortest_path_new(&self, src: &Tile, dst: &Tile) -> usize {
+        assert!(src.is_galaxy());
+        assert!(dst.is_galaxy());
+        let yd = src.y.max(dst.y) - src.y.min(dst.y);
+        let xd = src.x.max(dst.x) - src.x.min(dst.x);
+        let ds = yd + xd;
+        ds
     }
 
     fn expand(&mut self, amt: usize) {
@@ -281,7 +287,7 @@ mod tests {
             let dst = map.xy(dstx, dsty);
             assert!(src.is_galaxy(), "src {src:?} is not galaxy");
             assert!(dst.is_galaxy(), "dst {dst:?} is not galaxy");
-            let dist = map.shortest_path(src, dst, PathType::Simple);
+            let dist = map.shortest_path(src, dst);
             assert_eq!(
                 dist, expected,
                 "expected {dist}={expected} src={src:?} dst={dst:?}"
