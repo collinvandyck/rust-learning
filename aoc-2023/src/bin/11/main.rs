@@ -10,7 +10,8 @@ fn main() {
 }
 
 fn sum_of_shortest_paths(input: &str) -> usize {
-    let map = Map::parse(input);
+    let mut map = Map::parse(input);
+    map.expand();
     map.galaxy_pairs()
         .into_iter()
         .map(|(t1, t2)| map.shortest_path(t1, t2, PathType::Simple))
