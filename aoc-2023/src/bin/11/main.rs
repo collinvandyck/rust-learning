@@ -75,32 +75,34 @@ impl Map {
     }
 
     fn shortest_path(&self, src: &Tile, dst: &Tile) -> usize {
+        info!("Shortest path from {src} to {dst}");
         assert!(src.is_galaxy());
         assert!(dst.is_galaxy());
         let (ymin, ymax) = (src.y.min(dst.y), src.y.max(dst.y));
         let (xmin, xmax) = (src.x.min(dst.x), src.x.max(dst.x));
         let mut dist = (ymax - ymin) + (xmax - xmin);
+        info!("Non expanded distance: {dist}");
         dist = dist
             + (ymin..=ymax)
-                .map(|y| self.exp_ys.get(&y).copied().unwrap_or_default())
+                .filter_map(|y| match self.exp_ys.get(&y).copied() {
+                    Some(amt) => Some(amt),
+                    None => None,
+                })
                 .sum::<usize>();
         dist = dist
             + (xmin..=xmax)
-                .map(|x| self.exp_xs.get(&x).copied().unwrap_or_default())
+                .filter_map(|x| match self.exp_xs.get(&x).copied() {
+                    Some(amt) => Some(amt),
+                    None => None,
+                })
                 .sum::<usize>();
         dist
     }
 
     fn expand(&mut self, amt: usize) {
-        self.expand_new(amt);
-    }
-
-    fn expand_new(&mut self, amt: usize) {
         (0..self.num_rows())
             .into_iter()
             .filter(|y| self.row_iter(*y).all(|t| t.is_space()))
-            .enumerate()
-            .map(|(c, y)| c + y)
             .collect::<Vec<_>>()
             .into_iter()
             .for_each(|y| {
@@ -110,8 +112,6 @@ impl Map {
         (0..self.num_cols())
             .into_iter()
             .filter(|x| self.col_iter(*x).all(|t| t.is_space()))
-            .enumerate()
-            .map(|(c, x)| c + x)
             .collect::<Vec<_>>()
             .into_iter()
             .for_each(|x| {
@@ -226,24 +226,36 @@ mod tests {
         assert_eq!(sum_of_shortest_paths(in1, 1), 9648398);
     }
 
+    //   2  5  8
+    //   E  E  E
+    // ...#......
+    // .......#..
+    // #.........
+    // .......... E 3
+    // ......#...
+    // .#........
+    // .........#
+    // .......... E 7
+    // .......#..
+    // #...#.....
+
     #[test]
+    #[traced_test]
     fn test_shortest_path_pt_1() {
         let input = include_str!("ex1.txt");
         let mut map = Map::parse(input);
         map.expand(1);
         for ((srcx, srcy), (dstx, dsty), expected) in [
-            ((4, 0), (9, 10), 15), // 1 and 7
-            ((0, 2), (12, 7), 17), // 3 and 6
-            ((0, 11), (5, 11), 5), // 8 and 9
+            ((3, 0), (7, 8), 15), // 1 and 7
+            ((0, 2), (9, 6), 17), // 3 and 6
+            ((0, 9), (4, 9), 5),  // 8 and 9
         ] {
             let src = Tile::new(srcx, srcy, Glyph::Galaxy);
             let dst = Tile::new(dstx, dsty, Glyph::Galaxy);
-            assert!(src.is_galaxy(), "src {src:?} is not galaxy");
-            assert!(dst.is_galaxy(), "dst {dst:?} is not galaxy");
             let dist = map.shortest_path(&src, &dst);
             assert_eq!(
                 dist, expected,
-                "expected {dist}={expected} src={src:?} dst={dst:?}"
+                "expected {dist} but got {expected} src={src:?} dst={dst:?}"
             );
         }
     }
