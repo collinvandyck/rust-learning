@@ -1,11 +1,13 @@
 use itertools::Itertools;
 use std::{fmt::Display, ops::Deref};
-use tracing::debug;
+use tracing::{debug, info};
 
 fn main() {
     tracing_subscriber::fmt().init();
     let ex1 = include_str!("ex1.txt");
-    println!("p1ex1={}", sum_of_shortest_paths(ex1));
+    let in1 = include_str!("in1.txt");
+    info!("p1ex1: {}", sum_of_shortest_paths(ex1));
+    info!("p1in1: {}", sum_of_shortest_paths(in1));
 }
 
 fn sum_of_shortest_paths(input: &str) -> usize {
@@ -119,7 +121,7 @@ impl Map {
     fn num_cols(&self) -> usize {
         self.0.get(0).map(|v| v.len()).unwrap_or_default()
     }
-    #[allow(dead_code)]
+    #[cfg(test)]
     fn xy(&self, x: usize, y: usize) -> &Tile {
         self.0.get(y).and_then(|row| row.get(x)).unwrap()
     }
@@ -146,14 +148,6 @@ struct Tile {
 impl Tile {
     fn new(x: usize, y: usize, glyph: Glyph) -> Self {
         Self { x, y, glyph }
-    }
-    #[allow(dead_code)]
-    fn upper_lower<'a>(t1: &'a Tile, t2: &'a Tile) -> (&'a Tile, &'a Tile) {
-        if t1.x < t2.x || t1.y < t2.y {
-            (t1, t2)
-        } else {
-            (t2, t1)
-        }
     }
 }
 
