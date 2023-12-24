@@ -6,8 +6,8 @@ fn main() {
     tracing_subscriber::fmt().init();
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
-    info!("p1ex1: {}", sum_of_shortest_paths(ex1, 1));
-    info!("p1in1: {}", sum_of_shortest_paths(in1, 1));
+    info!("p1ex1: {}", sum_of_shortest_paths(ex1, 2));
+    info!("p1in1: {}", sum_of_shortest_paths(in1, 2));
     info!("p2in1: {}", sum_of_shortest_paths(in1, 1000000));
 }
 
