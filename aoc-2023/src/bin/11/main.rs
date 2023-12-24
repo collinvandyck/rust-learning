@@ -6,13 +6,13 @@ fn main() {
     tracing_subscriber::fmt().init();
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
-    info!("p1ex1: {}", sum_of_shortest_paths(ex1));
-    info!("p1in1: {}", sum_of_shortest_paths(in1));
+    info!("p1ex1: {}", sum_of_shortest_paths(ex1, 1));
+    info!("p1in1: {}", sum_of_shortest_paths(in1, 1));
 }
 
-fn sum_of_shortest_paths(input: &str) -> usize {
+fn sum_of_shortest_paths(input: &str, expansion_amt: usize) -> usize {
     let mut map = Map::parse(input);
-    map.expand();
+    map.expand(expansion_amt);
     map.galaxy_pairs()
         .into_iter()
         .map(|(t1, t2)| map.shortest_path(t1, t2, PathType::Simple))
@@ -83,7 +83,7 @@ impl Map {
         }
     }
 
-    fn expand(&mut self) {
+    fn expand(&mut self, _amt: usize) {
         self.expand_orig();
     }
 
@@ -228,16 +228,16 @@ mod tests {
     #[test]
     fn test_outputs() {
         let ex1 = include_str!("ex1.txt");
-        assert_eq!(sum_of_shortest_paths(ex1), 374);
+        assert_eq!(sum_of_shortest_paths(ex1, 1), 374);
         let in1 = include_str!("in1.txt");
-        assert_eq!(sum_of_shortest_paths(in1), 9648398);
+        assert_eq!(sum_of_shortest_paths(in1, 1), 9648398);
     }
 
     #[test]
-    fn test_shortest_path() {
+    fn test_shortest_path_pt_1() {
         let input = include_str!("ex1.txt");
         let mut map = Map::parse(input);
-        map.expand();
+        map.expand(1);
         for ((srcx, srcy), (dstx, dsty), expected) in [
             ((4, 0), (9, 10), 15), // 1 and 7
             ((0, 2), (12, 7), 17), // 3 and 6
@@ -275,7 +275,7 @@ mod tests {
     fn test_map_expand() {
         let ex1 = include_str!("ex1.txt");
         let mut map = Map::parse(ex1);
-        map.expand();
+        map.expand(1);
         let map_str = map.to_string();
         let ex1_exp = include_str!("ex1-exp.txt");
         assert_eq!(map_str, ex1_exp);
