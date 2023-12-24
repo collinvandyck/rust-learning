@@ -1,18 +1,25 @@
 #![allow(dead_code, unused)]
 
+use anyhow::{anyhow, Context, Result};
 use itertools::Itertools;
 use strum_macros::EnumIs;
 
-fn main() {
-    println!("hi");
+fn main() -> Result<()> {
+    Ok(())
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Records(Vec<Record>);
 
 impl Records {
-    fn parse(input: &str) -> Self {
-        Self(input.lines().map(Record::parse).collect())
+    fn parse(input: &str) -> Result<Self> {
+        Ok(Self(
+            input
+                .lines()
+                .map(Record::parse)
+                .collect::<std::result::Result<_, _>>()
+                .context("parse failure")?,
+        ))
     }
 }
 
@@ -30,27 +37,25 @@ struct Record {
 }
 
 impl Record {
-    fn parse(line: &str) -> Self {
+    fn parse(line: &str) -> Result<Self> {
         let mut parts = line.split(" ");
-        let springs = parts
+        let groups = parts
             .next()
-            .unwrap()
+            .context("no spring part")?
             .chars()
             .map(Spring::from)
-            .collect::<Vec<_>>();
-        let groups = springs
-            .into_iter()
-            .group_by(|spring| *spring)
+            .group_by(|s| *s)
             .into_iter()
             .map(|(spring, xs)| Group::new(spring, xs.count()))
             .collect_vec();
         let damaged = parts
             .next()
-            .unwrap()
+            .context("no damaged part")?
             .split(",")
             .map(|s| s.parse::<usize>().unwrap())
-            .collect::<Vec<_>>();
-        Self { groups, damaged }
+            .collect_vec();
+        assert!(parts.next().is_none());
+        Ok(Self { groups, damaged })
     }
 }
 
@@ -88,9 +93,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse() {
+    fn test_parse() -> Result<()> {
         let ex1 = include_str!("ex1.txt");
-        let records = Records::parse(ex1);
+        let records = Records::parse(ex1)?;
         assert_eq!(records.len(), 6);
         assert_eq!(
             records.get(0),
@@ -111,6 +116,7 @@ mod tests {
                 ],
                 damaged: vec![1, 1, 3]
             })
-        )
+        );
+        Ok(())
     }
 }
