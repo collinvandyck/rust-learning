@@ -1,7 +1,11 @@
 #![allow(dead_code, unused)]
 
 use itertools::Itertools;
-use std::{collections::HashSet, fmt::Display, ops::Deref};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+    ops::Deref,
+};
 use tracing::{debug, info};
 
 fn main() {
@@ -25,8 +29,8 @@ fn sum_of_shortest_paths(input: &str, expansion_amt: usize) -> usize {
 struct Map {
     tile_vec: Vec<Vec<Tile>>,
     galaxies: HashSet<Point>,
-    exp_ys: Vec<usize>,
-    exp_xs: Vec<usize>,
+    exp_ys: HashMap<usize, usize>, // y -> amt
+    exp_xs: HashMap<usize, usize>, // x -> amt
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -60,8 +64,8 @@ impl Map {
             .collect();
         Self {
             galaxies,
-            exp_ys: vec![],
-            exp_xs: vec![],
+            exp_ys: HashMap::default(),
+            exp_xs: HashMap::default(),
             tile_vec: input
                 .trim()
                 .lines()
@@ -89,8 +93,32 @@ impl Map {
         }
     }
 
-    fn expand(&mut self, _amt: usize) {
+    fn expand(&mut self, amt: usize) {
         self.expand_orig();
+        self.expand_new(amt);
+    }
+
+    fn expand_new(&mut self, amt: usize) {
+        (0..self.num_rows())
+            .into_iter()
+            .filter(|y| self.row_iter(*y).all(|t| t.is_space()))
+            .enumerate()
+            .map(|(c, y)| c + y)
+            .collect::<Vec<_>>()
+            .into_iter()
+            .for_each(|y| {
+                self.exp_ys.insert(y, amt);
+            });
+        (0..self.num_cols())
+            .into_iter()
+            .filter(|x| self.col_iter(*x).all(|t| t.is_space()))
+            .enumerate()
+            .map(|(c, x)| c + x)
+            .collect::<Vec<_>>()
+            .into_iter()
+            .for_each(|x| {
+                self.exp_xs.insert(x, amt);
+            });
     }
 
     fn expand_orig(&mut self) {
