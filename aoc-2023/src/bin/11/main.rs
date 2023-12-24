@@ -1,5 +1,9 @@
 use itertools::Itertools;
-use std::{fmt::Display, ops::Deref};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+    ops::Deref,
+};
 use tracing::{debug, info};
 
 fn main() {
@@ -20,7 +24,22 @@ fn sum_of_shortest_paths(input: &str) -> usize {
 }
 
 #[derive(Debug, Clone)]
-struct Map(Vec<Vec<Tile>>);
+struct Map {
+    tile_vec: Vec<Vec<Tile>>,
+    galaxies: HashSet<Point>,
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+struct Point {
+    x: usize,
+    y: usize,
+}
+
+impl Point {
+    fn from(x: usize, y: usize) -> Self {
+        Self { x, y }
+    }
+}
 
 enum PathType {
     Simple,
@@ -28,8 +47,20 @@ enum PathType {
 
 impl Map {
     fn parse(input: &str) -> Self {
-        Self(
-            input
+        let galaxies = input
+            .trim()
+            .lines()
+            .enumerate()
+            .flat_map(|(y, row)| {
+                row.chars()
+                    .enumerate()
+                    .filter(|(_x, ch)| ch == &'#')
+                    .map(move |(x, _)| Point::from(x, y))
+            })
+            .collect();
+        Self {
+            galaxies,
+            tile_vec: input
                 .trim()
                 .lines()
                 .enumerate()
@@ -40,7 +71,7 @@ impl Map {
                         .collect()
                 })
                 .collect(),
-        )
+        }
     }
     fn shortest_path(&self, src: &Tile, dst: &Tile, typ: PathType) -> usize {
         match typ {
@@ -72,7 +103,7 @@ impl Map {
             .collect::<Vec<_>>()
             .into_iter()
             .for_each(|idx| self.expand_col(idx));
-        self.0.iter_mut().enumerate().for_each(|(y, row)| {
+        self.tile_vec.iter_mut().enumerate().for_each(|(y, row)| {
             row.iter_mut().enumerate().for_each(|(x, tile)| {
                 tile.x = x;
                 tile.y = y;
@@ -80,7 +111,7 @@ impl Map {
         })
     }
     fn expand_row(&mut self, y: usize) {
-        self.0.insert(
+        self.tile_vec.insert(
             y,
             (0..self.num_cols())
                 .into_iter()
@@ -89,7 +120,7 @@ impl Map {
         );
     }
     fn expand_col(&mut self, x: usize) {
-        self.0
+        self.tile_vec
             .iter_mut()
             .enumerate()
             .for_each(|(y, row)| row.insert(x, Tile::new(x, y, Glyph::Space)))
@@ -101,36 +132,36 @@ impl Map {
             .collect()
     }
     fn galaxy_iter(&self) -> impl Iterator<Item = &Tile> {
-        self.0
+        self.tile_vec
             .iter()
             .flat_map(|row| row.into_iter().filter(|tile| tile.is_galaxy()))
     }
     fn row_iter(&self, idx: usize) -> impl Iterator<Item = &Tile> {
-        self.0
+        self.tile_vec
             .get(idx)
             .map(|s| s.as_slice())
             .unwrap_or(&[])
             .into_iter()
     }
     fn col_iter(&self, idx: usize) -> impl Iterator<Item = &Tile> {
-        self.0.iter().filter_map(move |row| row.get(idx))
+        self.tile_vec.iter().filter_map(move |row| row.get(idx))
     }
     fn num_rows(&self) -> usize {
-        self.0.len()
+        self.tile_vec.len()
     }
     fn num_cols(&self) -> usize {
-        self.0.get(0).map(|v| v.len()).unwrap_or_default()
+        self.tile_vec.get(0).map(|v| v.len()).unwrap_or_default()
     }
     #[cfg(test)]
     fn xy(&self, x: usize, y: usize) -> &Tile {
-        self.0.get(y).and_then(|row| row.get(x)).unwrap()
+        self.tile_vec.get(y).and_then(|row| row.get(x)).unwrap()
     }
 }
 
 impl Display for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = self
-            .0
+            .tile_vec
             .iter()
             .map(|row| row.iter().map(|t| t.ch()).collect::<String>())
             .join("\n");

@@ -1,0 +1,2 @@
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:3:19 unused import: `HashMap`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:29:5 field `galaxies` is never read
