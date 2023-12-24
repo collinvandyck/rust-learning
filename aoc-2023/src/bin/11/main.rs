@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 use itertools::Itertools;
 use std::{collections::HashSet, fmt::Display, ops::Deref};
 use tracing::{debug, info};
@@ -23,6 +25,8 @@ fn sum_of_shortest_paths(input: &str, expansion_amt: usize) -> usize {
 struct Map {
     tile_vec: Vec<Vec<Tile>>,
     galaxies: HashSet<Point>,
+    exp_ys: Vec<usize>,
+    exp_xs: Vec<usize>,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -56,6 +60,8 @@ impl Map {
             .collect();
         Self {
             galaxies,
+            exp_ys: vec![],
+            exp_xs: vec![],
             tile_vec: input
                 .trim()
                 .lines()
