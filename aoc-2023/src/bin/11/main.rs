@@ -6,14 +6,23 @@ use std::{fmt::Display, ops::Deref};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
-    let map = Map::parse(ex1);
+    println!("p1ex1={}", sum_of_shortest_paths(ex1));
+}
+
+fn sum_of_shortest_paths(input: &str) -> usize {
+    let map = Map::parse(input);
     map.galaxy_pairs()
         .into_iter()
-        .for_each(|(t1, t2)| println!("{t1:?} {t2:?}"));
+        .map(|(t1, t2)| map.shortest_path(t1, t2, PathType::Simple))
+        .sum()
 }
 
 #[derive(Debug, Clone)]
 struct Map(Vec<Vec<Tile>>);
+
+enum PathType {
+    Simple,
+}
 
 impl Map {
     fn parse(input: &str) -> Self {
@@ -31,8 +40,18 @@ impl Map {
                 .collect(),
         )
     }
-    fn shortest_path(&self, src: &Tile, dst: &Tile) -> usize {
-        0
+    fn shortest_path(&self, src: &Tile, dst: &Tile, typ: PathType) -> usize {
+        match typ {
+            PathType::Simple => {
+                assert!(src.is_galaxy());
+                assert!(dst.is_galaxy());
+                let yd = src.y.max(dst.y) - src.y.min(dst.y);
+                let xd = src.x.max(dst.x) - src.x.min(dst.x);
+                let ds = yd + xd;
+                println!("{src} {dst} yd={yd} xd={xd} => {ds}");
+                ds
+            }
+        }
     }
     fn expand(&mut self) {
         (0..self.num_rows())
@@ -100,6 +119,9 @@ impl Map {
     fn num_cols(&self) -> usize {
         self.0.get(0).map(|v| v.len()).unwrap_or_default()
     }
+    fn xy(&self, x: usize, y: usize) -> &Tile {
+        self.0.get(y).and_then(|row| row.get(x)).unwrap()
+    }
 }
 
 impl Display for Map {
@@ -124,12 +146,25 @@ impl Tile {
     fn new(x: usize, y: usize, glyph: Glyph) -> Self {
         Self { x, y, glyph }
     }
+    fn upper_lower<'a>(t1: &'a Tile, t2: &'a Tile) -> (&'a Tile, &'a Tile) {
+        if t1.x < t2.x || t1.y < t2.y {
+            (t1, t2)
+        } else {
+            (t2, t1)
+        }
+    }
 }
 
 impl Deref for Tile {
     type Target = Glyph;
     fn deref(&self) -> &Self::Target {
         &self.glyph
+    }
+}
+
+impl Display for Tile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})[{}]", self.x, self.y, self.glyph.ch())
     }
 }
 
@@ -161,6 +196,28 @@ impl From<char> for Glyph {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_shortest_path() {
+        let input = include_str!("ex1.txt");
+        let mut map = Map::parse(input);
+        map.expand();
+        for ((srcx, srcy), (dstx, dsty), expected) in [
+            ((4, 0), (9, 10), 15), // 1 and 7
+            ((0, 2), (12, 7), 17), // 3 and 6
+            ((0, 11), (5, 11), 5), // 8 and 9
+        ] {
+            let src = map.xy(srcx, srcy);
+            let dst = map.xy(dstx, dsty);
+            assert!(src.is_galaxy(), "src {src:?} is not galaxy");
+            assert!(dst.is_galaxy(), "dst {dst:?} is not galaxy");
+            let dist = map.shortest_path(src, dst, PathType::Simple);
+            assert_eq!(
+                dist, expected,
+                "expected {dist}={expected} src={src:?} dst={dst:?}"
+            );
+        }
+    }
 
     #[test]
     fn test_map_pairs() {
