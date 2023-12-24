@@ -101,18 +101,9 @@ mod tests {
             records.get(0),
             Some(&Record {
                 groups: vec![
-                    Group {
-                        spring: Spring::Unknown,
-                        count: 3
-                    },
-                    Group {
-                        spring: Spring::Ok,
-                        count: 1
-                    },
-                    Group {
-                        spring: Spring::Damaged,
-                        count: 3
-                    },
+                    Group::new(Spring::Unknown, 3),
+                    Group::new(Spring::Ok, 1),
+                    Group::new(Spring::Damaged, 3),
                 ],
                 damaged: vec![1, 1, 3]
             })
