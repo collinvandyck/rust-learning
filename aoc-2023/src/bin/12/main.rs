@@ -64,6 +64,7 @@ struct Group {
     spring: Spring,
     count: usize,
 }
+
 impl Group {
     fn new(spring: Spring, count: usize) -> Self {
         Self { spring, count }
