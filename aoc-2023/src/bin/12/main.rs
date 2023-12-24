@@ -108,6 +108,22 @@ mod tests {
                 damaged: vec![1, 1, 3]
             })
         );
+        assert_eq!(
+            records.get(1),
+            Some(&Record {
+                groups: vec![
+                    Group::new(Spring::Ok, 1),
+                    Group::new(Spring::Unknown, 2),
+                    Group::new(Spring::Ok, 2),
+                    Group::new(Spring::Unknown, 2),
+                    Group::new(Spring::Ok, 3),
+                    Group::new(Spring::Unknown, 1),
+                    Group::new(Spring::Damaged, 2),
+                    Group::new(Spring::Ok, 1),
+                ],
+                damaged: vec![1, 1, 3]
+            })
+        );
         Ok(())
     }
 }
