@@ -34,6 +34,7 @@ impl std::ops::Deref for Records {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Record {
+    springs: Vec<Spring>,
     groups: VecDeque<Group>,
     damaged: VecDeque<usize>,
 }
@@ -41,14 +42,17 @@ struct Record {
 impl Record {
     fn parse(line: &str) -> Result<Self> {
         let mut parts = line.split(" ");
-        let groups = parts
+        let springs = parts
             .next()
             .context("no spring part")?
             .chars()
             .map(Spring::from)
+            .collect::<Vec<_>>();
+        let groups = springs
+            .iter()
             .group_by(|s| *s)
             .into_iter()
-            .map(|(spring, xs)| Group::new(spring, xs.count()))
+            .map(|(spring, xs)| Group::new(*spring, xs.count()))
             .collect_vec()
             .into();
         let damaged = parts
@@ -59,7 +63,11 @@ impl Record {
             .collect_vec()
             .into();
         assert!(parts.next().is_none());
-        Ok(Self { groups, damaged })
+        Ok(Self {
+            springs,
+            groups,
+            damaged,
+        })
     }
     fn arrangements(&self) -> impl Iterator<Item = Record> {
         arrangements(self.clone()).into_iter()
@@ -72,23 +80,38 @@ impl Record {
 fn arrangements(rec: Record) -> Vec<Record> {
     let mut res = vec![];
     let mut queue = vec![rec];
-    while let Some(rec) = queue.pop() {
+    while let Some(mut rec) = queue.pop() {
+        // if the rec is done, move it to the result vec.
         if rec.is_complete() {
-            queue.push(rec);
+            res.push(rec);
             continue;
         }
-        match rec
+        // find the first group that is unknown.
+        let Some((idx, unk_grp)) = rec
             .groups
             .iter()
             .enumerate()
-            .find(|(idx, group)| group.is_unknown())
-        {
-            Some((idx, group)) => {
-                let count = group.count;
-            }
-            // if there are no more unknown groups, we're done
-            None => break,
-        }
+            .filter(|(i, g)| g.is_unknown())
+            .map(|(i, g)| (i, g.clone()))
+            .next()
+        else {
+            continue;
+        };
+        let Some(dmg_grp) = rec.damaged.pop_front() else {
+            continue;
+        };
+        // we now have a first group of unknown springs (unk_grp) and a number of damaged springs
+        // (dmg_grp) that we must find fits for.
+        //
+        // if the len of the unknown group is less than the len of the dmg group then it is not
+        // possible to move forward.
+        //
+        // if the len of the uknown group is equal to the len of the dmg group, then there is one
+        // option for assigning this dmg. we must verify that the group following the current
+        // unknown group does not violate the dmg spec.
+        //
+        // if the len of the unknown group is greater than the len of the dmg group then we know
+        // that if we place the dmg group first, as we must, at that point we know we have to place
     }
     res
 }
@@ -158,6 +181,15 @@ mod tests {
         assert_eq!(
             records.get(0),
             Some(&Record {
+                springs: vec![
+                    Spring::Unknown,
+                    Spring::Unknown,
+                    Spring::Unknown,
+                    Spring::Ok,
+                    Spring::Damaged,
+                    Spring::Damaged,
+                    Spring::Damaged,
+                ],
                 groups: vec![
                     Group::new(Spring::Unknown, 3),
                     Group::new(Spring::Ok, 1),
@@ -170,6 +202,22 @@ mod tests {
         assert_eq!(
             records.get(1),
             Some(&Record {
+                springs: vec![
+                    Spring::Ok,
+                    Spring::Unknown,
+                    Spring::Unknown,
+                    Spring::Ok,
+                    Spring::Ok,
+                    Spring::Unknown,
+                    Spring::Unknown,
+                    Spring::Ok,
+                    Spring::Ok,
+                    Spring::Ok,
+                    Spring::Unknown,
+                    Spring::Damaged,
+                    Spring::Damaged,
+                    Spring::Ok,
+                ],
                 groups: vec![
                     Group::new(Spring::Ok, 1),
                     Group::new(Spring::Unknown, 2),
