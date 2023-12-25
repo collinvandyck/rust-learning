@@ -35,8 +35,8 @@ impl std::ops::Deref for Records {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Record {
     springs: Vec<Spring>,
-    groups: VecDeque<Group>,
-    damaged: VecDeque<usize>,
+    constraints: VecDeque<usize>,
+    _groups: VecDeque<Group>,
 }
 
 impl Record {
@@ -65,15 +65,12 @@ impl Record {
         assert!(parts.next().is_none());
         Ok(Self {
             springs,
-            groups,
-            damaged,
+            _groups: groups,
+            constraints: damaged,
         })
     }
     fn arrangements(&self) -> impl Iterator<Item = Record> {
         arrangements(self.clone()).into_iter()
-    }
-    fn is_complete(&self) -> bool {
-        self.damaged.is_empty() && !self.groups.iter().any(|g| g.is_unknown())
     }
 }
 
@@ -82,22 +79,11 @@ fn arrangements(rec: Record) -> Vec<Record> {
     let mut queue = vec![rec];
     while let Some(mut rec) = queue.pop() {
         // if the rec is done, move it to the result vec.
-        if rec.is_complete() {
+        if rec.constraints.is_empty() && !rec.springs.iter().any(|s| s.is_unknown()) {
             res.push(rec);
             continue;
         }
-        // find the first group that is unknown.
-        let Some((idx, unk_grp)) = rec
-            .groups
-            .iter()
-            .enumerate()
-            .filter(|(i, g)| g.is_unknown())
-            .map(|(i, g)| (i, g.clone()))
-            .next()
-        else {
-            continue;
-        };
-        let Some(dmg_grp) = rec.damaged.pop_front() else {
+        let Some(dmg_grp) = rec.constraints.pop_front() else {
             continue;
         };
         // we now have a first group of unknown springs (unk_grp) and a number of damaged springs
@@ -190,13 +176,13 @@ mod tests {
                     Spring::Damaged,
                     Spring::Damaged,
                 ],
-                groups: vec![
+                _groups: vec![
                     Group::new(Spring::Unknown, 3),
                     Group::new(Spring::Ok, 1),
                     Group::new(Spring::Damaged, 3),
                 ]
                 .into(),
-                damaged: vec![1, 1, 3].into()
+                constraints: vec![1, 1, 3].into()
             })
         );
         assert_eq!(
@@ -218,7 +204,7 @@ mod tests {
                     Spring::Damaged,
                     Spring::Ok,
                 ],
-                groups: vec![
+                _groups: vec![
                     Group::new(Spring::Ok, 1),
                     Group::new(Spring::Unknown, 2),
                     Group::new(Spring::Ok, 2),
@@ -229,7 +215,7 @@ mod tests {
                     Group::new(Spring::Ok, 1),
                 ]
                 .into(),
-                damaged: vec![1, 1, 3].into(),
+                constraints: vec![1, 1, 3].into(),
             })
         );
         Ok(())
