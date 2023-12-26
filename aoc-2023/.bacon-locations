@@ -1,0 +1,31 @@
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/03/main.rs:76:23 called `map(..).flatten()` on `Option`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/01/main.rs:51:17 called `.nth(0)` on a `std::iter::Iterator`, when `.next()` is equivalent
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/06/main.rs:71:16 single-character string constant used as pattern
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/06/main.rs:67:5 manual implementation of `split_once`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/06/main.rs:68:20 single-character string constant used as pattern
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/04/main.rs:103:40 use of `char::is_digit` with literal radix of 10
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/02/parser.rs:13:5 use of `char::is_digit` with literal radix of 10
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/02/main.rs:23:32 this expression creates a reference which is immediately dereferenced by the compiler
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/07/main.rs:76:14 this `.into_iter()` call is equivalent to `.iter()` and will not consume the `slice`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/07/main.rs:85:9 you don't need to add `&` to all patterns
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/07/main.rs:148:37 single-character string constant used as pattern
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/10/main.rs:148:34 using `clone` on type `Tile` which implements the `Copy` trait
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/10/main.rs:150:23 called `filter(..).next()` on an `Iterator`. This is more succinctly expressed by calling `.find(..)` instead
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/10/main.rs:237:9 returning the result of a `let` binding from a block
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/05/main.rs:171:9 this `if` statement can be collapsed
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/05/main.rs:362:40 use of `char::is_digit` with literal radix of 10
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/05/main.rs:395:30 consider removing unnecessary double parentheses
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/05/main.rs:396:29 consider removing unnecessary double parentheses
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/05/main.rs:375:29 this expression creates a reference which is immediately dereferenced by the compiler
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/09/main.rs:38:22 writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/12/main.rs:88:13 you don't need to add `&` to both the expression and the patterns
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/12/main.rs:88:19 redundant slicing of the whole range
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/12/main.rs:159:44 single-character string constant used as pattern
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/12/main.rs:164:24 single-character string constant used as pattern
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:59:9 unneeded `return` statement
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:62:9 useless conversion to the same type: `std::ops::Range<usize>`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:70:9 useless conversion to the same type: `std::ops::Range<usize>`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:88:29 this `.into_iter()` call is equivalent to `.iter()` and will not consume the `Vec`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:97:14 this `.into_iter()` call is equivalent to `.iter()` and will not consume the `slice`
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:117:9 using `write!()` with a format string that ends in a single newline
+warning /Users/collin/code/rust-learning/aoc-2023/src/bin/11/main.rs:221:21 called `.into_iter().count()` on a `Vec`

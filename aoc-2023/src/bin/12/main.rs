@@ -73,8 +73,6 @@ impl Record {
         while let Some(solver) = queue.pop_front() {
             info!("Loop {solver:?}");
             let remain = solver.remaining();
-
-            // if this solver is successful, record it.
             if remain.is_empty() {
                 if solver.dmgs.is_empty() {
                     res.push(solver.record);
@@ -87,7 +85,6 @@ impl Record {
                 }
                 continue;
             }
-
             match &remain[..] {
                 // ok
                 &['.', ..] => queue.push_front(solver.bump(1)),
