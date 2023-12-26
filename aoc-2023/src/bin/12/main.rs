@@ -39,6 +39,18 @@ struct Record {
 }
 
 impl Record {
+    fn new<S, C>(s: S, c: C) -> Self
+    where
+        S: IntoIterator<Item = Spring>,
+        C: IntoIterator<Item = usize>,
+    {
+        let springs = s.into_iter().collect();
+        let constraints = c.into_iter().collect_vec().into();
+        Self {
+            springs,
+            constraints,
+        }
+    }
     fn parse(line: &str) -> Result<Self> {
         let mut parts = line.split(" ");
         let springs = parts
@@ -53,13 +65,9 @@ impl Record {
                 .collect_vec()
         } else {
             vec![]
-        }
-        .into();
+        };
         assert!(parts.next().is_none());
-        Ok(Self {
-            springs,
-            constraints,
-        })
+        Ok(Self::new(springs, constraints))
     }
     fn arrangements(&self) -> impl Iterator<Item = Record> {
         arrangements(self.clone()).into_iter()
@@ -138,6 +146,7 @@ mod tests {
     #[test]
     fn test_simple() -> Result<()> {
         let rec = Record::parse("")?;
+        assert_eq!(rec, Record::new(vec![], vec![]));
         Ok(())
     }
 
