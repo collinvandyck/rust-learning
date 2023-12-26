@@ -5,7 +5,16 @@ use std::{cmp::Ordering, collections::VecDeque};
 use itertools::Itertools;
 use tracing::info;
 
-fn main() {}
+fn main() {
+    let ex1 = include_str!("ex1.txt");
+    let in1 = include_str!("in1.txt");
+    println!("p1ex1={}", sum_of_arrangements(ex1));
+    println!("p1in1={}", sum_of_arrangements(in1));
+}
+
+fn sum_of_arrangements(input: &str) -> usize {
+    parse(input).into_iter().map(|r| r.combinations()).sum()
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Record {
@@ -170,7 +179,6 @@ mod tests {
     use super::*;
 
     #[test]
-    #[traced_test]
     fn test_ex1() {
         let recs = parse(include_str!("ex1.txt"));
         assert_eq!(recs[0].combinations(), 1);
@@ -179,6 +187,14 @@ mod tests {
         assert_eq!(recs[3].combinations(), 1);
         assert_eq!(recs[4].combinations(), 4);
         assert_eq!(recs[5].combinations(), 10);
+    }
+
+    #[test]
+    fn test_pt1() {
+        let ex1 = include_str!("ex1.txt");
+        assert_eq!(sum_of_arrangements(ex1), 21);
+        let in1 = include_str!("in1.txt");
+        assert_eq!(sum_of_arrangements(in1), 7251);
     }
 
     #[test]
