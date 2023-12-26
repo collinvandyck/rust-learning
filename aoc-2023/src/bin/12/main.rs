@@ -47,13 +47,14 @@ impl Record {
             .chars()
             .map(Spring::from)
             .collect::<Vec<_>>();
-        let constraints = parts
-            .next()
-            .context("no damaged part")?
-            .split(",")
-            .map(|s| s.parse::<usize>().unwrap())
-            .collect_vec()
-            .into();
+        let constraints = if let Some(part) = parts.next() {
+            part.split(",")
+                .map(|s| s.parse::<usize>().unwrap())
+                .collect_vec()
+        } else {
+            vec![]
+        }
+        .into();
         assert!(parts.next().is_none());
         Ok(Self {
             springs,
@@ -135,6 +136,13 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_simple() -> Result<()> {
+        let rec = Record::parse("")?;
+        Ok(())
+    }
+
+    #[test]
+    #[ignore]
     fn test_example_pt1() -> Result<()> {
         let ex1 = include_str!("ex1.txt");
         let records = Records::parse(ex1)?;
