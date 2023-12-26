@@ -36,7 +36,6 @@ impl std::ops::Deref for Records {
 struct Record {
     springs: Vec<Spring>,
     constraints: VecDeque<usize>,
-    _groups: VecDeque<Group>,
 }
 
 impl Record {
@@ -48,14 +47,7 @@ impl Record {
             .chars()
             .map(Spring::from)
             .collect::<Vec<_>>();
-        let groups = springs
-            .iter()
-            .group_by(|s| *s)
-            .into_iter()
-            .map(|(spring, xs)| Group::new(*spring, xs.count()))
-            .collect_vec()
-            .into();
-        let damaged = parts
+        let constraints = parts
             .next()
             .context("no damaged part")?
             .split(",")
@@ -65,8 +57,7 @@ impl Record {
         assert!(parts.next().is_none());
         Ok(Self {
             springs,
-            _groups: groups,
-            constraints: damaged,
+            constraints,
         })
     }
     fn arrangements(&self) -> impl Iterator<Item = Record> {
@@ -176,46 +167,7 @@ mod tests {
                     Spring::Damaged,
                     Spring::Damaged,
                 ],
-                _groups: vec![
-                    Group::new(Spring::Unknown, 3),
-                    Group::new(Spring::Ok, 1),
-                    Group::new(Spring::Damaged, 3),
-                ]
-                .into(),
                 constraints: vec![1, 1, 3].into()
-            })
-        );
-        assert_eq!(
-            records.get(1),
-            Some(&Record {
-                springs: vec![
-                    Spring::Ok,
-                    Spring::Unknown,
-                    Spring::Unknown,
-                    Spring::Ok,
-                    Spring::Ok,
-                    Spring::Unknown,
-                    Spring::Unknown,
-                    Spring::Ok,
-                    Spring::Ok,
-                    Spring::Ok,
-                    Spring::Unknown,
-                    Spring::Damaged,
-                    Spring::Damaged,
-                    Spring::Ok,
-                ],
-                _groups: vec![
-                    Group::new(Spring::Ok, 1),
-                    Group::new(Spring::Unknown, 2),
-                    Group::new(Spring::Ok, 2),
-                    Group::new(Spring::Unknown, 2),
-                    Group::new(Spring::Ok, 3),
-                    Group::new(Spring::Unknown, 1),
-                    Group::new(Spring::Damaged, 2),
-                    Group::new(Spring::Ok, 1),
-                ]
-                .into(),
-                constraints: vec![1, 1, 3].into(),
             })
         );
         Ok(())
