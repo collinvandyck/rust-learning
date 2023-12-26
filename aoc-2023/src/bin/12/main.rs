@@ -32,7 +32,7 @@ impl std::ops::Deref for Records {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 struct Record {
     springs: Vec<Spring>,
     constraints: VecDeque<usize>,
@@ -162,6 +162,19 @@ mod tests {
         assert_eq!(rec, Record::new(vec![Spring::Ok, Spring::Damaged], vec![]));
         let arrs = rec.arrangements().collect_vec();
         assert_eq!(arrs, vec![rec]);
+
+        // a record with no springs and a constraints
+        let rec = Record::parse(" 1")?;
+        assert_eq!(rec, Record::new(vec![], vec![1]));
+        let arrs = rec.arrangements().collect_vec();
+        // no constraints -- was not solved
+        assert_eq!(arrs, vec![]);
+
+        // a record with one unknown and a constraint to match
+        let rec = Record::parse("? 1")?;
+        assert_eq!(rec, Record::new(vec![Spring::Unknown], vec![1]));
+        let arrs = rec.arrangements().collect_vec();
+        assert_eq!(arrs, vec![Record::new(vec![Spring::Damaged], vec![])]);
         Ok(())
     }
 
