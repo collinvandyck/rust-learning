@@ -145,13 +145,23 @@ mod tests {
 
     #[test]
     fn test_simple() -> Result<()> {
+        // an empty record
         let rec = Record::parse("")?;
         assert_eq!(rec, Record::new(vec![], vec![]));
         let arrs = rec.arrangements().collect_vec();
         assert_eq!(arrs, vec![rec]);
 
+        // a record with one ok spring
         let rec = Record::parse(".")?;
         assert_eq!(rec, Record::new(vec![Spring::Ok], vec![]));
+        let arrs = rec.arrangements().collect_vec();
+        assert_eq!(arrs, vec![rec]);
+
+        // a record with one ok, and one damaged
+        let rec = Record::parse(".#")?;
+        assert_eq!(rec, Record::new(vec![Spring::Ok, Spring::Damaged], vec![]));
+        let arrs = rec.arrangements().collect_vec();
+        assert_eq!(arrs, vec![rec]);
         Ok(())
     }
 
