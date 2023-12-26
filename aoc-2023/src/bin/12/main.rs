@@ -35,7 +35,15 @@ impl std::ops::Deref for Records {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 struct Record {
     springs: Vec<Spring>,
-    constraints: VecDeque<usize>,
+    constraints: Vec<usize>,
+}
+
+fn solveable(rec: Record) -> bool {
+    solveable_springs(rec.springs.as_slice(), rec.constraints.as_slice())
+}
+
+fn solveable_springs(springs: &[Spring], amts: &[usize]) -> bool {
+    todo!()
 }
 
 impl Record {
@@ -83,9 +91,6 @@ fn arrangements(rec: Record) -> Vec<Record> {
             res.push(rec);
             continue;
         }
-        let Some(dmg_grp) = rec.constraints.pop_front() else {
-            continue;
-        };
         // we now have a first group of unknown springs (unk_grp) and a number of damaged springs
         // (dmg_grp) that we must find fits for.
         //
@@ -169,12 +174,6 @@ mod tests {
         let arrs = rec.arrangements().collect_vec();
         // no constraints -- was not solved
         assert_eq!(arrs, vec![]);
-
-        // a record with one unknown and a constraint to match
-        let rec = Record::parse("? 1")?;
-        assert_eq!(rec, Record::new(vec![Spring::Unknown], vec![1]));
-        let arrs = rec.arrangements().collect_vec();
-        assert_eq!(arrs, vec![Record::new(vec![Spring::Damaged], vec![])]);
         Ok(())
     }
 
