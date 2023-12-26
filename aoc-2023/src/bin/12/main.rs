@@ -69,10 +69,18 @@ impl Record {
         assert!(parts.next().is_none());
         Ok(Self::new(springs, constraints))
     }
-    fn arrangements(&self) -> Vec<Record> {
-        vec![]
+    fn arrangements(&self) -> usize {
+        let mut res = 0;
+        arrangements(
+            self.springs.as_slice(),
+            self.constraints.as_slice(),
+            &mut res,
+        );
+        res
     }
 }
+
+fn arrangements(springs: &[Spring], amts: &[usize], res: &mut usize) {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Group {
@@ -121,26 +129,26 @@ mod tests {
         let rec = Record::parse("")?;
         assert_eq!(rec, Record::new(vec![], vec![]));
         let arrs = rec.arrangements();
-        assert_eq!(arrs, vec![rec]);
+        assert_eq!(arrs, 1);
 
         // a record with one ok spring
         let rec = Record::parse(".")?;
         assert_eq!(rec, Record::new(vec![Spring::Ok], vec![]));
         let arrs = rec.arrangements();
-        assert_eq!(arrs, vec![rec]);
+        assert_eq!(arrs, 1);
 
         // a record with one ok, and one damaged
         let rec = Record::parse(".#")?;
         assert_eq!(rec, Record::new(vec![Spring::Ok, Spring::Damaged], vec![]));
         let arrs = rec.arrangements();
-        assert_eq!(arrs, vec![rec]);
+        assert_eq!(arrs, 1);
 
         // a record with no springs and a constraints
         let rec = Record::parse(" 1")?;
         assert_eq!(rec, Record::new(vec![], vec![1]));
         let arrs = rec.arrangements();
         // no constraints -- was not solved
-        assert_eq!(arrs, vec![]);
+        assert_eq!(arrs, 0);
         Ok(())
     }
 
@@ -149,7 +157,7 @@ mod tests {
     fn test_example_pt1() -> Result<()> {
         let ex1 = include_str!("ex1.txt");
         let records = Records::parse(ex1)?;
-        assert_eq!(records.get(0).expect("no record").arrangements().len(), 1);
+        assert_eq!(records.get(0).expect("no record").arrangements(), 1);
         Ok(())
     }
 
