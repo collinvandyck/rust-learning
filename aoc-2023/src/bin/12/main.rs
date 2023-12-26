@@ -38,14 +38,6 @@ struct Record {
     constraints: Vec<usize>,
 }
 
-fn solveable(rec: Record) -> bool {
-    solveable_springs(rec.springs.as_slice(), rec.constraints.as_slice())
-}
-
-fn solveable_springs(springs: &[Spring], amts: &[usize]) -> bool {
-    todo!()
-}
-
 impl Record {
     fn new<S, C>(s: S, c: C) -> Self
     where
@@ -77,34 +69,9 @@ impl Record {
         assert!(parts.next().is_none());
         Ok(Self::new(springs, constraints))
     }
-    fn arrangements(&self) -> impl Iterator<Item = Record> {
-        arrangements(self.clone()).into_iter()
+    fn arrangements(&self) -> Vec<Record> {
+        vec![]
     }
-}
-
-fn arrangements(rec: Record) -> Vec<Record> {
-    let mut res = vec![];
-    let mut queue = vec![rec];
-    while let Some(mut rec) = queue.pop() {
-        // if the rec is done, move it to the result vec.
-        if rec.constraints.is_empty() && !rec.springs.iter().any(|s| s.is_unknown()) {
-            res.push(rec);
-            continue;
-        }
-        // we now have a first group of unknown springs (unk_grp) and a number of damaged springs
-        // (dmg_grp) that we must find fits for.
-        //
-        // if the len of the unknown group is less than the len of the dmg group then it is not
-        // possible to move forward.
-        //
-        // if the len of the uknown group is equal to the len of the dmg group, then there is one
-        // option for assigning this dmg. we must verify that the group following the current
-        // unknown group does not violate the dmg spec.
-        //
-        // if the len of the unknown group is greater than the len of the dmg group then we know
-        // that if we place the dmg group first, as we must, at that point we know we have to place
-    }
-    res
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -153,25 +120,25 @@ mod tests {
         // an empty record
         let rec = Record::parse("")?;
         assert_eq!(rec, Record::new(vec![], vec![]));
-        let arrs = rec.arrangements().collect_vec();
+        let arrs = rec.arrangements();
         assert_eq!(arrs, vec![rec]);
 
         // a record with one ok spring
         let rec = Record::parse(".")?;
         assert_eq!(rec, Record::new(vec![Spring::Ok], vec![]));
-        let arrs = rec.arrangements().collect_vec();
+        let arrs = rec.arrangements();
         assert_eq!(arrs, vec![rec]);
 
         // a record with one ok, and one damaged
         let rec = Record::parse(".#")?;
         assert_eq!(rec, Record::new(vec![Spring::Ok, Spring::Damaged], vec![]));
-        let arrs = rec.arrangements().collect_vec();
+        let arrs = rec.arrangements();
         assert_eq!(arrs, vec![rec]);
 
         // a record with no springs and a constraints
         let rec = Record::parse(" 1")?;
         assert_eq!(rec, Record::new(vec![], vec![1]));
-        let arrs = rec.arrangements().collect_vec();
+        let arrs = rec.arrangements();
         // no constraints -- was not solved
         assert_eq!(arrs, vec![]);
         Ok(())
@@ -182,15 +149,7 @@ mod tests {
     fn test_example_pt1() -> Result<()> {
         let ex1 = include_str!("ex1.txt");
         let records = Records::parse(ex1)?;
-        assert_eq!(
-            records
-                .get(0)
-                .expect("no record")
-                .arrangements()
-                .collect_vec()
-                .len(),
-            1
-        );
+        assert_eq!(records.get(0).expect("no record").arrangements().len(), 1);
         Ok(())
     }
 
