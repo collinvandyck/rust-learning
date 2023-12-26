@@ -70,17 +70,52 @@ impl Record {
         Ok(Self::new(springs, constraints))
     }
     fn arrangements(&self) -> usize {
-        let mut res = 0;
-        arrangements(
-            self.springs.as_slice(),
-            self.constraints.as_slice(),
-            &mut res,
-        );
-        res
+        arrangements(self.springs.as_slice(), self.constraints.as_slice())
     }
 }
 
-fn arrangements(springs: &[Spring], amts: &[usize], res: &mut usize) {}
+// .?..#?# 1,1
+fn arrangements(springs: &[Spring], amts: &[usize]) -> usize {
+    if amts.len() == 0 {
+        return 1;
+    }
+    let mut acc = 0;
+    let mut iter = springs.iter().peekable();
+    for (idx, spring) in iter.enumerate() {
+        match spring {
+            Spring::Ok => {}
+            Spring::Damaged | Spring::Unknown => {
+                // how many damaged/unknown do we have ahead of us?
+                let ahead = springs[idx..]
+                    .iter()
+                    .take_while(|s| s.is_unknown() || s.is_damaged())
+                    .count();
+                if ahead >= amts[0] {
+                    let res = arrangements(&springs[idx + amts[0]..], &amts[1..]);
+                    if spring.is_damaged() {
+                        // this is the final result bc it is not unknown
+                        return res;
+                    }
+                    // otherwise, we add to acc and assume that the spring was ok.
+                    acc += res;
+                } else {
+                    if spring.is_damaged() {
+                        // if the spring is damaged and we don't have enough,
+                        // there are no possibilities for this branch.
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+    acc
+}
+
+#[test]
+fn test_idx() {
+    let nums = [1, 2, 3];
+    let nums = &nums[0 + 3..];
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Group {
