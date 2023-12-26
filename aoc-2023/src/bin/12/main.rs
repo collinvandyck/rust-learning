@@ -147,6 +147,11 @@ mod tests {
     fn test_simple() -> Result<()> {
         let rec = Record::parse("")?;
         assert_eq!(rec, Record::new(vec![], vec![]));
+        let arrs = rec.arrangements().collect_vec();
+        assert_eq!(arrs, vec![rec]);
+
+        let rec = Record::parse(".")?;
+        assert_eq!(rec, Record::new(vec![Spring::Ok], vec![]));
         Ok(())
     }
 
