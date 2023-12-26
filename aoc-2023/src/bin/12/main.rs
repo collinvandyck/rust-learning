@@ -5,6 +5,7 @@ use std::collections::VecDeque;
 use anyhow::{anyhow, Context, Result};
 use itertools::Itertools;
 use strum_macros::EnumIs;
+use tracing::{debug, info};
 
 fn main() -> Result<()> {
     Ok(())
@@ -90,20 +91,26 @@ fn arrangements(springs: &[Spring], amts: &[usize]) -> usize {
                     .iter()
                     .take_while(|s| s.is_unknown() || s.is_damaged())
                     .count();
-                if ahead >= amts[0] {
-                    let res = arrangements(&springs[idx + amts[0]..], &amts[1..]);
-                    if spring.is_damaged() {
-                        // this is the final result bc it is not unknown
-                        return res;
+                let amt = amts[0];
+                let (has_enough, next): (bool, Option<&Spring>) = if ahead >= amt {
+                    let next_idx = idx + amt;
+                    if next_idx < springs.len() - 1 {
+                        (true, springs.get(next_idx))
+                    } else {
+                        (true, None)
                     }
-                    // otherwise, we add to acc and assume that the spring was ok.
-                    acc += res;
                 } else {
-                    if spring.is_damaged() {
-                        // if the spring is damaged and we don't have enough,
-                        // there are no possibilities for this branch.
-                        return 0;
-                    }
+                    (false, None)
+                };
+                let recursed = match (has_enough, next) {
+                    (false, _next) => 0,
+                    (true, Some(next)) if next.is_damaged() => 0,
+                    (true, Some(next)) => arrangements(&springs[idx + amt + 1..], &amts[1..]),
+                    (true, None) => arrangements(&springs[idx + amt..], &amts[1..]),
+                };
+                acc += recursed;
+                if spring.is_damaged() {
+                    break;
                 }
             }
         }
@@ -156,6 +163,8 @@ impl Spring {
 
 #[cfg(test)]
 mod tests {
+    use tracing_test::traced_test;
+
     use super::*;
 
     #[test]
@@ -188,11 +197,16 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[traced_test]
     fn test_example_pt1() -> Result<()> {
         let ex1 = include_str!("ex1.txt");
         let records = Records::parse(ex1)?;
+        assert_eq!(records.get(5).expect("no record").arrangements(), 10);
         assert_eq!(records.get(0).expect("no record").arrangements(), 1);
+        assert_eq!(records.get(1).expect("no record").arrangements(), 4);
+        assert_eq!(records.get(2).expect("no record").arrangements(), 1);
+        assert_eq!(records.get(3).expect("no record").arrangements(), 1);
+        assert_eq!(records.get(4).expect("no record").arrangements(), 4);
         Ok(())
     }
 
