@@ -54,8 +54,7 @@ impl Pattern {
             .collect_vec();
         let rows = cells
             .iter()
-            .cloned()
-            .map(|row| row.into_iter())
+            .map(|row| row.into_iter().copied())
             .map(Stripe::new)
             .collect_vec();
         let cols = (0..cells.first().map(|r| r.len()).unwrap_or_default())
