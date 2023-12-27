@@ -14,7 +14,7 @@ fn main() {
 
 fn sum_of_arrangements(input: &str, inflate: bool) -> usize {
     parse(input)
-        .iter_mut()
+        .into_iter()
         .map(|r| if inflate { r.inflate() } else { r })
         .map(|r| r.combinations())
         .sum()
@@ -68,7 +68,18 @@ impl std::ops::Deref for Solver {
 }
 
 impl Record {
-    fn inflate(&mut self) -> &mut Self {
+    fn parse(input: &str) -> Self {
+        let mut parts = input.splitn(2, " ");
+        let springs = parts.next().expect("no springs").chars().collect();
+        let dmgs = parts
+            .next()
+            .expect("no dmgs")
+            .split(",")
+            .map(|n| n.parse::<usize>().expect("parse fail"))
+            .collect();
+        Self { springs, dmgs }
+    }
+    fn inflate(self) -> Self {
         self
     }
     fn combinations(&self) -> usize {
@@ -157,20 +168,7 @@ impl Spring for char {
 }
 
 fn parse(input: &str) -> Vec<Record> {
-    input
-        .lines()
-        .map(|line| {
-            let mut parts = line.splitn(2, " ");
-            let springs = parts.next().expect("no springs").chars().collect();
-            let dmgs = parts
-                .next()
-                .expect("no dmgs")
-                .split(",")
-                .map(|n| n.parse::<usize>().expect("parse fail"))
-                .collect();
-            Record { springs, dmgs }
-        })
-        .collect()
+    input.lines().map(Record::parse).collect()
 }
 
 #[cfg(test)]
@@ -178,6 +176,15 @@ mod tests {
     use tracing_test::traced_test;
 
     use super::*;
+
+    #[test]
+    fn test_ex2() {
+        let mut recs: Vec<Record> = parse(include_str!("ex1.txt"))
+            .into_iter()
+            .map(|mut r| r.inflate())
+            .collect_vec();
+        assert_eq!(recs[0].combinations(), 1);
+    }
 
     #[test]
     fn test_ex1() {
@@ -197,6 +204,9 @@ mod tests {
         let in1 = include_str!("in1.txt");
         assert_eq!(sum_of_arrangements(in1, false), 7251);
     }
+
+    #[test]
+    fn test_inflate() {}
 
     #[test]
     fn test_parse() {
