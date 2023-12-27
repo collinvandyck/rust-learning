@@ -1,8 +1,7 @@
 #![allow(dead_code, unused)]
 
-use std::{cmp::Ordering, collections::VecDeque};
-
 use itertools::Itertools;
+use std::{cmp::Ordering, collections::VecDeque};
 use tracing::info;
 
 fn main() {
@@ -80,7 +79,18 @@ impl Record {
         Self { springs, dmgs }
     }
     fn inflate(self) -> Self {
-        self
+        let springs = (0..5)
+            .map(|_| self.springs.clone())
+            .reduce(|o1, o2| [o1, vec!['?'], o2].concat())
+            .unwrap();
+        let dmgs = (0..5)
+            .map(|_| self.dmgs.clone())
+            .fold(vec![], |mut acc, mut f| {
+                acc.extend(f);
+                acc
+            })
+            .into();
+        Self { springs, dmgs }
     }
     fn combinations(&self) -> usize {
         // initialize the queue and initial work
@@ -206,7 +216,10 @@ mod tests {
     }
 
     #[test]
-    fn test_inflate() {}
+    fn test_inflate() {
+        let mut rec = Record::parse(".# 1").inflate();
+        assert_eq!(rec, Record::parse(".#?.#?.#?.#?.# 1,1,1,1,1"));
+    }
 
     #[test]
     fn test_parse() {
