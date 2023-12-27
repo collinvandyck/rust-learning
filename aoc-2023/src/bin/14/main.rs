@@ -1,5 +1,7 @@
 #![allow(dead_code, unused)]
 
+use std::fmt::Display;
+
 use itertools::Itertools;
 fn main() {}
 
@@ -27,6 +29,17 @@ impl Map {
     }
 }
 
+impl Display for Map {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = self
+            .tiles
+            .chunks(self.cols)
+            .map(|r| r.iter().map(|t| t.ch()).collect::<String>())
+            .join("\n");
+        write!(f, "{s}\n")
+    }
+}
+
 #[derive(Clone, Copy)]
 enum Tile {
     Space,
@@ -41,6 +54,13 @@ impl Tile {
             'O' => Self::Round,
             '#' => Self::Cube,
             _ => panic!("bad ch: {ch}"),
+        }
+    }
+    fn ch(&self) -> char {
+        match self {
+            Tile::Space => '.',
+            Tile::Round => 'O',
+            Tile::Cube => '#',
         }
     }
 }
@@ -63,5 +83,6 @@ mod tests {
         assert_eq!(map.cols, 10);
         assert_eq!(map.rows, 10);
         assert_eq!(map.tiles.len(), 100);
+        assert_eq!(map.to_string(), ex1);
     }
 }
