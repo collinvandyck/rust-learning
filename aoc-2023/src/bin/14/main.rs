@@ -1,6 +1,6 @@
 #![allow(dead_code, unused)]
 
-use std::{fmt::Display, time::Instant};
+use std::{fmt::Display, mem, time::Instant};
 
 use itertools::Itertools;
 fn main() {
@@ -82,12 +82,18 @@ impl Map {
     }
 
     fn drop_rock(&mut self, src: (usize, usize), dst: (usize, usize)) {
-        let st = self.get_xy(src.0, src.1);
-        let dt = self.get_xy(dst.0, dst.1);
-        if st == Tile::Round && dt == Tile::Space {
-            self.set_xy(src.0, src.1, Tile::Space);
-            self.set_xy(dst.0, dst.1, Tile::Round);
+        let src_off = self.cols * src.1 + src.0;
+        let dst_off = self.cols * dst.1 + dst.0;
+
+        let tiles = self.tiles.as_mut_slice();
+        if &tiles[src_off] != &Tile::Round {
+            return;
         }
+        if &tiles[dst_off] != &Tile::Space {
+            return;
+        }
+        let tiles = self.tiles.as_mut_slice();
+        tiles.swap(src_off, dst_off);
     }
 
     fn set_xy(&mut self, x: usize, y: usize, tile: Tile) {
