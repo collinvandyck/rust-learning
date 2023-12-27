@@ -38,7 +38,7 @@ need_stdout = true
 command = [ "cargo", "test", "--release", "--bin", "14", "--color", "always", "--", 
 	"--color", "always" ]
 need_stdout = true
-on_success = "job:14clippy"
+#on_success = "job:14clippy"
 
 [jobs.14clippy]
 command = [ "cargo", "clippy",  "--bin", "14", "--color", "always"]
