@@ -23,7 +23,7 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
             .enumerate()
             //.par_bridge()
             //.into_par_iter()
-            .map(|(idx, (p, pv))| {
+            .map(|(idx, (p, mirs_old))| {
                 info!("Starting mutating at idx={idx}");
                 let (p_mut, nv) = p
                     .permute()
@@ -31,18 +31,19 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
                         let mirrors = p_mut.mirrors();
                         (p_mut, mirrors)
                     })
-                    .find(|(_, nv)| nv != &pv)
+                    .find(|(_, nv)| nv != &mirs_old)
                     .expect("no permuted diff found");
-                info!(
-                    "idx={idx} thread: {:?} pv={pv} nv={nv}\nprev:\n{p}\nmut:\n{p_mut},",
-                    std::thread::current().id()
-                );
                 nv
             })
+            .map(sum_mirrors)
             .collect::<Vec<_>>();
         vs.iter().sum()
     } else {
-        parse(input).iter().map(|p| p.mirrors()).sum()
+        parse(input)
+            .iter()
+            .map(|p| p.mirrors())
+            .map(sum_mirrors)
+            .sum()
     }
 }
 
@@ -119,10 +120,7 @@ impl Pattern {
                 pat
             })
     }
-    fn mirrors(&self) -> usize {
-        sum_mirrors(self.mirrors_vec())
-    }
-    fn mirrors_vec(&self) -> Vec<Mirror> {
+    fn mirrors(&self) -> Vec<Mirror> {
         fn stripe_reflects(stripes: &[Stripe]) -> impl Iterator<Item = usize> + '_ {
             (1..stripes.len()).map(|idx| {
                 let prev = stripes[0..idx].iter().rev();
@@ -199,9 +197,9 @@ mod tests {
         let ex1 = include_str!("ex1.txt");
         let pats = parse(ex1);
         let mrs = pats[0].mirrors();
-        assert_eq!(mrs, 5); // vert match at idx=5
+        assert_eq!(sum_mirrors(mrs), 5); // vert match at idx=5
         let mrs = pats[1].mirrors();
-        assert_eq!(mrs, 400); // horiz match at idx=4
+        assert_eq!(sum_mirrors(mrs), 400); // horiz match at idx=4
     }
 
     #[test]
