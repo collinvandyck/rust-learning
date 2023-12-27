@@ -1,4 +1,9 @@
+#![allow(unused, dead_code)]
+
 use itertools::Itertools;
+use rayon::prelude::*;
+use std::fmt::Display;
+use tracing::info;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
@@ -7,11 +12,35 @@ fn main() {
     println!("p1in1 = {}", summarize_patterns(in1, false));
 }
 
+// the problem right now is that we don't know from the output of mirrors if the original line was
+// horiz or vertical.
 fn summarize_patterns(input: &str, smudges: bool) -> usize {
     if smudges {
         let pats = parse(input);
-        let vs = pats.iter().map(|p| (p, p.mirrors())).collect_vec();
-        vs.iter().map(|p| p.1).sum()
+        let vs = pats
+            .iter()
+            .map(|p| (p, p.mirrors()))
+            .enumerate()
+            //.par_bridge()
+            //.into_par_iter()
+            .map(|(idx, (p, pv))| {
+                info!("Starting mutating at idx={idx}");
+                let (p_mut, nv) = p
+                    .permute()
+                    .map(|p_mut| {
+                        let mirrors = p_mut.mirrors();
+                        (p_mut, mirrors)
+                    })
+                    .find(|(_, nv)| nv != &pv)
+                    .expect("no permuted diff found");
+                info!(
+                    "idx={idx} thread: {:?} pv={pv} nv={nv}\nprev:\n{p}\nmut:\n{p_mut},",
+                    std::thread::current().id()
+                );
+                nv
+            })
+            .collect::<Vec<_>>();
+        vs.iter().sum()
     } else {
         parse(input).iter().map(|p| p.mirrors()).sum()
     }
@@ -21,6 +50,17 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
 struct Pattern {
     rows: Vec<Stripe>,
     cols: Vec<Stripe>,
+}
+
+impl Display for Pattern {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = self
+            .rows
+            .iter()
+            .map(|row| row.chs.iter().collect::<String>())
+            .join("\n");
+        write!(f, "{s}")
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -64,25 +104,66 @@ impl Pattern {
             .collect_vec();
         Pattern { rows, cols }
     }
+    fn permute(&self) -> impl Iterator<Item = Pattern> + '_ {
+        (0..self.rows.len())
+            .flat_map(|y| (0..self.cols.len()).map(move |x| (x, y)))
+            .map(|(x, y)| {
+                let mut pat = self.clone();
+                let row = pat.rows.get_mut(y).expect("no row at y");
+                let ch = row.chs.get_mut(x).expect("no ch at x");
+                if *ch == '.' {
+                    *ch = '#';
+                } else {
+                    *ch = '.';
+                }
+                pat
+            })
+    }
     fn mirrors(&self) -> usize {
-        fn stripe_reflects(stripes: &[Stripe]) -> usize {
-            (1..stripes.len())
-                .map(|idx| {
-                    let prev = stripes[0..idx].iter().rev();
-                    let next = stripes[idx..].iter();
-                    if prev.zip(next).all(|(a, b)| a == b) {
-                        idx
-                    } else {
-                        0
-                    }
-                })
-                .sum()
+        sum_mirrors(self.mirrors_vec())
+    }
+    fn mirrors_vec(&self) -> Vec<Mirror> {
+        fn stripe_reflects(stripes: &[Stripe]) -> impl Iterator<Item = usize> + '_ {
+            (1..stripes.len()).map(|idx| {
+                let prev = stripes[0..idx].iter().rev();
+                let next = stripes[idx..].iter();
+                if prev.zip(next).all(|(a, b)| a == b) {
+                    idx
+                } else {
+                    0
+                }
+            })
         }
-        let hrz = stripe_reflects(&self.rows);
-        let vrt = stripe_reflects(&self.cols);
-        hrz * 100 + vrt
+        stripe_reflects(&self.rows)
+            .map(|idx| Mirror {
+                row_idx: idx,
+                col_idx: 0,
+            })
+            .chain(stripe_reflects(&self.cols).map(|idx| Mirror {
+                row_idx: 0,
+                col_idx: idx,
+            }))
+            .collect_vec()
     }
 }
+
+fn sum_mirrors(i: impl IntoIterator<Item = Mirror>) -> usize {
+    i.into_iter().map(|m| m.val()).sum()
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Mirror {
+    row_idx: usize,
+    col_idx: usize,
+}
+
+impl Mirror {
+    fn val(&self) -> usize {
+        self.row_idx * 100 + self.col_idx
+    }
+}
+
+struct Reflect(usize, usize);
 
 fn parse(input: &str) -> Vec<Pattern> {
     input.split("\n\n").map(Pattern::parse).collect()
