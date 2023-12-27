@@ -79,8 +79,6 @@ impl Pattern {
         fn stripe_reflects(stripes: &[Stripe]) -> usize {
             (1..stripes.len())
                 .map(|idx| {
-                    // for each index, we create a backwards and a forwards iterator from that
-                    // point. return the number of rows before the line of reflection.
                     let prev = stripes[0..idx].iter().rev();
                     let next = stripes[idx..].iter();
                     if prev.zip(next).all(|(a, b)| a == b) {
@@ -93,9 +91,7 @@ impl Pattern {
                 .sum()
         }
         let hrz = stripe_reflects(&self.rows);
-        info!("hrz: {hrz}");
         let vrt = stripe_reflects(&self.cols);
-        info!("vrt: {vrt}");
         hrz * 100 + vrt
     }
 }
