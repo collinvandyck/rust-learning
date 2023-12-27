@@ -121,10 +121,8 @@ impl Pattern {
             .collect_vec()
     }
     fn toggle(mut self, x: usize, y: usize) -> Self {
-        let row = self.rows.get_mut(y).expect("no row at y");
-        row.toggle(x);
-        let col = self.cols.get_mut(x).expect("no col at x");
-        col.toggle(y);
+        self.rows.get_mut(y).expect("no row at y").toggle(x);
+        self.cols.get_mut(x).expect("no col at x").toggle(y);
         self
     }
 }
