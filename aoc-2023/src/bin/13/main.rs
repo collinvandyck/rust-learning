@@ -1,4 +1,3 @@
-#![allow(dead_code, unused)]
 use itertools::Itertools;
 use rayon::prelude::*;
 use std::fmt::Display;
@@ -69,6 +68,15 @@ impl Stripe {
         let chs = chs.into_iter().collect_vec();
         Self { chs }
     }
+    fn toggle(&mut self, idx: usize) {
+        if let Some(ch) = self.chs.get_mut(idx) {
+            if *ch == '.' {
+                *ch = '#';
+            } else {
+                *ch = '.';
+            }
+        }
+    }
 }
 
 impl Pattern {
@@ -97,24 +105,7 @@ impl Pattern {
     fn permute(&self) -> impl Iterator<Item = Pattern> + '_ {
         (0..self.rows.len())
             .flat_map(|y| (0..self.cols.len()).map(move |x| (x, y)))
-            .map(|(x, y)| {
-                let mut pat = self.clone();
-                let row = pat.rows.get_mut(y).expect("no row at y");
-                let ch = row.chs.get_mut(x).expect("no ch at x");
-                if *ch == '.' {
-                    *ch = '#';
-                } else {
-                    *ch = '.';
-                }
-                let col = pat.cols.get_mut(x).expect("no col at x");
-                let ch = col.chs.get_mut(y).expect("no ch at y");
-                if *ch == '.' {
-                    *ch = '#';
-                } else {
-                    *ch = '.';
-                }
-                pat
-            })
+            .map(|(x, y)| self.clone().toggle(x, y))
     }
     fn mirrors(&self) -> Vec<Mirror> {
         fn stripe_reflects(stripes: &[Stripe]) -> impl Iterator<Item = usize> + '_ {
@@ -129,32 +120,16 @@ impl Pattern {
             })
         }
         stripe_reflects(&self.rows)
-            .map(|idx| Mirror {
-                row_idx: idx,
-                col_idx: 0,
-            })
-            .chain(stripe_reflects(&self.cols).map(|idx| Mirror {
-                row_idx: 0,
-                col_idx: idx,
-            }))
+            .map(Mirror::from_row)
+            .chain(stripe_reflects(&self.cols).map(Mirror::from_col))
             .collect_vec()
     }
-    fn transpose(&self) -> Self {
-        Self {
-            rows: self.cols.clone(),
-            cols: self.rows.clone(),
-        }
-    }
-    fn toggle(&mut self, x: usize, y: usize) {
-        if let Some(row) = self.rows.get_mut(y) {
-            if let Some(ch) = row.chs.get_mut(x) {
-                if *ch == '.' {
-                    *ch = '#';
-                } else {
-                    *ch = '.';
-                }
-            }
-        }
+    fn toggle(mut self, x: usize, y: usize) -> Self {
+        let row = self.rows.get_mut(y).expect("no row at y");
+        row.toggle(x);
+        let col = self.cols.get_mut(x).expect("no col at x");
+        col.toggle(y);
+        self
     }
 }
 
@@ -164,13 +139,22 @@ fn sum_mirrors(i: impl IntoIterator<Item = Mirror>) -> usize {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct Mirror {
-    row_idx: usize,
-    col_idx: usize,
+    row: usize,
+    col: usize,
 }
 
 impl Mirror {
+    fn new(row: usize, col: usize) -> Self {
+        Self { row, col }
+    }
+    fn from_row(idx: usize) -> Self {
+        Self::new(idx, 0)
+    }
+    fn from_col(idx: usize) -> Self {
+        Self::new(0, idx)
+    }
     fn val(&self) -> usize {
-        self.row_idx * 100 + self.col_idx
+        self.row * 100 + self.col
     }
 }
 
@@ -181,7 +165,6 @@ fn parse(input: &str) -> Vec<Pattern> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tracing::info;
     use tracing_test::traced_test;
 
     #[test]
