@@ -5,7 +5,9 @@ use tracing::info;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
+    let in1 = include_str!("in1.txt");
     println!("p1ex1 = {}", summarize_patterns(ex1));
+    println!("p1in1 = {}", summarize_patterns(in1));
 }
 
 fn summarize_patterns(input: &str) -> usize {
@@ -74,19 +76,19 @@ impl Pattern {
         Pattern { cells, rows, cols }
     }
     fn mirrors(&self) -> usize {
-        info!("Mirrors");
         fn stripe_reflects(stripes: &[Stripe]) -> usize {
             (1..stripes.len())
                 .map(|idx| {
+                    // for each index, we create a backwards and a forwards iterator from that
+                    // point. return the number of rows before the line of reflection.
                     let prev = stripes[0..idx].iter().rev();
                     let next = stripes[idx..].iter();
-                    let iter = prev.zip(next).take_while(|(a, b)| a == b);
-                    iter.clone().for_each(|(s1, s2)| {
-                        let s1 = s1.chs.iter().collect::<String>();
-                        let s2 = s2.chs.iter().collect::<String>();
-                        info!("{s1} {s2}");
-                    });
-                    iter.count()
+                    if prev.zip(next).all(|(a, b)| a == b) {
+                        info!("Found reflection at idx={idx}");
+                        idx
+                    } else {
+                        0
+                    }
                 })
                 .sum()
         }
@@ -109,11 +111,24 @@ mod tests {
 
     #[test]
     #[traced_test]
+    fn test_pt1() {
+        let ex1 = include_str!("ex1.txt");
+        let res = summarize_patterns(ex1);
+        assert_eq!(res, 405);
+        let in1 = include_str!("in1.txt");
+        let res = summarize_patterns(in1);
+        assert_eq!(res, 39939);
+    }
+
+    #[test]
+    #[traced_test]
     fn test_ex1_mirrors() {
         let ex1 = include_str!("ex1.txt");
         let pats = parse(ex1);
+        let mrs = pats[0].mirrors();
+        assert_eq!(mrs, 5); // vert match at idx=5
         let mrs = pats[1].mirrors();
-        assert_eq!(mrs, 1);
+        assert_eq!(mrs, 400); // horiz match at idx=4
     }
 
     #[test]
