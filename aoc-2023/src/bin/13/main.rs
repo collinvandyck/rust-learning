@@ -10,6 +10,7 @@ fn main() {
     let in1 = include_str!("in1.txt");
     println!("p1ex1 = {}", summarize_patterns(ex1, false));
     println!("p1in1 = {}", summarize_patterns(in1, false));
+    println!("p2ex1 = {}", summarize_patterns(ex1, true));
 }
 
 // the problem right now is that we don't know from the output of mirrors if the original line was
@@ -23,23 +24,30 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
             .map(|(idx, p)| {
                 let mrs = p.mirrors();
                 assert_eq!(mrs.len(), 1, "mirror at pattern {idx} had mrs: {mrs:?}");
-                (idx, p, mrs)
+                (idx, p, mrs[0])
             })
-            //.par_bridge()
-            //.into_par_iter()
-            .map(|(idx, p, mirs_old)| {
+            .par_bridge()
+            .into_par_iter()
+            // take the original mirror and mutate it, returning the mirror that is different from
+            // the original
+            .map(|(idx, p, orig_mirror)| {
                 info!("Starting mutating at idx={idx}");
                 let (p_mut, nv) = p
                     .permute()
-                    .map(|p_mut| {
-                        let mirrors = p_mut.mirrors();
-                        (p_mut, mirrors)
+                    .filter_map(|p_new| {
+                        p_new
+                            .mirrors()
+                            .into_iter()
+                            .filter(|m| m != &orig_mirror)
+                            .next()
+                            .map(|m| (p_new, m))
                     })
-                    .find(|(_, nv)| nv != &mirs_old)
+                    .map(|r| r)
+                    .next()
                     .expect("no permuted diff found");
                 nv
             })
-            .map(sum_mirrors)
+            .map(|m| m.val())
             .collect::<Vec<_>>();
         vs.iter().sum()
     } else {
