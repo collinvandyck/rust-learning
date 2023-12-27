@@ -19,11 +19,15 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
         let pats = parse(input);
         let vs = pats
             .iter()
-            .map(|p| (p, p.mirrors()))
             .enumerate()
+            .map(|(idx, p)| {
+                let mrs = p.mirrors();
+                assert_eq!(mrs.len(), 1, "mirror at pattern {idx} had mrs: {mrs:?}");
+                (idx, p, mrs)
+            })
             //.par_bridge()
             //.into_par_iter()
-            .map(|(idx, (p, mirs_old))| {
+            .map(|(idx, p, mirs_old)| {
                 info!("Starting mutating at idx={idx}");
                 let (p_mut, nv) = p
                     .permute()
@@ -122,13 +126,13 @@ impl Pattern {
     }
     fn mirrors(&self) -> Vec<Mirror> {
         fn stripe_reflects(stripes: &[Stripe]) -> impl Iterator<Item = usize> + '_ {
-            (1..stripes.len()).map(|idx| {
+            (1..stripes.len()).filter_map(|idx| {
                 let prev = stripes[0..idx].iter().rev();
                 let next = stripes[idx..].iter();
                 if prev.zip(next).all(|(a, b)| a == b) {
-                    idx
+                    Some(idx)
                 } else {
-                    0
+                    None
                 }
             })
         }
