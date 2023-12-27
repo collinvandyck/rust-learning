@@ -1,16 +1,13 @@
-#![allow(dead_code, unused)]
-
 use itertools::Itertools;
-use tracing::info;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
-    println!("p1ex1 = {}", summarize_patterns(ex1));
-    println!("p1in1 = {}", summarize_patterns(in1));
+    println!("p1ex1 = {}", summarize_patterns(ex1, false));
+    println!("p1in1 = {}", summarize_patterns(in1, false));
 }
 
-fn summarize_patterns(input: &str) -> usize {
+fn summarize_patterns(input: &str, _smudges: bool) -> usize {
     parse(input).iter().map(|p| p.mirrors()).sum()
 }
 
@@ -43,18 +40,11 @@ impl Pattern {
     fn parse(input: &str) -> Pattern {
         let cells: Vec<Vec<char>> = input
             .lines()
-            .enumerate()
-            .map(|(y, row)| {
-                row.chars()
-                    .into_iter()
-                    .enumerate()
-                    .map(move |(x, ch)| ch)
-                    .collect_vec()
-            })
+            .map(|row| row.chars().collect_vec())
             .collect_vec();
         let rows = cells
             .iter()
-            .map(|row| row.into_iter().copied())
+            .map(|row| row.iter().copied())
             .map(Stripe::new)
             .collect_vec();
         let cols = (0..cells.first().map(|r| r.len()).unwrap_or_default())
@@ -64,7 +54,7 @@ impl Pattern {
                     .map(move |row| row.get(x).expect("bad col"))
                     .copied()
             })
-            .map(|s| Stripe::new(s))
+            .map(Stripe::new)
             .collect_vec();
         Pattern { rows, cols }
     }
@@ -101,10 +91,10 @@ mod tests {
     #[traced_test]
     fn test_pt1() {
         let ex1 = include_str!("ex1.txt");
-        let res = summarize_patterns(ex1);
+        let res = summarize_patterns(ex1, false);
         assert_eq!(res, 405);
         let in1 = include_str!("in1.txt");
-        let res = summarize_patterns(in1);
+        let res = summarize_patterns(in1, false);
         assert_eq!(res, 39939);
     }
 
