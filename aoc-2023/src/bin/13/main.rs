@@ -167,6 +167,19 @@ mod tests {
 
     #[test]
     #[traced_test]
+    fn test_pt2_in1_first() {
+        let ex1 = include_str!("in1.txt");
+        let pats = parse(ex1);
+        let pat = &pats[0];
+        println!("{pat}");
+        let mrs = pat.mirrors();
+        assert_eq!(mrs.len(), 1);
+        println!("{mrs:?}");
+        todo!()
+    }
+
+    #[test]
+    #[traced_test]
     fn test_pt2_ex1() {
         let ex1 = include_str!("ex1.txt");
         let res = summarize_patterns(ex1, true);
