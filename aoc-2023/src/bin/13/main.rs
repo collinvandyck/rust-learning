@@ -14,16 +14,8 @@ fn summarize_patterns(input: &str) -> usize {
     parse(input).iter().map(|p| p.mirrors()).sum()
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Cell {
-    ch: char,
-    x: usize,
-    y: usize,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Pattern {
-    cells: Vec<Vec<Cell>>,
     rows: Vec<Stripe>,
     cols: Vec<Stripe>,
 }
@@ -49,31 +41,33 @@ impl Stripe {
 
 impl Pattern {
     fn parse(input: &str) -> Pattern {
-        let cells: Vec<Vec<Cell>> = input
+        let cells: Vec<Vec<char>> = input
             .lines()
             .enumerate()
             .map(|(y, row)| {
                 row.chars()
                     .into_iter()
                     .enumerate()
-                    .map(move |(x, ch)| Cell { ch, x, y })
+                    .map(move |(x, ch)| ch)
                     .collect_vec()
             })
             .collect_vec();
         let rows = cells
             .iter()
-            .map(|row| row.iter().map(|c| c.ch))
+            .cloned()
+            .map(|row| row.into_iter())
             .map(Stripe::new)
             .collect_vec();
         let cols = (0..cells.first().map(|r| r.len()).unwrap_or_default())
             .map(|x| {
                 cells
                     .iter()
-                    .map(move |row| row.get(x).map(|c| c.ch).expect("bad col"))
+                    .map(move |row| row.get(x).expect("bad col"))
+                    .copied()
             })
             .map(|s| Stripe::new(s))
             .collect_vec();
-        Pattern { cells, rows, cols }
+        Pattern { rows, cols }
     }
     fn mirrors(&self) -> usize {
         fn stripe_reflects(stripes: &[Stripe]) -> usize {
@@ -82,7 +76,6 @@ impl Pattern {
                     let prev = stripes[0..idx].iter().rev();
                     let next = stripes[idx..].iter();
                     if prev.zip(next).all(|(a, b)| a == b) {
-                        info!("Found reflection at idx={idx}");
                         idx
                     } else {
                         0
