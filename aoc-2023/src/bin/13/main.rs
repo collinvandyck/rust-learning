@@ -20,7 +20,7 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
             .map(|p| {
                 let orig = p.mirrors();
                 p.permute()
-                    .find_map(|p| p.mirrors().into_iter().filter(|m| !orig.contains(m)).next())
+                    .find_map(|p| p.mirrors().into_iter().find(|m| !orig.contains(m)))
                     .expect("no new reflection")
                     .val()
             })
@@ -109,14 +109,10 @@ impl Pattern {
     }
     fn mirrors(&self) -> Vec<Mirror> {
         fn stripe_reflects(stripes: &[Stripe]) -> impl Iterator<Item = usize> + '_ {
-            (1..stripes.len()).filter_map(|idx| {
-                let prev = stripes[0..idx].iter().rev();
-                let next = stripes[idx..].iter();
-                if prev.zip(next).all(|(a, b)| a == b) {
-                    Some(idx)
-                } else {
-                    None
-                }
+            (1..stripes.len()).filter(|idx| {
+                let prev = stripes[0..*idx].iter().rev();
+                let next = stripes[*idx..].iter();
+                prev.zip(next).all(|(a, b)| a == b)
             })
         }
         stripe_reflects(&self.rows)
