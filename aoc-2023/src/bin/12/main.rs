@@ -8,12 +8,16 @@ use tracing::info;
 fn main() {
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
-    println!("p1ex1={}", sum_of_arrangements(ex1));
-    println!("p1in1={}", sum_of_arrangements(in1));
+    println!("p1ex1={}", sum_of_arrangements(ex1, false));
+    println!("p1in1={}", sum_of_arrangements(in1, false));
 }
 
-fn sum_of_arrangements(input: &str) -> usize {
-    parse(input).into_iter().map(|r| r.combinations()).sum()
+fn sum_of_arrangements(input: &str, inflate: bool) -> usize {
+    parse(input)
+        .iter_mut()
+        .map(|r| if inflate { r.inflate() } else { r })
+        .map(|r| r.combinations())
+        .sum()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -64,6 +68,9 @@ impl std::ops::Deref for Solver {
 }
 
 impl Record {
+    fn inflate(&mut self) -> &mut Self {
+        self
+    }
     fn combinations(&self) -> usize {
         // initialize the queue and initial work
         let mut res: Vec<Record> = vec![];
@@ -86,14 +93,11 @@ impl Record {
                 continue;
             }
             match &remain[..] {
-                // ok
                 &['.', ..] => queue.push_front(solver.bump(1)),
-                // unknown
                 &['?', ..] => {
                     queue.push_front(solver.clone().replace_bump('.', 1));
                     queue.push_front(solver.replace('#'));
                 }
-                // broken
                 &['#', ..] => {
                     let amt: usize = solver.record.dmgs[0];
                     let nexts = remain
@@ -189,9 +193,9 @@ mod tests {
     #[test]
     fn test_pt1() {
         let ex1 = include_str!("ex1.txt");
-        assert_eq!(sum_of_arrangements(ex1), 21);
+        assert_eq!(sum_of_arrangements(ex1, false), 21);
         let in1 = include_str!("in1.txt");
-        assert_eq!(sum_of_arrangements(in1), 7251);
+        assert_eq!(sum_of_arrangements(in1, false), 7251);
     }
 
     #[test]
