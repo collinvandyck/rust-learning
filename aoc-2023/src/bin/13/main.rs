@@ -9,7 +9,9 @@ fn main() {
 
 fn summarize_patterns(input: &str, smudges: bool) -> usize {
     if smudges {
-        parse(input).iter().map(|p| p.mirrors()).sum()
+        let pats = parse(input);
+        let vs = pats.iter().map(|p| (p, p.mirrors())).collect_vec();
+        vs.iter().map(|p| p.1).sum()
     } else {
         parse(input).iter().map(|p| p.mirrors()).sum()
     }
