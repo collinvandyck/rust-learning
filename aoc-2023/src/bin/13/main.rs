@@ -42,7 +42,7 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Pattern {
     rows: Vec<Stripe>,
     cols: Vec<Stripe>,
@@ -59,7 +59,7 @@ impl Display for Pattern {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct Stripe {
     chs: Vec<char>,
 }
@@ -81,8 +81,9 @@ impl Stripe {
 impl Pattern {
     fn parse(input: &str) -> Pattern {
         let cells: Vec<Vec<char>> = input
+            .trim()
             .lines()
-            .map(|row| row.chars().collect_vec())
+            .map(|row| row.trim().chars().collect_vec())
             .collect_vec();
         let rows = cells
             .iter()
@@ -138,6 +139,12 @@ impl Pattern {
             }))
             .collect_vec()
     }
+    fn transpose(&self) -> Self {
+        Self {
+            rows: self.cols.clone(),
+            cols: self.rows.clone(),
+        }
+    }
 }
 
 fn sum_mirrors(i: impl IntoIterator<Item = Mirror>) -> usize {
@@ -163,7 +170,45 @@ fn parse(input: &str) -> Vec<Pattern> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing::info;
     use tracing_test::traced_test;
+
+    #[test]
+    #[traced_test]
+    fn test_findit() {
+        let pat = &parse(
+            "#.#.##..#.#..
+             .##.##...#.##
+             .######....##
+             #....#..###..
+             #########.#..
+             ...##.#.##...
+             #..#.###.####
+             #..#.###.####
+             ...##.#.##...
+            ",
+        )[0];
+        println!("{pat}");
+        let mrs = pat.mirrors();
+        println!("mrs: {mrs:?}");
+        assert_eq!(mrs.len(), 2);
+    }
+
+    #[ignore]
+    #[test]
+    #[traced_test]
+    fn test_transpose() {
+        let ex1 = include_str!("in1.txt");
+        let pat = &parse(ex1)[0];
+        info!("pat:\n{pat}");
+        let mrs = pat.mirrors();
+        info!("mrs:{mrs:?}");
+        let pat = pat.transpose();
+        info!("pat:\n{pat}");
+        let mrs = pat.mirrors();
+        info!("mrs:{mrs:?}");
+        assert!(false);
+    }
 
     #[test]
     #[traced_test]
@@ -172,9 +217,6 @@ mod tests {
         let pats = parse(ex1);
         let pat = &pats[0];
         println!("{pat}");
-        let mrs = pat.mirrors();
-        assert_eq!(mrs.len(), 1);
-        println!("{mrs:?}");
         todo!()
     }
 
@@ -206,6 +248,23 @@ mod tests {
         assert_eq!(sum_mirrors(mrs), 5); // vert match at idx=5
         let mrs = pats[1].mirrors();
         assert_eq!(sum_mirrors(mrs), 400); // horiz match at idx=4
+    }
+
+    #[test]
+    #[traced_test]
+    fn test_permute() {
+        let ex1 = include_str!("ex1.txt");
+        let pat = &parse(ex1)[0];
+        let prms = pat.permute().collect_vec();
+        assert_eq!(prms.len(), 63); // 7x9
+        assert!(prms.iter().all_unique());
+        assert!(!prms.iter().any(|p| p == pat));
+        assert!(prms.iter().all(|p| p.rows.len() == 7 && p.cols.len() == 9));
+        assert!(prms
+            .iter()
+            .flat_map(|r| r.cols.iter().chain(r.rows.iter()))
+            .flat_map(|s| s.chs.iter())
+            .all(|ch| ch == &'.' || ch == &'#'))
     }
 
     #[test]
