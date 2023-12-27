@@ -1,3 +1,4 @@
+#![allow(dead_code, unused)]
 use itertools::Itertools;
 use rayon::prelude::*;
 use std::fmt::Display;
@@ -17,15 +18,14 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
     if smudges {
         let pats = parse(input);
         pats.iter()
-            .take(1)
             .map(|p| {
                 let mrs = p.mirrors();
                 assert_eq!(mrs.len(), 1);
                 (p, mrs[0])
             })
             .enumerate()
-            .par_bridge()
-            .into_par_iter()
+            //.par_bridge()
+            //.into_par_iter()
             .map(|(idx, (p, orig))| {
                 p.permute()
                     .find_map(|p| p.mirrors().into_iter().filter(|m| m != &orig).next())
@@ -167,7 +167,7 @@ mod tests {
 
     #[test]
     #[traced_test]
-    fn test_pt2() {
+    fn test_pt2_ex1() {
         let ex1 = include_str!("ex1.txt");
         let res = summarize_patterns(ex1, true);
         assert_eq!(res, 400);
