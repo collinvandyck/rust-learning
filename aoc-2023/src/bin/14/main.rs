@@ -36,7 +36,7 @@ impl Display for Map {
             .chunks(self.cols)
             .map(|r| r.iter().map(|t| t.ch()).collect::<String>())
             .join("\n");
-        write!(f, "{s}\n")
+        writeln!(f, "{s}")
     }
 }
 
