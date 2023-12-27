@@ -65,8 +65,13 @@ impl Pattern {
             .collect_vec();
         Pattern { cells, rows, cols }
     }
-    fn vertical_mirrors(&self) -> usize {
-        todo!()
+    fn mirrors(&self) -> usize {
+        fn stripe_reflects(stripes: &[Stripe]) -> usize {
+            todo!()
+        }
+        let hrz = stripe_reflects(&self.rows);
+        let vrt = stripe_reflects(&self.cols);
+        hrz * 100 + vrt
     }
 }
 
