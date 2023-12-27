@@ -7,8 +7,12 @@ fn main() {
     println!("p1in1 = {}", summarize_patterns(in1, false));
 }
 
-fn summarize_patterns(input: &str, _smudges: bool) -> usize {
-    parse(input).iter().map(|p| p.mirrors()).sum()
+fn summarize_patterns(input: &str, smudges: bool) -> usize {
+    if smudges {
+        parse(input).iter().map(|p| p.mirrors()).sum()
+    } else {
+        parse(input).iter().map(|p| p.mirrors()).sum()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
