@@ -1,14 +1,17 @@
 #![allow(dead_code, unused)]
 
 use itertools::Itertools;
-use std::{cmp::Ordering, collections::VecDeque};
-use tracing::info;
+use std::{cmp::Ordering, collections::VecDeque, thread, time::Duration};
+use tracing::{debug, info};
 
 fn main() {
+    tracing_subscriber::fmt().init();
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
     println!("p1ex1={}", sum_of_arrangements(ex1, false));
     println!("p1in1={}", sum_of_arrangements(in1, false));
+    println!("p2ex1={}", sum_of_arrangements(ex1, true));
+    println!("p2in1={}", sum_of_arrangements(in1, true));
 }
 
 fn sum_of_arrangements(input: &str, inflate: bool) -> usize {
@@ -93,14 +96,16 @@ impl Record {
         Self { springs, dmgs }
     }
     fn combinations(&self) -> usize {
+        info!("combinations: {:?}", self.springs.iter().join(""));
         // initialize the queue and initial work
         let mut res: Vec<Record> = vec![];
         let mut queue: VecDeque<Solver> = vec![].into();
         queue.push_front(Solver::new(self.clone()));
 
         while let Some(solver) = queue.pop_front() {
-            info!("Loop {solver:?}");
             let remain = solver.remaining();
+            debug!("Loop {}", remain.iter().collect::<String>());
+            thread::sleep(Duration::from_millis(20 * 0));
             if remain.is_empty() {
                 if solver.dmgs.is_empty() {
                     res.push(solver.record);
@@ -125,9 +130,9 @@ impl Record {
                         .iter()
                         .take_while(|c| c.is_unknown() || c.is_damaged())
                         .collect_vec();
-                    info!("  remain: {remain:?}");
-                    info!("  nexts:  {nexts:?}");
-                    info!("  amt   : {amt}");
+                    debug!("  remain: {remain:?}");
+                    debug!("  nexts:  {nexts:?}");
+                    debug!("  amt   : {amt}");
                     match nexts.len().cmp(&amt) {
                         Ordering::Equal => {
                             // perfect fit
@@ -191,9 +196,14 @@ mod tests {
     fn test_ex2() {
         let mut recs: Vec<Record> = parse(include_str!("ex1.txt"))
             .into_iter()
-            .map(|mut r| r.inflate())
+            .map(|r| r.inflate())
             .collect_vec();
         assert_eq!(recs[0].combinations(), 1);
+        assert_eq!(recs[1].combinations(), 16384);
+        assert_eq!(recs[2].combinations(), 1);
+        assert_eq!(recs[3].combinations(), 16);
+        assert_eq!(recs[4].combinations(), 2500);
+        assert_eq!(recs[5].combinations(), 506250);
     }
 
     #[test]
