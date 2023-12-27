@@ -89,6 +89,14 @@ mod tests {
 
     #[test]
     #[traced_test]
+    fn test_pt2() {
+        let ex1 = include_str!("ex1.txt");
+        let res = summarize_patterns(ex1, true);
+        assert_eq!(res, 400);
+    }
+
+    #[test]
+    #[traced_test]
     fn test_pt1() {
         let ex1 = include_str!("ex1.txt");
         let res = summarize_patterns(ex1, false);
