@@ -1,9 +1,6 @@
-#![allow(unused, dead_code)]
-
 use itertools::Itertools;
 use rayon::prelude::*;
 use std::fmt::Display;
-use tracing::info;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
@@ -19,29 +16,23 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
     if smudges {
         let pats = parse(input);
         pats.iter()
-            .enumerate()
-            .map(|(idx, p)| {
+            .map(|p| {
                 let mrs = p.mirrors();
-                assert_eq!(mrs.len(), 1, "mirror at pattern {idx} had mrs: {mrs:?}");
-                (idx, p, mrs[0])
+                assert_eq!(mrs.len(), 1);
+                (p, mrs[0])
             })
             .par_bridge()
             .into_par_iter()
-            .map(|(idx, p, orig_mirror)| {
-                let (p_mut, nv) = p
-                    .permute()
-                    .filter_map(|p_new| {
+            .map(|(p, orig_mirror)| {
+                p.permute()
+                    .find_map(|p_new| {
                         p_new
                             .mirrors()
                             .into_iter()
                             .filter(|m| m != &orig_mirror)
                             .next()
-                            .map(|m| (p_new, m))
                     })
-                    .map(|r| r)
-                    .next()
-                    .expect("no permuted diff found");
-                nv
+                    .expect("no permuted diff found")
             })
             .map(|m| m.val())
             .sum()
@@ -167,8 +158,6 @@ impl Mirror {
         self.row_idx * 100 + self.col_idx
     }
 }
-
-struct Reflect(usize, usize);
 
 fn parse(input: &str) -> Vec<Pattern> {
     input.split("\n\n").map(Pattern::parse).collect()
