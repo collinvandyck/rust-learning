@@ -8,6 +8,7 @@ fn main() {
     println!("p1ex1 = {}", summarize_patterns(ex1, false));
     println!("p1in1 = {}", summarize_patterns(in1, false));
     println!("p2ex1 = {}", summarize_patterns(ex1, true));
+    println!("p2in1 = {}", summarize_patterns(in1, true));
 }
 
 // the problem right now is that we don't know from the output of mirrors if the original line was
@@ -16,23 +17,19 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
     if smudges {
         let pats = parse(input);
         pats.iter()
+            .take(1)
             .map(|p| {
                 let mrs = p.mirrors();
                 assert_eq!(mrs.len(), 1);
                 (p, mrs[0])
             })
+            .enumerate()
             .par_bridge()
             .into_par_iter()
-            .map(|(p, orig_mirror)| {
+            .map(|(idx, (p, orig))| {
                 p.permute()
-                    .find_map(|p_new| {
-                        p_new
-                            .mirrors()
-                            .into_iter()
-                            .filter(|m| m != &orig_mirror)
-                            .next()
-                    })
-                    .expect("no permuted diff found")
+                    .find_map(|p| p.mirrors().into_iter().filter(|m| m != &orig).next())
+                    .unwrap_or_else(|| panic!("no permuted diff found for idx={idx}"))
             })
             .map(|m| m.val())
             .sum()
