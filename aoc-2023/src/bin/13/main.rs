@@ -12,26 +12,19 @@ fn main() {
     println!("p2in1 = {}", summarize_patterns(in1, true));
 }
 
-// the problem right now is that we don't know from the output of mirrors if the original line was
-// horiz or vertical.
 fn summarize_patterns(input: &str, smudges: bool) -> usize {
     if smudges {
-        let pats = parse(input);
-        pats.iter()
+        parse(input)
+            .iter()
+            .par_bridge()
+            .into_par_iter()
             .map(|p| {
-                let mrs = p.mirrors();
-                assert_eq!(mrs.len(), 1);
-                (p, mrs[0])
-            })
-            .enumerate()
-            //.par_bridge()
-            //.into_par_iter()
-            .map(|(idx, (p, orig))| {
+                let orig = p.mirrors();
                 p.permute()
-                    .find_map(|p| p.mirrors().into_iter().filter(|m| m != &orig).next())
-                    .unwrap_or_else(|| panic!("no permuted diff found for idx={idx}"))
+                    .find_map(|p| p.mirrors().into_iter().filter(|m| !orig.contains(m)).next())
+                    .expect("no new reflection")
+                    .val()
             })
-            .map(|m| m.val())
             .sum()
     } else {
         parse(input)
@@ -113,6 +106,13 @@ impl Pattern {
                 } else {
                     *ch = '.';
                 }
+                let col = pat.cols.get_mut(x).expect("no col at x");
+                let ch = col.chs.get_mut(y).expect("no ch at y");
+                if *ch == '.' {
+                    *ch = '#';
+                } else {
+                    *ch = '.';
+                }
                 pat
             })
     }
@@ -145,13 +145,24 @@ impl Pattern {
             cols: self.rows.clone(),
         }
     }
+    fn toggle(&mut self, x: usize, y: usize) {
+        if let Some(row) = self.rows.get_mut(y) {
+            if let Some(ch) = row.chs.get_mut(x) {
+                if *ch == '.' {
+                    *ch = '#';
+                } else {
+                    *ch = '.';
+                }
+            }
+        }
+    }
 }
 
 fn sum_mirrors(i: impl IntoIterator<Item = Mirror>) -> usize {
     i.into_iter().map(|m| m.val()).sum()
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct Mirror {
     row_idx: usize,
     col_idx: usize,
@@ -175,57 +186,13 @@ mod tests {
 
     #[test]
     #[traced_test]
-    fn test_findit() {
-        let pat = &parse(
-            "#.#.##..#.#..
-             .##.##...#.##
-             .######....##
-             #....#..###..
-             #########.#..
-             ...##.#.##...
-             #..#.###.####
-             #..#.###.####
-             ...##.#.##...
-            ",
-        )[0];
-        println!("{pat}");
-        let mrs = pat.mirrors();
-        println!("mrs: {mrs:?}");
-        assert_eq!(mrs.len(), 2);
-    }
-
-    #[ignore]
-    #[test]
-    #[traced_test]
-    fn test_transpose() {
-        let ex1 = include_str!("in1.txt");
-        let pat = &parse(ex1)[0];
-        info!("pat:\n{pat}");
-        let mrs = pat.mirrors();
-        info!("mrs:{mrs:?}");
-        let pat = pat.transpose();
-        info!("pat:\n{pat}");
-        let mrs = pat.mirrors();
-        info!("mrs:{mrs:?}");
-        assert!(false);
-    }
-
-    #[test]
-    #[traced_test]
-    fn test_pt2_in1_first() {
-        let ex1 = include_str!("in1.txt");
-        let pats = parse(ex1);
-        let pat = &pats[0];
-        println!("{pat}");
-        todo!()
-    }
-
-    #[test]
-    #[traced_test]
-    fn test_pt2_ex1() {
+    fn test_pt2() {
         let ex1 = include_str!("ex1.txt");
         let res = summarize_patterns(ex1, true);
         assert_eq!(res, 400);
+        let in1 = include_str!("in1.txt");
+        let res = summarize_patterns(in1, true);
+        assert_eq!(res, 32069);
     }
 
     #[test]
