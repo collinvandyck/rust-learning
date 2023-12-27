@@ -11,7 +11,7 @@ fn main() {
     println!("p1ex1={}", sum_of_arrangements(ex1, false));
     println!("p1in1={}", sum_of_arrangements(in1, false));
     println!("p2ex1={}", sum_of_arrangements(ex1, true));
-    println!("p2in1={}", sum_of_arrangements(in1, true));
+    //println!("p2in1={}", sum_of_arrangements(in1, true));
 }
 
 fn sum_of_arrangements(input: &str, inflate: bool) -> usize {
