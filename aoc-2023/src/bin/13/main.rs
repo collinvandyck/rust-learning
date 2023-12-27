@@ -18,8 +18,7 @@ fn main() {
 fn summarize_patterns(input: &str, smudges: bool) -> usize {
     if smudges {
         let pats = parse(input);
-        let vs = pats
-            .iter()
+        pats.iter()
             .enumerate()
             .map(|(idx, p)| {
                 let mrs = p.mirrors();
@@ -28,10 +27,7 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
             })
             .par_bridge()
             .into_par_iter()
-            // take the original mirror and mutate it, returning the mirror that is different from
-            // the original
             .map(|(idx, p, orig_mirror)| {
-                info!("Starting mutating at idx={idx}");
                 let (p_mut, nv) = p
                     .permute()
                     .filter_map(|p_new| {
@@ -48,8 +44,7 @@ fn summarize_patterns(input: &str, smudges: bool) -> usize {
                 nv
             })
             .map(|m| m.val())
-            .collect::<Vec<_>>();
-        vs.iter().sum()
+            .sum()
     } else {
         parse(input)
             .iter()
