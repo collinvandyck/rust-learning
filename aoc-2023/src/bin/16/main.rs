@@ -1,6 +1,6 @@
 #![allow(dead_code, unused)]
 
-use std::collections::HashSet;
+use std::{collections::HashSet, fmt::Display};
 
 use itertools::Itertools;
 
@@ -10,8 +10,14 @@ fn energized(input: &str) -> usize {
     let map = Map::parse(input);
     let mut beams = vec![];
     let mut energized: HashSet<Point> = HashSet::default();
-    beams.push(Beam::new(Point::new(0, 0), Dir::Right));
+    beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right)));
+    let mut count = 0;
     while !beams.is_empty() {
+        println!("Beams: {}", beams.len());
+        count += 1;
+        if count >= 10 {
+            todo!()
+        }
         for idx in 0..beams.len() {
             let mut remove = false;
             if let Some(beam) = beams.get_mut(idx) {
@@ -31,7 +37,7 @@ fn energized(input: &str) -> usize {
             }
         }
     }
-    todo!()
+    energized.len()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,8 +50,7 @@ struct Map {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Beam {
     visited: Visited,
-    pt: Point,
-    dir: Dir,
+    pt: PointDir,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, strum_macros::EnumIs)]
@@ -65,6 +70,12 @@ struct TileXY {
 struct PointDir {
     pt: Point,
     dir: Dir,
+}
+
+impl Display for PointDir {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} {}", self.dir, self.pt)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -135,10 +146,10 @@ impl Map {
 }
 
 impl Beam {
-    fn new(pt: Point, dir: Dir) -> Self {
+    fn new(pt: PointDir) -> Self {
         let mut visited = Visited::new();
-        visited.add(pt, dir);
-        Self { visited, pt, dir }
+        visited.add(pt);
+        Self { visited, pt }
     }
     fn step(&mut self, map: &Map) -> BeamStep {
         let next: TileXY = match self.next_pt().and_then(|pt| map.get(pt)) {
@@ -147,58 +158,68 @@ impl Beam {
         };
         match next.tile {
             Tile::Space => {
-                self.move_to(next.pt, self.dir);
+                self.move_to(PointDir::new(next.pt, self.pt.dir));
                 return BeamStep::Continue;
             }
-            Tile::SplitV if self.dir.combo().is_up_down() => {
-                self.move_to(next.pt, self.dir);
+            Tile::SplitV if self.pt.dir.combo().is_up_down() => {
+                self.move_to(PointDir::new(next.pt, self.pt.dir));
                 return BeamStep::Continue;
             }
-            Tile::SplitH if self.dir.combo().is_left_right() => {
-                self.move_to(next.pt, self.dir);
+            Tile::SplitH if self.pt.dir.combo().is_left_right() => {
+                self.move_to(PointDir::new(next.pt, self.pt.dir));
                 return BeamStep::Continue;
             }
             Tile::SplitV => {
                 let mut splt = self.clone();
-                self.move_to(next.pt, Dir::Up);
-                splt.move_to(next.pt, Dir::Down);
+                self.move_to(PointDir::new(next.pt, Dir::Up));
+                splt.move_to(PointDir::new(next.pt, Dir::Down));
                 return BeamStep::Split(splt);
             }
             Tile::SplitH => {
                 let mut splt = self.clone();
-                self.move_to(next.pt, Dir::Left);
-                splt.move_to(next.pt, Dir::Right);
+                self.move_to(PointDir::new(next.pt, Dir::Left));
+                splt.move_to(PointDir::new(next.pt, Dir::Right));
                 return BeamStep::Split(splt);
             }
             Tile::MirRight => {
-                let dir = match self.dir {
+                let dir = match self.pt.dir {
                     Dir::Up => Dir::Right,
                     Dir::Down => Dir::Left,
                     Dir::Left => Dir::Down,
                     Dir::Right => Dir::Up,
                 };
-                self.move_to(next.pt, dir);
+                self.move_to(PointDir::new(next.pt, dir));
                 return BeamStep::Continue;
             }
             Tile::MirLeft => {
-                let dir = match self.dir {
+                let dir = match self.pt.dir {
                     Dir::Up => Dir::Left,
                     Dir::Down => Dir::Right,
                     Dir::Left => Dir::Up,
                     Dir::Right => Dir::Down,
                 };
-                self.move_to(next.pt, dir);
+                self.move_to(PointDir::new(next.pt, dir));
                 return BeamStep::Continue;
             }
         }
     }
     fn next_pt(&self) -> Option<Point> {
-        self.pt.next(self.dir)
+        self.pt.pt.next(self.pt.dir)
     }
-    fn move_to(&mut self, pt: Point, dir: Dir) {
-        self.visited.add(pt, dir);
-        self.pt = pt;
-        self.dir = dir;
+    fn move_to(&mut self, pt: PointDir) -> bool {
+        println!("{self} moving from {} to {}", self.pt, pt);
+        if self.visited.add(pt) {
+            self.pt = pt;
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl Display for Beam {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.pt)
     }
 }
 
@@ -220,8 +241,7 @@ impl Visited {
         Self(vec![])
     }
     // returns true if the point did not already exist
-    fn add(&mut self, pt: Point, dir: Dir) -> bool {
-        let pt = PointDir::new(pt, dir);
+    fn add(&mut self, pt: PointDir) -> bool {
         if self.contains(&pt) {
             false
         } else {
@@ -252,6 +272,12 @@ impl Point {
             Dir::Right => self.x.checked_add(1).map(|x| (x, self.y)),
         }
         .map(|(x, y)| Point::new(x, y))
+    }
+}
+
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.x, self.y)
     }
 }
 
