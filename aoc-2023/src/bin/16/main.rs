@@ -89,7 +89,7 @@ enum BeamStep {
 struct TileXY {
     tile: Tile,
     pt: Point,
-    force: Option<char>,
+    ch: Option<char>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -153,7 +153,7 @@ impl Map {
                         TileXY {
                             tile,
                             pt: point,
-                            force: None,
+                            ch: None,
                         }
                     })
                     .collect_vec()
@@ -180,6 +180,12 @@ impl Map {
             txy.tile = tile;
         }
     }
+    fn set_ch(&mut self, pt: Point, ch: char) {
+        let idx = self.idx(pt);
+        if let Some(txy) = self.tiles.get_mut(idx) {
+            txy.ch = Some(ch);
+        }
+    }
     fn tidy(&mut self) {
         self.tiles.iter_mut().for_each(|txy| {
             if !txy.tile.is_visited() {
@@ -203,15 +209,16 @@ impl Display for Map {
 impl Beam {
     fn new(pd: PointDir, map: &Map) -> Self {
         let mut visited = Visited::new();
-        visited.add(pd);
         let done = false;
         let path = map.clone();
-        Self {
+        let mut beam = Self {
             visited,
             pd,
             done,
             path,
-        }
+        };
+        beam.move_to(pd);
+        beam
     }
     fn step(&mut self, map: &Map) -> BeamStep {
         let next: TileXY = match self.next_pt().and_then(|pt| map.get(pt)) {
@@ -274,7 +281,7 @@ impl Beam {
     }
     fn fork(&self, map: &Map) -> Self {
         let mut cloned = self.clone();
-        cloned.path = map.clone();
+        cloned.path = map.clone(); // fresh map
         cloned
     }
     fn next_pt(&self) -> Option<Point> {
@@ -291,6 +298,7 @@ impl Beam {
             self.done = true;
         } else {
             self.pd = pd;
+            self.path.set_ch(pd.pt, pd.dir.ch());
         }
     }
 }
@@ -374,6 +382,14 @@ impl Dir {
         match self {
             Dir::Up | Dir::Down => ComboDir::UpDown,
             Dir::Left | Dir::Right => ComboDir::LeftRight,
+        }
+    }
+    fn ch(&self) -> char {
+        match self {
+            Dir::Up => '^',
+            Dir::Down => 'v',
+            Dir::Left => '<',
+            Dir::Right => '>',
         }
     }
 }
