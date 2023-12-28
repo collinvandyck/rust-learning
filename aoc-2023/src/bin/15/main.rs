@@ -12,9 +12,9 @@ fn main() {
 }
 
 fn init_sequence(input: &str) -> usize {
-    let map = Map::new();
+    let mut map = Map::new();
     for step in parse_steps(input) {
-        let Step { label, op, slot } = step;
+        map.accept(step);
     }
     todo!()
 }
@@ -29,6 +29,9 @@ impl Map {
             slots: (0..255).map(|_| Slot::default()).collect(),
         }
     }
+    fn accept(&mut self, step: Step) {
+        let slot = self.slots.get_mut(step.slot).expect("no slot");
+    }
 }
 
 #[derive(Default)]
@@ -36,8 +39,10 @@ struct Slot {
     lenses: VecDeque<Lens>,
 }
 
+#[derive(Debug)]
 struct Lens {
     label: String,
+    focal: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -49,8 +54,8 @@ struct Step {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
 enum Op {
-    Dash,
-    Eq { focal_length: usize },
+    Del,
+    Set { focal_length: usize },
 }
 
 fn hash_input(input: &str) -> usize {
@@ -82,12 +87,12 @@ fn parse_steps(input: &str) -> Vec<Step> {
             let label = s[0..piv].to_string();
             let slot = hash(&label) as usize;
             let op = match &s[piv..piv + 1] {
-                "=" => Op::Eq {
+                "=" => Op::Set {
                     focal_length: s[piv + 1..]
                         .parse::<usize>()
                         .expect("could not parse eq usize"),
                 },
-                "-" => Op::Dash,
+                "-" => Op::Del,
                 piv => panic!("no suitable pivot: {piv}"),
             };
             Step { label, op, slot }
@@ -112,7 +117,7 @@ mod tests {
             steps[0],
             Step {
                 label: String::from("rn"),
-                op: Op::Eq { focal_length: 1 },
+                op: Op::Set { focal_length: 1 },
                 slot: 0,
             }
         );
@@ -120,7 +125,7 @@ mod tests {
             steps[1],
             Step {
                 label: String::from("cm"),
-                op: Op::Dash,
+                op: Op::Del,
                 slot: hash("cm"),
             }
         );
