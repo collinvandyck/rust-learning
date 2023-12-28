@@ -1,8 +1,9 @@
 #![allow(dead_code, unused)]
 
-use std::collections::VecDeque;
+use std::{collections::VecDeque, ops::IndexMut, usize};
 
-use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
+use itertools::Itertools;
+use rayon::iter::{FoldChunks, IntoParallelIterator, ParallelBridge, ParallelIterator};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
@@ -16,7 +17,7 @@ fn init_sequence(input: &str) -> usize {
     for step in parse_steps(input) {
         map.accept(step);
     }
-    todo!()
+    map.focus_power()
 }
 
 struct Map {
@@ -31,12 +32,59 @@ impl Map {
     }
     fn accept(&mut self, step: Step) {
         let slot = self.slots.get_mut(step.slot).expect("no slot");
+        match step.op {
+            Op::Del => slot.del(&step.label),
+            Op::Set { focal_length } => slot.set(&step.label, focal_length),
+        }
+    }
+    fn focus_power(&self) -> usize {
+        self.slots
+            .iter()
+            .enumerate()
+            .filter(|(i, s)| !s.lenses.is_empty())
+            .map(|(i, s)| s.focus_power(i + 1))
+            .sum()
     }
 }
 
 #[derive(Default)]
 struct Slot {
     lenses: VecDeque<Lens>,
+}
+
+impl Slot {
+    fn del(&mut self, label: &str) {
+        if let Some(idx) = self.idx(label) {
+            self.lenses.remove(idx);
+        }
+    }
+    fn set(&mut self, label: &str, focal: usize) {
+        match self.idx(label) {
+            Some(idx) => {
+                self.lenses
+                    .get_mut(idx)
+                    .into_iter()
+                    .for_each(|l| l.focal = focal);
+            }
+            None => self.lenses.push_front(Lens {
+                label: label.to_string(),
+                focal,
+            }),
+        }
+    }
+    fn idx(&self, label: &str) -> Option<usize> {
+        self.lenses.iter().position(|l| l.label == label)
+    }
+    fn focus_power(&self, factor: usize) -> usize {
+        (1_usize..)
+            .zip(self.lenses.iter())
+            .map(|(sidx, lens)| {
+                let res = sidx * lens.focal * factor;
+                println!("FP lens={lens:?} slot={sidx} res={res}");
+                res
+            })
+            .sum()
+    }
 }
 
 #[derive(Debug)]
@@ -107,6 +155,13 @@ fn parse(input: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_pt2_ex1() {
+        let ex1 = include_str!("ex1.txt");
+        let res = init_sequence(ex1);
+        assert_eq!(res, 145);
+    }
 
     #[test]
     fn test_parse_steps() {
