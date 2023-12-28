@@ -4,6 +4,24 @@ use itertools::Itertools;
 
 fn main() {}
 
+fn energized(input: &str) -> usize {
+    let map = Map::parse(input);
+    let mut beams = vec![];
+    beams.push(Beam::new(Point::new(0, 0), Dir::Right));
+    while !beams.is_empty() {
+        for idx in 0..beams.len() {
+            if let Some(beam) = beams.get_mut(idx) {
+                match beam.step(&map) {
+                    BeamStep::Continue => todo!(),
+                    BeamStep::Finished => todo!(),
+                    BeamStep::Split(_) => todo!(),
+                }
+            }
+        }
+    }
+    todo!()
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Map {
     tiles: Vec<TileXY>,
@@ -16,6 +34,13 @@ struct Beam {
     visited: Points,
     pt: Point,
     dir: Dir,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, strum_macros::EnumIs)]
+enum BeamStep {
+    Continue,
+    Finished,
+    Split(Beam),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -85,6 +110,19 @@ impl Map {
     }
 }
 
+impl Beam {
+    fn new(pt: Point, dir: Dir) -> Self {
+        Self {
+            visited: Points::new(),
+            pt,
+            dir,
+        }
+    }
+    fn step(&mut self, map: &Map) -> BeamStep {
+        todo!()
+    }
+}
+
 impl Tile {
     fn from_ch(ch: char) -> Self {
         match ch {
@@ -99,6 +137,9 @@ impl Tile {
 }
 
 impl Points {
+    fn new() -> Self {
+        Self(vec![])
+    }
     // returns true if the point did not already exist
     fn add(&mut self, pt: Point) -> bool {
         if self.contains(&pt) {
