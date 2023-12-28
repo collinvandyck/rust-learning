@@ -1,6 +1,6 @@
 use core::panic;
 use itertools::Itertools;
-use std::{collections::HashSet, fmt::Display, mem};
+use std::fmt::Display;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
