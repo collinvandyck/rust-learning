@@ -4,6 +4,7 @@ use itertools::Itertools;
 
 fn main() {}
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct Map {
     tiles: Vec<TileXY>,
     rows: usize,
@@ -22,12 +23,6 @@ struct Point {
     y: usize,
 }
 
-impl Point {
-    fn new(x: usize, y: usize) -> Self {
-        Self { x, y }
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
 enum Tile {
     Space,    // .
@@ -35,6 +30,14 @@ enum Tile {
     MirLeft,  // \
     SplitV,   // |
     SplitH,   // -
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
+enum Dir {
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 impl Map {
@@ -82,6 +85,12 @@ impl Tile {
             '-' => Self::SplitH,
             _ => panic!("unknown ch: {ch}"),
         }
+    }
+}
+
+impl Point {
+    fn new(x: usize, y: usize) -> Self {
+        Self { x, y }
     }
 }
 
