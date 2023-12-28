@@ -12,11 +12,15 @@ fn energized(input: &str) -> usize {
     let mut dbg_map = map.clone();
     let mut beams = vec![];
     let mut energized: HashSet<Point> = HashSet::default();
-    beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right)));
+    beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right), &map));
     let mut count = 0;
     loop {
+        println!("LOOP");
         count += 1;
-        if count >= 10 {}
+
+        if count >= 40 {
+            todo!()
+        }
         if DEBUG {
             println!("LOOP beams={}", beams.len());
         }
@@ -45,6 +49,11 @@ fn energized(input: &str) -> usize {
             }
             !beam.done
         });
+        for beam in &beams {
+            dbg_map.set_tile(beam.pd.pt, Tile::Visited);
+        }
+        dbg_map.tidy();
+        println!("Visited\n{dbg_map}");
     }
     println!("Orig\n{map}");
     for pt in &energized {
@@ -64,6 +73,7 @@ struct Map {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Beam {
+    path: Map,
     done: bool,
     visited: Visited,
     pd: PointDir,
@@ -79,6 +89,7 @@ enum BeamStep {
 struct TileXY {
     tile: Tile,
     pt: Point,
+    force: Option<char>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -139,7 +150,11 @@ impl Map {
                     .map(|(x, ch)| {
                         let tile = Tile::from_ch(ch);
                         let point = Point::new(x, y);
-                        TileXY { tile, pt: point }
+                        TileXY {
+                            tile,
+                            pt: point,
+                            force: None,
+                        }
                     })
                     .collect_vec()
             })
@@ -186,11 +201,17 @@ impl Display for Map {
 }
 
 impl Beam {
-    fn new(pd: PointDir) -> Self {
+    fn new(pd: PointDir, map: &Map) -> Self {
         let mut visited = Visited::new();
         visited.add(pd);
         let done = false;
-        Self { visited, pd, done }
+        let path = map.clone();
+        Self {
+            visited,
+            pd,
+            done,
+            path,
+        }
     }
     fn step(&mut self, map: &Map) -> BeamStep {
         let next: TileXY = match self.next_pt().and_then(|pt| map.get(pt)) {
@@ -213,7 +234,7 @@ impl Beam {
                     self.move_to(PointDir::new(next.pt, self.pd.dir));
                     return BeamStep::Continue;
                 }
-                let mut splt = self.clone();
+                let mut splt = self.fork(map);
                 self.move_to(PointDir::new(next.pt, Dir::Up));
                 splt.move_to(PointDir::new(next.pt, Dir::Down));
                 return BeamStep::Split(splt);
@@ -223,7 +244,7 @@ impl Beam {
                     self.move_to(PointDir::new(next.pt, self.pd.dir));
                     return BeamStep::Continue;
                 }
-                let mut splt = self.clone();
+                let mut splt = self.fork(map);
                 self.move_to(PointDir::new(next.pt, Dir::Left));
                 splt.move_to(PointDir::new(next.pt, Dir::Right));
                 return BeamStep::Split(splt);
@@ -250,6 +271,11 @@ impl Beam {
             }
             Tile::Visited => panic!("visited tile on map"),
         }
+    }
+    fn fork(&self, map: &Map) -> Self {
+        let mut cloned = self.clone();
+        cloned.path = map.clone();
+        cloned
     }
     fn next_pt(&self) -> Option<Point> {
         self.pd.pt.next(self.pd.dir)
