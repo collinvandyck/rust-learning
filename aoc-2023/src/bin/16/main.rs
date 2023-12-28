@@ -75,6 +75,12 @@ enum Dir {
     Right,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
+enum ComboDir {
+    UpDown,
+    LeftRight,
+}
+
 impl Map {
     fn parse(input: &str) -> Self {
         let tiles = input
@@ -117,14 +123,48 @@ impl Beam {
         Self { visited, pt, dir }
     }
     fn step(&mut self, map: &Map) -> BeamStep {
-        let next: Option<TileXY> = match self.next_pt().map(|pt| map.get(pt)) {
+        let next: TileXY = match self.next_pt().and_then(|pt| map.get(pt)) {
             Some(next) => next,
             None => return BeamStep::Finished,
         };
+        match next.tile {
+            Tile::Space => {
+                self.move_to(next.pt);
+                return BeamStep::Continue;
+            }
+            Tile::SplitV if self.dir.combo().is_up_down() => {
+                self.move_to(next.pt);
+                return BeamStep::Continue;
+            }
+            Tile::SplitH if self.dir.combo().is_left_right() => {
+                self.move_to(next.pt);
+                return BeamStep::Continue;
+            }
+            Tile::SplitV => {
+                self.move_to(next.pt);
+                self.dir = Dir::Up;
+                let mut split = self.clone();
+                split.dir = Dir::Down;
+                return BeamStep::Split(split);
+            }
+            Tile::SplitH => {
+                self.move_to(next.pt);
+                self.dir = Dir::Left;
+                let mut split = self.clone();
+                split.dir = Dir::Right;
+                return BeamStep::Split(split);
+            }
+            Tile::MirRight => todo!(),
+            Tile::MirLeft => todo!(),
+        }
         todo!()
     }
     fn next_pt(&self) -> Option<Point> {
         self.pt.next(self.dir)
+    }
+    fn move_to(&mut self, pt: Point) {
+        self.visited.add(pt);
+        self.pt = pt;
     }
 }
 
@@ -171,6 +211,15 @@ impl Point {
             Dir::Right => self.x.checked_add(1).map(|x| (x, self.y)),
         }
         .map(|(x, y)| Point::new(x, y))
+    }
+}
+
+impl Dir {
+    fn combo(&self) -> ComboDir {
+        match self {
+            Dir::Up | Dir::Down => ComboDir::UpDown,
+            Dir::Left | Dir::Right => ComboDir::LeftRight,
+        }
     }
 }
 
