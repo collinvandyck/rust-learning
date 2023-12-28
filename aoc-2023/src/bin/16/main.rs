@@ -8,7 +8,8 @@ const DEBUG: bool = false;
 fn main() {}
 
 fn energized(input: &str) -> usize {
-    let mut map = Map::parse(input);
+    let map = Map::parse(input);
+    let mut dbg_map = map.clone();
     let mut beams = vec![];
     let mut energized: HashSet<Point> = HashSet::default();
     beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right)));
@@ -51,10 +52,10 @@ fn energized(input: &str) -> usize {
     }
     println!("Orig\n{map}");
     for pt in &energized {
-        map.set_tile(*pt, Tile::Visited);
+        dbg_map.set_tile(*pt, Tile::Visited);
     }
-    map.tidy();
-    println!("Visited\n{map}");
+    dbg_map.tidy();
+    println!("Visited\n{dbg_map}");
     energized.len()
 }
 
