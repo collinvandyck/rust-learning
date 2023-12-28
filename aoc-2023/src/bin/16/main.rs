@@ -95,9 +95,11 @@ mod tests {
         let map = Map::parse(ex1);
         assert_eq!(map.cols, 10);
         assert_eq!(map.rows, 10);
+        assert_eq!(map.tiles.len(), 10 * 10);
         let in1 = include_str!("in1.txt");
         let map = Map::parse(in1);
         assert_eq!(map.cols, 110);
         assert_eq!(map.cols, 110);
+        assert_eq!(map.tiles.len(), 110 * 110);
     }
 }
