@@ -1,9 +1,8 @@
 #![allow(dead_code, unused)]
 
-use std::{collections::VecDeque, ops::IndexMut, usize};
-
 use itertools::Itertools;
 use rayon::iter::{FoldChunks, IntoParallelIterator, ParallelBridge, ParallelIterator};
+use std::{collections::VecDeque, fmt::Display, ops::IndexMut, usize};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
@@ -15,7 +14,9 @@ fn main() {
 fn init_sequence(input: &str) -> usize {
     let mut map = Map::new();
     for step in parse_steps(input) {
+        //println!("step: {step}");
         map.accept(step);
+        //map.print();
     }
     map.focus_power()
 }
@@ -45,6 +46,15 @@ impl Map {
             .map(|(i, s)| s.focus_power(i + 1))
             .sum()
     }
+    fn print(&self) {
+        self.slots
+            .iter()
+            .enumerate()
+            .filter(|t| !t.1.lenses.is_empty())
+            .for_each(|t| {
+                println!("Box {}: {}", t.0, t.1.to_string());
+            })
+    }
 }
 
 #[derive(Default)]
@@ -66,7 +76,7 @@ impl Slot {
                     .into_iter()
                     .for_each(|l| l.focal = focal);
             }
-            None => self.lenses.push_front(Lens {
+            None => self.lenses.push_back(Lens {
                 label: label.to_string(),
                 focal,
             }),
@@ -87,6 +97,18 @@ impl Slot {
     }
 }
 
+impl Display for Slot {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = self
+            .lenses
+            .iter()
+            .enumerate()
+            .map(|t| format!("[{} {}={}]", t.0, t.1.label, t.1.focal))
+            .collect::<String>();
+        write!(f, "{s}")
+    }
+}
+
 #[derive(Debug)]
 struct Lens {
     label: String,
@@ -98,6 +120,18 @@ struct Step {
     label: String,
     op: Op,
     slot: usize,
+}
+
+impl Display for Step {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut buf = String::new();
+        buf.push_str(&self.label);
+        match self.op {
+            Op::Del => buf.push_str("-"),
+            Op::Set { focal_length } => buf.push_str(&format!("={focal_length}")),
+        }
+        write!(f, "{buf}")
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
