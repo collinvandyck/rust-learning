@@ -31,6 +31,22 @@ fn tilt_load(input: &str, dir: Dir) -> usize {
     map.load()
 }
 
+fn cycle_load(input: &str) -> usize {
+    let mut map = Map::parse(input);
+    let dirs = [Dir::North, Dir::West, Dir::South, Dir::East];
+    let mut idx = 0;
+    const NUM_ITERS: usize = 1000000000;
+    while idx < NUM_ITERS {
+        if idx % 100000 == 0 {
+            println!("idx: {idx} {:.2}", (idx as f64) / NUM_ITERS as f64 * 100.0);
+        }
+        map.tilt(dirs[idx % dirs.len()]);
+        idx += 1;
+    }
+    map.load()
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct Map {
     rows: usize,
     cols: usize,
@@ -42,7 +58,7 @@ impl Map {
         let tiles = input
             .trim()
             .lines()
-            .map(|row| row.chars().map(Tile::from).collect_vec())
+            .map(|row| row.trim().chars().map(Tile::from).collect_vec())
             .collect_vec();
         assert!(tiles.iter().map(|r| r.len()).all_equal());
         let rows = tiles.len();
@@ -72,28 +88,82 @@ impl Map {
     fn tilt(&mut self, dir: Dir) {
         let rows = self.rows;
         let cols = self.cols;
+        let len = rows * cols;
+        let tiles = self.tiles.as_mut_slice();
+        let xy = |x: usize, y: usize| -> usize { y * cols + x };
+        let mut swap = |src: usize, dst: usize| -> bool {
+            //println!("{tiles:?}");
+            //println!("swapping {src},{dst} {:?},{:?}", tiles[src], tiles[dst]);
+            if &tiles[src] != &Tile::Round {
+                return false;
+            }
+            if &tiles[dst] != &Tile::Space {
+                return false;
+            }
+            tiles.swap(src, dst);
+            true
+        };
         match dir {
-            Dir::North => (1..rows)
-                .flat_map(|start| (1..=start).rev())
-                .flat_map(|y| (0..cols).map(move |x| (x, y, y - 1)))
-                .for_each(|v @ (x, ys, yd)| self.drop_rock((x, ys), (x, yd))),
-            _ => panic!("unsupported dir"),
+            Dir::North => {
+                for idx in (0..len).skip(cols) {
+                    let mut y = idx / cols;
+                    let x = idx % cols;
+                    while y > 0 && swap(xy(x, y), xy(x, y - 1)) {
+                        y -= 1;
+                    }
+                }
+            }
+            Dir::South => {
+                for idx in (0..len).rev().skip(cols) {
+                    let mut y = idx / cols;
+                    let x = idx % cols;
+                    while y < rows - 1 && swap(xy(x, y), xy(x, y + 1)) {
+                        y += 1;
+                    }
+                }
+            }
+            Dir::East => {
+                for idx in (0..rows)
+                    .cycle()
+                    .zip((0..cols - 1).cycle().take(len - rows))
+                    .map(|(y, x)| y * (cols - 1) + x)
+                {
+                    let y = idx / cols;
+                    let mut x = idx % cols;
+                    while x < cols - 1 && swap(xy(x, y), xy(x + 1, y)) {
+                        x += 1;
+                    }
+                }
+            }
+            Dir::West => {
+                for idx in (0..rows)
+                    .cycle()
+                    .zip((1..cols).rev().cycle().take(len - rows))
+                    .map(|(y, x)| y * cols + x)
+                {
+                    let y = idx / cols;
+                    let mut x = idx % cols;
+                    while x > 0 && swap(xy(x, y), xy(x - 1, y)) {
+                        x -= 1;
+                    }
+                }
+            }
         }
     }
 
-    fn drop_rock(&mut self, src: (usize, usize), dst: (usize, usize)) {
+    fn drop_rock(&mut self, src: (usize, usize), dst: (usize, usize)) -> bool {
         let src_off = self.cols * src.1 + src.0;
         let dst_off = self.cols * dst.1 + dst.0;
-
         let tiles = self.tiles.as_mut_slice();
         if &tiles[src_off] != &Tile::Round {
-            return;
+            return false;
         }
         if &tiles[dst_off] != &Tile::Space {
-            return;
+            return false;
         }
         let tiles = self.tiles.as_mut_slice();
         tiles.swap(src_off, dst_off);
+        true
     }
 
     fn set_xy(&mut self, x: usize, y: usize, tile: Tile) {
@@ -123,7 +193,7 @@ impl Display for Map {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum_macros::EnumIs)]
 enum Tile {
     Space,
     Round,
@@ -160,7 +230,65 @@ enum Dir {
 mod tests {
     use super::*;
 
-    #[ignore = "tmp"]
+    #[test]
+    fn test_small_tilt() {
+        let m1 = "
+            O.#.
+            O..#
+            .OOO
+            ";
+        let mut map = Map::parse(m1);
+        println!("{map}\n");
+        map.tilt(Dir::North);
+        println!("{map}\n");
+        assert_eq!(
+            map,
+            Map::parse(
+                "
+            OO#.
+            O.O#
+            ...O
+            "
+            )
+        );
+        map.tilt(Dir::South);
+        println!("{map}\n");
+        assert_eq!(
+            map,
+            Map::parse(
+                "
+            ..#.
+            O..#
+            OOOO
+            "
+            )
+        );
+        map.tilt(Dir::East);
+        println!("{map}\n");
+        assert_eq!(
+            map,
+            Map::parse(
+                "
+            ..#.
+            ..O#
+            OOOO
+            "
+            )
+        );
+        map.tilt(Dir::West);
+        println!("{map}\n");
+        assert_eq!(
+            map,
+            Map::parse(
+                "
+            ..#.
+            O..#
+            OOOO
+            "
+            )
+        );
+    }
+
     #[test]
     fn test_cycle() {
         let ex1 = include_str!("ex1.txt");
@@ -171,12 +299,21 @@ mod tests {
     }
 
     #[test]
+    fn test_pt2() {
+        let ex1 = include_str!("ex1.txt");
+        assert_eq!(cycle_load(ex1), 64);
+    }
+
+    #[test]
     fn test_pt1() {
         let ex1 = include_str!("ex1.txt");
         let mut map = Map::parse(ex1);
         map.tilt(Dir::North);
-        println!("{map}");
         assert_eq!(map.load(), 136);
+        let in1 = include_str!("in1.txt");
+        let mut map = Map::parse(in1);
+        map.tilt(Dir::North);
+        assert_eq!(map.load(), 109596);
     }
 
     #[test]
@@ -184,7 +321,10 @@ mod tests {
         let ex1 = include_str!("ex1.txt");
         let ex1n = include_str!("ex1_north.txt");
         let mut map = Map::parse(ex1);
+        println!("{map}");
+        println!("{ex1n}");
         map.tilt(Dir::North);
+        println!("{map}");
         assert_eq!(map.to_string(), ex1n);
     }
 
