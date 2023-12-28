@@ -11,11 +11,21 @@ struct Map {
     cols: usize,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Beam {
+    visited: Points,
+    pt: Point,
+    dir: Dir,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct TileXY {
     tile: Tile,
-    point: Point,
+    pt: Point,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Points(Vec<Point>);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Point {
@@ -53,7 +63,7 @@ impl Map {
                     .map(|(x, ch)| {
                         let tile = Tile::from_ch(ch);
                         let point = Point::new(x, y);
-                        TileXY { tile, point }
+                        TileXY { tile, pt: point }
                     })
                     .collect_vec()
             })
@@ -85,6 +95,21 @@ impl Tile {
             '-' => Self::SplitH,
             _ => panic!("unknown ch: {ch}"),
         }
+    }
+}
+
+impl Points {
+    // returns true if the point did not already exist
+    fn add(&mut self, pt: Point) -> bool {
+        if self.contains(&pt) {
+            false
+        } else {
+            self.0.push(pt);
+            true
+        }
+    }
+    fn contains(&self, pt: &Point) -> bool {
+        self.0.contains(pt)
     }
 }
 
