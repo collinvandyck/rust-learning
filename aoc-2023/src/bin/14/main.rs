@@ -1,28 +1,13 @@
-#![allow(dead_code, unused)]
-
-use std::{fmt::Display, mem, time::Instant};
-
 use itertools::Itertools;
+use std::fmt::Display;
+
 fn main() {
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
 
     println!("p1ex1 = {}", tilt_load(ex1, Dir::North));
     println!("p1in1 = {}", tilt_load(in1, Dir::North));
-
-    let start = Instant::now();
-    cycle(ex1, 1000000);
-}
-
-fn cycle(input: &str, amt: usize) {
-    let mut map = Map::parse(input);
-    let start = Instant::now();
-    for _ in 0..amt {
-        map.tilt(Dir::North);
-    }
-    let dur = start.elapsed();
-    let per_sec = (amt as f64) / dur.as_secs_f64();
-    println!("cycle dur: {dur:?} per/sec: {per_sec:.2}");
+    println!("p2ex1 = {}", cycle_load(ex1));
 }
 
 fn tilt_load(input: &str, dir: Dir) -> usize {
@@ -79,7 +64,7 @@ impl Map {
                     .map(move |y| (x, y))
                     .map(|(x, y)| (y, self.get_xy(x, y)))
                     .filter(|(_, t)| t == &Tile::Round)
-                    .map(|(mut y, _t)| rows - y)
+                    .map(|(y, _t)| rows - y)
                     .sum::<usize>()
             })
             .sum()
@@ -149,29 +134,6 @@ impl Map {
                 }
             }
         }
-    }
-
-    fn drop_rock(&mut self, src: (usize, usize), dst: (usize, usize)) -> bool {
-        let src_off = self.cols * src.1 + src.0;
-        let dst_off = self.cols * dst.1 + dst.0;
-        let tiles = self.tiles.as_mut_slice();
-        if &tiles[src_off] != &Tile::Round {
-            return false;
-        }
-        if &tiles[dst_off] != &Tile::Space {
-            return false;
-        }
-        let tiles = self.tiles.as_mut_slice();
-        tiles.swap(src_off, dst_off);
-        true
-    }
-
-    fn set_xy(&mut self, x: usize, y: usize, tile: Tile) {
-        let dt = self
-            .tiles
-            .get_mut(self.cols * y + x)
-            .expect("no tile found");
-        *dt = tile
     }
 
     fn get_xy(&self, x: usize, y: usize) -> Tile {
