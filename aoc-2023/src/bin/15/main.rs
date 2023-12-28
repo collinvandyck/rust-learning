@@ -1,19 +1,50 @@
 #![allow(dead_code, unused)]
 
+use std::collections::VecDeque;
+
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
-    println!("p1ex1 = {}", init_seq(ex1));
-    println!("p1in1 = {}", init_seq(in1));
+    println!("p1ex1 = {}", hash_input(ex1));
+    println!("p1in1 = {}", hash_input(in1));
+}
+
+fn init_sequence(input: &str) -> usize {
+    let map = Map::new();
+    for step in parse_steps(input) {
+        let Step { label, op, slot } = step;
+    }
+    todo!()
+}
+
+struct Map {
+    slots: Vec<Slot>,
+}
+
+impl Map {
+    fn new() -> Self {
+        Self {
+            slots: (0..255).map(|_| Slot::default()).collect(),
+        }
+    }
+}
+
+#[derive(Default)]
+struct Slot {
+    lenses: VecDeque<Lens>,
+}
+
+struct Lens {
+    label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Step {
     label: String,
     op: Op,
-    box_idx: usize,
+    slot: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
@@ -22,7 +53,7 @@ enum Op {
     Eq { focal_length: usize },
 }
 
-fn init_seq(input: &str) -> usize {
+fn hash_input(input: &str) -> usize {
     parse(input)
         .iter()
         .par_bridge()
@@ -49,7 +80,7 @@ fn parse_steps(input: &str) -> Vec<Step> {
         .map(|s| {
             let piv = s.find(|c| c == '=' || c == '-').unwrap_or_default();
             let label = s[0..piv].to_string();
-            let box_idx = hash(&label) as usize;
+            let slot = hash(&label) as usize;
             let op = match &s[piv..piv + 1] {
                 "=" => Op::Eq {
                     focal_length: s[piv + 1..]
@@ -59,7 +90,7 @@ fn parse_steps(input: &str) -> Vec<Step> {
                 "-" => Op::Dash,
                 piv => panic!("no suitable pivot: {piv}"),
             };
-            Step { label, op, box_idx }
+            Step { label, op, slot }
         })
         .collect()
 }
@@ -82,7 +113,7 @@ mod tests {
             Step {
                 label: String::from("rn"),
                 op: Op::Eq { focal_length: 1 },
-                box_idx: hash("rn"),
+                slot: 0,
             }
         );
         assert_eq!(
@@ -90,7 +121,7 @@ mod tests {
             Step {
                 label: String::from("cm"),
                 op: Op::Dash,
-                box_idx: hash("cm"),
+                slot: hash("cm"),
             }
         );
     }
@@ -98,7 +129,7 @@ mod tests {
     #[test]
     fn test_pt1_ex1() {
         let ex1 = include_str!("ex1.txt");
-        let seq = init_seq(ex1);
+        let seq = hash_input(ex1);
         assert_eq!(seq, 1320);
     }
 
