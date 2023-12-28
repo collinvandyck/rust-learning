@@ -27,7 +27,6 @@ fn energized(input: &str) -> usize {
             break;
         }
         for idx in 0..beams.len() {
-            let mut remove = false;
             if let Some(beam) = beams.get_mut(idx) {
                 match beam.step(&map) {
                     BeamStep::Continue => {}
@@ -36,13 +35,10 @@ fn energized(input: &str) -> usize {
                     }
                 }
             }
-            if remove {
-                beams.remove(idx);
-            }
         }
         beams.retain(|beam| {
             if beam.done {
-                energized.extend(beam.visited.0.iter().map(|pd| pd.pt).collect_vec());
+                energized.extend(beam.visited.0.iter().map(|pd| pd.pt));
                 if DEBUG {
                     println!("Beam done, energized: {}", energized.len());
                 }
@@ -212,21 +208,21 @@ impl Beam {
                 self.move_to(PointDir::new(next.pt, self.pd.dir));
                 return BeamStep::Continue;
             }
-            Tile::SplitV if self.pd.dir.combo().is_up_down() => {
-                self.move_to(PointDir::new(next.pt, self.pd.dir));
-                return BeamStep::Continue;
-            }
-            Tile::SplitH if self.pd.dir.combo().is_left_right() => {
-                self.move_to(PointDir::new(next.pt, self.pd.dir));
-                return BeamStep::Continue;
-            }
             Tile::SplitV => {
+                if self.pd.dir.combo().is_up_down() {
+                    self.move_to(PointDir::new(next.pt, self.pd.dir));
+                    return BeamStep::Continue;
+                }
                 let mut splt = self.clone();
                 self.move_to(PointDir::new(next.pt, Dir::Up));
                 splt.move_to(PointDir::new(next.pt, Dir::Down));
                 return BeamStep::Split(splt);
             }
             Tile::SplitH => {
+                if self.pd.dir.combo().is_left_right() {
+                    self.move_to(PointDir::new(next.pt, self.pd.dir));
+                    return BeamStep::Continue;
+                }
                 let mut splt = self.clone();
                 self.move_to(PointDir::new(next.pt, Dir::Left));
                 splt.move_to(PointDir::new(next.pt, Dir::Right));
