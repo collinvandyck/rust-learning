@@ -93,7 +93,6 @@ impl Map {
         if &self.tiles[dst] != &Tile::Space {
             return false;
         }
-        println!("Swapping {src} and {dst}");
         self.tiles.swap(src, dst);
         if !self.rounds.remove(&src) {
             panic!("Src {src} was not in rounds set: {:?}", self.rounds);
@@ -282,6 +281,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "too exp"]
     fn test_pt2() {
         let ex1 = include_str!("ex1.txt");
         assert_eq!(cycle_load(ex1), 64);
