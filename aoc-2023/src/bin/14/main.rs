@@ -1,6 +1,6 @@
 use core::panic;
 use itertools::Itertools;
-use std::{collections::HashSet, fmt::Display};
+use std::{collections::HashSet, fmt::Display, mem};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
@@ -39,7 +39,7 @@ struct Map {
     rows: usize,
     cols: usize,
     tiles: Vec<Tile>,
-    rounds: HashSet<usize>,
+    rounds: Vec<usize>,
 }
 
 impl Map {
@@ -86,7 +86,7 @@ impl Map {
             .sum()
     }
 
-    fn swap(&mut self, src: usize, dst: usize) -> bool {
+    fn swap(&mut self, src: usize, dst: usize, rsrc: usize) -> bool {
         if &self.tiles[src] != &Tile::Round {
             return false;
         }
@@ -94,61 +94,60 @@ impl Map {
             return false;
         }
         self.tiles.swap(src, dst);
+        self.rounds[rsrc] = dst;
+        /*
         if !self.rounds.remove(&src) {
             panic!("Src {src} was not in rounds set: {:?}", self.rounds);
         }
         if !self.rounds.insert(dst) {
             panic!("Dst {dst} was already in the rounds set: {:?}", self.rounds);
         }
+        */
         true
+    }
+
+    fn round_xys(&self) -> Vec<(usize, (usize, usize))> {
+        self.rounds
+            .iter()
+            .enumerate()
+            .map(|(idx, r)| (idx, (*r % self.cols, *r / self.cols)))
+            .collect()
     }
 
     fn tilt(&mut self, dir: Dir) {
         let rows = self.rows;
         let cols = self.cols;
-        let len = rows * cols;
         let xy = |x: usize, y: usize| -> usize { y * cols + x };
+        let mut rounds = self.round_xys();
         match dir {
             Dir::North => {
-                for idx in (0..len).skip(cols) {
-                    let mut y = idx / cols;
-                    let x = idx % cols;
-                    while y > 0 && self.swap(xy(x, y), xy(x, y - 1)) {
+                rounds.sort_by(|r1, r2| r1.1 .1.cmp(&r2.1 .1));
+                for (ridx, (x, mut y)) in rounds {
+                    while y > 0 && self.swap(xy(x, y), xy(x, y - 1), ridx) {
                         y -= 1;
                     }
                 }
             }
             Dir::South => {
-                for idx in (0..len).rev().skip(cols) {
-                    let mut y = idx / cols;
-                    let x = idx % cols;
-                    while y < rows - 1 && self.swap(xy(x, y), xy(x, y + 1)) {
+                rounds.sort_by(|r1, r2| r1.1 .1.cmp(&r2.1 .1).reverse());
+                for (ridx, (x, mut y)) in rounds {
+                    while y < rows - 1 && self.swap(xy(x, y), xy(x, y + 1), ridx) {
                         y += 1;
                     }
                 }
             }
             Dir::East => {
-                for idx in (0..rows)
-                    .cycle()
-                    .zip((0..cols - 1).cycle().take(len - rows))
-                    .map(|(y, x)| y * (cols - 1) + x)
-                {
-                    let y = idx / cols;
-                    let mut x = idx % cols;
-                    while x < cols - 1 && self.swap(xy(x, y), xy(x + 1, y)) {
+                rounds.sort_by(|r1, r2| r1.1 .0.cmp(&r2.1 .0).reverse());
+                for (ridx, (mut x, y)) in rounds {
+                    while x < cols - 1 && self.swap(xy(x, y), xy(x + 1, y), ridx) {
                         x += 1;
                     }
                 }
             }
             Dir::West => {
-                for idx in (0..rows)
-                    .cycle()
-                    .zip((1..cols).rev().cycle().take(len - rows))
-                    .map(|(y, x)| y * cols + x)
-                {
-                    let y = idx / cols;
-                    let mut x = idx % cols;
-                    while x > 0 && self.swap(xy(x, y), xy(x - 1, y)) {
+                rounds.sort_by(|r1, r2| r1.1 .0.cmp(&r2.1 .0));
+                for (ridx, (mut x, y)) in rounds {
+                    while x > 0 && self.swap(xy(x, y), xy(x - 1, y), ridx) {
                         x -= 1;
                     }
                 }
@@ -281,7 +280,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "too exp"]
     fn test_pt2() {
         let ex1 = include_str!("ex1.txt");
         assert_eq!(cycle_load(ex1), 64);
