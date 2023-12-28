@@ -1,8 +1,5 @@
-#![allow(dead_code, unused)]
-
-use itertools::Itertools;
-use rayon::iter::{FoldChunks, IntoParallelIterator, ParallelBridge, ParallelIterator};
-use std::{collections::VecDeque, fmt::Display, ops::IndexMut, usize};
+use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
+use std::{collections::VecDeque, usize};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
@@ -35,7 +32,7 @@ impl Map {
         let slot = self
             .slots
             .get_mut(step.slot)
-            .unwrap_or_else(|| panic!("no slot found for step {step}"));
+            .unwrap_or_else(|| panic!("no slot found for step {step:?}"));
         match step.op {
             Op::Del => slot.del(&step.label),
             Op::Set { focal_length } => slot.set(&step.label, focal_length),
@@ -45,18 +42,9 @@ impl Map {
         self.slots
             .iter()
             .enumerate()
-            .filter(|(i, s)| !s.lenses.is_empty())
+            .filter(|(_, s)| !s.lenses.is_empty())
             .map(|(i, s)| s.focus_power(i + 1))
             .sum()
-    }
-    fn print(&self) {
-        self.slots
-            .iter()
-            .enumerate()
-            .filter(|t| !t.1.lenses.is_empty())
-            .for_each(|t| {
-                println!("Box {}: {}", t.0, t.1.to_string());
-            })
     }
 }
 
@@ -96,18 +84,6 @@ impl Slot {
     }
 }
 
-impl Display for Slot {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = self
-            .lenses
-            .iter()
-            .enumerate()
-            .map(|t| format!("[{} {}={}]", t.0, t.1.label, t.1.focal))
-            .collect::<String>();
-        write!(f, "{s}")
-    }
-}
-
 #[derive(Debug)]
 struct Lens {
     label: String,
@@ -119,18 +95,6 @@ struct Step {
     label: String,
     op: Op,
     slot: usize,
-}
-
-impl Display for Step {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut buf = String::new();
-        buf.push_str(&self.label);
-        match self.op {
-            Op::Del => buf.push_str("-"),
-            Op::Set { focal_length } => buf.push_str(&format!("={focal_length}")),
-        }
-        write!(f, "{buf}")
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
