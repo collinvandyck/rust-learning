@@ -101,9 +101,9 @@ impl Map {
             cols,
         }
     }
-    fn get(&self, pt: Point) -> Option<&TileXY> {
+    fn get(&self, pt: Point) -> Option<TileXY> {
         let idx = self.idx(pt);
-        self.tiles.get(idx)
+        self.tiles.get(idx).copied()
     }
     fn idx(&self, pt: Point) -> usize {
         pt.y * self.cols + pt.x
@@ -117,7 +117,14 @@ impl Beam {
         Self { visited, pt, dir }
     }
     fn step(&mut self, map: &Map) -> BeamStep {
+        let next: Option<TileXY> = match self.next_pt().map(|pt| map.get(pt)) {
+            Some(next) => next,
+            None => return BeamStep::Finished,
+        };
         todo!()
+    }
+    fn next_pt(&self) -> Option<Point> {
+        self.pt.next(self.dir)
     }
 }
 
