@@ -8,12 +8,14 @@ const DEBUG: bool = false;
 fn main() {}
 
 fn energized(input: &str) -> usize {
-    let map = Map::parse(input);
+    let mut map = Map::parse(input);
     let mut beams = vec![];
     let mut energized: HashSet<Point> = HashSet::default();
     beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right)));
     let mut count = 0;
     loop {
+        count += 1;
+        if count >= 10 {}
         if DEBUG {
             println!("LOOP beams={}", beams.len());
         }
@@ -23,14 +25,11 @@ fn energized(input: &str) -> usize {
             }
             break;
         }
-        count += 1;
-        if count >= 10 {}
         for idx in 0..beams.len() {
             let mut remove = false;
             if let Some(beam) = beams.get_mut(idx) {
                 match beam.step(&map) {
                     BeamStep::Continue => {}
-                    BeamStep::Finished => {}
                     BeamStep::Split(new) => {
                         beams.push(new);
                     }
@@ -50,6 +49,12 @@ fn energized(input: &str) -> usize {
             !beam.done
         });
     }
+    println!("Orig\n{map}");
+    for pt in &energized {
+        map.set_tile(*pt, Tile::Visited);
+    }
+    map.tidy();
+    println!("Visited\n{map}");
     energized.len()
 }
 
@@ -70,7 +75,6 @@ struct Beam {
 #[derive(Debug, Clone, PartialEq, Eq, strum_macros::EnumIs)]
 enum BeamStep {
     Continue,
-    Finished,
     Split(Beam),
 }
 
@@ -108,6 +112,7 @@ enum Tile {
     MirLeft,  // \
     SplitV,   // |
     SplitH,   // -
+    Visited,  // #
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
@@ -157,6 +162,30 @@ impl Map {
     fn idx(&self, pt: Point) -> usize {
         pt.y * self.cols + pt.x
     }
+    fn set_tile(&mut self, pt: Point, tile: Tile) {
+        let idx = self.idx(pt);
+        if let Some(txy) = self.tiles.get_mut(idx) {
+            txy.tile = tile;
+        }
+    }
+    fn tidy(&mut self) {
+        self.tiles.iter_mut().for_each(|txy| {
+            if !txy.tile.is_visited() {
+                txy.tile = Tile::Space;
+            }
+        })
+    }
+}
+
+impl Display for Map {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = self
+            .tiles
+            .chunks(self.cols)
+            .map(|row| row.iter().map(|t| t.tile.ch()).collect::<String>())
+            .join("\n");
+        writeln!(f, "{s}")
+    }
 }
 
 impl Beam {
@@ -174,7 +203,7 @@ impl Beam {
                     println!("{self} Cannot move.");
                 }
                 self.done = true;
-                return BeamStep::Finished;
+                return BeamStep::Continue;
             }
         };
         match next.tile {
@@ -222,6 +251,7 @@ impl Beam {
                 self.move_to(PointDir::new(next.pt, dir));
                 return BeamStep::Continue;
             }
+            Tile::Visited => panic!("visited tile on map"),
         }
     }
     fn next_pt(&self) -> Option<Point> {
@@ -257,6 +287,16 @@ impl Tile {
             '|' => Self::SplitV,
             '-' => Self::SplitH,
             _ => panic!("unknown ch: {ch}"),
+        }
+    }
+    fn ch(&self) -> char {
+        match self {
+            Tile::Space => '.',
+            Tile::MirRight => '/',
+            Tile::MirLeft => '\\',
+            Tile::SplitV => '|',
+            Tile::SplitH => '-',
+            Tile::Visited => '#',
         }
     }
 }
