@@ -34,6 +34,11 @@ command = [
 ]
 need_stdout = true
 
+[jobs.16]
+command = [ "cargo", "test", "--release", "--bin", "16", "--color", "always", "--", 
+	"--color", "always" ]
+need_stdout = true
+
 [jobs.15]
 command = [ "cargo", "test", "--release", "--bin", "15", "--color", "always", "--", 
 	"--color", "always" ]
