@@ -112,11 +112,9 @@ impl Map {
 
 impl Beam {
     fn new(pt: Point, dir: Dir) -> Self {
-        Self {
-            visited: Points::new(),
-            pt,
-            dir,
-        }
+        let mut visited = Points::new();
+        visited.add(pt);
+        Self { visited, pt, dir }
     }
     fn step(&mut self, map: &Map) -> BeamStep {
         todo!()
@@ -157,6 +155,15 @@ impl Points {
 impl Point {
     fn new(x: usize, y: usize) -> Self {
         Self { x, y }
+    }
+    fn next(&self, dir: Dir) -> Option<Self> {
+        match dir {
+            Dir::Up => self.y.checked_sub(1).map(|y| (self.x, y)),
+            Dir::Down => self.y.checked_add(1).map(|y| (self.x, y)),
+            Dir::Left => self.x.checked_sub(1).map(|x| (x, self.y)),
+            Dir::Right => self.x.checked_add(1).map(|x| (x, self.y)),
+        }
+        .map(|(x, y)| Point::new(x, y))
     }
 }
 
