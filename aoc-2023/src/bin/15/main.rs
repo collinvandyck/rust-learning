@@ -9,14 +9,14 @@ fn main() {
     let in1 = include_str!("in1.txt");
     println!("p1ex1 = {}", hash_input(ex1));
     println!("p1in1 = {}", hash_input(in1));
+    println!("p2ex1 = {}", init_sequence(ex1));
+    println!("p2in1 = {}", init_sequence(in1));
 }
 
 fn init_sequence(input: &str) -> usize {
     let mut map = Map::new();
     for step in parse_steps(input) {
-        //println!("step: {step}");
         map.accept(step);
-        //map.print();
     }
     map.focus_power()
 }
@@ -28,11 +28,14 @@ struct Map {
 impl Map {
     fn new() -> Self {
         Self {
-            slots: (0..255).map(|_| Slot::default()).collect(),
+            slots: (0..256).map(|_| Slot::default()).collect(),
         }
     }
     fn accept(&mut self, step: Step) {
-        let slot = self.slots.get_mut(step.slot).expect("no slot");
+        let slot = self
+            .slots
+            .get_mut(step.slot)
+            .unwrap_or_else(|| panic!("no slot found for step {step}"));
         match step.op {
             Op::Del => slot.del(&step.label),
             Op::Set { focal_length } => slot.set(&step.label, focal_length),
@@ -88,11 +91,7 @@ impl Slot {
     fn focus_power(&self, factor: usize) -> usize {
         (1_usize..)
             .zip(self.lenses.iter())
-            .map(|(sidx, lens)| {
-                let res = sidx * lens.focal * factor;
-                println!("FP lens={lens:?} slot={sidx} res={res}");
-                res
-            })
+            .map(|(sidx, lens)| sidx * lens.focal * factor)
             .sum()
     }
 }
@@ -189,6 +188,13 @@ fn parse(input: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_pt2_in1() {
+        let in1 = include_str!("in1.txt");
+        let res = init_sequence(in1);
+        assert_eq!(res, 269747);
+    }
 
     #[test]
     fn test_pt2_ex1() {
