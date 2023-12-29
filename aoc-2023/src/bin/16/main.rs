@@ -1,32 +1,21 @@
-#![allow(dead_code, unused)]
+#![allow(unused, dead_code)]
 
 use itertools::Itertools;
 use std::{collections::HashSet, fmt::Display};
 
-const DEBUG: bool = false;
-
-fn main() {}
+fn main() {
+    let ex1 = include_str!("ex1.txt");
+    println!("p1ex1 = {}", energized(ex1));
+}
 
 fn energized(input: &str) -> usize {
     let map = Map::parse(input);
-    let mut visited_map = map.clone();
     let mut beams = vec![];
     let mut energized: HashSet<Point> = HashSet::default();
     beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right), &map));
-    let mut count = 0;
     let mut paths = vec![];
     loop {
-        count += 1;
-        if count >= 40 {
-            break;
-        }
-        if DEBUG {
-            println!("LOOP beams={}", beams.len());
-        }
         if beams.is_empty() {
-            if DEBUG {
-                println!("no more beams");
-            }
             break;
         }
         for idx in 0..beams.len() {
@@ -34,7 +23,6 @@ fn energized(input: &str) -> usize {
                 match beam.step(&map) {
                     BeamStep::Continue => {}
                     BeamStep::Split(new) => {
-                        println!("New beam");
                         beams.push(new);
                     }
                 }
@@ -44,41 +32,10 @@ fn energized(input: &str) -> usize {
             if beam.done {
                 paths.push(beam.clone());
                 energized.extend(beam.visited.0.iter().map(|pd| pd.pt));
-                println!("Beam done, energized: {}", energized.len());
-                if DEBUG {}
             }
             !beam.done
         });
-        for beam in &beams {
-            visited_map.set_tile(beam.pd.pt, Tile::Visited);
-        }
     }
-    println!("Orig\n{map}");
-    for pt in &energized {
-        visited_map.set_tile(*pt, Tile::Visited);
-    }
-    visited_map.tidy();
-    println!("Visited\n{visited_map}");
-
-    println!("Num paths: {}", paths.len());
-    let mut energized: HashSet<Point> = HashSet::default();
-    for beam in paths.iter() {
-        println!("{}", beam.path);
-        energized.extend(
-            beam.path
-                .tiles
-                .iter()
-                .filter(|t| t.ch.is_some())
-                .map(|t| t.pt),
-        );
-    }
-    let mut map = map.clone();
-    for pt in &energized {
-        map.set_tile(*pt, Tile::Visited);
-    }
-    map.tidy();
-    println!("New visited:\n{map}");
-
     energized.len()
 }
 
@@ -186,20 +143,26 @@ impl Map {
         }
     }
     fn get(&self, pt: Point) -> Option<TileXY> {
-        let idx = self.idx(pt);
-        self.tiles.get(idx).copied()
+        self.idx(pt).and_then(|i| self.tiles.get(i)).copied()
     }
-    fn idx(&self, pt: Point) -> usize {
-        pt.y * self.cols + pt.x
+    fn idx(&self, pt: Point) -> Option<usize> {
+        if pt.y < self.rows && pt.x < self.cols {
+            Some(pt.y * self.cols + pt.x)
+        } else {
+            None
+        }
+    }
+    fn must_idx(&self, pt: Point) -> usize {
+        self.idx(pt).unwrap_or_else(|| panic!("bad pt: {pt:?}"))
     }
     fn set_tile(&mut self, pt: Point, tile: Tile) {
-        let idx = self.idx(pt);
+        let idx = self.must_idx(pt);
         if let Some(txy) = self.tiles.get_mut(idx) {
             txy.tile = tile;
         }
     }
     fn set_ch(&mut self, pt: Point, ch: char) {
-        let idx = self.idx(pt);
+        let idx = self.must_idx(pt);
         if let Some(txy) = self.tiles.get_mut(idx) {
             txy.ch = Some(ch);
         }
@@ -242,9 +205,6 @@ impl Beam {
         let next: TileXY = match self.next_pt().and_then(|pt| map.get(pt)) {
             Some(next) => next,
             None => {
-                if DEBUG {
-                    println!("{self} Cannot move.");
-                }
                 self.done = true;
                 return BeamStep::Continue;
             }
@@ -305,13 +265,7 @@ impl Beam {
         self.pd.pt.next(self.pd.dir)
     }
     fn move_to(&mut self, pd: PointDir) {
-        if DEBUG {
-            println!("Moving from {} to {}", self.pd, pd);
-        }
         if !self.visited.add(pd) {
-            if DEBUG {
-                println!("{self} has already visited {pd}");
-            }
             self.done = true;
         } else {
             self.pd = pd;
@@ -426,23 +380,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_weird_bug() {
-        let ex = "
-        ......
-        .|-...
-        ....|.
-        ......
-        ";
-        let map = Map::parse(ex);
-        assert_eq!(map.rows, 4);
-        assert_eq!(map.cols, 6);
-        let mut beam = Beam::new(PointDir::new(Point::new(2, 3), Dir::Up), &map);
-        assert_eq!(beam.step(&map), BeamStep::Continue);
-        assert_eq!(beam.pd, PointDir::new(Point::new(2, 2), Dir::Up));
-    }
-
-    #[test]
-    #[ignore = "broken"]
     fn test_pt1() {
         let ex1 = include_str!("ex1.txt");
         let egs = energized(ex1);
