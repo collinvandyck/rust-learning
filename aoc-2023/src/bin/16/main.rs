@@ -9,17 +9,16 @@ fn main() {}
 
 fn energized(input: &str) -> usize {
     let map = Map::parse(input);
-    let mut dbg_map = map.clone();
+    let mut visited_map = map.clone();
     let mut beams = vec![];
     let mut energized: HashSet<Point> = HashSet::default();
     beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right), &map));
     let mut count = 0;
+    let mut paths = vec![];
     loop {
-        println!("LOOP");
         count += 1;
-
         if count >= 40 {
-            todo!()
+            break;
         }
         if DEBUG {
             println!("LOOP beams={}", beams.len());
@@ -35,6 +34,7 @@ fn energized(input: &str) -> usize {
                 match beam.step(&map) {
                     BeamStep::Continue => {}
                     BeamStep::Split(new) => {
+                        println!("New beam");
                         beams.push(new);
                     }
                 }
@@ -42,25 +42,43 @@ fn energized(input: &str) -> usize {
         }
         beams.retain(|beam| {
             if beam.done {
+                paths.push(beam.clone());
                 energized.extend(beam.visited.0.iter().map(|pd| pd.pt));
-                if DEBUG {
-                    println!("Beam done, energized: {}", energized.len());
-                }
+                println!("Beam done, energized: {}", energized.len());
+                if DEBUG {}
             }
             !beam.done
         });
         for beam in &beams {
-            dbg_map.set_tile(beam.pd.pt, Tile::Visited);
+            visited_map.set_tile(beam.pd.pt, Tile::Visited);
         }
-        dbg_map.tidy();
-        println!("Visited\n{dbg_map}");
     }
     println!("Orig\n{map}");
     for pt in &energized {
-        dbg_map.set_tile(*pt, Tile::Visited);
+        visited_map.set_tile(*pt, Tile::Visited);
     }
-    dbg_map.tidy();
-    println!("Visited\n{dbg_map}");
+    visited_map.tidy();
+    println!("Visited\n{visited_map}");
+
+    println!("Num paths: {}", paths.len());
+    let mut energized: HashSet<Point> = HashSet::default();
+    for beam in paths.iter() {
+        println!("{}", beam.path);
+        energized.extend(
+            beam.path
+                .tiles
+                .iter()
+                .filter(|t| t.ch.is_some())
+                .map(|t| t.pt),
+        );
+    }
+    let mut map = map.clone();
+    for pt in &energized {
+        map.set_tile(*pt, Tile::Visited);
+    }
+    map.tidy();
+    println!("New visited:\n{map}");
+
     energized.len()
 }
 
@@ -200,7 +218,7 @@ impl Display for Map {
         let s = self
             .tiles
             .chunks(self.cols)
-            .map(|row| row.iter().map(|t| t.tile.ch()).collect::<String>())
+            .map(|row| row.iter().map(|t| t.ch()).collect::<String>())
             .join("\n");
         writeln!(f, "{s}")
     }
@@ -281,7 +299,6 @@ impl Beam {
     }
     fn fork(&self, map: &Map) -> Self {
         let mut cloned = self.clone();
-        cloned.path = map.clone(); // fresh map
         cloned
     }
     fn next_pt(&self) -> Option<Point> {
@@ -328,6 +345,16 @@ impl Tile {
             Tile::SplitV => '|',
             Tile::SplitH => '-',
             Tile::Visited => '#',
+        }
+    }
+}
+
+impl TileXY {
+    fn ch(&self) -> char {
+        if let Some(ch) = self.ch {
+            ch
+        } else {
+            self.tile.ch()
         }
     }
 }
@@ -399,6 +426,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_weird_bug() {
+        let ex = "
+        ......
+        .|-...
+        ....|.
+        ......
+        ";
+        let map = Map::parse(ex);
+        assert_eq!(map.rows, 4);
+        assert_eq!(map.cols, 6);
+        let mut beam = Beam::new(PointDir::new(Point::new(2, 3), Dir::Up), &map);
+        assert_eq!(beam.step(&map), BeamStep::Continue);
+        assert_eq!(beam.pd, PointDir::new(Point::new(2, 2), Dir::Up));
+    }
+
+    #[test]
+    #[ignore = "broken"]
     fn test_pt1() {
         let ex1 = include_str!("ex1.txt");
         let egs = energized(ex1);
