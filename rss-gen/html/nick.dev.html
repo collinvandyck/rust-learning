@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta name="generator" content="Hugo 0.121.1">
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light dark"/>
+		<link rel="icon" sizes="16x16 32x32" href="/favicon.80c39a9cac5406d92ef184c97fd4bda38d4f4222ec6a9e703249eb43e3927ceb.ico">
+		<link rel="alternate" type="application/rss+xml" href="https://nickb.dev/index.xml" title="nickb.dev">
+		<link href="/css/styles.min.de4e2fe183c579dd51c4739465c53b16392113146bc565a55260d8a7aabce41449df1d44e711e17949a7d29efe119d7160ecc0b5c69f8dcd7e0a73f56f11654f.css" rel="stylesheet" integrity="sha512-3k4v4YPFed1RxHOUZcU7FjkhExRrxWWlUmDYp6q85BRJ3x1E5xHheUmn0p7&#43;EZ1xYOzAtcafjc1&#43;CnP1bxFlTw==" crossorigin="anonymous">
+		<meta property="og:image" content="https://nickb.dev/about/me-vacay.1e1e56da3047784c488971bb8900706fe86a7e12e58039e376fce7bb691bbaa4.jpg">
+		<meta property="og:image:width" content="930">
+		<meta property="og:image:height" content="524">
+		<meta property="og:description" content="A blog by developer Nick Babcock, who has been documenting his journey through web development, performance, Rust, Wasm, and homelab management for a decade.">
+		<title>Nick Babcock</title>
+	</head>
+	<body>
+		<div>
+			<header class='masthead print-hidden'>
+				<nav class="pure-menu pure-menu-horizontal">
+					<ul class='pure-menu-list'>
+						<li class='pure-menu-item'><a class='pure-menu-link' href="/">Home</a></li>
+						<li class='pure-menu-item'><a class='pure-menu-link' href="/archive">Archive</a></li>
+						<li class='pure-menu-item'><a class='pure-menu-link' href="/about">About</a></li>
+					</ul>
+				</nav>
+			</header>
+		</div>
+		<main>
+			<p>I&rsquo;m <a href="/about">Nick Babcock</a>, a software engineer with 10+ years of fullstack and DevOps experience who loves blogging about everything from <a href="/blog/wasm-compression-benchmarks-and-the-cost-of-missing-compression-apis/">Wasm benchmarks</a> (and <a href="/blog/recommendations-when-publishing-a-wasm-library/">how to author Wasm libraries</a>), to <a href="/blog/designing-responsive-react-components-for-2023/">designing responsive React components</a>, to <a href="/blog/too-edgy-a-serverless-search/">system design</a> of <a href="https://pdx.tools">PDX Tools</a>.</p>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_ba4c1b2ab2663a0b9ccda580a8779d3f.webp 148w, /blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_3f0b8819177a58e9e192073a97ddf1c3.webp 295w, /blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_43b2822c55441a28794f5dc260d78a02.webp 590w, /blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_788668f462809bb51caa2f4e900446cc.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="eager" src="/blog/the-dark-side-of-inlining-and-monomorphization/banner.2f74ce69e5f091a4331839c6caf402291328b83111249fd60f158cc9950acb61.jpg"
+						alt=""
+						srcset='/blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_575dda2bc0835f731f6b4dc18a0358bc.jpg 148w, /blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_9bb7c05449dc457f436f5cac16640a06.jpg 295w, /blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_ff1c29880b73fbf7811599c03c071d81.jpg 590w, /blog/the-dark-side-of-inlining-and-monomorphization/_hu3646fa895edeb16898d6220cc6be1918_35697_42016fcd4b97d0d626ce551c8f38ac01.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="331"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/the-dark-side-of-inlining-and-monomorphization/'>The dark side of inlining and monomorphization</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-12-22">December 22, 2023</time></span>
+				After introducing an incremental lexer that is generic over a <code>Read</code> instance, compilation times quadrupled and output size tripled. What happened? And is it possible to claw back without any downsides?
+				<p>
+				<a href='/blog/the-dark-side-of-inlining-and-monomorphization/' aria-label="Read more about The dark side of inlining and monomorphization">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_296ff96768b20c020701cd4df5d59944.webp 148w, /blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_5ac9d16288806cd9d2c407ea22b02b18.webp 295w, /blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_caa5a30be276a1e00d55fab091845fcb.webp 590w, /blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_f8fd8f838ddc60e21768fcbbe279942e.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="eager" src="/blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/banner.01ac8b015fb0453e4343767bef26468bf82afed92cae3c07102789d02615e009.jpg"
+						alt=""
+						srcset='/blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_ecb44fa3ad50e816bcf474fdc4b6865a.jpg 148w, /blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_9ad5e41d8897e1660beb2d7c38207d74.jpg 295w, /blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_801a6391a5d057e8282892c8984b5d43.jpg 590w, /blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/_hu67ded481d97cc5e3a1167314506bf69a_251513_21411aa43e45a2d4acf3df952867fa99.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="313"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/'>Split Next.js across hosting providers and advocate for direct S3 uploads</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-09-04">September 4, 2023</time></span>
+				Direct S3 uploads have some nice properties over presigned uploads that can&rsquo;t be ignored. Unfortunately, some hosting providers place strict limits on uploads and so one has to get creative in splitting up Next.js endpoints between hosting providers using rewrites.
+				<p>
+				<a href='/blog/split-nextjs-across-hosting-providers-and-advocate-for-direct-s3-uploads/' aria-label="Read more about Split Next.js across hosting providers and advocate for direct S3 uploads">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_51d2ce2a426879db7e55e5a121dee6c3.webp 148w, /blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_4af44f5d76207f72e082a8bc29099fb4.webp 295w, /blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_9c3433e308b904ad1958ec4c7a8b4693.webp 590w, /blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_194ac4a5cb30cc23a7d4cf7ca2c2800f.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="eager" src="/blog/mysql-text-id-collation-tread-carefully/banner.ea0ab8398b27158d85cfe0b0a61ca16fb397cddee070c5d88d0e247bd807cde5.jpg"
+						alt=""
+						srcset='/blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_b577f8b3a452a2fdb9243616316aa855.jpg 148w, /blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_98aebb5a2b8cabfe0d956a237673df03.jpg 295w, /blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_a3517a428ec058422cf63f4270ab0837.jpg 590w, /blog/mysql-text-id-collation-tread-carefully/_hud47d59bd5f6add5a153632c86a017441_138429_149fe11100a6b612e363f99ca76868ee.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="240"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/mysql-text-id-collation-tread-carefully/'>MySQL text ID collation: tread carefully</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-08-18">August 18, 2023</time></span>
+				Using a randomly generated text ID, like Nano ID, in your MySQL table? Then you should tweak the default collation for the column, or re-run the collision probability with a reduced alphabet as by default MySQL can consider two Nano IDs equal even if they differ in casing.
+				<p>
+				<a href='/blog/mysql-text-id-collation-tread-carefully/' aria-label="Read more about MySQL text ID collation: tread carefully">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_c5a91fc1593374ea070445c8b2574c87.webp 148w, /blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_76827e2d5d3d6a42c38789299e2057e3.webp 295w, /blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_fea7c47d95b089d72c3663f67ffaab3f.webp 590w, /blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_aea1b9b4653266f08b5af37071781e91.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="lazy" src="/blog/decapitation-a-migration-from-antd-to-headless-story/banner.69a683391ecc04a415fe3db4afa7ab3a9b050158f3bdbdae4f5ecf5feab5c365.jpg"
+						alt=""
+						srcset='/blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_bc437a94542c6c289fef2ad135ea1e9c.jpg 148w, /blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_0cfb8711cea4d1ede4bec25782d1c81f.jpg 295w, /blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_d8ad634da31ce84ce6d525e53cd9c305.jpg 590w, /blog/decapitation-a-migration-from-antd-to-headless-story/_hudfabd1e87223d9a908c990af4daacda7_226059_462974d28f85ea19006c82d4a1bcfd03.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="266"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/decapitation-a-migration-from-antd-to-headless-story/'>Decapitation: a migration from antd to headless story</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-08-08">August 8, 2023</time></span>
+				With headless component libraries on the rise, I decided to take a look at them after I couldn&rsquo;t update Antd 4 or Next.js to their next versions. This is my story.
+				<p>
+				<a href='/blog/decapitation-a-migration-from-antd-to-headless-story/' aria-label="Read more about Decapitation: a migration from antd to headless story">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_91e1ee2587e618533077ea8960ae76ac.webp 148w, /blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_18fa7fa4ef0454e109a59fb67eba200e.webp 295w, /blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_8a2fca9d19850ca7246908bbc2cd3902.webp 590w, /blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_49fedc6f6b7d86388b744084b1edf7df.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="lazy" src="/blog/advantages-of-opaque-types-over-value-objects/banner.27f7aed7de4a47d581673af5d4dc19a6c0b18a2b0ca1a6681fd16945850a7682.jpg"
+						alt=""
+						srcset='/blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_ee3840df7f36fcf005a292d5c7d6a5b8.jpg 148w, /blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_ea6f3075e164764391b356f4b144f025.jpg 295w, /blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_c010ed6ce0d3be9dcb5b3f632de42b48.jpg 590w, /blog/advantages-of-opaque-types-over-value-objects/_hu8fe76fb5f89cdba89edf02154f578dad_170118_bfa356f8da268607f628785cf71bdb52.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="323"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/advantages-of-opaque-types-over-value-objects/'>Advantages of opaque types over value objects</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-07-31">July 31, 2023</time></span>
+				Creating an immutable object with value semantics can be tricky to get right when the Javascript world revolves around referential equality and different implementations of structural equality. And even once solved, transporting and restoring this value from JSON can be unergonomic. This is where opaque types have a chance to shine.
+				<p>
+				<a href='/blog/advantages-of-opaque-types-over-value-objects/' aria-label="Read more about Advantages of opaque types over value objects">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_56996416a64762348aa6a84062f13fd3.webp 148w, /blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_1ab700afc9c3fdc38ca70467894da0ee.webp 295w, /blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_c9bcde3ff8ddb99823973d8bed6a1601.webp 590w, /blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_7d4afbd13af0c51934e9d2f96d7892e9.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="lazy" src="/blog/too-edgy-a-serverless-search/banner.cdaee694c5de2d23ef698ed9d635f26df4cd598149ca0cd97c3bff0559885da9.jpg"
+						alt=""
+						srcset='/blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_c4fc0df9c84b76b41086e242f05ac883.jpg 148w, /blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_f11fbff668247134c1f81b61d1f2e21c.jpg 295w, /blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_b2892bcfce09338dbd18b5a7e281d376.jpg 590w, /blog/too-edgy-a-serverless-search/_hu224004b538acd388ff1efaea4636ca0a_115762_b726e743eaee0e13446cfbd78a34f918.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="249"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/too-edgy-a-serverless-search/'>Too edgy, a serverless search</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-06-01">June 1, 2023</time></span>
+				Memory comes at a premium when looking to host an application, and sometimes edge provider limits prohibit an otherwise routine deployment. So if the plan is spin out memory hungry functions into separate microservices, which serverless provider provides the best local experience and least vendor lock-in?
+				<p>
+				<a href='/blog/too-edgy-a-serverless-search/' aria-label="Read more about Too edgy, a serverless search">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_b1bd2d5502fea60afccd20b66789313d.webp 148w, /blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_f290a7d098073a6e3000a3451b22983c.webp 295w, /blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_22f5d01b09666d6ea4985458d3f508f8.webp 590w, /blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_939f48f4560e1f2a4012c26e0d187420.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="lazy" src="/blog/there-and-back-again-with-zstd-zips/banner.facceef392778643fbdff366706333848017ef75c19cefd5f26961834827cd8b.jpg"
+						alt=""
+						srcset='/blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_c351fc84c6ecd3e8e43b21abc87f707d.jpg 148w, /blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_b3d146d017ceb2ca6b43f019b688b53d.jpg 295w, /blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_f692a652a0e64fc43e0b1896a3174036.jpg 590w, /blog/there-and-back-again-with-zstd-zips/_hu5462c1572ba87e8d907d698cd561a6d4_202432_c1d556d0ba88e2508e98df8474972000.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="302"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/there-and-back-again-with-zstd-zips/'>There and back again with zstd zips</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-05-16">May 16, 2023</time></span>
+				A couple years ago, I transitioned zips to brotli compressed tarballs to take advantage of the Content-Encoding header. Now, after running benchmarks showing that zstd in user space has neglibigle costs, I&rsquo;m transitioning back to zip, but this time files are compressed with zstd.
+				<p>
+				<a href='/blog/there-and-back-again-with-zstd-zips/' aria-label="Read more about There and back again with zstd zips">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_6a810531c207571d650a5311adeac10d.webp 148w, /blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_3defed66bd04483cc3249b102b3cbbe7.webp 295w, /blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_533ade89246b5f612d7bca46c7e82b0c.webp 590w, /blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_c2ba257deae9bdc3767ffdb3096fbdcd.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="lazy" src="/blog/new-browser-apis-unlock-new-possibilities/banner.5198cefaa320c7855ed975ba5c14efa060dc2fd562460563ca594a1cd2de3956.jpg"
+						alt=""
+						srcset='/blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_168d9ca644c173aede8c590bcf811365.jpg 148w, /blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_eda031fc2a6d0b2e021988ccfa88e062.jpg 295w, /blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_7b3b302cbc416d060d8ead7c0e10cf1e.jpg 590w, /blog/new-browser-apis-unlock-new-possibilities/_hue4fe3df0a3dbb165ba623714dfafa641_279264_d2f002a72f60f0fd35004cadfae5fc44.jpg 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="321"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/new-browser-apis-unlock-new-possibilities/'>New browser APIs unlock new possibilities</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-04-29">April 29, 2023</time></span>
+				When new browser APIs get announced or are implemented, there is an inevitable push back where people lament privacy, security, or how browsers are too bloated. From someone who uses new browser APIs, they are a welcomed sight as they make the impossible, possible.
+				<p>
+				<a href='/blog/new-browser-apis-unlock-new-possibilities/' aria-label="Read more about New browser APIs unlock new possibilities">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_69326268c33d416ec424831bfec81237.webp 148w, /blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_1f15e66ae7e1fc0cb275b09fd71811b9.webp 295w, /blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_ef346b767097b33b56789d140f3ec1d2.webp 590w, /blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_c8eab9df4f3beb73bbae4e6798765449.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="lazy" src="/blog/cyclelist-a-cyclical-activity-tracker/banner.5141ae887806b987b83107ea6bd209586d3988e183c0be6aed8afba58017275d.png"
+						alt=""
+						srcset='/blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_13b2d9b87fab09dd6458aa5efe14cd34.png 148w, /blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_08239325ba6cc17b85f64f34eeae08f8.png 295w, /blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_6e65b4c6e399e036bf144f531d9c1e3d.png 590w, /blog/cyclelist-a-cyclical-activity-tracker/_hu64597824ad6a92572d9547c4622f407e_76408_40a47e46bad096adc4a8fc25b6398a37.png 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="314"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/cyclelist-a-cyclical-activity-tracker/'>CycleList: a cyclical activity tracker</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-04-08">April 8, 2023</time></span>
+				I, unironically, wrote a todo app, <a href="https://cyclelist.nickb.dev/">CycleList</a>, where completing a task has it fall to the bottom of the list with an updated completed time. Tasks completed least recently then bubble up to the top, creating a sort of cycle.
+				<p>
+				<a href='/blog/cyclelist-a-cyclical-activity-tracker/' aria-label="Read more about CycleList: a cyclical activity tracker">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/>
+			<div class="post"><figure style="margin: 0; margin-bottom: 1em">
+					<picture>
+						<source type="image/webp"
+						srcset='/blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_661e94c240092c192aa33bb728a17cf9.webp 148w, /blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_ea5ed6d79836a1478384743750923a2a.webp 295w, /blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_1ee9e3087e3583c0e7e4be0b181fc390.webp 590w, /blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_2dbc1003646b6ea14e4f76c23756d175.webp 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						>
+						<img loading="lazy" src="/blog/designing-responsive-react-components-for-2023/banner.ae436fa80845b5c0b74518678282e7c830349974f17dfc10a8b90cf1634a97cd.png"
+						alt=""
+						srcset='/blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_4eac9d5d08db9e334a4264ff0864cf8b.png 148w, /blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_30beb09023578b8367f06dea9dc9842f.png 295w, /blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_2480375625259284ebf37d28c1fb1b6f.png 590w, /blog/designing-responsive-react-components-for-2023/_hu6c9a1bdd4856a5023003fdbc60bc0546_84932_ed3de326ee2a8ecc7afed07e71a652ce.png 900w'
+						sizes='(max-width: 180px) 148px, (max-width: 320px) 295px, (max-width: 610px) 590px, 900px'
+						width="1000"
+						height="400"
+						/>
+					</picture>
+				</figure><h2 class="post-title"><a href='/blog/designing-responsive-react-components-for-2023/'>Designing Responsive React Components for 2023</a></h2>
+				<span class="post-date">Published on: <time datetime="2023-03-23">March 23, 2023</time></span>
+				Designing responsive web sites is a tale as old as CSS media queries, but with the proliferation of JS component libraries, like React, there is a trap that is starting to become a thorn in the side of rising popularity of server-side rendered (SSR) React.
+				<p>
+				<a href='/blog/designing-responsive-react-components-for-2023/' aria-label="Read more about Designing Responsive React Components for 2023">Read more...</a>
+				</p>
+			</div>
+			<hr style="margin-top: 3em; margin-bottom: 3em"/></main>
+		</div>
+	</body>
+</html>
