@@ -1,0 +1,12 @@
+recipe-name:
+  @echo 'This is a recipe!'
+
+
+
+# hi there.
+another-recipe:
+  @echo 'This is another recipe.'
+
+start-db:
+	docker run -d -p 5432:5432 -e POSTGRES_USER=loco -e POSTGRES_DB=loco2_development -e POSTGRES_PASSWORD="loco" postgres:15.3-alpine
+
