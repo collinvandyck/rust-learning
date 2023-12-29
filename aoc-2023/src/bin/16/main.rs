@@ -5,17 +5,20 @@ use std::{collections::HashSet, fmt::Display};
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
+    let in1 = include_str!("in1.txt");
     println!("p1ex1 = {}", energized(ex1));
+    println!("p1in1 = {}", energized(in1));
 }
 
 fn energized(input: &str) -> usize {
     let map = Map::parse(input);
-    let mut beams = vec![];
+    let mut beams = vec![map.start()];
     let mut energized: HashSet<Point> = HashSet::default();
-    beams.push(Beam::new(PointDir::new(Point::new(0, 0), Dir::Right), &map));
     let mut paths = vec![];
     loop {
+        println!("LOOP");
         if beams.is_empty() {
+            println!("DONE");
             break;
         }
         for idx in 0..beams.len() {
@@ -113,6 +116,9 @@ enum ComboDir {
 }
 
 impl Map {
+    fn start(&self) -> Beam {
+        Beam::new(PointDir::new(Point::new(0, 0), Dir::Right), self)
+    }
     fn parse(input: &str) -> Self {
         let tiles = input
             .trim()
