@@ -212,7 +212,7 @@ impl Beam {
     }
     fn step(&mut self, map: &Map, pds: &HashSet<PointDir>) -> BeamStep {
         let next = if self.visited.0.is_empty() {
-            Some(Point::new(0, 0))
+            Some(self.pd.pt)
         } else {
             self.next_pt()
         };
