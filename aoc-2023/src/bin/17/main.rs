@@ -10,8 +10,10 @@ fn main() {
 
 fn minimize_loss(input: &str) -> usize {
     let map = Map::parse(input);
-    let path = Path::new(&map, Point::new(0, 0));
-    todo!()
+    let src = Point::new(0, 0);
+    let dst = Point::new(map.cols - 1, map.rows - 1);
+    let mut path = Path::new(&map, src);
+    path.dijkstra(dst)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -28,6 +30,10 @@ impl<'a> Path<'a> {
             pt,
             hist: vec![],
         }
+    }
+
+    fn dijkstra(&mut self, dst: Point) -> usize {
+        todo!()
     }
 }
 
@@ -100,6 +106,15 @@ struct Point {
 impl Point {
     fn new(x: usize, y: usize) -> Self {
         Self { x, y }
+    }
+    fn next(&self, dir: Dir) -> Option<Self> {
+        match dir {
+            Dir::Up => self.y.checked_sub(1).map(|y| (self.x, y)),
+            Dir::Down => self.y.checked_add(1).map(|y| (self.x, y)),
+            Dir::Left => self.x.checked_sub(1).map(|x| (x, self.y)),
+            Dir::Right => self.x.checked_add(1).map(|x| (x, self.y)),
+        }
+        .map(|(x, y)| Point::new(x, y))
     }
 }
 
