@@ -4,6 +4,16 @@ use itertools::Itertools;
 
 fn main() {}
 
+struct Path<'a> {
+    map: &'a Map,
+}
+
+impl<'a> Path<'a> {
+    fn new(map: &'a Map) -> Self {
+        Self { map }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Map {
     tiles: Vec<Tile>,
