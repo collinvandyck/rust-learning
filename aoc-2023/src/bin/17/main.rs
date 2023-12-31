@@ -73,5 +73,8 @@ mod tests {
     fn test_parse() {
         let ex1 = include_str!("ex1.txt");
         let map = Map::parse(ex1);
+        assert_eq!(map.rows, 13);
+        assert_eq!(map.cols, 13);
+        assert_eq!(map.tiles.len(), 13 * 13);
     }
 }
