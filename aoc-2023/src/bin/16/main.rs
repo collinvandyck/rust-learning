@@ -7,11 +7,12 @@ fn main() {
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
     println!("p1ex1 = {}", energized(ex1));
-    //println!("p1in1 = {}", energized(in1));
+    println!("p1in1 = {}", energized(in1));
 }
 
 fn energized(input: &str) -> usize {
     let map = Map::parse(input);
+    let mut pds: HashSet<PointDir> = HashSet::default();
     let mut beams = vec![map.start()];
     let mut energized: HashSet<Point> = HashSet::default();
     let mut paths = vec![];
@@ -21,9 +22,13 @@ fn energized(input: &str) -> usize {
         }
         for idx in 0..beams.len() {
             if let Some(beam) = beams.get_mut(idx) {
-                match beam.step(&map) {
-                    BeamStep::Continue => {}
+                match beam.step(&map, &pds) {
+                    BeamStep::Continue => {
+                        pds.insert(beam.pd);
+                    }
                     BeamStep::Split(new) => {
+                        pds.insert(beam.pd);
+                        pds.insert(new.pd);
                         beams.push(new);
                     }
                 }
@@ -68,7 +73,7 @@ struct TileXY {
     ch: Option<char>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct PointDir {
     pt: Point,
     dir: Dir,
@@ -99,7 +104,7 @@ enum Tile {
     Visited,  // #
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, strum_macros::EnumIs, Hash)]
 enum Dir {
     Up,
     Down,
@@ -202,10 +207,10 @@ impl Beam {
             done,
             path,
         };
-        beam.step(map);
+        beam.step(map, &HashSet::default());
         beam
     }
-    fn step(&mut self, map: &Map) -> BeamStep {
+    fn step(&mut self, map: &Map, pds: &HashSet<PointDir>) -> BeamStep {
         let next = if self.visited.0.is_empty() {
             Some(Point::new(0, 0))
         } else {
@@ -220,27 +225,27 @@ impl Beam {
         };
         match next.tile {
             Tile::Space => {
-                self.move_to(PointDir::new(next.pt, self.pd.dir));
+                self.move_to(PointDir::new(next.pt, self.pd.dir), pds);
                 return BeamStep::Continue;
             }
             Tile::SplitV => {
                 if self.pd.dir.combo().is_up_down() {
-                    self.move_to(PointDir::new(next.pt, self.pd.dir));
+                    self.move_to(PointDir::new(next.pt, self.pd.dir), pds);
                     return BeamStep::Continue;
                 }
                 let mut splt = self.fork(map);
-                self.move_to(PointDir::new(next.pt, Dir::Up));
-                splt.move_to(PointDir::new(next.pt, Dir::Down));
+                self.move_to(PointDir::new(next.pt, Dir::Up), pds);
+                splt.move_to(PointDir::new(next.pt, Dir::Down), pds);
                 return BeamStep::Split(splt);
             }
             Tile::SplitH => {
                 if self.pd.dir.combo().is_left_right() {
-                    self.move_to(PointDir::new(next.pt, self.pd.dir));
+                    self.move_to(PointDir::new(next.pt, self.pd.dir), pds);
                     return BeamStep::Continue;
                 }
                 let mut splt = self.fork(map);
-                self.move_to(PointDir::new(next.pt, Dir::Left));
-                splt.move_to(PointDir::new(next.pt, Dir::Right));
+                self.move_to(PointDir::new(next.pt, Dir::Left), pds);
+                splt.move_to(PointDir::new(next.pt, Dir::Right), pds);
                 return BeamStep::Split(splt);
             }
             Tile::MirRight => {
@@ -250,7 +255,7 @@ impl Beam {
                     Dir::Left => Dir::Down,
                     Dir::Right => Dir::Up,
                 };
-                self.move_to(PointDir::new(next.pt, dir));
+                self.move_to(PointDir::new(next.pt, dir), pds);
                 return BeamStep::Continue;
             }
             Tile::MirLeft => {
@@ -260,7 +265,7 @@ impl Beam {
                     Dir::Left => Dir::Up,
                     Dir::Right => Dir::Down,
                 };
-                self.move_to(PointDir::new(next.pt, dir));
+                self.move_to(PointDir::new(next.pt, dir), pds);
                 return BeamStep::Continue;
             }
             Tile::Visited => panic!("visited tile on map"),
@@ -273,7 +278,11 @@ impl Beam {
     fn next_pt(&self) -> Option<Point> {
         self.pd.pt.next(self.pd.dir)
     }
-    fn move_to(&mut self, pd: PointDir) {
+    fn move_to(&mut self, pd: PointDir, pds: &HashSet<PointDir>) {
+        if pds.contains(&pd) {
+            self.done = true;
+            return;
+        }
         if !self.visited.add(pd) {
             self.done = true;
         } else {
