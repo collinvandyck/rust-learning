@@ -2,15 +2,32 @@
 
 use itertools::Itertools;
 
-fn main() {}
+fn main() {
+    let ex1 = include_str!("ex1.txt");
 
+    println!("p1ex1 = {}", minimize_loss(ex1));
+}
+
+fn minimize_loss(input: &str) -> usize {
+    let map = Map::parse(input);
+    let path = Path::new(&map, Point::new(0, 0));
+    todo!()
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Path<'a> {
     map: &'a Map,
+    pt: Point,
+    hist: Vec<PointDir>,
 }
 
 impl<'a> Path<'a> {
-    fn new(map: &'a Map) -> Self {
-        Self { map }
+    fn new(map: &'a Map, pt: Point) -> Self {
+        Self {
+            map,
+            pt,
+            hist: vec![],
+        }
     }
 }
 
@@ -41,6 +58,13 @@ impl Map {
         let tiles = tiles.into_iter().flatten().collect();
         Self { tiles, rows, cols }
     }
+    fn idx(&self, pt: Point) -> usize {
+        pt.y * self.rows + pt.x
+    }
+    fn get(&self, pt: Point) -> Option<&Tile> {
+        let idx = self.idx(pt);
+        self.tiles.get(idx)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -52,6 +76,18 @@ struct Tile {
 impl Tile {
     fn new(pt: Point, cost: usize) -> Self {
         Self { pt, cost }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct PointDir {
+    pt: Point,
+    dir: Dir,
+}
+
+impl PointDir {
+    fn new(pt: Point, dir: Dir) -> Self {
+        Self { pt, dir }
     }
 }
 
