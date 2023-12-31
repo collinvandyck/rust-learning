@@ -8,11 +8,26 @@ fn main() {
     let in1 = include_str!("in1.txt");
     println!("p1ex1 = {}", energized(ex1));
     println!("p1in1 = {}", energized(in1));
+    println!("p2ex1 = {}", max_energized(ex1));
+    println!("p2in1 = {}", max_energized(in1));
+}
+
+fn max_energized(input: &str) -> usize {
+    let map = Map::parse(input);
+    let top = (0..map.cols).map(|x| PointDir::new(Point::new(x, 0), Dir::Down));
+    let btm = (0..map.cols).map(|x| PointDir::new(Point::new(x, map.rows - 1), Dir::Up));
+    let lft = (0..map.rows).map(|y| PointDir::new(Point::new(0, y), Dir::Right));
+    let rht = (0..map.rows).map(|y| PointDir::new(Point::new(map.cols - 1, y), Dir::Left));
+    let all = top.chain(btm).chain(lft).chain(rht);
+    all.map(|pd| energized_map(&map, pd))
+        .max()
+        .expect("no results")
 }
 
 fn energized(input: &str) -> usize {
     let map = Map::parse(input);
-    energized_map(&map, PointDir::new(Point::new(0, 0), Dir::Right))
+    let pd = PointDir::new(Point::new(0, 0), Dir::Right);
+    energized_map(&map, pd)
 }
 
 fn energized_map(map: &Map, pd: PointDir) -> usize {
