@@ -1,6 +1,7 @@
 #![allow(unused, dead_code)]
 
 use itertools::Itertools;
+use rayon::prelude::*;
 use std::{collections::HashSet, fmt::Display};
 
 fn main() {
@@ -19,7 +20,11 @@ fn max_energized(input: &str) -> usize {
     let lft = (0..map.rows).map(|y| PointDir::new(Point::new(0, y), Dir::Right));
     let rht = (0..map.rows).map(|y| PointDir::new(Point::new(map.cols - 1, y), Dir::Left));
     let all = top.chain(btm).chain(lft).chain(rht);
-    all.map(|pd| energized_map(&map, pd))
+    all.par_bridge()
+        .into_par_iter()
+        .map(|pd| energized_map(&map, pd))
+        .collect::<Vec<_>>()
+        .into_iter()
         .max()
         .expect("no results")
 }
