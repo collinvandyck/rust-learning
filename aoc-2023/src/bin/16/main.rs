@@ -12,8 +12,13 @@ fn main() {
 
 fn energized(input: &str) -> usize {
     let map = Map::parse(input);
+    energized_map(&map, PointDir::new(Point::new(0, 0), Dir::Right))
+}
+
+fn energized_map(map: &Map, pd: PointDir) -> usize {
     let mut pds: HashSet<PointDir> = HashSet::default();
-    let mut beams = vec![map.start()];
+    let start = Beam::new(pd, map);
+    let mut beams = vec![start];
     let mut energized: HashSet<Point> = HashSet::default();
     let mut paths = vec![];
     loop {
