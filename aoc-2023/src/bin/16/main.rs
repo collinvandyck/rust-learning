@@ -7,7 +7,7 @@ fn main() {
     let ex1 = include_str!("ex1.txt");
     let in1 = include_str!("in1.txt");
     println!("p1ex1 = {}", energized(ex1));
-    println!("p1in1 = {}", energized(in1));
+    //println!("p1in1 = {}", energized(in1));
 }
 
 fn energized(input: &str) -> usize {
@@ -16,9 +16,7 @@ fn energized(input: &str) -> usize {
     let mut energized: HashSet<Point> = HashSet::default();
     let mut paths = vec![];
     loop {
-        println!("LOOP");
         if beams.is_empty() {
-            println!("DONE");
             break;
         }
         for idx in 0..beams.len() {
@@ -204,11 +202,16 @@ impl Beam {
             done,
             path,
         };
-        beam.move_to(pd);
+        beam.step(map);
         beam
     }
     fn step(&mut self, map: &Map) -> BeamStep {
-        let next: TileXY = match self.next_pt().and_then(|pt| map.get(pt)) {
+        let next = if self.visited.0.is_empty() {
+            Some(Point::new(0, 0))
+        } else {
+            self.next_pt()
+        };
+        let next: TileXY = match next.and_then(|pt| map.get(pt)) {
             Some(next) => next,
             None => {
                 self.done = true;
