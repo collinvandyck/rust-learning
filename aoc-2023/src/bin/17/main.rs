@@ -1,6 +1,9 @@
 #![allow(dead_code, unused)]
 
-use std::collections::{hash_map::Entry, HashMap, HashSet, VecDeque};
+use std::{
+    collections::{hash_map::Entry, HashMap, HashSet, VecDeque},
+    fmt::Display,
+};
 
 use itertools::Itertools;
 use strum::IntoEnumIterator;
@@ -95,6 +98,12 @@ impl<'a> Ray<'a> {
     }
 }
 
+impl Display for Ray<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "pt: {:?} hst: {}", self.cur, self.hst.len())
+    }
+}
+
 impl<'a> MinLoss<'a> {
     fn new(map: &'a Map, src: Point, dst: Point) -> Self {
         let rays = vec![Ray::new(map, src, dst)].into();
@@ -106,6 +115,30 @@ impl<'a> MinLoss<'a> {
         }
     }
     fn solve(&mut self) -> usize {
+        if self.rays.is_empty() {
+            panic!("no more rays");
+        }
+        let mut ray = self.rays.pop_front().unwrap();
+        let mut moves = dbg!(ray.next_moves());
+        (1..moves.len()).rev().for_each(|idx| {
+            if let Some(mv) = moves.get(idx) {
+                let mut ray = ray.clone();
+                ray.step(*mv);
+                self.rays.push_front(ray);
+            }
+        });
+        if let Some(mv) = moves.first() {
+            ray.step(*mv);
+            self.rays.push_front(ray);
+        }
+        println!("Num rays: {}", self.rays.len());
+        for ray in &self.rays {
+            println!("Ray: {ray}");
+        }
+        todo!()
+    }
+
+    fn move_ray(mut ray: Ray<'_>, mv: Move) -> Ray {
         todo!()
     }
 
