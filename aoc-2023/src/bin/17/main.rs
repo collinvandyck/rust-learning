@@ -71,7 +71,9 @@ impl<'a> Ray<'a> {
         }
     }
 
-    fn step(&mut self, mov: Move) {}
+    fn step(&mut self, mov: Move) {
+        self.hst.push(mov);
+    }
 
     fn next_moves(&self) -> Vec<Move> {
         Dir::iter()
