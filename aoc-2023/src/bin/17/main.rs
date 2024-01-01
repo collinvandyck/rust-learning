@@ -205,7 +205,6 @@ struct Map {
     tiles: Vec<Tile>,
     rows: usize,
     cols: usize,
-    ch: Option<char>,
 }
 
 impl Map {
@@ -226,13 +225,7 @@ impl Map {
         let rows = tiles.len();
         let cols = tiles.first().map(|f| f.len()).expect("no rows");
         let tiles = tiles.into_iter().flatten().collect();
-        let ch = None;
-        Self {
-            tiles,
-            rows,
-            cols,
-            ch,
-        }
+        Self { tiles, rows, cols }
     }
     fn points(&self) -> impl Iterator<Item = Point> + '_ {
         self.tiles.iter().map(|t| t.pt)
@@ -244,17 +237,28 @@ impl Map {
         let idx = self.idx(pt);
         self.tiles.get(idx)
     }
+    fn get_mut(&mut self, pt: Point) -> Option<&mut Tile> {
+        let idx = self.idx(pt);
+        self.tiles.get_mut(idx)
+    }
+    fn set_ch(&mut self, pt: Point, ch: char) {
+        if let Some(tile) = self.get_mut(pt) {
+            tile.ch = Some(ch);
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Tile {
     pt: Point,
     cost: usize,
+    ch: Option<char>,
 }
 
 impl Tile {
     fn new(pt: Point, cost: usize) -> Self {
-        Self { pt, cost }
+        let ch = None;
+        Self { pt, cost, ch }
     }
 }
 
