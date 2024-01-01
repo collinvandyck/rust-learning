@@ -1,6 +1,9 @@
 #![allow(dead_code, unused)]
 
+use std::collections::{hash_map::Entry, HashMap, HashSet, VecDeque};
+
 use itertools::Itertools;
+use strum::IntoEnumIterator;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
@@ -12,28 +15,87 @@ fn minimize_loss(input: &str) -> usize {
     let map = Map::parse(input);
     let src = Point::new(0, 0);
     let dst = Point::new(map.cols - 1, map.rows - 1);
-    let mut path = Path::new(&map, src);
-    path.dijkstra(dst)
+    let mut path = Path::new(&map, src, dst);
+    path.dijkstra()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Path<'a> {
     map: &'a Map,
-    pt: Point,
-    hist: Vec<PointDir>,
+    src: Point,
+    dst: Point,
 }
 
 impl<'a> Path<'a> {
-    fn new(map: &'a Map, pt: Point) -> Self {
-        Self {
-            map,
-            pt,
-            hist: vec![],
-        }
+    fn new(map: &'a Map, src: Point, dst: Point) -> Self {
+        Self { map, src, dst }
     }
 
-    fn dijkstra(&mut self, dst: Point) -> usize {
-        todo!()
+    fn dijkstra(&mut self) -> usize {
+        let mut queue: HashSet<Point> = HashSet::default();
+        let mut dist: HashMap<Point, usize> = HashMap::default();
+        let mut prev: HashMap<Point, Point> = HashMap::default();
+        self.map.points().for_each(|pt| {
+            dist.insert(pt, usize::MAX);
+            queue.insert(pt);
+        });
+        dist.insert(self.src, 0);
+        loop {
+            if dist.is_empty() {
+                panic!("no path found to dst");
+            }
+            // find the min dist and copy the value
+            let (point, cost) = dist
+                .iter()
+                .filter(|pt| queue.contains(pt.0))
+                .min_by_key(|(pt, cost)| *cost)
+                .unwrap();
+            println!("point: {point:?} cost: {cost} dst: {:?}", self.dst);
+            if point == &self.dst {
+                break;
+            }
+            let point = *point;
+
+            // remove the point from the queue
+            queue.remove(&point);
+
+            // update dist and prev maps based on min cost
+            for neighbor in self.unvisited(&point, &queue) {
+                let pdist: &usize = dist.get(&point).expect("no pdist");
+                let edge = self.map.get(neighbor).map(|t| t.cost).expect("no node");
+                let alt = pdist + edge;
+                if &alt < dist.get(&neighbor).expect("no neighbor dist") {
+                    dist.insert(neighbor, alt);
+                    prev.insert(neighbor, point);
+                }
+            }
+        }
+        println!("Calulating min path");
+        let mut path: VecDeque<&Point> = VecDeque::default();
+        let mut cur = &self.dst;
+        path.push_front(cur);
+        while let Some(prev) = prev.get(cur) {
+            path.push_front(prev);
+            cur = prev;
+        }
+        path.into_iter()
+            .flat_map(|pt| self.map.get(*pt))
+            .map(|t| {
+                println!("T: {t:?}");
+                t.cost
+            })
+            .sum()
+    }
+
+    // TOOD: we need to put the brakes on successive runs
+    fn unvisited(
+        &self,
+        pt: &'a Point,
+        unvisited: &'a HashSet<Point>,
+    ) -> impl Iterator<Item = Point> + 'a {
+        Dir::iter()
+            .flat_map(|dir| pt.next(dir))
+            .filter(|pt| unvisited.contains(pt))
     }
 }
 
@@ -121,7 +183,7 @@ impl Point {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum_macros::EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum_macros::EnumIs, strum_macros::EnumIter)]
 enum Dir {
     Up,
     Down,
