@@ -31,6 +31,13 @@ impl<'a> Path<'a> {
         Self { map, src, dst }
     }
 
+    // this is not going to work because of the need to modify the graph based on the recent
+    // traversal due to the restrictions on direction as well as the restrictions on runs in the
+    // same direction >= 3.
+    //
+    // a better idea might be to have separate depth first searches in progress where each search
+    // can be canceled based on the cost associated with a subpath in a separate tree which might
+    // be shorter.
     fn dijkstra(&mut self) -> usize {
         let mut queue: HashSet<Point> = HashSet::default();
         let mut dist: HashMap<Point, usize> = HashMap::default();
