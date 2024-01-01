@@ -50,7 +50,6 @@ impl<'a> Path<'a> {
                 .filter(|pt| queue.contains(pt.0))
                 .min_by_key(|(pt, cost)| *cost)
                 .unwrap();
-            println!("point: {point:?} cost: {cost} dst: {:?}", self.dst);
             if point == &self.dst {
                 break;
             }
@@ -70,7 +69,6 @@ impl<'a> Path<'a> {
                 }
             }
         }
-        println!("Calulating min path");
         let mut path: VecDeque<&Point> = VecDeque::default();
         let mut cur = &self.dst;
         path.push_front(cur);
@@ -80,10 +78,7 @@ impl<'a> Path<'a> {
         }
         path.into_iter()
             .flat_map(|pt| self.map.get(*pt))
-            .map(|t| {
-                println!("T: {t:?}");
-                t.cost
-            })
+            .map(|t| t.cost)
             .sum()
     }
 
