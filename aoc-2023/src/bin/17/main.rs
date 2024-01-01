@@ -120,6 +120,7 @@ impl<'a> MinLoss<'a> {
     }
     fn solve(&mut self) -> usize {
         self.step();
+        self.step();
         todo!()
     }
 
