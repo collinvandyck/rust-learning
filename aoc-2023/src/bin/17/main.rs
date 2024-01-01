@@ -52,7 +52,7 @@ struct Ray<'a> {
     cur: Point,
     dst: Point,
     dir: Option<Dir>,
-    hst: Vec<PointDir>,
+    hst: Vec<Move>,
 }
 
 impl<'a> Ray<'a> {
@@ -81,7 +81,7 @@ impl<'a> Ray<'a> {
                     .iter()
                     .rev()
                     .take(2)
-                    .filter(|pd| &pd.dir == dir)
+                    .filter(|mv| &mv.dir == dir)
                     .count()
                     < 2
             })
