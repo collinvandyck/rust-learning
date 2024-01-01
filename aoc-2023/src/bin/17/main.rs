@@ -64,6 +64,9 @@ impl Map {
         let tiles = tiles.into_iter().flatten().collect();
         Self { tiles, rows, cols }
     }
+    fn points(&self) -> impl Iterator<Item = Point> + '_ {
+        self.tiles.iter().map(|t| t.pt)
+    }
     fn idx(&self, pt: Point) -> usize {
         pt.y * self.rows + pt.x
     }
