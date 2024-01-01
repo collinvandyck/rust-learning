@@ -30,7 +30,7 @@ struct MinLoss<'a> {
     map: &'a Map,
     src: Point,
     dst: Point,
-    rays: Vec<Ray<'a>>,
+    rays: VecDeque<Ray<'a>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -97,7 +97,7 @@ impl<'a> Ray<'a> {
 
 impl<'a> MinLoss<'a> {
     fn new(map: &'a Map, src: Point, dst: Point) -> Self {
-        let rays = vec![Ray::new(map, src, dst)];
+        let rays = vec![Ray::new(map, src, dst)].into();
         Self {
             map,
             src,
@@ -106,10 +106,6 @@ impl<'a> MinLoss<'a> {
         }
     }
     fn solve(&mut self) -> usize {
-        for idx in 0..self.len() {
-            let ray = self.rays.get_mut(idx).unwrap();
-            let moves = dbg!(ray.next_moves());
-        }
         todo!()
     }
 
