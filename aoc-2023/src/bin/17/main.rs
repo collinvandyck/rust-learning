@@ -7,7 +7,15 @@ use strum::IntoEnumIterator;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
-    println!("p1ex1 = {}", minimize_loss(ex1));
+    println!("p1ex1 = {}", min_loss(ex1));
+}
+
+fn min_loss(input: &str) -> usize {
+    let map = Map::parse(input);
+    let src = Point::new(0, 0);
+    let dst = Point::new(map.cols - 1, map.rows - 1);
+    let mut ml = MinLoss::new(&map, src, dst);
+    ml.solve()
 }
 
 fn minimize_loss(input: &str) -> usize {
@@ -25,6 +33,7 @@ struct MinLoss<'a> {
     rays: Vec<Ray<'a>>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Move {
     from: Point,
     dir: Dir,
@@ -37,6 +46,7 @@ impl Move {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct Ray<'a> {
     map: &'a Map,
     cur: Point,
@@ -58,7 +68,7 @@ impl<'a> Ray<'a> {
         }
     }
 
-    fn step(&mut self) {}
+    fn step(&mut self, mov: Move) {}
 
     fn next_moves(&self) -> Vec<Move> {
         Dir::iter()
@@ -96,8 +106,15 @@ impl<'a> MinLoss<'a> {
         }
     }
     fn solve(&mut self) -> usize {
-        let start = self.map.get(Point::new(0, 0));
+        for idx in 0..self.len() {
+            let ray = self.rays.get_mut(idx).unwrap();
+            let moves = dbg!(ray.next_moves());
+        }
         todo!()
+    }
+
+    fn len(&self) -> usize {
+        self.rays.len()
     }
 }
 
