@@ -205,6 +205,7 @@ struct Map {
     tiles: Vec<Tile>,
     rows: usize,
     cols: usize,
+    ch: Option<char>,
 }
 
 impl Map {
@@ -225,7 +226,13 @@ impl Map {
         let rows = tiles.len();
         let cols = tiles.first().map(|f| f.len()).expect("no rows");
         let tiles = tiles.into_iter().flatten().collect();
-        Self { tiles, rows, cols }
+        let ch = None;
+        Self {
+            tiles,
+            rows,
+            cols,
+            ch,
+        }
     }
     fn points(&self) -> impl Iterator<Item = Point> + '_ {
         self.tiles.iter().map(|t| t.pt)
