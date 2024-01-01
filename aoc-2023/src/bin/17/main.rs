@@ -7,7 +7,6 @@ use strum::IntoEnumIterator;
 
 fn main() {
     let ex1 = include_str!("ex1.txt");
-
     println!("p1ex1 = {}", minimize_loss(ex1));
 }
 
@@ -17,6 +16,89 @@ fn minimize_loss(input: &str) -> usize {
     let dst = Point::new(map.cols - 1, map.rows - 1);
     let mut path = Path::new(&map, src, dst);
     path.dijkstra()
+}
+
+struct MinLoss<'a> {
+    map: &'a Map,
+    src: Point,
+    dst: Point,
+    rays: Vec<Ray<'a>>,
+}
+
+struct Move {
+    from: Point,
+    dir: Dir,
+    tile: Tile, // the dst tile
+}
+
+impl Move {
+    fn new(from: Point, dir: Dir, tile: Tile) -> Self {
+        Self { from, tile, dir }
+    }
+}
+
+struct Ray<'a> {
+    map: &'a Map,
+    cur: Point,
+    dst: Point,
+    dir: Option<Dir>,
+    hst: Vec<PointDir>,
+}
+
+impl<'a> Ray<'a> {
+    fn new(map: &'a Map, cur: Point, dst: Point) -> Self {
+        let dir = None;
+        let hst = vec![];
+        Self {
+            map,
+            cur,
+            dst,
+            dir,
+            hst,
+        }
+    }
+
+    fn step(&mut self) {}
+
+    fn next_moves(&self) -> Vec<Move> {
+        Dir::iter()
+            .filter(|dir| match self.dir {
+                Some(sd) => dir != &sd.opposite(),
+                None => true,
+            })
+            .filter(|dir| {
+                self.hst
+                    .iter()
+                    .rev()
+                    .take(2)
+                    .filter(|pd| &pd.dir == dir)
+                    .count()
+                    < 2
+            })
+            .flat_map(|dir| self.cur.next(dir).map(|pt| (pt, dir)))
+            .flat_map(|(next_pt, dir)| {
+                self.map
+                    .get(next_pt)
+                    .map(|next_tile| Move::new(self.cur, dir, *next_tile))
+            })
+            .collect()
+    }
+}
+
+impl<'a> MinLoss<'a> {
+    fn new(map: &'a Map, src: Point, dst: Point) -> Self {
+        let rays = vec![Ray::new(map, src, dst)];
+        Self {
+            map,
+            src,
+            dst,
+            rays,
+        }
+    }
+    fn solve(&mut self) -> usize {
+        let start = self.map.get(Point::new(0, 0));
+        todo!()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -191,6 +273,17 @@ enum Dir {
     Down,
     Left,
     Right,
+}
+
+impl Dir {
+    fn opposite(&self) -> Self {
+        match self {
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+        }
+    }
 }
 
 #[cfg(test)]
