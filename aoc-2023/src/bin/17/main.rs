@@ -72,6 +72,8 @@ impl<'a> Ray<'a> {
     }
 
     fn step(&mut self, mov: Move) {
+        self.cur = mov.tile.pt;
+        self.dir.replace(mov.dir);
         self.hst.push(mov);
     }
 
@@ -117,10 +119,14 @@ impl<'a> MinLoss<'a> {
         }
     }
     fn solve(&mut self) -> usize {
-        if self.rays.is_empty() {
-            panic!("no more rays");
-        }
-        let mut ray = self.rays.pop_front().unwrap();
+        self.step();
+        todo!()
+    }
+
+    fn step(&mut self) {
+        let Some(mut ray) = self.rays.pop_front() else {
+            return;
+        };
         let mut moves = dbg!(ray.next_moves());
         (1..moves.len()).rev().for_each(|idx| {
             if let Some(mv) = moves.get(idx) {
@@ -137,7 +143,6 @@ impl<'a> MinLoss<'a> {
         for ray in &self.rays {
             println!("Ray: {ray}");
         }
-        todo!()
     }
 
     fn move_ray(mut ray: Ray<'_>, mv: Move) -> Ray {
