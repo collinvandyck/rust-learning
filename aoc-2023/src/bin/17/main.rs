@@ -9,7 +9,7 @@ use itertools::Itertools;
 use strum::IntoEnumIterator;
 
 fn main() {
-    let ex1 = include_str!("ex1.txt");
+    let ex1 = include_str!("sm1.txt");
     println!("p1ex1 = {}", min_loss(ex1));
 }
 
@@ -71,6 +71,10 @@ impl<'a> Ray<'a> {
         }
     }
 
+    fn done(&self) -> bool {
+        self.cur == self.dst
+    }
+
     fn step(&mut self, mov: Move) {
         self.cur = mov.tile.pt;
         self.dir.replace(mov.dir);
@@ -93,6 +97,8 @@ impl<'a> Ray<'a> {
                     < 2
             })
             .flat_map(|dir| self.cur.next(dir).map(|pt| (pt, dir)))
+            // don't cycle
+            .filter(|(next_pt, dir)| !self.hst.iter().any(|mv| &mv.tile.pt == next_pt))
             .flat_map(|(next_pt, dir)| {
                 self.map
                     .get(next_pt)
@@ -119,35 +125,41 @@ impl<'a> MinLoss<'a> {
         }
     }
     fn solve(&mut self) -> usize {
-        self.step();
-        self.step();
+        while !self.rays.is_empty() {
+            println!("Step! ({} rays)", self.rays.len());
+            self.step();
+            for ray in &self.rays {
+                //println!("Ray: {ray}");
+            }
+        }
         todo!()
     }
 
-    fn step(&mut self) {
+    fn step(&mut self) -> Vec<Ray<'_>> {
+        let mut dones = vec![];
         let Some(mut ray) = self.rays.pop_front() else {
-            return;
+            return dones;
         };
-        let mut moves = dbg!(ray.next_moves());
+        let mut moves = ray.next_moves();
         (1..moves.len()).rev().for_each(|idx| {
             if let Some(mv) = moves.get(idx) {
                 let mut ray = ray.clone();
-                ray.step(*mv);
-                self.rays.push_front(ray);
+                self.move_ray(ray, mv, &mut dones);
             }
         });
         if let Some(mv) = moves.first() {
-            ray.step(*mv);
-            self.rays.push_front(ray);
+            self.move_ray(ray, mv, &mut dones);
         }
-        println!("Num rays: {}", self.rays.len());
-        for ray in &self.rays {
-            println!("Ray: {ray}");
-        }
+        dones
     }
 
-    fn move_ray(mut ray: Ray<'_>, mv: Move) -> Ray {
-        todo!()
+    fn move_ray(&mut self, mut ray: Ray<'a>, mv: &Move, dones: &mut Vec<Ray<'a>>) {
+        ray.step(*mv);
+        if ray.done() {
+            dones.push(ray);
+        } else {
+            self.rays.push_back(ray);
+        }
     }
 
     fn len(&self) -> usize {
