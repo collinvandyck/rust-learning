@@ -24,10 +24,26 @@ fn main() {
     print_res!(find_min!(1));
     print_res!(find_min!(1, 2));
     print_res!(find_min!(3, 2, 1));
+
+    print_res!(std::vec![1, 2, 3]);
+    print_res!(dvec![1, 2, 3]);
 }
 
 new_func!(foo);
 new_func!(bar);
+
+#[macro_export]
+macro_rules! dvec {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($x * 2);
+            )*
+            temp_vec
+        }
+    };
+}
 
 #[macro_export]
 macro_rules! find_min {
