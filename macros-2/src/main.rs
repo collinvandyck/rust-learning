@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 fn main() {
     pdbg!("foobar");
     pdbg!(vec![1, 2, 3]);
@@ -27,6 +29,11 @@ fn main() {
 
     print_res!(std::vec![1, 2, 3]);
     print_res!(dvec![1, 2, 3]);
+    print_res!(dvec![1, 2, 4]);
+}
+
+struct Fib {
+    n: u64,
 }
 
 new_func!(foo);
