@@ -20,10 +20,24 @@ fn main() {
     test!(true; or false);
     test!(true; or true);
     test!(false; or false);
+
+    print_res!(find_min!(1));
+    print_res!(find_min!(1, 2));
+    print_res!(find_min!(3, 2, 1));
 }
 
 new_func!(foo);
 new_func!(bar);
+
+#[macro_export]
+macro_rules! find_min {
+    ($x:expr) => {
+        ($x)
+    };
+    ($x:expr, $($y:expr),+) => {
+        std::cmp::min($x, find_min!($($y),+))
+    };
+}
 
 #[macro_export]
 macro_rules! test {
