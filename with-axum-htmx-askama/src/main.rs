@@ -1,9 +1,21 @@
+use std::sync::{Arc, Mutex};
+
 use anyhow::Context;
 use askama::Template;
-use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
+use axum::{
+    extract::State,
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{get, post},
+    Form, Router,
+};
 use tower_http::services::ServeDir;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+struct AppState {
+    todos: Mutex<Vec<String>>,
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -16,8 +28,14 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     info!("Initializing router");
+    let app_state = Arc::new(AppState {
+        todos: Mutex::default(),
+    });
     let assets_path = std::env::current_dir().unwrap();
-    let api = Router::new().route("/hello", get(hello_from_the_server));
+    let api = Router::new()
+        .route("/hello", get(hello_from_the_server))
+        .route("/todos", post(add_todo))
+        .with_state(app_state);
     let router = Router::new()
         .nest("/api", api)
         .route("/", get(hello))
@@ -42,6 +60,28 @@ async fn main() -> anyhow::Result<()> {
     info!("Server quit");
 
     Ok(())
+}
+
+#[derive(Template)]
+#[template(path = "todo-list.html")]
+struct TodoList {
+    todos: Vec<String>,
+}
+
+struct TodoRequest {
+    todo: String,
+}
+
+async fn add_todo(
+    State(state): State<Arc<AppState>>,
+    Form(todo): Form<TodoRequest>,
+) -> impl IntoResponse {
+    let mut lock = state.todos.lock().unwrap();
+    lock.push(todo.todo);
+    let tmpl = TodoList {
+        todos: lock.clone(),
+    };
+    HtmlTemplate(tmpl)
 }
 
 async fn hello_from_the_server() -> impl IntoResponse {
