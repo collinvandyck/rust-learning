@@ -1,6 +1,6 @@
 use anyhow::Context;
 use askama::Template;
-use axum::{response::IntoResponse, routing::get, Router};
+use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -24,16 +24,20 @@ async fn main() -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .context("bind to port")?;
+    let addr = listener.local_addr().context("get listener addr")?;
+    info!("Listening on {}", addr);
     axum::serve(listener, router.into_make_service())
         .await
         .context("serve failed")?;
     info!("Server quit");
+
     Ok(())
 }
 
 async fn hello() -> impl IntoResponse {
     let template = HelloTemplate;
-    HtmlTemplate(template);
+    let tmpl = HtmlTemplate(template);
+    tmpl
 }
 
 #[derive(Template)]
@@ -41,3 +45,19 @@ async fn hello() -> impl IntoResponse {
 struct HelloTemplate;
 
 struct HtmlTemplate<T>(T);
+
+impl<T> IntoResponse for HtmlTemplate<T>
+where
+    T: Template,
+{
+    fn into_response(self) -> axum::response::Response {
+        match self.0.render() {
+            Ok(html) => axum::response::Html(html).into_response(),
+            Err(err) => {
+                let code = StatusCode::INTERNAL_SERVER_ERROR;
+                let msg = format!("Failed to render template: {err}");
+                (code, msg).into_response()
+            }
+        }
+    }
+}
