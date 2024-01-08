@@ -27,6 +27,7 @@ async fn main() -> anyhow::Result<()> {
     axum::serve(listener, router.into_make_service())
         .await
         .context("serve failed")?;
+    info!("Server quit");
     Ok(())
 }
 
