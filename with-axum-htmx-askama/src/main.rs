@@ -17,10 +17,13 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Initializing router");
     let assets_path = std::env::current_dir().unwrap();
-    let router = Router::new().route("/", get(hello)).nest_service(
-        "/assets",
-        ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
-    );
+    let router = Router::new()
+        .route("/", get(hello))
+        .route("/another-page", get(another_page))
+        .nest_service(
+            "/assets",
+            ServeDir::new(format!("{}/assets", assets_path.to_str().unwrap())),
+        );
     let port = 8000;
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
     info!("Router initialized");
@@ -39,8 +42,12 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn hello() -> impl IntoResponse {
-    let template = HelloTemplate;
+#[derive(Template)]
+#[template(path = "another_page.html")]
+struct AnotherPageTemplate;
+
+async fn another_page() -> impl IntoResponse {
+    let template = AnotherPageTemplate;
     let tmpl = HtmlTemplate(template);
     tmpl
 }
@@ -48,6 +55,12 @@ async fn hello() -> impl IntoResponse {
 #[derive(Template)]
 #[template(path = "hello.html")]
 struct HelloTemplate;
+
+async fn hello() -> impl IntoResponse {
+    let template = HelloTemplate;
+    let tmpl = HtmlTemplate(template);
+    tmpl
+}
 
 struct HtmlTemplate<T>(T);
 

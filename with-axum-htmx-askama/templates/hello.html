@@ -2,5 +2,12 @@
 {% extends "base.html" %}
 {% block title %}Hello!{% endblock %}
 {% block content %}
-<h1 class="text-green-500">Howdy!</h1>
+<div class="inline-flex flex-row space-x-2">
+    <h1 class="text-green-500">Howdy!</h1>
+    <a
+        href="/another-page"
+        class="text-indigo-500 underline hover:text-indigo-300"
+        >Another page</a
+    >
+</div>
 {% endblock %}
