@@ -17,7 +17,9 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Initializing router");
     let assets_path = std::env::current_dir().unwrap();
+    let api = Router::new().route("/hello", get(hello_from_the_server));
     let router = Router::new()
+        .nest("/api", api)
         .route("/", get(hello))
         .route("/another-page", get(another_page))
         .nest_service(
@@ -40,6 +42,10 @@ async fn main() -> anyhow::Result<()> {
     info!("Server quit");
 
     Ok(())
+}
+
+async fn hello_from_the_server() -> impl IntoResponse {
+    "Hello!"
 }
 
 #[derive(Template)]
