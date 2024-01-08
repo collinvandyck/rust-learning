@@ -1,5 +1,3 @@
-use std::sync::{Arc, Mutex};
-
 use anyhow::Context;
 use askama::Template;
 use axum::{
@@ -9,6 +7,9 @@ use axum::{
     routing::{get, post},
     Form, Router,
 };
+use serde::Deserialize;
+use serde::Serialize;
+use std::sync::{Arc, Mutex};
 use tower_http::services::ServeDir;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -68,6 +69,7 @@ struct TodoList {
     todos: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize)]
 struct TodoRequest {
     todo: String,
 }
