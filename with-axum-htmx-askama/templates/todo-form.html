@@ -1,4 +1,8 @@
-<form class="max-w-md">
+<form 
+	hx-post="/api/todos"
+	hx-target="#todos"
+	hw-swap="innerHTML"
+	class="max-w-md">
     <label for="todo" class="block text-sm font-medium leading-6 text-gray-900"
         >Todo</label
     >
@@ -11,10 +15,11 @@
             placeholder="Replace frontend with htmx"
         />
         <button
-            type="button"
+            type="submit"
             class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
             Add
         </button>
     </div>
 </form>
+<div id="todos" />
