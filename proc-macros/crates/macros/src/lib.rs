@@ -5,4 +5,3 @@ use proc_macro::TokenStream;
 pub fn make_answer(_item: TokenStream) -> TokenStream {
     "fn answer() -> u32 { 42 }".parse().unwrap()
 }
-
