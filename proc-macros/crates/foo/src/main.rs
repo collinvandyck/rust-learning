@@ -1,6 +1,7 @@
-use macros::make_answer;
+use macros::{make_answer, AnswerFn};
 
-make_answer!();
+#[derive(AnswerFn)]
+struct Foo;
 
 fn main() {
     println!("{}", answer());
