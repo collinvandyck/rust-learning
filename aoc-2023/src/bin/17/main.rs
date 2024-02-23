@@ -1,6 +1,7 @@
-use std::fmt::Display;
+#![allow(dead_code, unused)]
 
 use itertools::Itertools;
+use std::fmt::Display;
 
 fn main() {
     let ex = include_str!("ex1.txt");
@@ -17,6 +18,15 @@ impl Map {
         let tiles: Vec<Vec<char>> = s.lines().map(|l| l.trim().chars().collect()).collect();
         assert!(tiles.iter().map(|v| v.len()).all_equal());
         Self { tiles }
+    }
+    fn get(&self, row: usize, col: usize) -> Option<char> {
+        self.tiles.get(row).and_then(|v| v.get(col)).copied()
+    }
+    fn cols(&self) -> usize {
+        self.tiles.first().map(|l| l.len()).unwrap_or_default()
+    }
+    fn rows(&self) -> usize {
+        self.tiles.len()
     }
 }
 
