@@ -17,6 +17,11 @@ struct Map {
 struct Tile {
     ch: char,
     val: u32,
+    pt: Point,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Point {
     row: usize,
     col: usize,
 }
@@ -25,8 +30,7 @@ impl Tile {
     fn from(ch: char, row: usize, col: usize) -> Self {
         Self {
             ch,
-            row,
-            col,
+            pt: Point { row, col },
             val: ch.to_digit(10).unwrap(),
         }
     }
