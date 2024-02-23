@@ -7,8 +7,6 @@ fn main() {
     let ex = include_str!("ex1.txt");
     let map = Map::parse(ex);
     println!("{map}");
-    assert_eq!(map.get(0, 0), Some(Tile::from('2')));
-    assert_eq!(map.get(0, 1), Some(Tile::from('4')));
 }
 
 struct Map {
@@ -19,12 +17,16 @@ struct Map {
 struct Tile {
     ch: char,
     val: u32,
+    row: usize,
+    col: usize,
 }
 
-impl From<char> for Tile {
-    fn from(ch: char) -> Self {
+impl Tile {
+    fn from(ch: char, row: usize, col: usize) -> Self {
         Self {
             ch,
+            row,
+            col,
             val: ch.to_digit(10).unwrap(),
         }
     }
@@ -34,7 +36,14 @@ impl Map {
     fn parse(s: &str) -> Self {
         let tiles: Vec<Vec<Tile>> = s
             .lines()
-            .map(|l| l.trim().chars().map(Into::into).collect())
+            .enumerate()
+            .map(|(row, l)| {
+                l.trim()
+                    .chars()
+                    .enumerate()
+                    .map(|(col, ch)| Tile::from(ch, row, col))
+                    .collect()
+            })
             .collect();
         assert!(tiles.iter().map(|v| v.len()).all_equal());
         Self { tiles }
