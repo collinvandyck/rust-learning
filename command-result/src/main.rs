@@ -10,29 +10,54 @@ use anyhow::Context;
 
 #[tokio::main]
 async fn main() -> StdResult<(), Box<dyn StdErr>> {
-    let output = Command::new("ls")
-        .arg("/")
-        .output()
-        .await
-        .context("command failed")?;
+    let output = Command::new("lssdfkj").arg("/").output().await?;
     println!("output: {output:?}");
     Ok(())
+}
+
+async fn do_stuff() -> StdResult<Outputs, Error> {
+    spawn_valid().await.map(Into::into)
+}
+
+async fn spawn_valid() -> StdResult<Output, Error> {
+    Command::new("ls").arg("/").output().await
+}
+
+async fn spawn_invalid() -> StdResult<Output, Error> {
+    Command::new("ls").arg("/").output().await
 }
 
 #[derive(Debug, thiserror::Error)]
 enum Error {
     #[error("Could not spawn command: {err}")]
-    Spawn { err: io::Error },
+    Spawn { cmd: Command, err: io::Error },
+}
+
+impl Error {
+    fn command(&self) -> Command {
+        match self {
+            Error::Spawn { cmd, err } => cmd.clone(),
+        }
+    }
 }
 
 type Result<T> = std::result::Result<T, Error>;
 
+struct Outputs(Vec<Output>);
+
+impl From<Output> for Outputs {
+    fn from(value: Output) -> Self {
+        Outputs(vec![value])
+    }
+}
+
 #[derive(Debug)]
 struct Output {
+    command: Command,
     inner: std::process::Output,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default, Clone)]
 struct Command {
     name: PathBuf,
     args: Vec<String>,
@@ -58,6 +83,9 @@ impl Command {
         cmd.output()
             .await
             .map(|o| Output { inner: o })
-            .map_err(|err| Error::Spawn { err })
+            .map_err(|err| Error::Spawn {
+                cmd: self.clone(),
+                err,
+            })
     }
 }
