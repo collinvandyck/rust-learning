@@ -6,9 +6,10 @@ use std::fmt::Display;
 fn main() {
     let ex = include_str!("ex1.txt");
     let map = Map::parse(ex);
-    println!("{map}");
+    println!("ex1={}", map.heat_loss());
 }
 
+#[derive(Clone)]
 struct Map {
     tiles: Vec<Vec<Tile>>,
 }
@@ -51,6 +52,9 @@ impl Map {
             .collect();
         assert!(tiles.iter().map(|v| v.len()).all_equal());
         Self { tiles }
+    }
+    fn heat_loss(&self) -> u32 {
+        todo!()
     }
     fn get(&self, row: usize, col: usize) -> Option<Tile> {
         self.tiles.get(row).and_then(|v| v.get(col)).copied()
