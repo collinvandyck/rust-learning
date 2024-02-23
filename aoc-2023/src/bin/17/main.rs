@@ -27,6 +27,24 @@ struct Point {
     col: usize,
 }
 
+struct Crucible<'a> {
+    map: &'a Map,
+    pos: Point,
+    start: Point,
+    end: Point,
+}
+
+impl<'a> Crucible<'a> {
+    fn new(map: &'a Map, start: Point, end: Point) -> Self {
+        Self {
+            map,
+            pos: start,
+            start,
+            end,
+        }
+    }
+}
+
 impl Tile {
     fn from(ch: char, row: usize, col: usize) -> Self {
         Self {
