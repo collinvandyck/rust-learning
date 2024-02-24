@@ -1,6 +1,6 @@
 #![allow(dead_code, unused)]
 use itertools::Itertools;
-use std::fmt::Display;
+use std::{collections::binary_heap, fmt::Display};
 
 fn main() {
     let ex = include_str!("ex1.txt");
@@ -65,11 +65,43 @@ impl Display for Tile {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Visit<'a> {
+    tile: &'a Tile,
+    cost: u32,
+    prev: [Option<Dir>; 3],
+}
+
+impl<'a> Visit<'a> {
+    fn new(tile: &'a Tile, cost: u32) -> Self {
+        Self {
+            tile,
+            cost,
+            prev: [None, None, None],
+        }
+    }
+}
+
+impl<'a> Ord for Visit<'a> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        todo!()
+    }
+}
+
+impl<'a> PartialOrd for Visit<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl Map {
     fn heat_loss(&self) -> u32 {
-        let start = self.get(0, 0).unwrap();
         let goal = self.get(self.rows() - 1, self.cols() - 1).unwrap();
-        for (dir, tile) in self.neighbors(&start) {
+        let start = self.get(0, 0).unwrap();
+        let start = Visit::new(&start, 0);
+        let mut queue = binary_heap::BinaryHeap::new();
+        queue.push(start);
+        for (dir, tile) in self.neighbors(&start.tile) {
             println!("Dir: {dir:?} tile: {tile}");
         }
         0
