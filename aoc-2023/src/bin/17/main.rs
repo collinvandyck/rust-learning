@@ -1,6 +1,10 @@
 #![allow(dead_code, unused)]
 use itertools::Itertools;
-use std::{cmp::Ordering, collections::binary_heap, fmt::Display};
+use std::{
+    cmp::Ordering,
+    collections::{binary_heap, HashMap},
+    fmt::Display,
+};
 
 fn main() {
     let ex = include_str!("ex1.txt");
@@ -13,14 +17,14 @@ struct Map {
     tiles: Vec<Vec<Tile>>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct Tile {
     ch: char,
     val: u32,
     pt: Point,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct Point {
     row: usize,
     col: usize,
@@ -65,10 +69,16 @@ impl Display for Tile {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct State {
     tile: Tile,
     cost: u32,
+    prev: [Option<Dir>; 3],
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct StateKey {
+    tile: Tile,
     prev: [Option<Dir>; 3],
 }
 
@@ -84,6 +94,12 @@ impl State {
             tile,
             cost,
             prev: [None, None, None], // most recent first
+        }
+    }
+    fn key(&self) -> StateKey {
+        StateKey {
+            tile: self.tile,
+            prev: self.prev,
         }
     }
     // returns the next state with the move to the specified tile. if the move is not allowed none
@@ -136,17 +152,14 @@ impl Map {
             queue.push(start);
             queue
         };
+        let mut visited: HashMap<Tile, HashMap<StateKey, u32>> = HashMap::default();
         while let Some(state) = queue.pop() {
             println!("State: {state}");
             for next in self
                 .neighbors(&state.tile)
                 .flat_map(|(dir, tile)| state.next(dir, tile))
             {
-                //
-            }
-            for (dir, tile) in self.neighbors(&state.tile) {
-                let next = state.next(dir, tile);
-                println!("Dir: {dir:?} tile: {tile}");
+                println!("next: {next}");
             }
         }
         0
@@ -180,7 +193,7 @@ impl Map {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Dir {
     Up,
     Down,
