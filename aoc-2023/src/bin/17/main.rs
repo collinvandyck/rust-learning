@@ -14,6 +14,7 @@ fn main() {
     println!("ex1={}", part_1(ex1));
     println!("in1={}", part_1(in1));
     println!("ex2={}", part_2(ex1));
+    println!("in2={}", part_2(in1));
 }
 
 struct Timed<T> {
@@ -135,6 +136,14 @@ impl State {
             prev: self.prev,
         }
     }
+
+    fn can_stop(&self, mode: CrucibleMode) -> bool {
+        match mode {
+            CrucibleMode::Normal => true,
+            CrucibleMode::Ultra => self.prev.iter().take(4).all_equal(),
+        }
+    }
+
     // returns the next state with the move to the specified tile. if the move is not allowed none
     // will be returned
     fn next(&self, dir: Dir, tile: Tile, mode: CrucibleMode) -> Option<Self> {
@@ -161,7 +170,29 @@ impl State {
                 //
                 // each direction chosen must move at least 4 consecutive times.
                 // maximum of 10 consecutive moves before turning
-                todo!()
+                if let Some(last) = self.prev[0] {
+                    if last != dir {
+                        // each direction chosen must move at least 4 consecutive times.
+                        if !self
+                            .prev
+                            .iter()
+                            .skip(1)
+                            .take(3)
+                            .all(|d| d.map(|d| d == last).unwrap_or_default())
+                        {
+                            return None;
+                        }
+                    } else {
+                        // maximum of 10 consecutive moves before turning
+                        if self
+                            .prev
+                            .iter()
+                            .all(|d| d.map(|d| d == dir).unwrap_or_default())
+                        {
+                            return None;
+                        }
+                    }
+                }
             }
         }
         // here we are allowed
@@ -247,7 +278,7 @@ impl Map {
                     }
                 };
                 next.cost = new_cost;
-                if next.tile == goal {
+                if next.tile == goal && next.can_stop(mode) {
                     full_cost.replace(next.cost);
                 } else {
                     queue.push(next);
