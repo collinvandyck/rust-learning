@@ -27,20 +27,25 @@ struct Point {
     col: usize,
 }
 
-struct Crucible<'a> {
-    map: &'a Map,
-    pos: Point,
-    start: Point,
-    end: Point,
-}
-
-impl<'a> Crucible<'a> {
-    fn new(map: &'a Map, start: Point, end: Point) -> Self {
-        Self {
-            map,
-            pos: start,
-            start,
-            end,
+impl Point {
+    fn dir(&self, dir: Dir) -> Option<Self> {
+        match dir {
+            Dir::Up => self
+                .row
+                .checked_sub(1)
+                .map(|row| Self { row, col: self.col }),
+            Dir::Down => Some(Self {
+                row: self.row + 1,
+                col: self.col,
+            }),
+            Dir::Left => self
+                .col
+                .checked_sub(1)
+                .map(|col| Self { row: self.row, col }),
+            Dir::Right => Some(Self {
+                row: self.row,
+                col: self.col + 1,
+            }),
         }
     }
 }
@@ -55,7 +60,21 @@ impl Tile {
     }
 }
 
+impl Display for Tile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.ch)
+    }
+}
+
 impl Map {
+    fn heat_loss(&self) -> u32 {
+        let start = self.get(0, 0).unwrap();
+        let goal = self.get(self.rows() - 1, self.cols() - 1).unwrap();
+        for (dir, tile) in self.neighbors(&start) {
+            println!("Dir: {dir:?} tile: {tile}");
+        }
+        0
+    }
     fn parse(s: &str) -> Self {
         let tiles: Vec<Vec<Tile>> = s
             .lines()
@@ -71,8 +90,8 @@ impl Map {
         assert!(tiles.iter().map(|v| v.len()).all_equal());
         Self { tiles }
     }
-    fn heat_loss(&self) -> u32 {
-        todo!()
+    fn neighbors<'a>(&'a self, tile: &'a Tile) -> impl Iterator<Item = (Dir, Tile)> + 'a {
+        NeighborIter::new(self, tile)
     }
     fn get(&self, row: usize, col: usize) -> Option<Tile> {
         self.tiles.get(row).and_then(|v| v.get(col)).copied()
@@ -82,6 +101,52 @@ impl Map {
     }
     fn rows(&self) -> usize {
         self.tiles.len()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Dir {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+struct NeighborIter<'a> {
+    map: &'a Map,
+    tile: &'a Tile,
+    dirs: [Dir; 4],
+    pos: usize,
+}
+
+impl<'a> Iterator for NeighborIter<'a> {
+    type Item = (Dir, Tile);
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.pos >= self.dirs.len() {
+                return None;
+            }
+            let dir = self.dirs[self.pos];
+            self.pos += 1;
+            let Some(pt) = self.tile.pt.dir(dir) else {
+                continue;
+            };
+            let Some(res) = self.map.get(pt.row, pt.col).map(|tile| (dir, tile)) else {
+                continue;
+            };
+            return Some(res);
+        }
+    }
+}
+
+impl<'a> NeighborIter<'a> {
+    fn new(map: &'a Map, tile: &'a Tile) -> Self {
+        Self {
+            map,
+            tile,
+            dirs: [Dir::Up, Dir::Down, Dir::Left, Dir::Right],
+            pos: 0,
+        }
     }
 }
 
