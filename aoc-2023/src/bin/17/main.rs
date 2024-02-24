@@ -72,6 +72,12 @@ struct Visit<'a> {
     prev: [Option<Dir>; 3],
 }
 
+impl Display for Visit<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}", self.tile, self.cost)
+    }
+}
+
 impl<'a> Visit<'a> {
     fn new(tile: &'a Tile, cost: u32) -> Self {
         Self {
@@ -84,7 +90,8 @@ impl<'a> Visit<'a> {
 
 impl<'a> Ord for Visit<'a> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.cost.cmp(&other.cost)
+        // min heap
+        other.cost.cmp(&self.cost)
     }
 }
 
@@ -106,6 +113,7 @@ impl Map {
             queue
         };
         if let Some(visit) = queue.pop() {
+            println!("Visit: {visit}");
             for (dir, tile) in self.neighbors(&visit.tile) {
                 println!("Dir: {dir:?} tile: {tile}");
             }
