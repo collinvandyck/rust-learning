@@ -1,5 +1,4 @@
 #![allow(dead_code, unused)]
-
 use itertools::Itertools;
 use std::fmt::Display;
 
@@ -128,13 +127,15 @@ impl<'a> Iterator for NeighborIter<'a> {
             }
             let dir = self.dirs[self.pos];
             self.pos += 1;
-            let Some(pt) = self.tile.pt.dir(dir) else {
-                continue;
-            };
-            let Some(res) = self.map.get(pt.row, pt.col).map(|tile| (dir, tile)) else {
-                continue;
-            };
-            return Some(res);
+            match self
+                .tile
+                .pt
+                .dir(dir)
+                .and_then(|pt| self.map.get(pt.row, pt.col).map(|tile| (dir, tile)))
+            {
+                Some(next) => return Some(next),
+                None => continue,
+            }
         }
     }
 }
