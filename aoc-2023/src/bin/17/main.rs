@@ -167,6 +167,7 @@ impl Map {
                             if &new_cost < e.get() {
                                 e.insert(new_cost);
                             } else {
+                                // the old cost for the same key was greater. just use this one
                                 continue;
                             }
                         }
@@ -178,7 +179,9 @@ impl Map {
                         v.insert(HashMap::from([(key, new_cost)]));
                     }
                 };
+                next.cost = new_cost;
                 println!("next: {next}");
+                queue.push(next);
             }
         }
         0
