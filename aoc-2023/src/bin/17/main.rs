@@ -138,38 +138,43 @@ impl State {
     // returns the next state with the move to the specified tile. if the move is not allowed none
     // will be returned
     fn next(&self, dir: Dir, tile: Tile, mode: CrucibleMode) -> Option<Self> {
-        match mode {
-            CrucibleMode::Normal => {
-                if self
-                    .prev
-                    .iter()
-                    .take(mode.prev_len())
-                    .all(|d| d.map(|d| d == dir).unwrap_or_default())
-                {
-                    // disallow more than three moves in the same dir
-                    return None;
-                }
-                if self.prev[0]
-                    .map(|d| d.opposite() == dir)
-                    .unwrap_or_default()
-                {
-                    // disallow 180 degree turns
-                    return None;
-                }
-                // here we are allowed
-                let mut prev = self.prev;
-                for i in (1..mode.prev_len()).rev() {
-                    prev[i] = prev[i - 1];
-                }
-                prev[0] = Some(dir);
-                Some(Self {
-                    tile,
-                    prev,
-                    cost: self.cost + tile.val,
-                })
-            }
-            CrucibleMode::Ultra => todo!(),
+        if self
+            .prev
+            .iter()
+            .take(mode.prev_len())
+            .all(|d| d.map(|d| d == dir).unwrap_or_default())
+        {
+            // disallow more than three moves in the same dir
+            return None;
         }
+        if self.prev[0]
+            .map(|d| d.opposite() == dir)
+            .unwrap_or_default()
+        {
+            // disallow 180 degree turns
+            return None;
+        }
+        match mode {
+            CrucibleMode::Normal => {}
+            CrucibleMode::Ultra => {
+                // rules
+                //
+                // each direction chosen must move at least 4 consecutive times.
+                // maximum of 10 consecutive moves before turning
+                todo!()
+            }
+        }
+        // here we are allowed
+        let mut prev = self.prev;
+        for i in (1..mode.prev_len()).rev() {
+            prev[i] = prev[i - 1];
+        }
+        prev[0] = Some(dir);
+        Some(Self {
+            tile,
+            prev,
+            cost: self.cost + tile.val,
+        })
     }
 }
 
