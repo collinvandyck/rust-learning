@@ -1,6 +1,6 @@
 #![allow(dead_code, unused)]
 use itertools::Itertools;
-use std::{collections::binary_heap, fmt::Display};
+use std::{cmp::Ordering, collections::binary_heap, fmt::Display};
 
 fn main() {
     let ex = include_str!("ex1.txt");
@@ -84,7 +84,7 @@ impl<'a> Visit<'a> {
 
 impl<'a> Ord for Visit<'a> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        todo!()
+        self.cost.cmp(&other.cost)
     }
 }
 
