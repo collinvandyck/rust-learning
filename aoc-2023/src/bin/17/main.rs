@@ -4,12 +4,35 @@ use std::{
     cmp::Ordering,
     collections::{binary_heap, hash_map::Entry, HashMap},
     fmt::Display,
+    time::{Duration, Instant},
+    u32,
 };
 
 fn main() {
-    let ex = include_str!("ex1.txt");
-    let map = Map::parse(ex);
-    println!("ex1={}", map.heat_loss());
+    let ex1 = include_str!("ex1.txt");
+    let in1 = include_str!("in1.txt");
+    println!("ex1={}", part_1(ex1));
+    println!("in1={}", part_1(in1));
+}
+
+struct Timed<T> {
+    val: T,
+    dur: Duration,
+}
+
+impl<T: Display> Display for Timed<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ({:.03?}s)", self.val, self.dur.as_secs_f64())
+    }
+}
+
+fn part_1(input: &str) -> Timed<u32> {
+    let start = Instant::now();
+    let map = Map::parse(input);
+    Timed {
+        val: map.heat_loss(),
+        dur: start.elapsed(),
+    }
 }
 
 #[derive(Clone)]
@@ -152,14 +175,17 @@ impl Map {
             queue.push(start);
             queue
         };
+        let mut full_cost: Option<u32> = None;
         let mut visited: HashMap<Tile, HashMap<StateKey, u32>> = HashMap::default();
         while let Some(state) = queue.pop() {
-            println!("State: {state}");
             let next = self
                 .neighbors(&state.tile)
                 .flat_map(|(dir, tile)| state.next(dir, tile));
             for mut next in next {
                 let new_cost = state.cost + next.tile.val;
+                if full_cost.map(|fc| fc < new_cost).unwrap_or_default() {
+                    continue;
+                }
                 let key = next.key();
                 match visited.entry(next.tile) {
                     Entry::Occupied(mut e) => match e.get_mut().entry(key) {
@@ -180,11 +206,14 @@ impl Map {
                     }
                 };
                 next.cost = new_cost;
-                println!("next: {next}");
-                queue.push(next);
+                if next.tile == goal {
+                    full_cost.replace(next.cost);
+                } else {
+                    queue.push(next);
+                }
             }
         }
-        0
+        full_cost.unwrap_or_default()
     }
     fn parse(s: &str) -> Self {
         let tiles: Vec<Vec<Tile>> = s
