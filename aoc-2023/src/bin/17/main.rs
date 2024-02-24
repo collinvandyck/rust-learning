@@ -187,24 +187,14 @@ impl Map {
                     continue;
                 }
                 let key = next.key();
-                match visited.entry(next.tile) {
-                    Entry::Occupied(mut e) => match e.get_mut().entry(key) {
-                        Entry::Occupied(mut e) => {
-                            if &new_cost < e.get() {
-                                e.insert(new_cost);
-                            } else {
-                                // the old cost for the same key was greater. just use this one
-                                continue;
-                            }
-                        }
-                        Entry::Vacant(e) => {
-                            e.insert(new_cost);
-                        }
-                    },
-                    Entry::Vacant(v) => {
-                        v.insert(HashMap::from([(key, new_cost)]));
-                    }
-                };
+                let old_cost = visited
+                    .entry(next.tile)
+                    .or_insert_with(|| HashMap::from([(key, new_cost)]))
+                    .entry(key)
+                    .or_insert(new_cost);
+                if &new_cost > old_cost {
+                    continue;
+                }
                 next.cost = new_cost;
                 if next.tile == goal {
                     full_cost.replace(next.cost);
