@@ -30,7 +30,7 @@ fn part_1(input: &str) -> Timed<u32> {
     let start = Instant::now();
     let map = Map::parse(input);
     Timed {
-        val: map.heat_loss(),
+        val: map.heat_loss(CrucibleMode::Normal),
         dur: start.elapsed(),
     }
 }
@@ -96,13 +96,13 @@ impl Display for Tile {
 struct State {
     tile: Tile,
     cost: u32,
-    prev: [Option<Dir>; 3],
+    prev: [Option<Dir>; 10],
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct StateKey {
     tile: Tile,
-    prev: [Option<Dir>; 3],
+    prev: [Option<Dir>; 10],
 }
 
 impl Display for State {
@@ -116,7 +116,7 @@ impl State {
         Self {
             tile,
             cost,
-            prev: [None, None, None], // most recent first
+            prev: [None; 10], // most recent first
         }
     }
     fn key(&self) -> StateKey {
@@ -127,28 +127,54 @@ impl State {
     }
     // returns the next state with the move to the specified tile. if the move is not allowed none
     // will be returned
-    fn next(&self, dir: Dir, tile: Tile) -> Option<Self> {
-        if self
-            .prev
-            .iter()
-            .all(|d| d.map(|d| d == dir).unwrap_or_default())
-        {
-            // disallow more than three moves in the same dir
-            return None;
+    fn next(&self, dir: Dir, tile: Tile, mode: CrucibleMode) -> Option<Self> {
+        match mode {
+            CrucibleMode::Normal => {
+                if self
+                    .prev
+                    .iter()
+                    .take(mode.prev_len())
+                    .all(|d| d.map(|d| d == dir).unwrap_or_default())
+                {
+                    // disallow more than three moves in the same dir
+                    return None;
+                }
+                if self.prev[0]
+                    .map(|d| d.opposite() == dir)
+                    .unwrap_or_default()
+                {
+                    // disallow 180 degree turns
+                    return None;
+                }
+                // here we are allowed
+                let mut prev = self.prev;
+                for i in (1..mode.prev_len()).rev() {
+                    prev[i] = prev[i - 1];
+                }
+                prev[0] = Some(dir);
+                Some(Self {
+                    tile,
+                    prev,
+                    cost: self.cost + tile.val,
+                })
+            }
+            CrucibleMode::Ultra => todo!(),
         }
-        if self.prev[0]
-            .map(|d| d.opposite() == dir)
-            .unwrap_or_default()
-        {
-            // disallow 180 degree turns
-            return None;
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CrucibleMode {
+    Normal,
+    Ultra,
+}
+
+impl CrucibleMode {
+    fn prev_len(&self) -> usize {
+        match self {
+            CrucibleMode::Normal => 3,
+            CrucibleMode::Ultra => 10,
         }
-        // here we are allowed
-        Some(Self {
-            tile,
-            cost: self.cost + tile.val,
-            prev: [Some(dir), self.prev[0], self.prev[1]],
-        })
     }
 }
 
@@ -166,7 +192,7 @@ impl PartialOrd for State {
 }
 
 impl Map {
-    fn heat_loss(&self) -> u32 {
+    fn heat_loss(&self, mode: CrucibleMode) -> u32 {
         let start = self.get(0, 0).unwrap();
         let goal = self.get(self.rows() - 1, self.cols() - 1).unwrap();
         let mut queue = {
@@ -180,21 +206,31 @@ impl Map {
         while let Some(state) = queue.pop() {
             let next = self
                 .neighbors(&state.tile)
-                .flat_map(|(dir, tile)| state.next(dir, tile));
+                .flat_map(|(dir, tile)| state.next(dir, tile, mode));
             for mut next in next {
                 let new_cost = state.cost + next.tile.val;
                 if full_cost.map(|fc| fc < new_cost).unwrap_or_default() {
                     continue;
                 }
                 let key = next.key();
-                let old_cost = visited
-                    .entry(next.tile)
-                    .or_insert_with(|| HashMap::from([(key, new_cost)]))
-                    .entry(key)
-                    .or_insert(new_cost);
-                if &new_cost > old_cost {
-                    continue;
-                }
+                match visited.entry(next.tile) {
+                    Entry::Occupied(mut e) => match e.get_mut().entry(key) {
+                        Entry::Occupied(mut e) => {
+                            if &new_cost < e.get() {
+                                e.insert(new_cost);
+                            } else {
+                                // the old cost for the same key was greater. just use this one
+                                continue;
+                            }
+                        }
+                        Entry::Vacant(e) => {
+                            e.insert(new_cost);
+                        }
+                    },
+                    Entry::Vacant(v) => {
+                        v.insert(HashMap::from([(key, new_cost)]));
+                    }
+                };
                 next.cost = new_cost;
                 if next.tile == goal {
                     full_cost.replace(next.cost);
