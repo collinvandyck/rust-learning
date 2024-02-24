@@ -66,36 +66,61 @@ impl Display for Tile {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Visit<'a> {
-    tile: &'a Tile,
+struct State {
+    tile: Tile,
     cost: u32,
     prev: [Option<Dir>; 3],
 }
 
-impl Display for Visit<'_> {
+impl Display for State {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}:{}", self.tile, self.cost)
     }
 }
 
-impl<'a> Visit<'a> {
-    fn new(tile: &'a Tile, cost: u32) -> Self {
+impl State {
+    fn new(tile: Tile, cost: u32) -> Self {
         Self {
             tile,
             cost,
-            prev: [None, None, None],
+            prev: [None, None, None], // most recent first
         }
+    }
+    // returns the next state with the move to the specified tile. if the move is not allowed none
+    // will be returned
+    fn next(&self, dir: Dir, tile: Tile) -> Option<Self> {
+        if self
+            .prev
+            .iter()
+            .all(|d| d.map(|d| d == dir).unwrap_or_default())
+        {
+            // disallow more than three moves in the same dir
+            return None;
+        }
+        if self.prev[0]
+            .map(|d| d.opposite() == dir)
+            .unwrap_or_default()
+        {
+            // disallow 180 degree turns
+            return None;
+        }
+        // here we are allowed
+        Some(Self {
+            tile,
+            cost: self.cost + tile.val,
+            prev: [Some(dir), self.prev[0], self.prev[1]],
+        })
     }
 }
 
-impl<'a> Ord for Visit<'a> {
+impl Ord for State {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         // min heap
         other.cost.cmp(&self.cost)
     }
 }
 
-impl<'a> PartialOrd for Visit<'a> {
+impl PartialOrd for State {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
@@ -106,14 +131,21 @@ impl Map {
         let start = self.get(0, 0).unwrap();
         let goal = self.get(self.rows() - 1, self.cols() - 1).unwrap();
         let mut queue = {
-            let start = Visit::new(&start, 0);
+            let start = State::new(start, 0);
             let mut queue = binary_heap::BinaryHeap::new();
             queue.push(start);
             queue
         };
-        if let Some(visit) = queue.pop() {
-            println!("Visit: {visit}");
-            for (dir, tile) in self.neighbors(&visit.tile) {
+        while let Some(state) = queue.pop() {
+            println!("State: {state}");
+            for next in self
+                .neighbors(&state.tile)
+                .flat_map(|(dir, tile)| state.next(dir, tile))
+            {
+                //
+            }
+            for (dir, tile) in self.neighbors(&state.tile) {
+                let next = state.next(dir, tile);
                 println!("Dir: {dir:?} tile: {tile}");
             }
         }
@@ -154,6 +186,17 @@ enum Dir {
     Down,
     Left,
     Right,
+}
+
+impl Dir {
+    fn opposite(&self) -> Dir {
+        match self {
+            Dir::Up => Dir::Down,
+            Dir::Down => Dir::Up,
+            Dir::Left => Dir::Right,
+            Dir::Right => Dir::Left,
+        }
+    }
 }
 
 struct NeighborIter<'a> {
