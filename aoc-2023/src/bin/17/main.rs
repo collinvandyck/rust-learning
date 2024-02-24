@@ -109,7 +109,6 @@ impl Map {
             let start = Visit::new(&start, 0);
             let mut queue = binary_heap::BinaryHeap::new();
             queue.push(start);
-            queue.push(Visit::new(&goal, 100));
             queue
         };
         if let Some(visit) = queue.pop() {
