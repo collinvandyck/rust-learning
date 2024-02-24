@@ -13,6 +13,7 @@ fn main() {
     let in1 = include_str!("in1.txt");
     println!("ex1={}", part_1(ex1));
     println!("in1={}", part_1(in1));
+    println!("ex2={}", part_2(ex1));
 }
 
 struct Timed<T> {
@@ -31,6 +32,15 @@ fn part_1(input: &str) -> Timed<u32> {
     let map = Map::parse(input);
     Timed {
         val: map.heat_loss(CrucibleMode::Normal),
+        dur: start.elapsed(),
+    }
+}
+
+fn part_2(input: &str) -> Timed<u32> {
+    let start = Instant::now();
+    let map = Map::parse(input);
+    Timed {
+        val: map.heat_loss(CrucibleMode::Ultra),
         dur: start.elapsed(),
     }
 }
