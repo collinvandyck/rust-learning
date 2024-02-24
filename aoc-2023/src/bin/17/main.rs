@@ -96,13 +96,18 @@ impl<'a> PartialOrd for Visit<'a> {
 
 impl Map {
     fn heat_loss(&self) -> u32 {
-        let goal = self.get(self.rows() - 1, self.cols() - 1).unwrap();
         let start = self.get(0, 0).unwrap();
-        let start = Visit::new(&start, 0);
-        let mut queue = binary_heap::BinaryHeap::new();
-        queue.push(start);
-        for (dir, tile) in self.neighbors(&start.tile) {
-            println!("Dir: {dir:?} tile: {tile}");
+        let goal = self.get(self.rows() - 1, self.cols() - 1).unwrap();
+        let mut queue = {
+            let start = Visit::new(&start, 0);
+            let mut queue = binary_heap::BinaryHeap::new();
+            queue.push(start);
+            queue
+        };
+        if let Some(visit) = queue.pop() {
+            for (dir, tile) in self.neighbors(&visit.tile) {
+                println!("Dir: {dir:?} tile: {tile}");
+            }
         }
         0
     }
