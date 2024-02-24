@@ -2,7 +2,7 @@
 use itertools::Itertools;
 use std::{
     cmp::Ordering,
-    collections::{binary_heap, HashMap},
+    collections::{binary_heap, hash_map::Entry, HashMap},
     fmt::Display,
 };
 
@@ -155,10 +155,29 @@ impl Map {
         let mut visited: HashMap<Tile, HashMap<StateKey, u32>> = HashMap::default();
         while let Some(state) = queue.pop() {
             println!("State: {state}");
-            for next in self
+            let next = self
                 .neighbors(&state.tile)
-                .flat_map(|(dir, tile)| state.next(dir, tile))
-            {
+                .flat_map(|(dir, tile)| state.next(dir, tile));
+            for mut next in next {
+                let new_cost = state.cost + next.tile.val;
+                let key = next.key();
+                match visited.entry(next.tile) {
+                    Entry::Occupied(mut e) => match e.get_mut().entry(key) {
+                        Entry::Occupied(mut e) => {
+                            if &new_cost < e.get() {
+                                e.insert(new_cost);
+                            } else {
+                                continue;
+                            }
+                        }
+                        Entry::Vacant(e) => {
+                            e.insert(new_cost);
+                        }
+                    },
+                    Entry::Vacant(v) => {
+                        v.insert(HashMap::from([(key, new_cost)]));
+                    }
+                };
                 println!("next: {next}");
             }
         }
