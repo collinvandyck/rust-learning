@@ -1,18 +1,16 @@
 #![allow(unused)]
-use macros::{as_is, AnswerFn, Barks};
 
-struct Bar {
-    name: String,
-}
+use macros::{as_is, my_proc, MyProc};
 
-#[derive(AnswerFn, Barks, Default)]
+my_proc!();
+#[derive(MyProc, Default, Debug)]
 struct Foo {
     name: String,
 }
 
 #[as_is(hi => "foo")]
 fn says_hello() {
-    println!("hello");
+    println!("says_hello()");
 }
 
 impl Foo {
@@ -22,7 +20,11 @@ impl Foo {
 }
 
 fn main() {
-    println!("{}", answer());
-    println!("{}", barks());
+    let f = Foo {
+        name: String::from("foo"),
+    };
+    println!("mpd: {}", my_proc_derive());
+    println!("foo: {f:#?}");
+    my_proc();
     says_hello();
 }
