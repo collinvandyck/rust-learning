@@ -1,11 +1,22 @@
 #![allow(unused)]
 
-#[derive(foo_derive::IsFoo)]
-struct Foo {
+trait Foo {
+    fn foo(&self) -> String;
+}
+
+#[derive(Debug, foo_derive::Foo)]
+struct Person {
     #[inst]
     name: &'static str,
 }
 
+impl Default for Person {
+    fn default() -> Self {
+        Self { name: "Collin" }
+    }
+}
+
 fn main() {
-    Foo { name: "Collin" }.hi();
+    Person::default().hi();
+    println!("{}", Person::default().foo());
 }
