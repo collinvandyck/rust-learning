@@ -2,13 +2,20 @@
 
 extern crate proc_macro;
 use proc_macro::TokenStream;
+use quote::quote;
+use syn::{parse_macro_input, DeriveInput};
 
-mod derive;
-
-#[proc_macro_derive(MyProc, attributes(my_proc))]
-pub fn my_proc_derive(_item: TokenStream) -> TokenStream {
-    println!("my_proc_derive: {_item}");
-    "fn my_proc_derive() -> u32 { 43 }".parse().unwrap()
+#[proc_macro_derive(MyProc, attributes(inst))]
+pub fn my_proc_derive(item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as DeriveInput);
+    let expanded = quote! {
+        impl Foo {
+            fn hi(&self) {
+                println!("hello from {}", self.name);
+            }
+        }
+    };
+    TokenStream::from(expanded)
 }
 
 #[proc_macro_attribute]

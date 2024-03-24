@@ -4,10 +4,10 @@ use macros::MyProc;
 
 #[derive(MyProc)]
 struct Foo {
-    #[my_proc]
-    name: String,
+    #[inst]
+    name: &'static str,
 }
 
-impl Foo {}
-
-fn main() {}
+fn main() {
+    Foo { name: "Collin" }.hi();
+}
