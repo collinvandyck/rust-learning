@@ -1,10 +1,10 @@
 #![allow(unused)]
 
-use macros::{as_is, my_proc, MyProc};
+use macros::{as_is, MyProc};
 
-my_proc!();
 #[derive(MyProc, Default, Debug)]
 struct Foo {
+    #[my_proc]
     name: String,
 }
 
@@ -25,6 +25,5 @@ fn main() {
     };
     println!("mpd: {}", my_proc_derive());
     println!("foo: {f:#?}");
-    my_proc();
     says_hello();
 }
