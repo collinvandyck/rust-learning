@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
@@ -16,12 +14,16 @@ pub fn my_proc_derive(item: TokenStream) -> TokenStream {
     else {
         panic!("must be a struct")
     };
+    // for each struct field, generate a method to debug it. these methods
+    // are token streams and will be interpolated into the result token stream.
     let methods = fields.iter().filter_map(|f| {
         f.ident.as_ref().map(|field_ident| {
             let method_ident = format_ident!("debug_{}", field_ident);
             quote! {
                 fn #method_ident(&self) {
-                    println!("{} reporting for duty", stringify!(#method_ident));
+                    println!("{} is {}",
+                        stringify!(#field_ident),
+                        self.#field_ident);
                 }
             }
         })
@@ -45,9 +47,4 @@ pub fn my_proc_derive(item: TokenStream) -> TokenStream {
         }
     };
     TokenStream::from(expanded)
-}
-
-#[proc_macro_attribute]
-pub fn as_is(attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
 }

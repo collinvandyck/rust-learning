@@ -1,9 +1,10 @@
+// a trait we define here but would be defined closer to the derive macro in practice
 trait Foo {
     fn foo(&self) -> String;
 }
 
 // deriving Foo implements Foo for the struct and also adds methods for each field.
-#[derive(Debug, foo_derive::Foo)]
+#[derive(foo_derive::Foo)]
 struct Person {
     name: &'static str,
     age: u8,
