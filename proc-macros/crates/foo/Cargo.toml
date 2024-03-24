@@ -8,4 +8,4 @@ name = "foo"
 path = "src/main.rs"
 
 [dependencies]
-macros = { path = "../macros" }
+foo_derive = { path = "../foo_derive" }

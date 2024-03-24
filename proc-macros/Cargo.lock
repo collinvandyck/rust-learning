@@ -6,11 +6,11 @@ version = 3
 name = "foo"
 version = "0.1.0"
 dependencies = [
- "macros",
+ "foo_derive",
 ]
 
 [[package]]
-name = "macros"
+name = "foo_derive"
 version = "0.1.0"
 dependencies = [
  "quote",

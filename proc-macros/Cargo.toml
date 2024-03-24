@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
 	"crates/foo",
-	"crates/macros",
+	"crates/foo_derive",
 ]
 
 [workspace.dependencies]
