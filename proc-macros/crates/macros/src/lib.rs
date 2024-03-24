@@ -10,11 +10,9 @@ pub fn my_proc_derive(item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as DeriveInput);
     let name = input.ident;
     let expanded = quote! {
-        impl Foo {
+        impl #name {
             fn hi(&self) {
-                println!("hello from {}, {}",
-                         stringify!(#name),
-                         self.name);
+                println!("hello from {}, {}", stringify!(#name), self.name);
             }
         }
     };
