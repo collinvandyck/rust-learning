@@ -17,7 +17,20 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt().init();
 
     info!("Starting http server...");
-    let http = Http::start().await?;
+    let config = Config {
+        greeting: "Hello".to_string(),
+    };
+    let http = Http::start(config).await?;
+
+    let port = http.addr.port();
+    let client = async move {
+        let url = format!("http://localhost:{port}");
+        let ping = reqwest::get(format!("{url}/ping")).await?.text().await?;
+        info!("client ping: {ping}");
+        let pong = reqwest::get(format!("{url}/pong")).await?.text().await?;
+        info!("client pong: {pong}");
+        anyhow::Ok(())
+    };
 
     select! {
         res = http.wait() => {
@@ -26,6 +39,9 @@ async fn main() -> Result<()> {
             } else {
                 info!("http quit");
             }
+        }
+        _ = client => {
+            info!("client done");
         }
     }
 
@@ -40,16 +56,37 @@ struct Http {
     rx: HttpWait,
 }
 
+// this config can be populated however we like
+struct Config {
+    greeting: String,
+}
+
+/// The App is a configurable struct which sets up the axum router to delegate to its handler
+/// methods. The config is used in the handler methods to demonstrate the flow.
 struct App {
     router: Option<Router<()>>,
+    config: Config,
 }
 
 impl App {
-    fn new() -> Self {
-        let mut app = App { router: None };
-        let router = Router::<()>::new().route("/", get(|| async { "pong" }));
+    fn new(config: Config) -> Self {
+        let mut app = App {
+            router: None,
+            config,
+        };
+        let router = Router::<()>::new()
+            .route("/ping", get(app.ping()))
+            .route("/pong", get(app.pong()));
         app.router.replace(router);
         app
+    }
+
+    fn ping(&self) -> String {
+        format!("{} PING", self.config.greeting)
+    }
+
+    fn pong(&self) -> String {
+        format!("{} PONG", self.config.greeting)
     }
 
     async fn serve(mut self, listener: TcpListener) -> Result<()> {
@@ -58,16 +95,13 @@ impl App {
             .context("axum quit")?;
         Ok(())
     }
-
-    fn pong(&self) {}
 }
 
 impl Http {
-    async fn start() -> Result<Self> {
+    async fn start(config: Config) -> Result<Self> {
         let listener = tokio::net::TcpListener::bind("0.0.0.0:0").await?;
         let addr = listener.local_addr()?;
-        info!(?addr, "Listening on");
-        let app = App::new();
+        let app = App::new(config);
         let (tx, rx) = tokio::sync::mpsc::channel(1);
         tokio::spawn(async move {
             let res = app.serve(listener).await;
