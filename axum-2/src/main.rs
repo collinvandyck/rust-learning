@@ -1,9 +1,10 @@
 #![allow(unused)]
 
-use std::{net::SocketAddr, time::Duration};
+use std::{io, net::SocketAddr, sync::Arc, time::Duration};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use axum::{routing::get, Router};
+use tokio::sync::{mpsc, Mutex};
 use tracing::info;
 
 #[tokio::main]
@@ -16,9 +17,13 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+type IoResult = std::result::Result<(), io::Error>;
+type IoResultRx = mpsc::Receiver<IoResult>;
+type HttpWait = Arc<tokio::sync::Mutex<IoResultRx>>;
+
 struct Http {
     addr: SocketAddr,
-    rx: tokio::sync::mpsc::Receiver<std::result::Result<(), std::io::Error>>,
+    rx: HttpWait,
 }
 
 struct Ctrl {}
@@ -34,6 +39,19 @@ impl Http {
             let res = axum::serve(listener, app).await;
             tx.send(res).await;
         });
-        Ok(Self { addr, rx })
+        Ok(Self {
+            addr,
+            rx: Arc::new(Mutex::new(rx)),
+        })
+    }
+
+    async fn wait(&self) -> Result<()> {
+        self.rx
+            .lock()
+            .await
+            .recv()
+            .await
+            .context("http listener quit")?;
+        Ok(())
     }
 }
