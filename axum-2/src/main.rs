@@ -1,7 +1,11 @@
 #![allow(unused)]
 
 use anyhow::{Context, Result};
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Json, Router,
+};
+use serde::{Deserialize, Serialize};
 use std::{io, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
     net::TcpListener,
@@ -29,6 +33,14 @@ async fn main() -> Result<()> {
         info!("client ping: {ping}");
         let pong = reqwest::get(format!("{url}/pong")).await?.text().await?;
         info!("client pong: {pong}");
+        let echo = reqwest::Client::new()
+            .post(format!("{url}/echo"))
+            .body("hi")
+            .send()
+            .await?
+            .text()
+            .await?;
+        info!("client echo: {echo}");
         anyhow::Ok(())
     };
 
@@ -57,6 +69,7 @@ struct Http {
 }
 
 // this config can be populated however we like
+#[derive(Clone)]
 struct Config {
     greeting: String,
 }
@@ -64,21 +77,47 @@ struct Config {
 /// The App is a configurable struct which sets up the axum router to delegate to its handler
 /// methods. The config is used in the handler methods to demonstrate the flow.
 struct App {
-    router: Option<Router<()>>,
+    router: Option<Router<Arc<State>>>,
     config: Config,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Echo {
+    message: String,
+}
+
+#[derive(Clone)]
+struct State {
+    config: Config,
+}
+
+impl State {
+    async fn echo(&self, echo: Echo) -> String {
+        String::from("echo response")
+    }
 }
 
 impl App {
     fn new(config: Config) -> Self {
         let mut app = App {
             router: None,
-            config,
+            config: config.clone(),
         };
-        let router = Router::<()>::new()
+        let state = State {
+            config: config.clone(),
+        };
+        let state = Arc::new(state);
+        let router = Router::new()
             .route("/ping", get(app.ping()))
-            .route("/pong", get(app.pong()));
+            .route("/pong", get(app.pong()))
+            .route("/echo", post("ok"))
+            .with_state(state);
         app.router.replace(router);
         app
+    }
+
+    async fn echo(&self, echo: Echo) -> String {
+        String::from("echo response")
     }
 
     fn ping(&self) -> String {
@@ -90,6 +129,7 @@ impl App {
     }
 
     async fn serve(mut self, listener: TcpListener) -> Result<()> {
+        axum::serve(listener, self.router.take().unwrap());
         axum::serve(listener, self.router.take().unwrap())
             .await
             .context("axum quit")?;
