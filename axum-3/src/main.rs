@@ -7,21 +7,26 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use tokio::sync::oneshot;
+use tokio::sync::{oneshot, Mutex};
 use tracing::{error, info};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt().init();
 
-    let config = Config { answer: 42 };
+    let config = Config {
+        answer: 42,
+        bump: Arc::default(),
+    };
     let http = Http::start(config).await?;
     info!("Listening on {}", http.addr);
     let test = async {
         let client = Client(reqwest::Client::new());
-        info!("root: {}", client.get_string("/root").await?);
         info!("echo ping: {}", client.post_string("/echo", "ping").await?);
         info!("answer: {}", client.get_string("/answer").await?);
+        for _ in 0..5 {
+            info!("bump: {}", client.get_string("/bump").await?);
+        }
         anyhow::Ok(())
     };
     tokio::select! {
@@ -43,34 +48,38 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+/// The config that is passed to Http::start, and ends up getting cloned into the Handler.
 #[derive(Clone)]
 struct Config {
     answer: i32,
+    bump: Arc<Mutex<i32>>,
 }
 
+/// Responsible for starting the http server. The wait method can be used to know when it quits.
 struct Http {
     addr: SocketAddr,
     rx: oneshot::Receiver<Result<()>>,
 }
 
-struct Handler {
-    config: Config,
-}
-
-impl Handler {
-    fn new(config: Config) -> Self {
-        Self { config }
-    }
-}
-
 impl Http {
     async fn start(config: Config) -> Result<Self> {
+        type HandlerState = State<Arc<Handler>>;
         let state = Arc::new(Handler::new(config.clone()));
         let app = Router::new()
-            .route("/root", get(root))
-            .route("/echo", post(echo))
-            .route("/answer", get(answer))
-            .route("/", get(|| async { "Hello, World!" }))
+            .route(
+                "/echo",
+                post(|State(handler): HandlerState, body: Bytes| async move {
+                    handler.echo(body).await
+                }),
+            )
+            .route(
+                "/answer",
+                get(|State(handler): HandlerState| async move { handler.answer().await }),
+            )
+            .route(
+                "/bump",
+                get(|State(handler): HandlerState| async move { handler.bump().await }),
+            )
             .with_state(state.clone());
         let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
         let addr = listener.local_addr()?;
@@ -88,16 +97,28 @@ impl Http {
     }
 }
 
-async fn echo(body: Bytes) -> String {
-    String::from_utf8(body.to_vec()).unwrap()
+struct Handler {
+    config: Config,
 }
 
-async fn root() -> &'static str {
-    "hi"
-}
+impl Handler {
+    fn new(config: Config) -> Self {
+        Self { config }
+    }
 
-async fn answer(State(handler): State<Arc<Handler>>) -> String {
-    handler.config.answer.to_string()
+    async fn answer(&self) -> String {
+        self.config.answer.to_string()
+    }
+
+    async fn echo(&self, bytes: Bytes) -> String {
+        String::from_utf8(bytes.to_vec()).unwrap()
+    }
+
+    async fn bump(&self) -> String {
+        let mut b = self.config.bump.lock().await;
+        *b += 1;
+        b.to_string()
+    }
 }
 
 struct Client(reqwest::Client);
