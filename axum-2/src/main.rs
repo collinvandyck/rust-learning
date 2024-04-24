@@ -1,4 +1,7 @@
+use tracing::info;
+
 #[tokio::main]
 async fn main() {
-    println!("Hello, world!");
+    tracing_subscriber::fmt().init();
+    info!("Hello, world!");
 }
