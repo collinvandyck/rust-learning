@@ -45,6 +45,25 @@ impl fmt::Display for Universe {
 
 #[wasm_bindgen]
 impl Universe {
+    pub fn new() -> Self {
+        let width = 64;
+        let height = 64;
+        let cells = (0..width * height)
+            .map(|i| {
+                if i % 2 == 0 || i % 7 == 0 {
+                    Cell::Alive
+                } else {
+                    Cell::Dead
+                }
+            })
+            .collect();
+        Self {
+            width,
+            height,
+            cells,
+        }
+    }
+
     pub fn tick(&mut self) {
         let mut next = self.cells.clone();
         for row in 0..self.height {
