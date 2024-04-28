@@ -34,7 +34,16 @@ impl Universe {
         let mut next = self.cells.clone();
         for row in 0..self.height {
             for col in 0..self.width {
-                //
+                let idx = self.get_index(row, col);
+                let cell = self.cells[idx];
+                let cell = match (cell, self.live_neighbor_count(row, col)) {
+                    (Cell::Alive, x) if x < 2 => Cell::Dead,
+                    (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive,
+                    (Cell::Alive, x) if x > 3 => Cell::Dead,
+                    (Cell::Dead, 3) => Cell::Alive,
+                    (c, _) => c,
+                };
+                next[idx] = cell;
             }
         }
         self.cells = next;
