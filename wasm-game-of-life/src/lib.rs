@@ -1,6 +1,8 @@
 #![allow(unused)]
 
 mod utils;
+use core::fmt;
+
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -26,6 +28,19 @@ pub struct Universe {
     width: u32,
     height: u32,
     cells: Vec<Cell>,
+}
+
+impl fmt::Display for Universe {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for line in self.cells.as_slice().chunks(self.width as usize) {
+            for &cell in line {
+                let sym = if cell == Cell::Dead { 'D' } else { 'A' };
+                write!(f, "{sym}")?;
+            }
+            write!(f, "\n");
+        }
+        Ok(())
+    }
 }
 
 #[wasm_bindgen]
