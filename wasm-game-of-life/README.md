@@ -1,3 +1,9 @@
+# Note:
+
+Following the wasm tutorial at
+https://rustwasm.github.io/docs/book/game-of-life/hello-world.html.
+
+
 <div align="center">
 
   <h1><code>wasm-pack-template</code></h1>
