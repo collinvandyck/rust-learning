@@ -5,11 +5,14 @@ fn main() {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "PascalCase")]
 #[serde(untagged)]
 enum KeepAlive {
     Bool(bool),
-    Map { successful_exit: bool },
+    #[serde(rename_all = "PascalCase")]
+    Map {
+        #[serde(default)]
+        successful_exit: bool,
+    },
 }
 
 /// `Plist` represents our service definition in struct form. The `plist` crate allows us to neatly
@@ -42,6 +45,20 @@ fn test_deser2() {
         <plist version="1.0">
         <dict>
             <key>KeepAlive</key>
+            <false/>
+        </dict>
+        </plist>"#;
+    let pl: Plist = ::plist::from_bytes(xml.as_bytes()).unwrap();
+    assert!(matches!(pl.keep_alive, Some(KeepAlive::Bool(false))));
+}
+
+#[test]
+fn test_deser3() {
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>KeepAlive</key>
             <dict>
                 <key>SuccessfulExit</key>
                 <false/>
@@ -49,10 +66,40 @@ fn test_deser2() {
         </dict>
         </plist>"#;
     let pl: Plist = ::plist::from_bytes(xml.as_bytes()).unwrap();
-    assert!(matches!(
-        pl.keep_alive,
-        Some(KeepAlive::Map {
-            successful_exit: false
-        })
-    ));
+    assert!(
+        matches!(
+            pl.keep_alive,
+            Some(KeepAlive::Map {
+                successful_exit: false,
+            })
+        ),
+        "{:#?}",
+        pl.keep_alive
+    );
+}
+
+#[test]
+fn test_deser4() {
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>KeepAlive</key>
+            <dict>
+                <key>SuccessfulExit</key>
+                <true/>
+            </dict>
+        </dict>
+        </plist>"#;
+    let pl: Plist = ::plist::from_bytes(xml.as_bytes()).unwrap();
+    assert!(
+        matches!(
+            pl.keep_alive,
+            Some(KeepAlive::Map {
+                successful_exit: true,
+            })
+        ),
+        "{:#?}",
+        pl.keep_alive
+    );
 }
