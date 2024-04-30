@@ -48,6 +48,10 @@ impl Universe {
     pub fn new() -> Self {
         let width = 100;
         let height = 50;
+        Self::new_dims(width, height)
+    }
+
+    pub fn new_dims(width: u32, height: u32) -> Self {
         let cells = (0..width * height)
             .map(|i| {
                 if i % 2 == 0 || i % 7 == 0 {
