@@ -29,8 +29,8 @@ type Values = HashMap<i32, i32>;
 
 #[derive(Default)]
 struct Env {
-    parent: Option<Rc<RefCell<Inner>>>,
-    inner: Rc<RefCell<Inner>>,
+    parent: Option<Inner>,
+    inner: Inner,
 }
 
 impl Env {
@@ -40,20 +40,19 @@ impl Env {
 
     fn child(&self) -> Self {
         Self {
-            parent: Some(Rc::clone(&self.inner)),
-            inner: Rc::default(),
+            parent: Some(self.inner.clone()),
+            inner: Inner::default(),
         }
     }
 
     fn set(&self, k: i32, v: i32) {
-        let mut m = RefCell::borrow_mut(&self.inner);
-        m.set(k, v);
+        self.inner.set(k, v);
     }
 
     fn get(&self, k: &i32) -> Option<i32> {
-        RefCell::borrow(&self.inner).get(k).or_else(|| {
+        self.inner.get(k).or_else(|| {
             if let Some(parent) = &self.parent {
-                RefCell::borrow(parent).get(k)
+                parent.get(k)
             } else {
                 None
             }
@@ -61,9 +60,9 @@ impl Env {
     }
 }
 
-#[derive(Default, derive_more::Deref, derive_more::DerefMut)]
+#[derive(Clone, Default, derive_more::Deref, derive_more::DerefMut)]
 struct Inner {
-    vals: RefCell<Values>,
+    vals: Rc<RefCell<Values>>,
 }
 
 impl Inner {
@@ -71,12 +70,13 @@ impl Inner {
         Self::default()
     }
 
-    fn set(&mut self, k: i32, v: i32) {
-        let mut m = RefCell::borrow_mut(&mut self.vals);
+    fn set(&self, k: i32, v: i32) {
+        let mut m = RefCell::borrow_mut(&self.vals);
         m.insert(k, v);
     }
 
     fn get(&self, k: &i32) -> Option<i32> {
-        self.vals.borrow().get(k).cloned()
+        let m = RefCell::borrow(&self.vals);
+        m.get(k).cloned()
     }
 }
