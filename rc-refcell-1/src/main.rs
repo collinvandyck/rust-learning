@@ -60,7 +60,7 @@ impl Env {
     }
 }
 
-#[derive(Clone, Default, derive_more::Deref, derive_more::DerefMut)]
+#[derive(Clone, Default)]
 struct Inner {
     vals: Rc<RefCell<Values>>,
 }
@@ -71,12 +71,10 @@ impl Inner {
     }
 
     fn set(&self, k: i32, v: i32) {
-        let mut m = RefCell::borrow_mut(&self.vals);
-        m.insert(k, v);
+        RefCell::borrow_mut(&self.vals).insert(k, v);
     }
 
     fn get(&self, k: &i32) -> Option<i32> {
-        let m = RefCell::borrow(&self.vals);
-        m.get(k).cloned()
+        RefCell::borrow(&self.vals).get(k).cloned()
     }
 }
