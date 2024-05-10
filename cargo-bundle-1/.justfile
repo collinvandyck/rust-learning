@@ -1,5 +1,5 @@
 build:
-	@echo hi
+	cargo bundle
 
 deps:
 	#!/usr/bin/env bash

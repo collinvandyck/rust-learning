@@ -2,5 +2,29 @@
 name = "cargo-bundle-1"
 version = "0.1.0"
 edition = "2021"
+description = "foooo"
+
+[[bin]]
+name = "foo"
+path = "src/main.rs"
 
 [dependencies]
+
+[package.metadata.bundle]
+name = "cargo-bundle-1"
+identifier = "com.doe.exampleapplication"
+icon = ["icon_blue.icns"]
+resources = ["assets", "images/**/*.png", "secrets/public_key.txt", "icon*"]
+copyright = "Copyright (c) Rippling 2024. All rights reserved."
+category = "Developer Tool"
+short_description = "An example application."
+long_description = """
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua.  Ut
+enim ad minim veniam, quis nostrud exercitation ullamco laboris
+nisi ut aliquip ex ea commodo consequat.
+"""
+deb_depends = ["libgl1-mesa-glx", "libsdl2-2.0-0 (>= 2.0.5)"]
+#osx_frameworks = ["SDL2"]
+osx_frameworks = []
+osx_url_schemes = []
