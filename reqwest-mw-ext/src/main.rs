@@ -11,8 +11,10 @@ use anyhow::{bail, Context, Result};
 use async_trait::async_trait;
 use http::Extensions;
 use reqwest::{Method, Request, Response, StatusCode, Url};
+use reqwest_middleware::Extension;
 use reqwest_middleware::{ClientWithMiddleware, Middleware, Next};
 use reqwest_retry::{policies::ExponentialBackoff, Jitter, RetryTransientMiddleware};
+use tracing::info;
 use tracing_test::traced_test;
 use wiremock::{
     http::{HeaderMap, HeaderValue},
@@ -49,6 +51,7 @@ fn new_client(opts: &Opts) -> Result<Client> {
     );
     let body_type: Arc<Mutex<Option<RequestBodyType>>> = Arc::default();
     let delegate: ClientWithMiddleware = reqwest_middleware::ClientBuilder::new(delegate)
+        .with_init(reqwest_middleware::Extension(RequestBodyType::Streaming))
         .with(StreamingMW {
             body_type: body_type.clone(),
         })
@@ -73,6 +76,7 @@ impl Middleware for StreamingMW {
         extensions: &mut Extensions,
         next: Next<'_>,
     ) -> std::result::Result<Response, reqwest_middleware::Error> {
+        info!("middleware running");
         let body_type = extensions.get::<RequestBodyType>().copied();
         *self.body_type.lock().unwrap() = body_type;
         next.run(req, extensions).await
