@@ -7,6 +7,7 @@ use http::Extensions;
 use reqwest::{Method, StatusCode, Url};
 use reqwest_middleware::ClientWithMiddleware;
 use reqwest_retry::{policies::ExponentialBackoff, Jitter, RetryTransientMiddleware};
+use tracing_test::traced_test;
 use wiremock::{
     http::{HeaderMap, HeaderValue},
     matchers, Mock, MockServer, ResponseTemplate,
@@ -52,6 +53,7 @@ enum RequestBodyType {
 }
 
 async fn make_request(opts: Opts) -> Result<()> {
+    tracing::info!("making req");
     let client = new_client(&opts)?;
     let mut headers = opts.headers.clone();
     headers.append("acl", HeaderValue::from_str("bucket-owner-full-control")?);
@@ -60,11 +62,12 @@ async fn make_request(opts: Opts) -> Result<()> {
     let resp = client
         .post(opts.url)
         .headers(headers)
-        .body("foobar")
+        .body("supervisor log content")
         .with_extension(ext)
         .send()
         .await?;
     let code = resp.status();
+    tracing::info!("got code: {code}");
     if !code.is_success() {
         let body = resp
             .text()
@@ -76,6 +79,7 @@ async fn make_request(opts: Opts) -> Result<()> {
 }
 
 #[tokio::test]
+#[traced_test]
 async fn test_mw_ext() {
     let server = MockServer::start().await;
     Mock::given(matchers::method(Method::POST))
