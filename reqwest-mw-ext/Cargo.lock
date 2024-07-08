@@ -1055,6 +1055,7 @@ name = "reqwest-mw-ext"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "http",
  "reqwest",
  "reqwest-middleware",
